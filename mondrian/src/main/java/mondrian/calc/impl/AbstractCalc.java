@@ -4,19 +4,27 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2021 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.calc.impl;
 
-import mondrian.calc.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import mondrian.calc.Calc;
+import mondrian.calc.CalcWriter;
+import mondrian.calc.ResultStyle;
+import mondrian.mdx.NamedSetExpr;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.*;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Exp;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Member;
 import mondrian.olap.type.Type;
 import mondrian.rolap.RolapEvaluator;
 import mondrian.rolap.RolapHierarchy;
-
-import java.util.*;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.Calc} interface.
@@ -79,11 +87,15 @@ public abstract class AbstractCalc implements Calc {
      */
     protected String getName() {
         String name = lastSegment(getClass());
-        if (isDigits(name)
-            && exp instanceof ResolvedFunCall)
-        {
+        if (isDigits(name)) {
+          if (exp instanceof ResolvedFunCall) {
             ResolvedFunCall funCall = (ResolvedFunCall) exp;
             name = funCall.getFunDef().getName();
+          } else if (exp instanceof NamedSetExpr) {
+            // Expose name of nameset for explain plan
+            NamedSetExpr nse = (NamedSetExpr) exp;
+            name = nse.getNamedSet().getName();
+          }
         }
         return name;
     }
@@ -271,6 +283,7 @@ public abstract class AbstractCalc implements Calc {
     public ResultStyle getResultStyle() {
         return ResultStyle.VALUE;
     }
+    
 }
 
 // End AbstractCalc.java

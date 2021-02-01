@@ -5,11 +5,16 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2020 Hitachi Vantara
+// Copyright (C) 2005-2021 Hitachi Vantara
 // All Rights Reserved.
 */
 
 package mondrian.olap.fun;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
 
 import mondrian.calc.Calc;
 import mondrian.calc.DummyExp;
@@ -41,11 +46,6 @@ import mondrian.olap.Validator;
 import mondrian.olap.fun.sort.SortKeySpec;
 import mondrian.olap.fun.sort.Sorter;
 import mondrian.olap.fun.sort.Sorter.Flag;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
 
 /**
  * Definition of the <code>Order</code> MDX function.
@@ -272,14 +272,18 @@ class OrderFunDef extends FunDefBase {
     @Override public void collectArguments( Map<String, Object> arguments ) {
       super.collectArguments( arguments );
 
-      // only good for original Order syntax
-      assert originalKeySpecCount == 1;
-      Flag sortKeyDir = keySpecList.get( 0 ).getDirection();
-      arguments.put(
-        "direction",
-        ( sortKeyDir.descending
-          ? ( sortKeyDir.brk ? Flag.BDESC : Flag.DESC )
-          : ( sortKeyDir.brk ? Flag.BASC : Flag.ASC ) ) );
+      StringBuilder result = new StringBuilder();
+      for (SortKeySpec spec : keySpecList) {
+        if (result.length() > 0) {
+          result.append(",");
+        }
+        
+        Flag sortKeyDir = spec.getDirection();
+        result.append( sortKeyDir.descending
+        ? ( sortKeyDir.brk ? Flag.BDESC : Flag.DESC )
+        : ( sortKeyDir.brk ? Flag.BASC : Flag.ASC ) );
+      }
+      arguments.put( "direction", result.toString());
     }
 
     public boolean dependsOn( Hierarchy hierarchy ) {

@@ -4,15 +4,28 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2021 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.rolap;
 
-import mondrian.calc.*;
-import mondrian.olap.*;
-
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
+
+import mondrian.calc.Calc;
+import mondrian.calc.CalcWriter;
+import mondrian.calc.ResultStyle;
+import mondrian.calc.TupleCollections;
+import mondrian.calc.TupleCursor;
+import mondrian.calc.TupleIterable;
+import mondrian.calc.TupleList;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.NamedSet;
+import mondrian.olap.Util;
+import mondrian.spi.ProfileHandler;
 
 /**
  * Evaluation context for a particular named set.
@@ -118,6 +131,22 @@ class RolapNamedSetEvaluator
             if (RolapResult.LOGGER.isDebugEnabled()) {
                 RolapResult.LOGGER.debug(generateDebugMessage(calc, rawList));
             }
+
+            // NamedSets are not supposed to depend on the current evaluation context but the
+            // way NamedSet evaluation was implemented in Mondrian, they could...
+            // So as a result, the nameset calc has to be profiled at the time of use instead 
+            // of on close of the statement.
+            ProfileHandler handler = rrer.statement.getProfileHandler();
+            if ( handler != null ) {
+              final StringWriter stringWriter = new StringWriter();
+              final PrintWriter printWriter = new PrintWriter( stringWriter );
+              final CalcWriter calcWriter = new CalcWriter( printWriter, true );
+              printWriter.println( "NamedSet (" + namedSet.getName() + "):" );
+              calc.accept( calcWriter );
+              printWriter.close();
+              handler.explain( stringWriter.toString(), evaluator.getTiming() );
+            }
+            
             // Wrap list so that currentOrdinal is updated whenever the list
             // is accessed. The list is immutable, because we don't override
             // AbstractList.set(int, Object).

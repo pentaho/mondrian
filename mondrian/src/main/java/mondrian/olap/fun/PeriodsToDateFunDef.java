@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2021 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.olap.fun;
@@ -33,6 +33,9 @@ class PeriodsToDateFunDef extends FunDefBase {
             new String[]{"fx", "fxl", "fxlm"},
             PeriodsToDateFunDef.class);
 
+    private static final String TIMING_NAME =
+        PeriodsToDateFunDef.class.getSimpleName();
+    
     public PeriodsToDateFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
     }
@@ -82,21 +85,26 @@ class PeriodsToDateFunDef extends FunDefBase {
 
         return new AbstractListCalc(call, new Calc[] {levelCalc, memberCalc}) {
             public TupleList evaluateList(Evaluator evaluator) {
-                final Member member;
-                final Level level;
-                if (levelCalc == null) {
-                    member = evaluator.getContext(timeHierarchy);
-                    level = member.getLevel().getParentLevel();
-                } else {
-                    level = levelCalc.evaluateLevel(evaluator);
-                    if (memberCalc == null) {
-                        member = evaluator.getContext(level.getHierarchy());
-                    } else {
-                        member = memberCalc.evaluateMember(evaluator);
-                    }
+                evaluator.getTiming().markStart(TIMING_NAME);
+                try {
+                  final Member member;
+                  final Level level;
+                  if (levelCalc == null) {
+                      member = evaluator.getContext(timeHierarchy);
+                      level = member.getLevel().getParentLevel();
+                  } else {
+                      level = levelCalc.evaluateLevel(evaluator);
+                      if (memberCalc == null) {
+                          member = evaluator.getContext(level.getHierarchy());
+                      } else {
+                          member = memberCalc.evaluateMember(evaluator);
+                      }
+                  }
+                  return new UnaryTupleList(
+                      periodsToDate(evaluator, level, member));
+                } finally {
+                  evaluator.getTiming().markEnd(TIMING_NAME);
                 }
-                return new UnaryTupleList(
-                    periodsToDate(evaluator, level, member));
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

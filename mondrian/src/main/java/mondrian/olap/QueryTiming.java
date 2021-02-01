@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2021 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.olap;
@@ -35,11 +35,11 @@ import java.util.*;
 public class QueryTiming {
     private boolean enabled;
     private final ArrayStack<TimingInfo> currentTimings =
-        new ArrayStack<TimingInfo>();
-    private final Map<String, List<StartEnd>> timings =
-        new HashMap<String, List<StartEnd>>();
+        new ArrayStack<>();
+    private final Map<String, DurationCount> timings =
+        new HashMap<>();
     private final Map<String, DurationCount> fullTimings =
-        new HashMap<String, DurationCount>();
+        new HashMap<>();
 
     /**
      * Initializes (or re-initializes) a query timing, also setting whether
@@ -47,7 +47,7 @@ public class QueryTiming {
      *
      * @param enabled Whether to collect stats in future
      */
-    public synchronized void init(boolean enabled) {
+    public void init(boolean enabled) {
         this.enabled = enabled;
         currentTimings.clear();
         timings.clear();
@@ -62,7 +62,7 @@ public class QueryTiming {
      *
      * @param name Name of the component
      */
-    public synchronized final void markStart(String name) {
+    public final void markStart(String name) {
         if (enabled) {
             markStartInternal(name);
         }
@@ -73,7 +73,7 @@ public class QueryTiming {
      *
      * @param name Name of the component
      */
-    public synchronized final void markEnd(String name) {
+    public final void markEnd(String name) {
         if (enabled) {
             long tstamp = System.currentTimeMillis();
             markEndInternal(name, tstamp);
@@ -82,7 +82,10 @@ public class QueryTiming {
 
     /**
      * Marks the duration of a Query component's execution.
-     *
+     * 
+     * markFull is synchronized because it may be called from either
+     * Actor's spawn thread or RolapResultShepherd thread
+     * 
      * @param name Name of the component
      * @param duration Duration of the execution
      */
@@ -106,12 +109,13 @@ public class QueryTiming {
         assert finished.name.equals(name);
         finished.markEnd(tstamp);
 
-        List<StartEnd> timingList = timings.get(finished.name);
-        if (timingList == null) {
-            timingList = new ArrayList<StartEnd>();
-            timings.put(finished.name, timingList);
+        DurationCount dc = timings.get(finished.name);
+        if (dc == null) {
+            dc = new DurationCount();
+            timings.put(finished.name, dc);
         }
-        timingList.add(new StartEnd(finished.startTime, finished.endTime));
+        dc.count++;
+        dc.duration += (finished.endTime - finished.startTime);
     }
 
     private void markFullInternal(String name, long duration) {
@@ -126,24 +130,18 @@ public class QueryTiming {
 
     public synchronized String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, List<StartEnd>> entry
+        sb.append( "Query Timing:");
+        for (Map.Entry<String, DurationCount> entry
             : timings.entrySet())
         {
-            if (sb.length() > 0) {
-                sb.append(Util.nl);
-            }
-            long total = 0;
-            for (StartEnd durection : entry.getValue()) {
-                total += (durection.endTime - durection.startTime);
-            }
-            int count = entry.getValue().size();
+            sb.append(Util.nl);
             sb.append(entry.getKey())
                 .append(" invoked ")
-                .append(count)
+                .append(entry.getValue().count)
                 .append(" times for total of ")
-                .append(total)
+                .append(entry.getValue().duration)
                 .append("ms.  (Avg. ")
-                .append(total / count)
+                .append(entry.getValue().duration / entry.getValue().count)
                 .append("ms/invocation)");
         }
         for (Map.Entry<String, DurationCount> entry
@@ -161,39 +159,8 @@ public class QueryTiming {
                 .append(entry.getValue().duration / entry.getValue().count)
                 .append("ms/invocation)");
         }
+        sb.append(Util.nl);
         return sb.toString();
-    }
-
-    /**
-     * @return a collection of all Query component names
-     */
-    public synchronized Collection<String> getTimingKeys() {
-        Set<String> keys = new HashSet<String>();
-        keys.addAll(timings.keySet());
-        keys.addAll(fullTimings.keySet());
-        return keys;
-    }
-
-    /**
-     * @param key Name of the Query component to get timing information on
-     * @return a List of durations
-     */
-    public synchronized List<Long> getTimings(String key) {
-        List<Long> timingList = new ArrayList<Long>();
-        List<StartEnd> regTime = timings.get(key);
-        if (regTime != null) {
-            for (StartEnd timing : regTime) {
-                timingList.add(timing.endTime - timing.startTime);
-            }
-        }
-        DurationCount qTime = fullTimings.get(key);
-        if (qTime != null) {
-            final Long duration = qTime.duration;
-            for (int i = 0; i < qTime.count; i++) {
-                timingList.add(duration);
-            }
-        }
-        return timingList;
     }
 
     private static class TimingInfo {
@@ -210,17 +177,7 @@ public class QueryTiming {
             this.endTime = tstamp;
         }
     }
-
-    private static class StartEnd {
-        final long startTime;
-        final long endTime;
-
-        public StartEnd(long startTime, long endTime) {
-            this.startTime = startTime;
-            this.endTime = endTime;
-        }
-    }
-
+    
     private static class DurationCount {
         long duration;
         long count;

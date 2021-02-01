@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2021 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.olap.fun;
@@ -32,7 +32,9 @@ class CountFunDef extends AbstractAggregateFunDef {
             new String[]{"fnx", "fnxy"},
             CountFunDef.class,
             ReservedWords);
-
+    private static final String TIMING_NAME =
+        CountFunDef.class.getSimpleName();
+    
     public CountFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
     }
@@ -50,6 +52,7 @@ class CountFunDef extends AbstractAggregateFunDef {
             new Calc[] {calc})
         {
             public int evaluateInteger(Evaluator evaluator) {
+                evaluator.getTiming().markStart(TIMING_NAME);
                 final int savepoint = evaluator.savepoint();
                 try {
                     evaluator.setNonEmpty(false);
@@ -69,6 +72,7 @@ class CountFunDef extends AbstractAggregateFunDef {
                     return count;
                 } finally {
                     evaluator.restore(savepoint);
+                    evaluator.getTiming().markEnd(TIMING_NAME);
                 }
             }
 

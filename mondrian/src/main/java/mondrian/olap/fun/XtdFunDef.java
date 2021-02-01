@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara
+// Copyright (C) 2005-2021 Hitachi Vantara
 // All Rights Reserved.
 */
 
@@ -65,6 +65,9 @@ class XtdFunDef extends FunDefBase {
             new String[]{"fx", "fxm"},
             LevelType.TimeYears);
 
+    private static final String TIMING_NAME =
+        XtdFunDef.class.getSimpleName();
+    
     public XtdFunDef(FunDef dummyFunDef, LevelType levelType) {
         super(dummyFunDef);
         this.levelType = levelType;
@@ -111,8 +114,13 @@ class XtdFunDef extends FunDefBase {
         case 0:
             return new AbstractListCalc(call, new Calc[0]) {
                 public TupleList evaluateList(Evaluator evaluator) {
+                  evaluator.getTiming().markStart(TIMING_NAME);
+                  try {
                     return new UnaryTupleList(
                         periodsToDate(evaluator, level, null));
+                  } finally {
+                    evaluator.getTiming().markEnd(TIMING_NAME);
+                  }   
                 }
 
                 public boolean dependsOn(Hierarchy hierarchy) {
@@ -125,11 +133,16 @@ class XtdFunDef extends FunDefBase {
                 compiler.compileMember(call.getArg(0));
             return new AbstractListCalc(call, new Calc[] {memberCalc}) {
                 public TupleList evaluateList(Evaluator evaluator) {
+                  evaluator.getTiming().markStart(TIMING_NAME);
+                  try {
                     return new UnaryTupleList(
                         periodsToDate(
                             evaluator,
                             level,
                             memberCalc.evaluateMember(evaluator)));
+                  } finally {
+                    evaluator.getTiming().markEnd(TIMING_NAME);
+                  }   
                 }
             };
         }

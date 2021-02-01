@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2021 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.olap.fun;
@@ -37,7 +37,9 @@ class MinMaxFunDef extends AbstractAggregateFunDef {
             "Returns the maximum value of a numeric expression evaluated over a set.",
             new String[]{"fnx", "fnxn"},
             MinMaxFunDef.class);
-
+    private static final String TIMING_NAME =
+        MinMaxFunDef.class.getSimpleName();
+    
     private final boolean max;
 
     public MinMaxFunDef(FunDef dummyFunDef) {
@@ -54,9 +56,10 @@ class MinMaxFunDef extends AbstractAggregateFunDef {
             : new ValueCalc(call);
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
-                TupleList memberList = evaluateCurrentList(listCalc, evaluator);
+                evaluator.getTiming().markStart(TIMING_NAME);
                 final int savepoint = evaluator.savepoint();
                 try {
+                    TupleList memberList = evaluateCurrentList(listCalc, evaluator);
                     evaluator.setNonEmpty(false);
                     final Double d = (Double) (max
                         ? max(evaluator, memberList, calc)
@@ -64,6 +67,7 @@ class MinMaxFunDef extends AbstractAggregateFunDef {
                     return d;
                 } finally {
                     evaluator.restore(savepoint);
+                    evaluator.getTiming().markEnd(TIMING_NAME);
                 }
             }
 

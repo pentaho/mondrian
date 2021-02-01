@@ -5,12 +5,48 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2020 Hitachi Vantara
+// Copyright (C) 2005-2021 Hitachi Vantara
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
 */
 package mondrian.test;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggingEvent;
+import org.eigenbase.util.property.StringProperty;
+import org.olap4j.CellSet;
+import org.olap4j.OlapConnection;
+import org.olap4j.OlapStatement;
+import org.olap4j.layout.RectangularCellSetFormatter;
 
 import junit.framework.Assert;
 import mondrian.calc.ResultStyle;
@@ -47,40 +83,6 @@ import mondrian.spi.UserDefinedFunction;
 import mondrian.spi.impl.JdbcStatisticsProvider;
 import mondrian.spi.impl.SqlStatisticsProvider;
 import mondrian.util.Bug;
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggingEvent;
-import org.eigenbase.util.property.StringProperty;
-import org.olap4j.CellSet;
-import org.olap4j.OlapConnection;
-import org.olap4j.OlapStatement;
-import org.olap4j.layout.RectangularCellSetFormatter;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * <code>BasicQueryTest</code> is a test case which tests simple queries
@@ -8062,6 +8064,8 @@ public class BasicQueryTest extends FoodMartTestCase {
   }
 
   public void testExplain() throws SQLException {
+    Level originalLevel = RolapUtil.PROFILE_LOGGER.getLevel();
+    RolapUtil.PROFILE_LOGGER.setLevel( Level.OFF ); // Must turn off in case test environment has enabled profiling
     OlapConnection connection =
       TestContext.instance().getOlap4jConnection();
     final OlapStatement statement = connection.createStatement();
@@ -8102,9 +8106,12 @@ public class BasicQueryTest extends FoodMartTestCase {
         + "resultStyle=VALUE_NOT_NULL, value=100.0)\n"
         + "\n",
       s );
+    RolapUtil.PROFILE_LOGGER.setLevel( originalLevel );
   }
 
   public void testExplainComplex() throws SQLException {
+    Level originalLevel = RolapUtil.PROFILE_LOGGER.getLevel();
+    RolapUtil.PROFILE_LOGGER.setLevel( Level.OFF ); // Must turn off in case test environment has enabled profiling
     OlapConnection connection =
       TestContext.instance().getOlap4jConnection();
     final OlapStatement statement = connection.createStatement();
@@ -8160,7 +8167,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         + "CrossJoinIterCalc(name=CrossJoinIterCalc, class=class mondrian.olap.fun.CrossJoinFunDef$CrossJoinIterCalc,"
         + " type=SetType<TupleType<MemberType<member=[Product].[Drink]>, MemberType<hierarchy=[Marital Status]>>>, "
         + "resultStyle=ITERABLE)\n"
-        + "    1(name=1, class=class mondrian.mdx.NamedSetExpr$1, type=SetType<MemberType<member=[Product].[Drink]>>,"
+        + "    Hi Val Products(name=Hi Val Products, class=class mondrian.mdx.NamedSetExpr$1, type=SetType<MemberType<member=[Product].[Drink]>>,"
         + " resultStyle=ITERABLE)\n"
         + "    Members(name=Members, class=class mondrian.olap.fun.BuiltinFunTable$27$1, "
         + "type=SetType<MemberType<hierarchy=[Marital Status]>>, resultStyle=MUTABLE_LIST)\n"
@@ -8170,70 +8177,75 @@ public class BasicQueryTest extends FoodMartTestCase {
       s );
 
     // Plan after execution, including profiling.
-    final String[] strings = { null, null };
+    final ArrayList<String> strings = new ArrayList<String>();
     ( (mondrian.server.Statement) statement ).enableProfiling(
       new ProfileHandler() {
         public void explain( String plan, QueryTiming timing ) {
-          strings[ 0 ] = plan;
-          strings[ 1 ] = String.valueOf( timing );
+          strings.add( plan );
+          strings.add( String.valueOf( timing ) );
         }
       }
     );
+    
     final CellSet cellSet = statement.executeOlapQuery( mdx );
     new RectangularCellSetFormatter( true ).format(
       cellSet, new PrintWriter( new StringWriter() ) );
     cellSet.close();
-    final String actual =
-      strings[ 0 ].replaceAll(
+    assertEquals(4, strings.size());
+    String actual =
+        strings.get( 0 ).replaceAll(
+          "callMillis=[0-9]+",
+          "callMillis=nnn" )
+          .replaceAll(
+            "[0-9]+ms",
+            "nnnms" );
+    TestContext.assertStubbedEqualsVerbose( 
+        "NamedSet (Hi Val Products):\n"
+        + "MutableIterCalc(name=MutableIterCalc, class=class mondrian.olap.fun.FilterFunDef$MutableIterCalc, type=SetType<MemberType<member=[Product].[Drink]>>, resultStyle=ITERABLE, callCount=3, callMillis=nnn, elementCount=44, elementSquaredCount=968)\n"
+        + "    Descendants(name=Descendants, class=class mondrian.olap.fun.DescendantsFunDef$-anonymous-class-, type=SetType<MemberType<member=[Product].[Drink]>>, resultStyle=MUTABLE_LIST)\n"
+        + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Product].[Drink]>, resultStyle=VALUE_NOT_NULL, value=[Product].[Drink], callCount=3, callMillis=nnn)\n"
+        + "    >(name=>, class=class mondrian.olap.fun.BuiltinFunTable$-anonymous-class-$-anonymous-class-, type=BOOLEAN, resultStyle=VALUE, callCount=435, callMillis=nnn)\n"
+        + "        MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE, callCount=435, callMillis=nnn)\n"
+        + "            Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
+        + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=NUMERIC, resultStyle=VALUE_NOT_NULL, value=100.0, callCount=435, callMillis=nnn)\n",
+        actual );
+
+    assertTrue( strings.get( 1 ), strings.get( 1 ).contains( "FilterFunDef invoked 6 times for total of" ) );
+    
+    actual =
+      strings.get( 2 ).replaceAll(
         "callMillis=[0-9]+",
         "callMillis=nnn" )
         .replaceAll(
           "[0-9]+ms",
           "nnnms" );
     TestContext.assertStubbedEqualsVerbose(
-      "Axis (FILTER):\n"
-        + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, "
-        + "type=SetType<MemberType<member=[Gender].[F]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, "
-        + "elementCount=2, elementSquaredCount=2)\n"
-        + "    ()(name=(), class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Gender]"
-        + ".[F]>, resultStyle=VALUE)\n"
-        + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender]"
-        + ".[F]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[F], callCount=2, callMillis=nnn)\n"
-        + "\n"
-        + "Axis (COLUMNS):\n"
-        + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, "
-        + "type=SetType<MemberType<member=[Measures].[Unit Sales]>>, resultStyle=MUTABLE_LIST, callCount=2, "
-        + "callMillis=nnn, elementCount=4, elementSquaredCount=8)\n"
-        + "    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Measures]"
-        + ".[Unit Sales]>, resultStyle=VALUE)\n"
-        + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, "
-        + "type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit "
-        + "Sales], callCount=2, callMillis=nnn)\n"
-        + "    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Measures]"
-        + ".[Store Margin]>, resultStyle=VALUE)\n"
-        + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, "
-        + "type=MemberType<member=[Measures].[Store Margin]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Store "
-        + "Margin], callCount=2, callMillis=nnn)\n"
-        + "\n"
-        + "Axis (ROWS):\n"
-        + "CrossJoinIterCalc(name=CrossJoinIterCalc, class=class mondrian.olap.fun.CrossJoinFunDef$CrossJoinIterCalc,"
-        + " type=SetType<TupleType<MemberType<member=[Product].[Drink]>, MemberType<hierarchy=[Marital Status]>>>, "
-        + "resultStyle=ITERABLE, callCount=2, callMillis=nnn, elementCount=0, elementSquaredCount=0)\n"
-        + "    1(name=1, class=class mondrian.mdx.NamedSetExpr$1, type=SetType<MemberType<member=[Product]"
-        + ".[Drink]>>, resultStyle=ITERABLE)\n"
-        + "    Members(name=Members, class=class mondrian.olap.fun.BuiltinFunTable$27$1, "
-        + "type=SetType<MemberType<hierarchy=[Marital Status]>>, resultStyle=MUTABLE_LIST)\n"
-        + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, "
-        + "type=HierarchyType<hierarchy=[Marital Status]>, resultStyle=VALUE_NOT_NULL, value=[Marital Status], "
-        + "callCount=2, callMillis=nnn)\n"
-        + "\n",
+        "Axis (FILTER):\n"
+            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Gender].[F]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=2, elementSquaredCount=2)\n"
+            + "    ()(name=(), class=class mondrian.olap.fun.SetFunDef$SetListCalc$-anonymous-class-, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[F], callCount=2, callMillis=nnn)\n"
+            + "\n"
+            + "Axis (COLUMNS):\n"
+            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Measures].[Unit Sales]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=4, elementSquaredCount=8)\n"
+            + "    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$-anonymous-class-, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales], callCount=2, callMillis=nnn)\n"
+            + "    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$-anonymous-class-, type=MemberType<member=[Measures].[Store Margin]>, resultStyle=VALUE)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Store Margin]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Store Margin], callCount=2, callMillis=nnn)\n"
+            + "\n"
+            + "Axis (ROWS):\n"
+            + "CrossJoinIterCalc(name=CrossJoinIterCalc, class=class mondrian.olap.fun.CrossJoinFunDef$CrossJoinIterCalc, type=SetType<TupleType<MemberType<member=[Product].[Drink]>, MemberType<hierarchy=[Marital Status]>>>, resultStyle=ITERABLE, callCount=2, callMillis=nnn, elementCount=0, elementSquaredCount=0)\n"
+            + "    Hi Val Products(name=Hi Val Products, class=class mondrian.mdx.NamedSetExpr$-anonymous-class-, type=SetType<MemberType<member=[Product].[Drink]>>, resultStyle=ITERABLE)\n"
+            + "    Members(name=Members, class=class mondrian.olap.fun.BuiltinFunTable$-anonymous-class-$-anonymous-class-, type=SetType<MemberType<hierarchy=[Marital Status]>>, resultStyle=MUTABLE_LIST)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=HierarchyType<hierarchy=[Marital Status]>, resultStyle=VALUE_NOT_NULL, value=[Marital Status], callCount=2, callMillis=nnn)\n"
+            + "\n",
       actual );
 
     assertTrue(
-      strings[ 1 ],
-      strings[ 1 ].contains(
+        strings.get( 3 ),
+        strings.get( 3 ).contains(
         "SqlStatement-SqlTupleReader.readTuples [[Product].[Product "
           + "Category]] invoked 1 times for total of " ) );
+    RolapUtil.PROFILE_LOGGER.setLevel( originalLevel );
   }
 
   public void testExplainInvalid() throws SQLException {
@@ -8253,6 +8265,126 @@ public class BasicQueryTest extends FoodMartTestCase {
         e,
         "MDX object '[Measures].[Store Margin]' not found in cube 'Sales'" );
     }
+  }
+  
+  /**
+   * Verifies all QueryTiming elements
+   * @throws SQLException
+   */
+  public void testQueryTimingAnalyzer() throws SQLException {
+    OlapConnection connection =
+      TestContext.instance().getOlap4jConnection();
+    final OlapStatement statement = connection.createStatement();
+    final String mdx =
+      "WITH\r\n" + 
+      " SET [*NATIVE_CJ_SET_WITH_SLICER] AS 'FILTER(NONEMPTYCROSSJOIN([*BASE_MEMBERS__Gender_],[*BASE_MEMBERS__Education Level_]), NOT ISEMPTY ([Measures].[Unit Sales]))'\r\n" + 
+      " SET [*NATIVE_CJ_SET] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Gender].CURRENTMEMBER)})'\r\n" + 
+      " SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[Gender].CURRENTMEMBER.ORDERKEY,BASC)'\r\n" + 
+      " SET [*BASE_MEMBERS__Education Level_] AS '{[Education Level].[All Education Levels].[Bachelors Degree],[Education Level].[All Education Levels].[Graduate Degree]}'\r\n" + 
+      " SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*SUMMARY_MEASURE_1]}'\r\n" + 
+      " SET [*BASE_MEMBERS__Gender_] AS '[Gender].[Gender].MEMBERS'\r\n" + 
+      " SET [*CJ_SLICER_AXIS] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Education Level].CURRENTMEMBER)})'\r\n" + 
+      " SET [*NATIVE_MEMBERS__Gender_] AS 'GENERATE([*NATIVE_CJ_SET], {[Gender].CURRENTMEMBER})'\r\n" + 
+      " SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Gender].CURRENTMEMBER)})'\r\n" + 
+      " MEMBER [Gender].[*TOTAL_MEMBER_SEL~AGG] AS 'AGGREGATE({[Gender].[All Gender]})', SOLVE_ORDER=-100\r\n" + 
+      " MEMBER [Gender].[*TOTAL_MEMBER_SEL~AVG] AS 'AVG([*CJ_ROW_AXIS])', SOLVE_ORDER=300\r\n" + 
+      " MEMBER [Gender].[*TOTAL_MEMBER_SEL~MAX] AS 'MAX([*CJ_ROW_AXIS])', SOLVE_ORDER=300\r\n" + 
+      " MEMBER [Gender].[*TOTAL_MEMBER_SEL~SUM] AS 'SUM([*CJ_ROW_AXIS])', SOLVE_ORDER=100\r\n" + 
+      " MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=500\r\n" + 
+      " MEMBER [Measures].[*SUMMARY_MEASURE_1] AS 'Rank(([Gender].CURRENTMEMBER),[*CJ_ROW_AXIS],[Measures].[Unit Sales])', FORMAT_STRING = '#,##0', SOLVE_ORDER=200\r\n" + 
+      " SELECT\r\n" + 
+      " [*BASE_MEMBERS__Measures_] ON COLUMNS\r\n" + 
+      " , NON EMPTY\r\n" + 
+      " UNION({[Gender].[*TOTAL_MEMBER_SEL~MAX]},UNION({[Gender].[*TOTAL_MEMBER_SEL~AVG]},UNION({[Gender].[*TOTAL_MEMBER_SEL~AGG]},UNION({[Gender].[*TOTAL_MEMBER_SEL~SUM]},[*SORTED_ROW_AXIS])))) ON ROWS\r\n" + 
+      " FROM [Sales]\r\n" + 
+      " WHERE ([*CJ_SLICER_AXIS])";
+
+    // Plan after execution, including profiling.
+    final ArrayList<String> strings = new ArrayList<String>();
+    ( (mondrian.server.Statement) statement ).enableProfiling(
+      new ProfileHandler() {
+        public void explain( String plan, QueryTiming timing ) {
+          strings.add( plan );
+          strings.add( String.valueOf( timing ) );
+        }
+      }
+    );
+    
+    final CellSet cellSet = statement.executeOlapQuery( mdx );
+    new RectangularCellSetFormatter( true ).format(
+      cellSet, new PrintWriter( new StringWriter() ) );
+    cellSet.close();
+    assertEquals(14, strings.size());
+    String actual =
+        strings.get( 0 ).replaceAll(
+          "callMillis=[0-9]+",
+          "callMillis=nnn" )
+          .replaceAll(
+            "[0-9]+ms",
+            "nnnms" );
+    TestContext.assertStubbedEqualsVerbose( 
+        "NamedSet (*NATIVE_CJ_SET_WITH_SLICER):\n"
+            + "ImmutableIterCalc(name=ImmutableIterCalc, class=class mondrian.olap.fun.FilterFunDef$ImmutableIterCalc, type=SetType<TupleType<MemberType<level=[Gender].[Gender]>, MemberType<member=[Education Level].[Bachelors Degree]>>>, resultStyle=ITERABLE, callCount=2, callMillis=nnn, elementCount=8, elementSquaredCount=32)\n"
+            + "    NonEmptyCrossJoin(name=NonEmptyCrossJoin, class=class mondrian.olap.fun.NonEmptyCrossJoinFunDef$-anonymous-class-, type=SetType<TupleType<MemberType<level=[Gender].[Gender]>, MemberType<member=[Education Level].[Bachelors Degree]>>>, resultStyle=LIST)\n"
+            + "        IterableListCalc(name=IterableListCalc, class=class mondrian.calc.impl.IterableListCalc, type=SetType<MemberType<level=[Gender].[Gender]>>, resultStyle=MUTABLE_LIST, callCount=0, callMillis=nnn, elementCount=0, elementSquaredCount=0)\n"
+            + "            *BASE_MEMBERS__Gender_(name=*BASE_MEMBERS__Gender_, class=class mondrian.mdx.NamedSetExpr$-anonymous-class-, type=SetType<MemberType<level=[Gender].[Gender]>>, resultStyle=ITERABLE)\n"
+            + "        IterableListCalc(name=IterableListCalc, class=class mondrian.calc.impl.IterableListCalc, type=SetType<MemberType<member=[Education Level].[Bachelors Degree]>>, resultStyle=MUTABLE_LIST, callCount=0, callMillis=nnn, elementCount=0, elementSquaredCount=0)\n"
+            + "            *BASE_MEMBERS__Education Level_(name=*BASE_MEMBERS__Education Level_, class=class mondrian.mdx.NamedSetExpr$-anonymous-class-, type=SetType<MemberType<member=[Education Level].[Bachelors Degree]>>, resultStyle=ITERABLE)\n"
+            + "    NOT(name=NOT, class=class mondrian.olap.fun.BuiltinFunTable$-anonymous-class-$-anonymous-class-, type=BOOLEAN, resultStyle=VALUE, callCount=0, callMillis=nnn)\n"
+            + "        IsEmpty(name=IsEmpty, class=class mondrian.olap.fun.IsEmptyFunDef$-anonymous-class-, type=BOOLEAN, resultStyle=VALUE, callCount=0, callMillis=nnn)\n"
+            + "            MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE, callCount=0, callMillis=nnn)\n"
+            + "                Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n",
+        actual );
+
+    assertTrue( strings.get( 1 ), strings.get( 1 ).contains( "FilterFunDef invoked 2 times for total of" ) );
+    
+    actual =
+      strings.get( 12 ).replaceAll(
+        "callMillis=[0-9]+",
+        "callMillis=nnn" )
+        .replaceAll(
+          "[0-9]+ms",
+          "nnnms" );
+    TestContext.assertStubbedEqualsVerbose(
+        "Axis (FILTER):\n"
+            + "*CJ_SLICER_AXIS(name=*CJ_SLICER_AXIS, class=class mondrian.mdx.NamedSetExpr$-anonymous-class-, type=SetType<MemberType<hierarchy=[Education Level]>>, resultStyle=ITERABLE, callCount=2, callMillis=nnn, elementCount=4, elementSquaredCount=8)\n"
+            + "\n"
+            + "Axis (COLUMNS):\n"
+            + "*BASE_MEMBERS__Measures_(name=*BASE_MEMBERS__Measures_, class=class mondrian.mdx.NamedSetExpr$-anonymous-class-, type=SetType<MemberType<member=[Measures].[*FORMATTED_MEASURE_0]>>, resultStyle=ITERABLE, callCount=2, callMillis=nnn, elementCount=4, elementSquaredCount=8)\n"
+            + "\n"
+            + "Axis (ROWS):\n"
+            + "Union(name=Union, class=class mondrian.olap.fun.UnionFunDef$-anonymous-class-, type=SetType<MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~MAX]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=12, elementSquaredCount=72)\n"
+            + "    SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~MAX]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=2, elementSquaredCount=2)\n"
+            + "        2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$-anonymous-class-, type=MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~MAX]>, resultStyle=VALUE)\n"
+            + "            Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~MAX]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[*TOTAL_MEMBER_SEL~MAX], callCount=2, callMillis=nnn)\n"
+            + "    Union(name=Union, class=class mondrian.olap.fun.UnionFunDef$-anonymous-class-, type=SetType<MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~AVG]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=10, elementSquaredCount=50)\n"
+            + "        SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~AVG]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=2, elementSquaredCount=2)\n"
+            + "            2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$-anonymous-class-, type=MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~AVG]>, resultStyle=VALUE)\n"
+            + "                Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~AVG]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[*TOTAL_MEMBER_SEL~AVG], callCount=2, callMillis=nnn)\n"
+            + "        Union(name=Union, class=class mondrian.olap.fun.UnionFunDef$-anonymous-class-, type=SetType<MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~AGG]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=8, elementSquaredCount=32)\n"
+            + "            SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~AGG]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=2, elementSquaredCount=2)\n"
+            + "                2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$-anonymous-class-, type=MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~AGG]>, resultStyle=VALUE)\n"
+            + "                    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~AGG]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[*TOTAL_MEMBER_SEL~AGG], callCount=2, callMillis=nnn)\n"
+            + "            Union(name=Union, class=class mondrian.olap.fun.UnionFunDef$-anonymous-class-, type=SetType<MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~SUM]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=6, elementSquaredCount=18)\n"
+            + "                SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~SUM]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=2, elementSquaredCount=2)\n"
+            + "                    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$-anonymous-class-, type=MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~SUM]>, resultStyle=VALUE)\n"
+            + "                        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[*TOTAL_MEMBER_SEL~SUM]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[*TOTAL_MEMBER_SEL~SUM], callCount=2, callMillis=nnn)\n"
+            + "                IterableListCalc(name=IterableListCalc, class=class mondrian.calc.impl.IterableListCalc, type=SetType<MemberType<hierarchy=[Gender]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=4, elementSquaredCount=8)\n"
+            + "                    *SORTED_ROW_AXIS(name=*SORTED_ROW_AXIS, class=class mondrian.mdx.NamedSetExpr$-anonymous-class-, type=SetType<MemberType<hierarchy=[Gender]>>, resultStyle=ITERABLE)\n"
+            + "\n",
+      actual );
+
+    assertTrue( strings.get( 13 ), strings.get( 13 ).contains("RankFunDef invoked 16 times" ) );
+    assertTrue( strings.get( 13 ), strings.get( 13 ).contains("EvalForSlicer invoked 6 times" ) );
+    assertTrue( strings.get( 13 ), strings.get( 13 ).contains("SumFunDef invoked 4 times" ) );
+    assertTrue( strings.get( 13 ), strings.get( 13 ).contains("Sort invoked 2 times" ) );
+    assertTrue( strings.get( 13 ), strings.get( 13 ).contains("AggregateFunDef invoked 4" ) );
+    assertTrue( strings.get( 13 ), strings.get( 13 ).contains("AvgFunDef invoked 4 times" ) );
+    assertTrue( strings.get( 13 ), strings.get( 13 ).contains("FilterFunDef invoked 2 times" ) );
+    assertTrue( strings.get( 13 ), strings.get( 13 ).contains("EvalForSort invoked 2 times " ) );
+    assertTrue( strings.get( 13 ), strings.get( 13 ).contains("MinMaxFunDef invoked 4 times" ) );
+    assertTrue( strings.get( 13 ), strings.get( 13 ).contains("SqlStatement-Segment.load invoked 2 times" ) );
+    assertTrue( strings.get( 13 ), strings.get( 13 ).contains("SqlStatement-SqlTupleReader.readTuples [[Gender].[Gender], [Education Level].[Education Level]] invoked 1 times" ) );
   }
 
   /**

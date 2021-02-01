@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2021 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.calc;
@@ -41,6 +41,9 @@ public class CalcWriter {
     }
 
     public void visitChild(int ordinal, Calc calc) {
+        if (calc == null) {
+          return;
+        }
         indent();
         calc.accept(this);
         outdent();

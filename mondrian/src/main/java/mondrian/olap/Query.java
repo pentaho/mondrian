@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -197,8 +197,7 @@ public class Query extends QueryPart {
         this.strictValidation = strictValidation;
         this.alertedNonNativeFunDefs = new HashSet<FunDef>();
         statement.setQuery(this);
-        resolve();
-
+        
         if (RolapUtil.PROFILE_LOGGER.isDebugEnabled()
             && statement.getProfileHandler() == null)
         {
@@ -213,6 +212,7 @@ public class Query extends QueryPart {
                 }
             );
         }
+        resolve();
     }
 
     /**

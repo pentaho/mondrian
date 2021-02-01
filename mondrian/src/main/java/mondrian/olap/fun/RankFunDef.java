@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara
+// Copyright (C) 2005-2021 Hitachi Vantara
 // All Rights Reserved.
 */
 
@@ -36,7 +36,9 @@ public class RankFunDef extends FunDefBase {
             "Returns the one-based rank of a tuple in a set.",
             new String[]{"fitx", "fitxn", "fimx", "fimxn"},
             RankFunDef.class);
-
+    private static final String TIMING_NAME =
+        RankFunDef.class.getSimpleName();
+    
     public RankFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
     }
@@ -113,31 +115,36 @@ public class RankFunDef extends FunDefBase {
         }
 
         public int evaluateInteger(Evaluator evaluator) {
-            // Get member or tuple.
-            // If the member is null (or the tuple contains a null member)
-            // the result is null (even if the list is null).
-            final Member[] members = tupleCalc.evaluateTuple(evaluator);
-            if (members == null) {
-                return IntegerNull;
+            evaluator.getTiming().markStart(TIMING_NAME);
+            try {
+              // Get member or tuple.
+              // If the member is null (or the tuple contains a null member)
+              // the result is null (even if the list is null).
+              final Member[] members = tupleCalc.evaluateTuple(evaluator);
+              if (members == null) {
+                  return IntegerNull;
+              }
+              assert !tupleContainsNullMember(members);
+  
+              // Get the set of members/tuples.
+              // If the list is empty, MSAS cannot figure out the type of the
+              // list, so returns an error "Formula error - dimension count is
+              // not valid - in the Rank function". We will naturally return 0,
+              // which I think is better.
+              final RankedTupleList rankedTupleList =
+                  (RankedTupleList) listCalc.evaluate(evaluator);
+              if (rankedTupleList == null) {
+                  return 0;
+              }
+  
+              // Find position of member in list. -1 signifies not found.
+              final List<Member> memberList = Arrays.asList(members);
+              final int i = rankedTupleList.indexOf(memberList);
+              // Return 1-based rank. 0 signifies not found.
+              return i + 1;
+            } finally {
+              evaluator.getTiming().markEnd(TIMING_NAME);
             }
-            assert !tupleContainsNullMember(members);
-
-            // Get the set of members/tuples.
-            // If the list is empty, MSAS cannot figure out the type of the
-            // list, so returns an error "Formula error - dimension count is
-            // not valid - in the Rank function". We will naturally return 0,
-            // which I think is better.
-            final RankedTupleList rankedTupleList =
-                (RankedTupleList) listCalc.evaluate(evaluator);
-            if (rankedTupleList == null) {
-                return 0;
-            }
-
-            // Find position of member in list. -1 signifies not found.
-            final List<Member> memberList = Arrays.asList(members);
-            final int i = rankedTupleList.indexOf(memberList);
-            // Return 1-based rank. 0 signifies not found.
-            return i + 1;
         }
     }
 
@@ -154,30 +161,36 @@ public class RankFunDef extends FunDefBase {
         }
 
         public int evaluateInteger(Evaluator evaluator) {
-            // Get member or tuple.
-            // If the member is null (or the tuple contains a null member)
-            // the result is null (even if the list is null).
-            final Member member = memberCalc.evaluateMember(evaluator);
-            if (member == null
-                || member.isNull())
-            {
-                return IntegerNull;
+            evaluator.getTiming().markStart(TIMING_NAME);
+            try {
+              
+              // Get member or tuple.
+              // If the member is null (or the tuple contains a null member)
+              // the result is null (even if the list is null).
+              final Member member = memberCalc.evaluateMember(evaluator);
+              if (member == null
+                  || member.isNull())
+              {
+                  return IntegerNull;
+              }
+              // Get the set of members/tuples.
+              // If the list is empty, MSAS cannot figure out the type of the
+              // list, so returns an error "Formula error - dimension count is
+              // not valid - in the Rank function". We will naturally return 0,
+              // which I think is better.
+              RankedMemberList rankedMemberList =
+                  (RankedMemberList) listCalc.evaluate(evaluator);
+              if (rankedMemberList == null) {
+                  return 0;
+              }
+  
+              // Find position of member in list. -1 signifies not found.
+              final int i = rankedMemberList.indexOf(member);
+              // Return 1-based rank. 0 signifies not found.
+              return i + 1;
+            } finally {
+              evaluator.getTiming().markEnd(TIMING_NAME);
             }
-            // Get the set of members/tuples.
-            // If the list is empty, MSAS cannot figure out the type of the
-            // list, so returns an error "Formula error - dimension count is
-            // not valid - in the Rank function". We will naturally return 0,
-            // which I think is better.
-            RankedMemberList rankedMemberList =
-                (RankedMemberList) listCalc.evaluate(evaluator);
-            if (rankedMemberList == null) {
-                return 0;
-            }
-
-            // Find position of member in list. -1 signifies not found.
-            final int i = rankedMemberList.indexOf(member);
-            // Return 1-based rank. 0 signifies not found.
-            return i + 1;
         }
     }
 
@@ -199,63 +212,68 @@ public class RankFunDef extends FunDefBase {
         }
 
         public int evaluateInteger(Evaluator evaluator) {
-            Member[] members = tupleCalc.evaluateTuple(evaluator);
-            if (members == null) {
-                return IntegerNull;
-            }
-            assert !tupleContainsNullMember(members);
-
-            // Evaluate the list (or retrieve from cache).
-            // If there is an exception while calculating the
-            // list, propagate it up.
-            final TupleSortResult sortResult =
-                (TupleSortResult) evaluator.getCachedResult(cacheDescriptor);
-            if (debug) {
-                sortResult.print(new PrintWriter(System.out));
-            }
-
-            if (sortResult.isEmpty()) {
-                // If list is empty, the rank is null.
-                return IntegerNull;
-            }
-
-            // First try to find the member in the cached SortResult
-            Integer rank = sortResult.rankOf(members);
-            if (rank != null) {
-                return rank;
-            }
-
-            // member is not seen before, now compute the value of the tuple.
-            final int savepoint = evaluator.savepoint();
-            Object value;
+            evaluator.getTiming().markStart(TIMING_NAME);
             try {
-                evaluator.setContext(members);
-                value = sortCalc.evaluate(evaluator);
+              Member[] members = tupleCalc.evaluateTuple(evaluator);
+              if (members == null) {
+                  return IntegerNull;
+              }
+              assert !tupleContainsNullMember(members);
+  
+              // Evaluate the list (or retrieve from cache).
+              // If there is an exception while calculating the
+              // list, propagate it up.
+              final TupleSortResult sortResult =
+                  (TupleSortResult) evaluator.getCachedResult(cacheDescriptor);
+              if (debug) {
+                  sortResult.print(new PrintWriter(System.out));
+              }
+  
+              if (sortResult.isEmpty()) {
+                  // If list is empty, the rank is null.
+                  return IntegerNull;
+              }
+  
+              // First try to find the member in the cached SortResult
+              Integer rank = sortResult.rankOf(members);
+              if (rank != null) {
+                  return rank;
+              }
+  
+              // member is not seen before, now compute the value of the tuple.
+              final int savepoint = evaluator.savepoint();
+              Object value;
+              try {
+                  evaluator.setContext(members);
+                  value = sortCalc.evaluate(evaluator);
+              } finally {
+                  evaluator.restore(savepoint);
+              }
+  
+              if (valueNotReady(value)) {
+                  // The value wasn't ready, so quit now... we'll be back.
+                  return 0;
+              }
+  
+              // If value is null, it won't be in the values array.
+              if (value == Util.nullValue || value == null) {
+                  return sortResult.values.length + 1;
+              }
+  
+              value = coerceValue(sortResult.values, value);
+  
+              // Look for the ranked value in the array.
+              int j = Arrays.binarySearch(
+                  sortResult.values, value, Collections.<Object>reverseOrder());
+              if (j < 0) {
+                  // Value not found. Flip the result to find the
+                  // insertion point.
+                  j = -(j + 1);
+              }
+              return j + 1; // 1-based
             } finally {
-                evaluator.restore(savepoint);
+              evaluator.getTiming().markEnd(TIMING_NAME);
             }
-
-            if (valueNotReady(value)) {
-                // The value wasn't ready, so quit now... we'll be back.
-                return 0;
-            }
-
-            // If value is null, it won't be in the values array.
-            if (value == Util.nullValue || value == null) {
-                return sortResult.values.length + 1;
-            }
-
-            value = coerceValue(sortResult.values, value);
-
-            // Look for the ranked value in the array.
-            int j = Arrays.binarySearch(
-                sortResult.values, value, Collections.<Object>reverseOrder());
-            if (j < 0) {
-                // Value not found. Flip the result to find the
-                // insertion point.
-                j = -(j + 1);
-            }
-            return j + 1; // 1-based
         }
     }
 
@@ -277,61 +295,66 @@ public class RankFunDef extends FunDefBase {
         }
 
         public int evaluateInteger(Evaluator evaluator) {
-            Member member = memberCalc.evaluateMember(evaluator);
-            if (member == null || member.isNull()) {
-                return IntegerNull;
-            }
-
-            // Evaluate the list (or retrieve from cache).
-            // If there was an exception while calculating the
-            // list, propagate it up.
-            final MemberSortResult sortResult =
-                (MemberSortResult) evaluator.getCachedResult(cacheDescriptor);
-            if (debug) {
-                sortResult.print(new PrintWriter(System.out));
-            }
-            if (sortResult.isEmpty()) {
-                // If list is empty, the rank is null.
-                return IntegerNull;
-            }
-
-            // First try to find the member in the cached SortResult
-            Integer rank = sortResult.rankOf(member);
-            if (rank != null) {
-                return rank;
-            }
-
-            // member is not seen before, now compute the value of the tuple.
-            final int savepoint = evaluator.savepoint();
-            evaluator.setContext(member);
-            Object value;
+            evaluator.getTiming().markStart(TIMING_NAME);
             try {
-                value = sortCalc.evaluate(evaluator);
+              Member member = memberCalc.evaluateMember(evaluator);
+              if (member == null || member.isNull()) {
+                  return IntegerNull;
+              }
+  
+              // Evaluate the list (or retrieve from cache).
+              // If there was an exception while calculating the
+              // list, propagate it up.
+              final MemberSortResult sortResult =
+                  (MemberSortResult) evaluator.getCachedResult(cacheDescriptor);
+              if (debug) {
+                  sortResult.print(new PrintWriter(System.out));
+              }
+              if (sortResult.isEmpty()) {
+                  // If list is empty, the rank is null.
+                  return IntegerNull;
+              }
+  
+              // First try to find the member in the cached SortResult
+              Integer rank = sortResult.rankOf(member);
+              if (rank != null) {
+                  return rank;
+              }
+  
+              // member is not seen before, now compute the value of the tuple.
+              final int savepoint = evaluator.savepoint();
+              evaluator.setContext(member);
+              Object value;
+              try {
+                  value = sortCalc.evaluate(evaluator);
+              } finally {
+                  evaluator.restore(savepoint);
+              }
+  
+              if (valueNotReady(value)) {
+                  // The value wasn't ready, so quit now... we'll be back.
+                  return 0;
+              }
+  
+              // If value is null, it won't be in the values array.
+              if (value == Util.nullValue || value == null) {
+                  return sortResult.values.length + 1;
+              }
+  
+              value = coerceValue(sortResult.values, value);
+  
+              // Look for the ranked value in the array.
+              int j = Arrays.binarySearch(
+                  sortResult.values, value, Collections.<Object>reverseOrder());
+              if (j < 0) {
+                  // Value not found. Flip the result to find the
+                  // insertion point.
+                  j = -(j + 1);
+              }
+              return j + 1; // 1-based
             } finally {
-                evaluator.restore(savepoint);
+              evaluator.getTiming().markEnd(TIMING_NAME);
             }
-
-            if (valueNotReady(value)) {
-                // The value wasn't ready, so quit now... we'll be back.
-                return 0;
-            }
-
-            // If value is null, it won't be in the values array.
-            if (value == Util.nullValue || value == null) {
-                return sortResult.values.length + 1;
-            }
-
-            value = coerceValue(sortResult.values, value);
-
-            // Look for the ranked value in the array.
-            int j = Arrays.binarySearch(
-                sortResult.values, value, Collections.<Object>reverseOrder());
-            if (j < 0) {
-                // Value not found. Flip the result to find the
-                // insertion point.
-                j = -(j + 1);
-            }
-            return j + 1; // 1-based
         }
     }
 
