@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2020 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.server;
@@ -111,7 +111,7 @@ public class Execution {
     this.startTimeMillis = System.currentTimeMillis();
     this.timeoutTimeMillis = timeoutIntervalMillis > 0 ? this.startTimeMillis + timeoutIntervalMillis : 0L;
     this.state = State.RUNNING;
-    this.queryTiming.init( true );
+    this.queryTiming.init( this.statement.getProfileHandler() != null );
     fireExecutionStartEvent();
   }
 

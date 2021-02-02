@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2020 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -335,15 +335,21 @@ public class RolapResult extends ResultBase {
 
           final Calc calcCached = new GenericCalc( new DummyExp( query.slicerCalc.getType() ) ) {
             public Object evaluate( Evaluator evaluator ) {
-              TupleList list =
-                  AbstractAggregateFunDef.processUnrelatedDimensions( ( (RolapEvaluator) evaluator )
-                      .getOptimizedSlicerTuples( null ), evaluator );
-              for ( Member member : prevSlicerMembers ) {
-                if ( evaluator.getContext( member.getHierarchy() ) instanceof CompoundSlicerRolapMember ) {
-                  evaluator.setContext( member );
+              try {
+                evaluator.getTiming().markStart( "EvalForSlicer" );
+                TupleList list =
+                    AbstractAggregateFunDef.processUnrelatedDimensions( ( (RolapEvaluator) evaluator )
+                        .getOptimizedSlicerTuples( null ), evaluator );
+                for ( Member member : prevSlicerMembers ) {
+                  if ( evaluator.getContext( member.getHierarchy() ) instanceof CompoundSlicerRolapMember ) {
+                    evaluator.setContext( member );
+                  }
                 }
+                return AggregateFunDef.AggregateCalc.aggregate( valueCalc, evaluator, list );
+              } finally {
+                evaluator.getTiming().markEnd( "EvalForSlicer" );
               }
-              return AggregateFunDef.AggregateCalc.aggregate( valueCalc, evaluator, list );
+
             }
 
             // depend on the full evaluation context
