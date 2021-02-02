@@ -349,7 +349,7 @@ public class RolapResult extends ResultBase {
               } finally {
                 evaluator.getTiming().markEnd( "EvalForSlicer" );
               }
-              
+
             }
 
             // depend on the full evaluation context
@@ -2149,7 +2149,7 @@ public class RolapResult extends ResultBase {
     private final Calc calc;
     private final ValueFormatter valueFormatter;
     private final TupleList tupleList;
-    
+
     public CompoundSlicerRolapMember( RolapMember placeholderMember, Calc calc, ValueFormatter formatter,
         TupleList tupleList ) {
       super( placeholderMember );
