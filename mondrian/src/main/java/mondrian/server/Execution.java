@@ -71,6 +71,8 @@ public class Execution {
   private int cellCacheHitCount;
   private int cellCacheMissCount;
   private int cellCachePendingCount;
+  private int expCacheHitCount;
+  private int expCacheMissCount;
 
   /**
    * Execution id, global within this JVM instance.
@@ -386,7 +388,7 @@ public class Execution {
     final MondrianServer server = connection.getServer();
     server.getMonitor().sendEvent( new ExecutionEndEvent( this.startTimeMillis, server.getId(), connection.getId(),
         this.statement.getId(), this.id, this.phase, this.state, this.cellCacheHitCount, this.cellCacheMissCount,
-        this.cellCachePendingCount ) );
+        this.cellCachePendingCount, expCacheHitCount, expCacheMissCount ) );
   }
 
   private void fireExecutionStartEvent() {
@@ -406,6 +408,11 @@ public class Execution {
 
   public void setCellCachePendingCount( int cellCachePendingCount ) {
     this.cellCachePendingCount = cellCachePendingCount;
+  }
+
+  public void setExpCacheCounts( int hitCount, int missCount ) {
+    this.expCacheHitCount = hitCount;
+    this.expCacheMissCount = missCount;
   }
 
   /**

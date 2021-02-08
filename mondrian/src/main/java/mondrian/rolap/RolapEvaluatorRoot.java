@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2021 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.rolap;
@@ -40,6 +40,9 @@ class RolapEvaluatorRoot {
     final Query query;
     private final Date queryStartTime;
     final Dialect currentDialect;
+    
+    int expResultCacheHitCount;
+    int expResultCacheMissCount;
 
     /**
      * Default members of each hierarchy, from the schema reader's
@@ -275,7 +278,10 @@ class RolapEvaluatorRoot {
     public final Object getCacheResult(Object key) {
         Object result = expResultCache.get(key);
         if (result == null) {
-            result = tmpExpResultCache.get(key);
+          result = tmpExpResultCache.get(key);
+          expResultCacheMissCount++;
+        } else {
+          expResultCacheHitCount++; // Only count valid results
         }
         return result;
     }

@@ -495,6 +495,7 @@ public class Main extends TestSuite {
       addTest( suite, AggSchemaScanTest.class );
       addTest( suite, MdcUtilTest.class );
       addTest( suite, CachedExistsTest.class );
+      addTest( suite, ExplainPlanTest.class );
 
       // Must be the last test.
       addTest( suite, TerminatorTest.class );

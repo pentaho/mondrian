@@ -56,6 +56,7 @@ import mondrian.olap.fun.sort.Sorter.Flag;
 class OrderFunDef extends FunDefBase {
 
   static final ResolverImpl Resolver = new ResolverImpl();
+  private static final String TIMING_NAME = OrderFunDef.class.getSimpleName();
 
   public OrderFunDef( ResolverBase resolverBase, int type, int[] types ) {
     super( resolverBase, type, types );
@@ -164,33 +165,38 @@ class OrderFunDef extends FunDefBase {
     }
 
     public TupleList evaluateList( Evaluator evaluator ) {
-      final TupleIterable iterable = iterCalc.evaluateIterable( evaluator );
-      // REVIEW: If iterable happens to be a list, we'd like to pass it,
-      // but we cannot yet guarantee that it is mutable.
-      final TupleList list = iterable instanceof ArrayTupleList && false ? (TupleList) iterable : null;
-      // go by size of keySpecList before purging
-      if ( originalKeySpecCount == 1 ) {
-        return handleSortWithOneKeySpec( evaluator, iterable, list );
-      } else {
-        purgeKeySpecList( keySpecList, list );
-        if ( keySpecList.isEmpty() ) {
-          return list;
-        }
-        final TupleList tupleList;
-        final int savepoint = evaluator.savepoint();
-        try {
-          evaluator.setNonEmpty( false );
-          if ( arity == 1 ) {
-            tupleList =
-                new UnaryTupleList( Sorter.sortMembers( evaluator, iterable.slice( 0 ), list == null ? null : list
-                    .slice( 0 ), keySpecList ) );
-          } else {
-            tupleList = Sorter.sortTuples( evaluator, iterable, list, keySpecList, arity );
+      evaluator.getTiming().markStart( TIMING_NAME );
+      try {
+        final TupleIterable iterable = iterCalc.evaluateIterable( evaluator );
+        // REVIEW: If iterable happens to be a list, we'd like to pass it,
+        // but we cannot yet guarantee that it is mutable.
+        final TupleList list = iterable instanceof ArrayTupleList && false ? (TupleList) iterable : null;
+        // go by size of keySpecList before purging
+        if ( originalKeySpecCount == 1 ) {
+          return handleSortWithOneKeySpec( evaluator, iterable, list );
+        } else {
+          purgeKeySpecList( keySpecList, list );
+          if ( keySpecList.isEmpty() ) {
+            return list;
           }
-          return tupleList;
-        } finally {
-          evaluator.restore( savepoint );
+          final TupleList tupleList;
+          final int savepoint = evaluator.savepoint();
+          try {
+            evaluator.setNonEmpty( false );
+            if ( arity == 1 ) {
+              tupleList =
+                  new UnaryTupleList( Sorter.sortMembers( evaluator, iterable.slice( 0 ), list == null ? null : list
+                      .slice( 0 ), keySpecList ) );
+            } else {
+              tupleList = Sorter.sortTuples( evaluator, iterable, list, keySpecList, arity );
+            }
+            return tupleList;
+          } finally {
+            evaluator.restore( savepoint );
+          }
         }
+      } finally {
+        evaluator.getTiming().markEnd( TIMING_NAME );
       }
     }
 

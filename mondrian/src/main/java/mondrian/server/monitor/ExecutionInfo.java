@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2021 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.server.monitor;
@@ -25,6 +25,8 @@ public class ExecutionInfo extends Info {
     public final long sqlStatementRowFetchCount;
     public final long sqlStatementExecuteNanos;
     public final int cellRequestCount;
+    public final int expCacheHitCount;
+    public final int expCacheMissCount;
 
     public ExecutionInfo(
         String stack,
@@ -39,7 +41,9 @@ public class ExecutionInfo extends Info {
         int sqlStatementEndCount,
         long sqlStatementRowFetchCount,
         long sqlStatementExecuteNanos,
-        int cellRequestCount)
+        int cellRequestCount,
+        int expCacheHitCount,
+        int expCacheMissCount)
     {
         super(stack);
         this.executionId = executionId;
@@ -54,6 +58,8 @@ public class ExecutionInfo extends Info {
         this.sqlStatementRowFetchCount = sqlStatementRowFetchCount;
         this.sqlStatementExecuteNanos = sqlStatementExecuteNanos;
         this.cellRequestCount = cellRequestCount;
+        this.expCacheHitCount = expCacheHitCount;
+        this.expCacheMissCount = expCacheMissCount;
         assert cellCacheRequestCount
                == cellCacheHitCount
                   + cellCacheMissCount

@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2021 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.server.monitor;
@@ -19,7 +19,9 @@ public class ExecutionEndEvent extends ExecutionEvent {
     public final Execution.State state;
     public final int cellCacheHitCount;
     public final int cellCacheMissCount;
-    public final int cellCachePendingCount;
+  public final int cellCachePendingCount;
+  public final int expCacheHitCount;
+  public final int expCacheMissCount;
 
     /**
      * Creates an ExecutionEndEvent.
@@ -48,7 +50,9 @@ public class ExecutionEndEvent extends ExecutionEvent {
         Execution.State state,
         int cellCacheHitCount,
         int cellCacheMissCount,
-        int cellCachePendingCount)
+        int cellCachePendingCount,
+        int expCacheHitCount,
+        int expCacheMissCount)
     {
         super(timestamp, serverId, connectionId, statementId, executionId);
         this.phaseCount = phaseCount;
@@ -56,6 +60,8 @@ public class ExecutionEndEvent extends ExecutionEvent {
         this.cellCacheHitCount = cellCacheHitCount;
         this.cellCacheMissCount = cellCacheMissCount;
         this.cellCachePendingCount = cellCachePendingCount;
+        this.expCacheHitCount = expCacheHitCount;
+        this.expCacheMissCount = expCacheMissCount;
     }
 
     @Override
