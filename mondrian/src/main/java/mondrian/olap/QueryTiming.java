@@ -33,6 +33,8 @@ import java.util.*;
 public class QueryTiming {
   private boolean enabled;
   private final ArrayStack<TimingInfo> currentTimings = new ArrayStack<>();
+  // Tracks Query components that are already on the stack so that we don't double count their durations
+  private final HashMap<String, Integer> currentTimingDepth = new HashMap<>();
   private final Map<String, DurationCount> timings = new HashMap<>();
   private final Map<String, DurationCount> fullTimings = new HashMap<>();
 
@@ -95,6 +97,12 @@ public class QueryTiming {
 
   private void markStartInternal( String name ) {
     currentTimings.push( new TimingInfo( name ) );
+    Integer depth = currentTimingDepth.get( name );
+    if ( depth == null ) {
+      currentTimingDepth.put( name, 1 );
+    } else {
+      currentTimingDepth.put( name, depth + 1 );
+    }
   }
 
   private void markEndInternal( String name, long tstamp ) {
@@ -111,7 +119,12 @@ public class QueryTiming {
       timings.put( finished.name, dc );
     }
     dc.count++;
-    dc.duration += ( finished.endTime - finished.startTime );
+    Integer depth = currentTimingDepth.get( name );
+    if ( depth == 1 ) {
+      dc.duration += ( finished.endTime - finished.startTime );
+    }
+    currentTimingDepth.put( name, depth - 1 );
+    
   }
 
   private void markFullInternal( String name, long duration ) {
@@ -126,7 +139,7 @@ public class QueryTiming {
 
   public synchronized String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append( "Query Timing:" );
+    sb.append( "Query Timing (Cumulative):" );
     for ( Map.Entry<String, DurationCount> entry : timings.entrySet() ) {
       sb.append( Util.nl );
       sb.append( entry.getKey() ).append( " invoked " ).append( entry.getValue().count ).append(

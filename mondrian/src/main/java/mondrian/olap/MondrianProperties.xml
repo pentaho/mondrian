@@ -1352,6 +1352,15 @@ Property that controls the behavior of
         <Default>ABSOLUTE</Default>
     </PropertyDefinition>
     <PropertyDefinition>
+        <Name>CompoundSlicerMemberSolveOrder</Name>
+        <Path>mondrian.rolap.CompoundSlicerMemberSolveOrder</Path>
+        <Description>
+Property that sets the compound slicer member solve order.
+        </Description>
+        <Type>int</Type>
+        <Default>-99999</Default>
+    </PropertyDefinition>    
+    <PropertyDefinition>
         <Name>NativizeMinThreshold</Name>
         <Path>mondrian.native.NativizeMinThreshold</Path>
         <Description>

@@ -360,7 +360,9 @@ public class RolapResult extends ResultBase {
 
           final ExpCacheDescriptor cacheDescriptor =
               new ExpCacheDescriptor( query.getSlicerAxis().getSet(), calcCached, evaluator );
-          // generate a cached calculation for slicer aggregation
+          // Generate a cached calculation for slicer aggregation
+          // This is so critical for performance that we should consider creating an
+          // optimized query level slicer cache.
           final Calc calc = new CacheCalc( query.getSlicerAxis().getSet(), cacheDescriptor );
 
           // replace the slicer set with a placeholder to avoid
@@ -379,6 +381,10 @@ public class RolapResult extends ResultBase {
 
           Member placeholder =
               setPlaceholderSlicerAxis( (RolapMember) tupleList.get( 0 ).get( 0 ), calc, true, tupleList );
+
+          Util.explain( evaluator.root.statement.getProfileHandler(), "Axis (FILTER):", query.slicerCalc, evaluator
+              .getTiming() );
+
           evaluator.setContext( placeholder );
         }
       } while ( phase() );
@@ -469,6 +475,12 @@ public class RolapResult extends ResultBase {
                   }
                 }
               }
+              
+              if ( !redo ) {
+                Util.explain( evaluator.root.statement.getProfileHandler(), "Axis (" + axis.getAxisName() + "):", calc,
+                    evaluator.getTiming() );
+              }
+              
               this.axes[i] = new RolapAxis( TupleCollections.materialize( tupleIterable, false ) );
             }
           } while ( redo );
@@ -485,6 +497,7 @@ public class RolapResult extends ResultBase {
       try {
         executeBody( internalSlicerEvaluator, query, new int[axes.length] );
       } finally {
+        Util.explain( evaluator.root.statement.getProfileHandler(), "QueryBody:", null, evaluator.getTiming() );
         Locus.pop( locus );
       }
 
@@ -525,6 +538,7 @@ public class RolapResult extends ResultBase {
         // Expression cache duration is for each query. It is time to
         // clear out the whole expression cache at the end of a query.
         evaluator.clearExpResultCache( true );
+        execution.setExpCacheCounts( evaluator.root.expResultCacheHitCount, evaluator.root.expResultCacheMissCount );
       }
       if ( LOGGER.isDebugEnabled() ) {
         LOGGER.debug( "RolapResult<init>: " + Util.printMemory() );
@@ -2149,6 +2163,7 @@ public class RolapResult extends ResultBase {
     private final Calc calc;
     private final ValueFormatter valueFormatter;
     private final TupleList tupleList;
+    private final int solveOrder;
 
     public CompoundSlicerRolapMember( RolapMember placeholderMember, Calc calc, ValueFormatter formatter,
         TupleList tupleList ) {
@@ -2156,6 +2171,7 @@ public class RolapResult extends ResultBase {
       this.calc = calc;
       valueFormatter = formatter;
       this.tupleList = tupleList;
+      this.solveOrder = MondrianProperties.instance().CompoundSlicerMemberSolveOrder.get();
     }
 
     @Override
@@ -2173,9 +2189,15 @@ public class RolapResult extends ResultBase {
       return calc;
     }
 
+    /**
+     * CompoundSlicerRolapMember is always wrapped inside a CacheCalc.  To maximize the benefit
+     * of the CacheCalc and the expression cache, the solve order of the CompoundSlicerRolapMember
+     * should be lower than all other calculations.
+     * 
+     */
     @Override
     public int getSolveOrder() {
-      return 0;
+      return solveOrder;
     }
 
     @Override

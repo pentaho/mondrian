@@ -9,12 +9,9 @@
 
 package mondrian.rolap;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.List;
 
 import mondrian.calc.Calc;
-import mondrian.calc.CalcWriter;
 import mondrian.calc.ResultStyle;
 import mondrian.calc.TupleCollections;
 import mondrian.calc.TupleCursor;
@@ -25,7 +22,6 @@ import mondrian.olap.Member;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.NamedSet;
 import mondrian.olap.Util;
-import mondrian.spi.ProfileHandler;
 
 /**
  * Evaluation context for a particular named set.
@@ -116,17 +112,9 @@ class RolapNamedSetEvaluator implements Evaluator.NamedSetEvaluator, TupleList.P
       // way NamedSet evaluation was implemented in Mondrian, they could...
       // So as a result, the nameset calc has to be profiled at the time of use instead
       // of on close of the statement.
-      ProfileHandler handler = rrer.statement.getProfileHandler();
-      if ( handler != null ) {
-        final StringWriter stringWriter = new StringWriter();
-        final PrintWriter printWriter = new PrintWriter( stringWriter );
-        final CalcWriter calcWriter = new CalcWriter( printWriter, true );
-        printWriter.println( "NamedSet (" + namedSet.getName() + "):" );
-        calc.accept( calcWriter );
-        printWriter.close();
-        handler.explain( stringWriter.toString(), evaluator.getTiming() );
-      }
-
+      Util.explain( rrer.statement.getProfileHandler(), "NamedSet (" + namedSet.getName() + "):", calc, evaluator
+          .getTiming() );
+      
       // Wrap list so that currentOrdinal is updated whenever the list
       // is accessed. The list is immutable, because we don't override
       // AbstractList.set(int, Object).
