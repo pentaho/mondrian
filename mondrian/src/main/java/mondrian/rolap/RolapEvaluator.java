@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2020 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 //
 // jhyde, 10 August, 2001
@@ -1043,6 +1043,10 @@ public class RolapEvaluator implements Evaluator {
         assert member != null;
         key.add( member );
       }
+    }
+    // See MONDRIAN-2713
+    if ( aggregationLists != null ) {
+      key.add( aggregationLists );
     }
     return key;
   }

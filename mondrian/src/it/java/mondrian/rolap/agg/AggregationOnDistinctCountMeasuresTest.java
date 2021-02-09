@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+// Copyright (c) 2002-2021 Hitachi Vantara..  All rights reserved.
 */
 package mondrian.rolap.agg;
 
@@ -1614,6 +1614,98 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             true,
             true);
     }
+    
+    /**
+     * Verify that the CACHE MDX function includes aggregation lists in the current
+     * evaluation context.  In this test, the CM with solve order 20 will set an aggregation
+     * list for the distinct count measure.  The cache key on the CM with solve order 10
+     * needs to include the aggregation list or else the cache generated for 
+     * [Gender].[F], [Store Type].[*TOTAL_MEMBER_SEL~AGG] would be re-used for
+     * [Gender].[M], [Store Type].[*TOTAL_MEMBER_SEL~AGG]
+     * 
+     */
+    public void testCachedAggregate() {
+      
+      assertQueryReturns(
+          " WITH\r\n" + 
+          " SET [*NATIVE_CJ_SET_WITH_SLICER] AS 'NONEMPTYCROSSJOIN([*BASE_MEMBERS__Gender_],NONEMPTYCROSSJOIN([*BASE_MEMBERS__Store Type_],[*BASE_MEMBERS__Product_]))'\r\n" + 
+          " SET [*NATIVE_CJ_SET] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Gender].CURRENTMEMBER,[Store Type].CURRENTMEMBER)})'\r\n" + 
+          " SET [*BASE_MEMBERS__Store Type_] AS '{[Store Type].[All Store Types].[Gourmet Supermarket],[Store Type].[All Store Types].[Supermarket]}'\r\n" + 
+          " SET [*BASE_MEMBERS__Gender_] AS '[Gender].[Gender].MEMBERS'\r\n" + 
+          " SET [*CJ_SLICER_AXIS] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Product].CURRENTMEMBER)})'\r\n" + 
+          " SET [*BASE_MEMBERS__Product_] AS '{[Product].[All Products].[Food],[Product].[All Products].[Drink]}'\r\n" + 
+          " SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Gender].CURRENTMEMBER,[Store Type].CURRENTMEMBER)})'\r\n" + 
+          " MEMBER [Store Type].[*TOTAL_MEMBER_SEL~AGG] AS '([Education Level].[*TOTAL_MEMBER_SEL~AGG], [Time].[*TOTAL_MEMBER_SEL~AGG])'\r\n" + 
+          " MEMBER [Education Level].[*TOTAL_MEMBER_SEL~AGG] AS 'CACHE(AGGREGATE([*CJ_SLICER_AXIS]))', SOLVE_ORDER=10\r\n" + 
+          " MEMBER [Time].[*TOTAL_MEMBER_SEL~AGG] AS 'AGGREGATE(EXISTS([*CJ_ROW_AXIS],([Gender].CURRENTMEMBER)))', SOLVE_ORDER=20\r\n" + 
+          " SELECT\r\n" + 
+          " {[Measures].[Customer Count]} ON COLUMNS\r\n" + 
+          " , NON EMPTY\r\n" + 
+          " UNION(CROSSJOIN(GENERATE([*CJ_ROW_AXIS], {([Gender].CURRENTMEMBER)}),{[Store Type].[*TOTAL_MEMBER_SEL~AGG]}),[*CJ_ROW_AXIS]) ON ROWS\r\n" + 
+          " FROM [Sales]\r\n",
+          "Axis #0:\n"
+              + "{}\n"
+              + "Axis #1:\n"
+              + "{[Measures].[Customer Count]}\n"
+              + "Axis #2:\n"
+              + "{[Gender].[F], [Store Type].[*TOTAL_MEMBER_SEL~AGG]}\n"
+              + "{[Gender].[M], [Store Type].[*TOTAL_MEMBER_SEL~AGG]}\n"
+              + "{[Gender].[F], [Store Type].[Gourmet Supermarket]}\n"
+              + "{[Gender].[F], [Store Type].[Supermarket]}\n"
+              + "{[Gender].[M], [Store Type].[Gourmet Supermarket]}\n"
+              + "{[Gender].[M], [Store Type].[Supermarket]}\n"
+              + "Row #0: 2,044\n"
+              + "Row #1: 2,084\n"
+              + "Row #2: 519\n"
+              + "Row #3: 1,896\n"
+              + "Row #4: 540\n"
+              + "Row #5: 1,945\n");
+  }
+    
+    /**
+     * Similar to above test except now we verify the cache key is correct when generated for
+     * the slicer compound member. 
+     */
+    public void testCachedCompoundSlicer() {
+      
+      assertQueryReturns(
+          " WITH\r\n" + 
+          " SET [*NATIVE_CJ_SET_WITH_SLICER] AS 'NONEMPTYCROSSJOIN([*BASE_MEMBERS__Gender_],NONEMPTYCROSSJOIN([*BASE_MEMBERS__Store Type_],[*BASE_MEMBERS__Product_]))'\r\n" + 
+          " SET [*NATIVE_CJ_SET] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Gender].CURRENTMEMBER,[Store Type].CURRENTMEMBER)})'\r\n" + 
+          " SET [*BASE_MEMBERS__Store Type_] AS '{[Store Type].[All Store Types].[Gourmet Supermarket],[Store Type].[All Store Types].[Supermarket]}'\r\n" + 
+          " SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[Gender].CURRENTMEMBER.ORDERKEY,BASC,[Store Type].CURRENTMEMBER.ORDERKEY,BASC)'\r\n" + 
+          " SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0]}'\r\n" + 
+          " SET [*BASE_MEMBERS__Gender_] AS '[Gender].[Gender].MEMBERS'\r\n" + 
+          " SET [*CJ_SLICER_AXIS] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Product].CURRENTMEMBER)})'\r\n" + 
+          " SET [*BASE_MEMBERS__Product_] AS '{[Product].[All Products].[Food],[Product].[All Products].[Drink]}'\r\n" + 
+          " SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Gender].CURRENTMEMBER,[Store Type].CURRENTMEMBER)})'\r\n" + 
+          " MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Customer Count]', FORMAT_STRING = '#,###', SOLVE_ORDER=500\r\n" + 
+          " MEMBER [Store Type].[*TOTAL_MEMBER_SEL~AGG] AS 'AGGREGATE(CACHEDEXISTS([*CJ_ROW_AXIS],([Gender].CURRENTMEMBER),\"[*CJ_ROW_AXIS]\"))', SOLVE_ORDER=-101\r\n" + 
+          " SELECT\r\n" + 
+          " [*BASE_MEMBERS__Measures_] ON COLUMNS\r\n" + 
+          " , NON EMPTY\r\n" + 
+          " UNION(CROSSJOIN(GENERATE([*CJ_ROW_AXIS], {([Gender].CURRENTMEMBER)}),{[Store Type].[*TOTAL_MEMBER_SEL~AGG]}),[*SORTED_ROW_AXIS]) ON ROWS\r\n" + 
+          " FROM [Sales]\r\n" + 
+          " WHERE ([*CJ_SLICER_AXIS])\r\n",
+          "Axis #0:\n"
+              + "{[Product].[Drink]}\n"
+              + "{[Product].[Food]}\n"
+              + "Axis #1:\n"
+              + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+              + "Axis #2:\n"
+              + "{[Gender].[F], [Store Type].[*TOTAL_MEMBER_SEL~AGG]}\n"
+              + "{[Gender].[M], [Store Type].[*TOTAL_MEMBER_SEL~AGG]}\n"
+              + "{[Gender].[F], [Store Type].[Gourmet Supermarket]}\n"
+              + "{[Gender].[F], [Store Type].[Supermarket]}\n"
+              + "{[Gender].[M], [Store Type].[Gourmet Supermarket]}\n"
+              + "{[Gender].[M], [Store Type].[Supermarket]}\n"
+              + "Row #0: 2,044\n"
+              + "Row #1: 2,084\n"
+              + "Row #2: 512\n" // Less than 519 above because slicer was applied
+              + "Row #3: 1,884\n"
+              + "Row #4: 531\n"
+              + "Row #5: 1,929\n");
+  }
 }
 
 // End AggregationOnDistinctCountMeasuresTest.java
