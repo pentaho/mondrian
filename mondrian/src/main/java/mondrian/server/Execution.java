@@ -425,6 +425,14 @@ public class Execution {
      */
     FRESH, RUNNING, ERROR, CANCELED, TIMEOUT, DONE,
   }
+
+  public int getExpCacheHitCount() {
+    return expCacheHitCount;
+  }
+
+  public int getExpCacheMissCount() {
+    return expCacheMissCount;
+  }
 }
 
 // End Execution.java
