@@ -934,6 +934,13 @@ public class RolapMemberBase
         if ((key instanceof Number) && name.endsWith(".0")) {
             name = name.substring(0, name.length() - 2);
         }
+        // PATCH: MONDRIAN-2703 Do not return big integers in scientific notation
+        else if (key instanceof Double && name.indexOf("E") > 0) {
+            long longValue = ((Double) key).longValue();
+            if (longValue == ((Double) key).doubleValue()) {
+                name = String.valueOf(longValue);
+            }
+        }
         return name;
     }
 
