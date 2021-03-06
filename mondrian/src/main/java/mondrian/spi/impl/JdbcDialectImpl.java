@@ -134,7 +134,9 @@ public class JdbcDialectImpl implements Dialect {
         typeMapInitial.put(Types.BOOLEAN, SqlStatement.Type.INT);
         typeMapInitial.put(Types.DOUBLE, SqlStatement.Type.DOUBLE);
         typeMapInitial.put(Types.FLOAT, SqlStatement.Type.DOUBLE);
-        typeMapInitial.put(Types.BIGINT, SqlStatement.Type.DOUBLE);
+        // PATCH: MONDRIAN-2702 Map by default bigint type to Java long
+        // typeMapInitial.put(Types.BIGINT, SqlStatement.Type.DOUBLE);
+        typeMapInitial.put(Types.BIGINT, SqlStatement.Type.LONG);
 
         DEFAULT_TYPE_MAP = Collections.unmodifiableMap(typeMapInitial);
     }
