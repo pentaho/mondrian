@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 //
 // jhyde, 21 March, 2002
@@ -287,6 +287,7 @@ public class Segment {
             case INT:
                 return new DenseIntSegmentDataset(axes, size);
             case DOUBLE:
+            case DECIMAL:
                 return new DenseDoubleSegmentDataset(axes, size);
             default:
                 throw Util.unexpected(type);
