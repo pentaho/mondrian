@@ -379,7 +379,13 @@ public class SqlStatement {
       case OBJECT:
         return new Accessor() {
           public Object get() throws SQLException {
-            return resultSet.getObject( columnPlusOne );
+            // PATCH: MONDRIAN-2714 MySQL 8.0.23 JDBC driver returns java.time.LocalDateTime values for datetime columns.
+            // This data type isn't inherited from java.util.Date and isn't recognized as Date.
+            Object val = resultSet.getObject( columnPlusOne );
+            if (val instanceof java.time.LocalDateTime) {
+              val = java.sql.Timestamp.valueOf((java.time.LocalDateTime) val);
+            }
+            return val;
           }
         };
       case STRING:
@@ -547,7 +553,13 @@ public class SqlStatement {
     public Object get( ResultSet resultSet, int column ) throws SQLException {
       switch ( this ) {
         case OBJECT:
-          return resultSet.getObject( column + 1 );
+          // PATCH: MONDRIAN-2714 MySQL 8.0.23 JDBC driver returns java.time.LocalDateTime values for datetime columns.
+          // This data type isn't inherited from java.util.Date and isn't recognized as Date.
+          Object val = resultSet.getObject( column + 1 );
+          if (val instanceof java.time.LocalDateTime) {
+            val = java.sql.Timestamp.valueOf((java.time.LocalDateTime) val);
+          }
+          return val;
         case STRING:
           return resultSet.getString( column + 1 );
         case INT:
