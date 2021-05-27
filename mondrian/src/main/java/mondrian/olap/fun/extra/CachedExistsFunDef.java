@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2019 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2021 Hitachi Vantara.  All rights reserved.
 */
 
 package mondrian.olap.fun.extra;
@@ -117,28 +117,42 @@ public class CachedExistsFunDef extends FunDefBase {
   /**
    * Returns a list of hierarchies used by the input type.
    * 
+   * If an input type is a dimension instead of a hierarchy, then return
+   * the dimension's default hierarchy.  See MONDRIAN-2704
+   * 
    * @param t
    * @return
    */
-  private List<Hierarchy> getHierarchies(Type t) {
+  private List<Hierarchy> getHierarchies( Type t ) {
     List<Hierarchy> hiers = new ArrayList<Hierarchy>();
-    if (t instanceof MemberType) {
-      hiers.add( ((MemberType) t).getHierarchy());
-      return hiers;
-    } else if (t instanceof TupleType) {
-      return ((TupleType)t).getHierarchies();
-    } else if (t instanceof SetType) {
+    if ( t instanceof MemberType ) {
+      hiers.add( getHierarchy( t ) );
+    } else if ( t instanceof TupleType ) {
+      TupleType tupleType = (TupleType) t;
+      for ( Type elementType : tupleType.elementTypes ) {
+        hiers.add( getHierarchy( elementType ) );
+      }
+    } else if ( t instanceof SetType ) {
       SetType setType = (SetType) t;
-      if (setType.getElementType() instanceof MemberType) {
-        hiers.add( ((MemberType) setType.getElementType()).getHierarchy());
-        return hiers;
-      } else if (setType.getElementType() instanceof TupleType) {
-        return ((TupleType)setType.getElementType()).getHierarchies();
+      if ( setType.getElementType() instanceof MemberType ) {
+        hiers.add( getHierarchy( setType.getElementType() ) );
+      } else if ( setType.getElementType() instanceof TupleType ) {
+        TupleType tupleTypes = (TupleType) setType.getElementType();
+        for ( Type elementType : tupleTypes.elementTypes ) {
+          hiers.add( getHierarchy( elementType ) );
+        }
       }
     }
-    throw new IllegalStateException();
+    return hiers;
   }
 
+  private Hierarchy getHierarchy( Type t ) {
+    if ( t.getHierarchy() != null ) {
+      return t.getHierarchy();
+    }
+    return t.getDimension().getHierarchy();
+  }
+  
   /**
    * Generates a subtotal key for the input tuple based on the
    * type of the input subtotal tuple.
