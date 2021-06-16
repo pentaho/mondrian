@@ -5,12 +5,21 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2020 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 //
 // jhyde, 21 January, 1999
 */
 package mondrian.test;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -25,6 +34,7 @@ import mondrian.olap.NullMemberRepresentationTest;
 import mondrian.olap.ParserTest;
 import mondrian.olap.QueryTest;
 import mondrian.olap.UtilTestCase;
+import mondrian.olap.fun.CachedExistsTest;
 import mondrian.olap.fun.CrossJoinTest;
 import mondrian.olap.fun.FunctionTest;
 import mondrian.olap.fun.IifFunDefTest;
@@ -176,14 +186,6 @@ import mondrian.xmla.XmlaTabularTest;
 import mondrian.xmla.XmlaTests;
 import mondrian.xmla.impl.DynamicDatasourceXmlaServletTest;
 import mondrian.xmla.test.XmlaTest;
-import org.apache.log4j.Logger;
-
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * Main test suite for Mondrian.
@@ -491,6 +493,9 @@ public class Main extends TestSuite {
       addTest( suite, RolapCubeDimensionTest.class );
       addTest( suite, RolapUtilTest.class );
       addTest( suite, AggSchemaScanTest.class );
+      addTest( suite, MdcUtilTest.class );
+      addTest( suite, CachedExistsTest.class );
+      addTest( suite, ExplainPlanTest.class );
 
       // Must be the last test.
       addTest( suite, TerminatorTest.class );

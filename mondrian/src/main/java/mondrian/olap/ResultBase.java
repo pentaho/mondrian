@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 
@@ -145,9 +145,13 @@ public abstract class ResultBase implements Result {
         }
         return hierarchy.getHierarchy().getDefaultMember();
     }
+    
+  public Execution getExecution() {
+    return execution;
+  }
 
-    public void close() {
-    }
+  public void close() {
+  }
 }
 
 // End ResultBase.java

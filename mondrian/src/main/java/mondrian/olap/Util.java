@@ -5,52 +5,10 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.olap;
-
-import mondrian.mdx.DimensionExpr;
-import mondrian.mdx.HierarchyExpr;
-import mondrian.mdx.LevelExpr;
-import mondrian.mdx.MemberExpr;
-import mondrian.mdx.NamedSetExpr;
-import mondrian.mdx.ParameterExpr;
-import mondrian.mdx.QueryPrintWriter;
-import mondrian.mdx.ResolvedFunCall;
-import mondrian.mdx.UnresolvedFunCall;
-import mondrian.olap.fun.FunUtil;
-import mondrian.olap.fun.Resolver;
-import mondrian.olap.fun.sort.Sorter;
-import mondrian.olap.type.Type;
-import mondrian.resource.MondrianResource;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapCubeDimension;
-import mondrian.rolap.RolapLevel;
-import mondrian.rolap.RolapMember;
-import mondrian.rolap.RolapUtil;
-import mondrian.spi.UserDefinedFunction;
-import mondrian.util.ArraySortedSet;
-import mondrian.util.ConcatenableList;
-import mondrian.util.Pair;
-import mondrian.util.UtilCompatible;
-import mondrian.util.UtilCompatibleJdk16;
-import org.apache.commons.collections.keyvalue.AbstractMapEntry;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.vfs2.FileContent;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileSystemManager;
-import org.apache.commons.vfs2.VFS;
-import org.apache.commons.vfs2.provider.http.HttpFileObject;
-import org.apache.log4j.Logger;
-import org.eigenbase.xom.XOMUtil;
-import org.olap4j.impl.Olap4jUtil;
-import org.olap4j.mdx.IdentifierNode;
-import org.olap4j.mdx.IdentifierSegment;
-import org.olap4j.mdx.KeySegment;
-import org.olap4j.mdx.NameSegment;
-import org.olap4j.mdx.Quoting;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -88,7 +46,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -115,6 +72,51 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.collections.keyvalue.AbstractMapEntry;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.vfs2.FileContent;
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemManager;
+import org.apache.commons.vfs2.VFS;
+import org.apache.commons.vfs2.provider.http.HttpFileObject;
+import org.apache.log4j.Logger;
+import org.eigenbase.xom.XOMUtil;
+import org.olap4j.impl.Olap4jUtil;
+import org.olap4j.mdx.IdentifierNode;
+import org.olap4j.mdx.IdentifierSegment;
+import org.olap4j.mdx.KeySegment;
+import org.olap4j.mdx.NameSegment;
+import org.olap4j.mdx.Quoting;
+
+import mondrian.calc.Calc;
+import mondrian.calc.CalcWriter;
+import mondrian.mdx.DimensionExpr;
+import mondrian.mdx.HierarchyExpr;
+import mondrian.mdx.LevelExpr;
+import mondrian.mdx.MemberExpr;
+import mondrian.mdx.NamedSetExpr;
+import mondrian.mdx.ParameterExpr;
+import mondrian.mdx.QueryPrintWriter;
+import mondrian.mdx.UnresolvedFunCall;
+import mondrian.olap.fun.FunUtil;
+import mondrian.olap.fun.Resolver;
+import mondrian.olap.fun.sort.Sorter;
+import mondrian.olap.type.Type;
+import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapCubeDimension;
+import mondrian.rolap.RolapLevel;
+import mondrian.rolap.RolapMember;
+import mondrian.rolap.RolapUtil;
+import mondrian.spi.ProfileHandler;
+import mondrian.spi.UserDefinedFunction;
+import mondrian.util.ArraySortedSet;
+import mondrian.util.ConcatenableList;
+import mondrian.util.Pair;
+import mondrian.util.UtilCompatible;
+import mondrian.util.UtilCompatibleJdk16;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.
@@ -4450,23 +4452,6 @@ public class Util extends XOMUtil {
         }
     }
 
-    public static Map<Hierarchy, Set<Member>> getMembersToHierarchyMap(List<Member> members){
-        Map<Hierarchy, Set<Member>> map =
-                new HashMap<Hierarchy, Set<Member>>();
-        if (members != null) {
-            for (Member member : members) {
-                Hierarchy hierarchy = member.getHierarchy();
-                if (!map.containsKey(hierarchy)) {
-                    map.put(
-                            hierarchy,
-                            new HashSet<>());
-                }
-                map.get(hierarchy).add(member);
-            }
-        }
-        return map;
-    }
-
     /**
      * Transforms a list into a map for which all the keys return
      * a null value associated to it.
@@ -4579,6 +4564,30 @@ public class Util extends XOMUtil {
             }
         }
     }
+    
+  /**
+   * Called during major steps of executing a MDX query to provide insight into Calc calls/times
+   * and key function calls/times.
+   * 
+   * @param handler
+   * @param title
+   * @param calc
+   * @param timing
+   */
+  public static void explain( ProfileHandler handler, String title, Calc calc, QueryTiming timing ) {
+    if ( handler == null ) {
+      return;
+    }
+    final StringWriter stringWriter = new StringWriter();
+    final PrintWriter printWriter = new PrintWriter( stringWriter );
+    final CalcWriter calcWriter = new CalcWriter( printWriter, true );
+    printWriter.println( title );
+    if ( calc != null ) {
+      calc.accept( calcWriter );
+    }
+    printWriter.close();
+    handler.explain( stringWriter.toString(), timing );
+  }
 }
 
 // End Util.java

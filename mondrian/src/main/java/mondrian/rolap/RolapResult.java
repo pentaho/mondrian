@@ -5,10 +5,23 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2020 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
 
 import mondrian.calc.Calc;
 import mondrian.calc.DummyExp;
@@ -64,22 +77,8 @@ import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.spi.CellFormatter;
 import mondrian.util.CancellationChecker;
-import mondrian.util.ConcatenableList;
 import mondrian.util.Format;
 import mondrian.util.ObjectPool;
-import org.apache.log4j.Logger;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
 
 /**
  * A <code>RolapResult</code> is the result of running a query.
@@ -99,42 +98,33 @@ public class RolapResult extends ResultBase {
   private FastBatchingCellReader batchingReader;
   private final CellReader aggregatingReader;
   private Modulos modulos = null;
-  private final int maxEvalDepth =
-    MondrianProperties.instance().MaxEvalDepth.get();
+  private final int maxEvalDepth = MondrianProperties.instance().MaxEvalDepth.get();
 
-  private final Map<Integer, Boolean> positionsHighCardinality =
-    new HashMap<Integer, Boolean>();
-  private final Map<Integer, TupleCursor> positionsIterators =
-    new HashMap<Integer, TupleCursor>();
-  private final Map<Integer, Integer> positionsIndexes =
-    new HashMap<Integer, Integer>();
-  private final Map<Integer, List<List<Member>>> positionsCurrent =
-    new HashMap<Integer, List<List<Member>>>();
+  private final Map<Integer, Boolean> positionsHighCardinality = new HashMap<Integer, Boolean>();
+  private final Map<Integer, TupleCursor> positionsIterators = new HashMap<Integer, TupleCursor>();
+  private final Map<Integer, Integer> positionsIndexes = new HashMap<Integer, Integer>();
+  private final Map<Integer, List<List<Member>>> positionsCurrent = new HashMap<Integer, List<List<Member>>>();
 
   /**
    * Creates a RolapResult.
    *
-   * @param execution Execution of a statement
-   * @param execute   Whether to execute the query
+   * @param execution
+   *          Execution of a statement
+   * @param execute
+   *          Whether to execute the query
    */
-  RolapResult(
-    final Execution execution,
-    boolean execute ) {
+  RolapResult( final Execution execution, boolean execute ) {
     super( execution, null );
 
     this.point = CellKey.Generator.newCellKey( axes.length );
     final AggregationManager aggMgr =
-      execution.getMondrianStatement()
-        .getMondrianConnection()
-        .getServer().getAggregationManager();
+        execution.getMondrianStatement().getMondrianConnection().getServer().getAggregationManager();
     this.aggregatingReader = aggMgr.getCacheCellReader();
-    final int expDeps =
-      MondrianProperties.instance().TestExpDependencies.get();
+    final int expDeps = MondrianProperties.instance().TestExpDependencies.get();
     if ( expDeps > 0 ) {
       this.evaluator = new RolapDependencyTestingEvaluator( this, expDeps );
     } else {
-      final RolapEvaluatorRoot root =
-        new RolapResultEvaluatorRoot( this );
+      final RolapEvaluatorRoot root = new RolapResultEvaluatorRoot( this );
       if ( statement.getProfileHandler() != null ) {
         this.evaluator = new RolapProfilingEvaluator( root );
       } else {
@@ -142,13 +132,9 @@ public class RolapResult extends ResultBase {
       }
     }
     RolapCube cube = (RolapCube) query.getCube();
-    this.batchingReader =
-      new FastBatchingCellReader( execution, cube, aggMgr );
+    this.batchingReader = new FastBatchingCellReader( execution, cube, aggMgr );
 
-    this.cellInfos =
-      ( query.axes.length > 4 )
-        ? new CellInfoMap( point )
-        : new CellInfoPool( query.axes.length );
+    this.cellInfos = ( query.axes.length > 4 ) ? new CellInfoMap( point ) : new CellInfoPool( query.axes.length );
 
     if ( !execute ) {
       return;
@@ -210,12 +196,12 @@ public class RolapResult extends ResultBase {
       // Next, load all root Members for Hierarchies that have no ALL
       // Member and load ALL Members that are not the default Member.
       //
-      // Determine the Members of the Slicer axis (Step 1 above).  Any
+      // Determine the Members of the Slicer axis (Step 1 above). Any
       // Members found are added to the AxisMember object. If one of these
       // Members happens to be a Measure, then the Slicer is explicitly
       // specifying the query's Measure and this should be put into the
       // evaluator's context (replacing the default Measure which just
-      // happens to be the first Measure defined in the cube).  Other
+      // happens to be the first Measure defined in the cube). Other
       // Members found in the AxisMember object are also placed into the
       // evaluator's context since these also are explicitly specified.
       // Also, any other Members in the AxisMember object which have the
@@ -253,11 +239,9 @@ public class RolapResult extends ResultBase {
       //
       /////////////////////////////////////////////////////////////////
 
-
       // The AxisMember object is used to hold Members that are found
       // during Step 1 when the Axes are determined.
       final AxisMemberList axisMembers = new AxisMemberList();
-
 
       // list of ALL Members that are not default Members
       final List<Member> nonDefaultAllMembers = new ArrayList<Member>();
@@ -271,8 +255,7 @@ public class RolapResult extends ResultBase {
       // load all root Members for Hierarchies that have no ALL
       // Member and load ALL Members that are not the default Member.
       // Also, all Measures are are gathered.
-      loadSpecialMembers(
-        nonDefaultAllMembers, nonAllMembers, measureMembers );
+      loadSpecialMembers( nonDefaultAllMembers, nonAllMembers, measureMembers );
 
       // clear evaluation cache
       query.clearEvalCache();
@@ -280,9 +263,7 @@ public class RolapResult extends ResultBase {
       // Save, may be needed by some Expression Calc's
       query.putEvalCache( "ALL_MEMBER_LIST", nonDefaultAllMembers );
 
-
-      final List<List<Member>> emptyNonAllMembers =
-        Collections.emptyList();
+      final List<List<Member>> emptyNonAllMembers = Collections.emptyList();
 
       // Initial evaluator, to execute slicer.
       // Used by named sets in slicer
@@ -292,12 +273,7 @@ public class RolapResult extends ResultBase {
       // Determine Slicer
       //
       axisMembers.setSlicer( true );
-      loadMembers(
-        emptyNonAllMembers,
-        evaluator,
-        query.getSlicerAxis(),
-        query.slicerCalc,
-        axisMembers );
+      loadMembers( emptyNonAllMembers, evaluator, query.getSlicerAxis(), query.slicerCalc, axisMembers );
       axisMembers.setSlicer( false );
 
       // Save unadulterated context for the next time we need to evaluate
@@ -305,16 +281,14 @@ public class RolapResult extends ResultBase {
       final RolapEvaluator savedEvaluator = evaluator.push();
 
       if ( !axisMembers.isEmpty() ) {
-        for ( Member m : axisMembers ) {
-          if ( m == null ) {
-            break;
-          }
-          evaluator.setSlicerContext( m );
-          if ( m.isMeasure() ) {
+        evaluator.setSlicerContext( axisMembers.getMembers(), axisMembers.getMembersByHierarchy() );
+        for ( Hierarchy h : axisMembers.getMembersByHierarchy().keySet() ) {
+          if ( h.getDimension().isMeasures() ) {
             // A Measure was explicitly declared in the
             // Slicer, don't need to worry about Measures
             // for this query.
             measureMembers.clear();
+            break;
           }
         }
         replaceNonAllMembers( nonAllMembers, axisMembers );
@@ -331,83 +305,65 @@ public class RolapResult extends ResultBase {
       RolapEvaluator internalSlicerEvaluator;
       do {
         TupleIterable tupleIterable =
-          evalExecute(
-            nonAllMembers,
-            nonAllMembers.size() - 1,
-            savedEvaluator,
-            query.getSlicerAxis(),
-            query.slicerCalc );
+            evalExecute( nonAllMembers, nonAllMembers.size() - 1, savedEvaluator, query.getSlicerAxis(),
+                query.slicerCalc );
         // Materialize the iterable as a list. Although it may take
         // memory, we need the first member below, and besides, slicer
         // axes are generally small.
-        TupleList tupleList =
-          TupleCollections.materialize( tupleIterable, true );
+        TupleList tupleList = TupleCollections.materialize( tupleIterable, true );
 
         this.slicerAxis = new RolapAxis( tupleList );
         // the slicerAxis may be overwritten during slicer execution
-        // if there is a compound slicer.  Save it so that it can be
+        // if there is a compound slicer. Save it so that it can be
         // reverted before completing result construction.
         savedSlicerAxis = this.slicerAxis;
 
         // Use the context created by the slicer for the other
-        // axes.  For example, "select filter([Customers], [Store
+        // axes. For example, "select filter([Customers], [Store
         // Sales] > 100) on columns from Sales where
         // ([Time].[1998])" should show customers whose 1998 (not
         // total) purchases exceeded 100.
         internalSlicerEvaluator = this.evaluator;
         if ( tupleList.size() > 1 ) {
-          tupleList =
-            removeUnaryMembersFromTupleList(
-              tupleList, evaluator );
-          tupleList =
-            AggregateFunDef.AggregateCalc.optimizeTupleList(
-              evaluator,
-              tupleList,
-              false );
+          tupleList = removeUnaryMembersFromTupleList( tupleList, evaluator );
+          tupleList = AggregateFunDef.AggregateCalc.optimizeTupleList( evaluator, tupleList, false );
           evaluator.setSlicerTuples( tupleList );
 
-          final Calc valueCalc =
-            new ValueCalc(
-              new DummyExp( new ScalarType() ) );
+          final Calc valueCalc = new ValueCalc( new DummyExp( new ScalarType() ) );
 
-          final List<Member> prevSlicerMembers =
-            new ArrayList<Member>();
+          final List<Member> prevSlicerMembers = new ArrayList<Member>();
 
-          final Calc calcCached =
-            new GenericCalc(
-              new DummyExp( query.slicerCalc.getType() ) ) {
-              public Object evaluate( Evaluator evaluator ) {
-                TupleList list = AbstractAggregateFunDef
-                  .processUnrelatedDimensions(
-                    ( (RolapEvaluator) evaluator )
-                      .getOptimizedSlicerTuples( null ),
-                    evaluator );
+          final Calc calcCached = new GenericCalc( new DummyExp( query.slicerCalc.getType() ) ) {
+            public Object evaluate( Evaluator evaluator ) {
+              try {
+                evaluator.getTiming().markStart( "EvalForSlicer" );
+                TupleList list =
+                    AbstractAggregateFunDef.processUnrelatedDimensions( ( (RolapEvaluator) evaluator )
+                        .getOptimizedSlicerTuples( null ), evaluator );
                 for ( Member member : prevSlicerMembers ) {
-                  if ( evaluator.getContext(
-                    member.getHierarchy() )
-                    instanceof CompoundSlicerRolapMember ) {
+                  if ( evaluator.getContext( member.getHierarchy() ) instanceof CompoundSlicerRolapMember ) {
                     evaluator.setContext( member );
                   }
                 }
-                return AggregateFunDef.AggregateCalc.aggregate(
-                  valueCalc, evaluator, list );
+                return AggregateFunDef.AggregateCalc.aggregate( valueCalc, evaluator, list );
+              } finally {
+                evaluator.getTiming().markEnd( "EvalForSlicer" );
               }
 
-              // depend on the full evaluation context
-              public boolean dependsOn( Hierarchy hierarchy ) {
-                return true;
-              }
-            };
+            }
+
+            // depend on the full evaluation context
+            public boolean dependsOn( Hierarchy hierarchy ) {
+              return true;
+            }
+          };
 
           final ExpCacheDescriptor cacheDescriptor =
-            new ExpCacheDescriptor(
-              query.getSlicerAxis().getSet(),
-              calcCached,
-              evaluator );
-          // generate a cached calculation for slicer aggregation
-          final Calc calc = new CacheCalc(
-            query.getSlicerAxis().getSet(),
-            cacheDescriptor );
+              new ExpCacheDescriptor( query.getSlicerAxis().getSet(), calcCached, evaluator );
+          // Generate a cached calculation for slicer aggregation
+          // This is so critical for performance that we should consider creating an
+          // optimized query level slicer cache.
+          final Calc calc = new CacheCalc( query.getSlicerAxis().getSet(), cacheDescriptor );
 
           // replace the slicer set with a placeholder to avoid
           // interaction between the aggregate calc we just created
@@ -417,18 +373,18 @@ public class RolapResult extends ResultBase {
           // to use as placeholder.
           if ( tupleList.get( 0 ).size() > 1 ) {
             for ( int i = 1; i < tupleList.get( 0 ).size(); i++ ) {
-              Member placeholder = setPlaceholderSlicerAxis(
-                (RolapMember) tupleList.get( 0 ).get( i ),
-                calc,
-                false,
-                tupleList );
-              prevSlicerMembers.add(
-                evaluator.setContext( placeholder ) );
+              Member placeholder =
+                  setPlaceholderSlicerAxis( (RolapMember) tupleList.get( 0 ).get( i ), calc, false, tupleList );
+              prevSlicerMembers.add( evaluator.setContext( placeholder ) );
             }
           }
 
-          Member placeholder = setPlaceholderSlicerAxis(
-            (RolapMember) tupleList.get( 0 ).get( 0 ), calc, true, tupleList );
+          Member placeholder =
+              setPlaceholderSlicerAxis( (RolapMember) tupleList.get( 0 ).get( 0 ), calc, true, tupleList );
+
+          Util.explain( evaluator.root.statement.getProfileHandler(), "Axis (FILTER):", query.slicerCalc, evaluator
+              .getTiming() );
+
           evaluator.setContext( placeholder );
         }
       } while ( phase() );
@@ -445,10 +401,9 @@ public class RolapResult extends ResultBase {
       axisMembers.clearTotalCellCount();
 
       for ( int i = 0; i < axes.length; i++ ) {
-        final QueryAxis axis = query.axes[ i ];
-        final Calc calc = query.axisCalcs[ i ];
-        loadMembers(
-          emptyNonAllMembers, evaluator, axis, calc, axisMembers );
+        final QueryAxis axis = query.axes[i];
+        final Calc calc = query.axisCalcs[i];
+        loadMembers( emptyNonAllMembers, evaluator, axis, calc, axisMembers );
       }
 
       if ( !axisMembers.isEmpty() ) {
@@ -473,12 +428,9 @@ public class RolapResult extends ResultBase {
         final int savepoint = evaluator.savepoint();
         try {
           for ( int i = 0; i < axes.length; i++ ) {
-            final QueryAxis axis = query.axes[ i ];
-            final Calc calc = query.axisCalcs[ i ];
-            loadMembers(
-              nonAllMembers,
-              evaluator,
-              axis, calc, axisMembers );
+            final QueryAxis axis = query.axes[i];
+            final Calc calc = query.axisCalcs[i];
+            loadMembers( nonAllMembers, evaluator, axis, calc, axisMembers );
             evaluator.restore( savepoint );
           }
         } finally {
@@ -500,42 +452,36 @@ public class RolapResult extends ResultBase {
             evaluator.restore( savepoint );
             redo = false;
             for ( int i = 0; i < axes.length; i++ ) {
-              QueryAxis axis = query.axes[ i ];
-              final Calc calc = query.axisCalcs[ i ];
+              QueryAxis axis = query.axes[i];
+              final Calc calc = query.axisCalcs[i];
               TupleIterable tupleIterable =
-                evalExecute(
-                  nonAllMembers,
-                  nonAllMembers.size() - 1,
-                  evaluator,
-                  axis,
-                  calc );
+                  evalExecute( nonAllMembers, nonAllMembers.size() - 1, evaluator, axis, calc );
 
               if ( !nonAllMembers.isEmpty() ) {
-                final TupleIterator tupleIterator =
-                  tupleIterable.tupleIterator();
+                final TupleIterator tupleIterator = tupleIterable.tupleIterator();
                 if ( tupleIterator.hasNext() ) {
                   List<Member> tuple0 = tupleIterator.next();
                   // Only need to process the first tuple on
                   // the axis.
                   for ( Member m : tuple0 ) {
                     if ( m.isCalculated() ) {
-                      CalculatedMeasureVisitor visitor =
-                        new CalculatedMeasureVisitor();
+                      CalculatedMeasureVisitor visitor = new CalculatedMeasureVisitor();
                       m.getExpression().accept( visitor );
-                      Dimension dimension =
-                        visitor.dimension;
-                      if ( removeDimension(
-                        dimension, nonAllMembers ) ) {
+                      Dimension dimension = visitor.dimension;
+                      if ( removeDimension( dimension, nonAllMembers ) ) {
                         redo = true;
                       }
                     }
                   }
                 }
               }
-              this.axes[ i ] =
-                new RolapAxis(
-                  TupleCollections.materialize(
-                    tupleIterable, false ) );
+              
+              if ( !redo ) {
+                Util.explain( evaluator.root.statement.getProfileHandler(), "Axis (" + axis.getAxisName() + "):", calc,
+                    evaluator.getTiming() );
+              }
+              
+              this.axes[i] = new RolapAxis( TupleCollections.materialize( tupleIterable, false ) );
             }
           } while ( redo );
         } catch ( CellRequestQuantumExceededException e ) {
@@ -549,9 +495,9 @@ public class RolapResult extends ResultBase {
       final Locus locus = new Locus( execution, null, "Loading cells" );
       Locus.push( locus );
       try {
-        executeBody(
-          internalSlicerEvaluator, query, new int[ axes.length ] );
+        executeBody( internalSlicerEvaluator, query, new int[axes.length] );
       } finally {
+        Util.explain( evaluator.root.statement.getProfileHandler(), "QueryBody:", null, evaluator.getTiming() );
         Locus.pop( locus );
       }
 
@@ -580,7 +526,7 @@ public class RolapResult extends ResultBase {
       cellInfos = null;
       batchingReader = null;
       for ( int i = 0; i < axes.length; i++ ) {
-        axes[ i ] = null;
+        axes[i] = null;
       }
       slicerAxis = null;
 
@@ -592,6 +538,7 @@ public class RolapResult extends ResultBase {
         // Expression cache duration is for each query. It is time to
         // clear out the whole expression cache at the end of a query.
         evaluator.clearExpResultCache( true );
+        execution.setExpCacheCounts( evaluator.root.expResultCacheHitCount, evaluator.root.expResultCacheMissCount );
       }
       if ( LOGGER.isDebugEnabled() ) {
         LOGGER.debug( "RolapResult<init>: " + Util.printMemory() );
@@ -602,11 +549,11 @@ public class RolapResult extends ResultBase {
   /**
    * Sets slicerAxis to a dummy placeholder RolapAxis containing a single item TupleList with the null member of
    * hierarchy. This is used with compound slicer evaluation to avoid the slicer tuple list from interacting with the
-   * aggregate calc which rolls up the set.  This member will contain the AggregateCalc which rolls up the set on the
+   * aggregate calc which rolls up the set. This member will contain the AggregateCalc which rolls up the set on the
    * slicer.
    */
-  private Member setPlaceholderSlicerAxis(
-    final RolapMember member, final Calc calc, boolean setAxis, TupleList tupleList ) {
+  private Member setPlaceholderSlicerAxis( final RolapMember member, final Calc calc, boolean setAxis,
+      TupleList tupleList ) {
     ValueFormatter formatter;
     if ( member.getDimension().isMeasures() ) {
       formatter = ( (RolapMeasure) member ).getFormatter();
@@ -615,17 +562,13 @@ public class RolapResult extends ResultBase {
     }
 
     CompoundSlicerRolapMember placeholderMember =
-      new CompoundSlicerRolapMember(
-        (RolapMember) member.getHierarchy().getNullMember(),
-        calc, formatter, tupleList );
+        new CompoundSlicerRolapMember( (RolapMember) member.getHierarchy().getNullMember(), calc, formatter,
+            tupleList );
 
-
-    placeholderMember.setProperty(
-      Property.FORMAT_STRING.getName(),
-      member.getPropertyValue( Property.FORMAT_STRING.getName() ) );
-    placeholderMember.setProperty(
-      Property.FORMAT_EXP_PARSED.getName(),
-      member.getPropertyValue( Property.FORMAT_EXP_PARSED.getName() ) );
+    placeholderMember.setProperty( Property.FORMAT_STRING.getName(), member.getPropertyValue( Property.FORMAT_STRING
+        .getName() ) );
+    placeholderMember.setProperty( Property.FORMAT_EXP_PARSED.getName(), member.getPropertyValue(
+        Property.FORMAT_EXP_PARSED.getName() ) );
 
     if ( setAxis ) {
       TupleList dummyList = TupleCollections.createList( 1 );
@@ -637,10 +580,8 @@ public class RolapResult extends ResultBase {
 
   private boolean phase() {
     if ( batchingReader.isDirty() ) {
-      execution.tracePhase(
-        batchingReader.getHitCount(),
-        batchingReader.getMissCount(),
-        batchingReader.getPendingCount() );
+      execution.tracePhase( batchingReader.getHitCount(), batchingReader.getMissCount(), batchingReader
+          .getPendingCount() );
       // flush the expression cache during each
       // phase of loading aggregations
       evaluator.clearExpResultCache( false );
@@ -658,12 +599,13 @@ public class RolapResult extends ResultBase {
    * This function removes single instance members from the compound slicer, enabling more regular slicer behavior for
    * those members. For instance, calculated members can override the context of these members correctly.
    *
-   * @param tupleList The list to shrink.
-   * @param evaluator The slicer evaluator.
+   * @param tupleList
+   *          The list to shrink.
+   * @param evaluator
+   *          The slicer evaluator.
    * @return a new list of tuples reduced in size.
    */
-  private TupleList removeUnaryMembersFromTupleList(
-    TupleList tupleList, RolapEvaluator evaluator ) {
+  private TupleList removeUnaryMembersFromTupleList( TupleList tupleList, RolapEvaluator evaluator ) {
     // we can remove any unary coordinates from the compound slicer, and
     // account for them in the slicer evaluator.
 
@@ -673,21 +615,21 @@ public class RolapResult extends ResultBase {
     for ( List<Member> tuple : tupleList ) {
       if ( first == null ) {
         first = tuple;
-        unary = new boolean[ tuple.size() ];
+        unary = new boolean[tuple.size()];
         for ( int i = 0; i < unary.length; i++ ) {
-          unary[ i ] = true;
+          unary[i] = true;
         }
       } else {
         for ( int i = 0; i < tuple.size(); i++ ) {
-          if ( unary[ i ] && !tuple.get( i ).equals( first.get( i ) ) ) {
-            unary[ i ] = false;
+          if ( unary[i] && !tuple.get( i ).equals( first.get( i ) ) ) {
+            unary[i] = false;
           }
         }
       }
     }
     int toRemove = 0;
     for ( int i = 0; i < unary.length; i++ ) {
-      if ( unary[ i ] ) {
+      if ( unary[i] ) {
         evaluator.setContext( first.get( i ) );
         toRemove++;
       }
@@ -695,14 +637,11 @@ public class RolapResult extends ResultBase {
 
     // remove the unnecessary members from the compound slicer
     if ( toRemove > 0 ) {
-      TupleList newList =
-        new ListTupleList(
-          tupleList.getArity() - toRemove,
-          new ArrayList<Member>() );
+      TupleList newList = new ListTupleList( tupleList.getArity() - toRemove, new ArrayList<Member>() );
       for ( List<Member> tuple : tupleList ) {
         List<Member> ntuple = new ArrayList<Member>();
         for ( int i = 0; i < tuple.size(); i++ ) {
-          if ( !unary[ i ] ) {
+          if ( !unary[i] ) {
             ntuple.add( tuple.get( i ) );
           }
         }
@@ -718,9 +657,7 @@ public class RolapResult extends ResultBase {
     super.close();
   }
 
-  protected boolean removeDimension(
-    Dimension dimension,
-    List<List<Member>> memberLists ) {
+  protected boolean removeDimension( Dimension dimension, List<List<Member>> memberLists ) {
     for ( int i = 0; i < memberLists.size(); i++ ) {
       List<Member> memberList = memberLists.get( i );
       if ( memberList.get( 0 ).getDimension().equals( dimension ) ) {
@@ -735,8 +672,7 @@ public class RolapResult extends ResultBase {
     return execution;
   }
 
-  private static class CalculatedMeasureVisitor
-    extends MdxVisitorImpl {
+  private static class CalculatedMeasureVisitor extends MdxVisitorImpl {
     Dimension dimension;
 
     CalculatedMeasureVisitor() {
@@ -760,13 +696,10 @@ public class RolapResult extends ResultBase {
     }
   }
 
-  protected boolean replaceNonAllMembers(
-    List<List<Member>> nonAllMembers,
-    AxisMemberList axisMembers ) {
+  protected boolean replaceNonAllMembers( List<List<Member>> nonAllMembers, AxisMemberList axisMembers ) {
     boolean changed = false;
     List<Member> mList = new ArrayList<Member>();
-    for ( ListIterator<List<Member>> it = nonAllMembers.listIterator();
-          it.hasNext(); ) {
+    for ( ListIterator<List<Member>> it = nonAllMembers.listIterator(); it.hasNext(); ) {
       List<Member> ms = it.next();
       Hierarchy h = ms.get( 0 ).getHierarchy();
       mList.clear();
@@ -783,25 +716,15 @@ public class RolapResult extends ResultBase {
     return changed;
   }
 
-  protected void loadMembers(
-    List<List<Member>> nonAllMembers,
-    RolapEvaluator evaluator,
-    QueryAxis axis,
-    Calc calc,
-    AxisMemberList axisMembers ) {
+  protected void loadMembers( List<List<Member>> nonAllMembers, RolapEvaluator evaluator, QueryAxis axis, Calc calc,
+      AxisMemberList axisMembers ) {
     int attempt = 0;
     evaluator.setCellReader( batchingReader );
     while ( true ) {
       axisMembers.clearAxisCount();
       final int savepoint = evaluator.savepoint();
       try {
-        evalLoad(
-          nonAllMembers,
-          nonAllMembers.size() - 1,
-          evaluator,
-          axis,
-          calc,
-          axisMembers );
+        evalLoad( nonAllMembers, nonAllMembers.size() - 1, evaluator, axis, calc, axisMembers );
       } catch ( CellRequestQuantumExceededException e ) {
         // Safe to ignore. Need to call 'phase' and loop again.
         // Decrement count because it wasn't a recursive formula that
@@ -820,21 +743,14 @@ public class RolapResult extends ResultBase {
       }
 
       if ( attempt++ > maxEvalDepth ) {
-        throw Util.newInternal(
-          "Failed to load all aggregations after "
-            + maxEvalDepth
+        throw Util.newInternal( "Failed to load all aggregations after " + maxEvalDepth
             + " passes; there's probably a cycle" );
       }
     }
   }
 
-  void evalLoad(
-    List<List<Member>> nonAllMembers,
-    int cnt,
-    Evaluator evaluator,
-    QueryAxis axis,
-    Calc calc,
-    AxisMemberList axisMembers ) {
+  void evalLoad( List<List<Member>> nonAllMembers, int cnt, Evaluator evaluator, QueryAxis axis, Calc calc,
+      AxisMemberList axisMembers ) {
     final int savepoint = evaluator.savepoint();
     try {
       if ( cnt < 0 ) {
@@ -842,9 +758,7 @@ public class RolapResult extends ResultBase {
       } else {
         for ( Member m : nonAllMembers.get( cnt ) ) {
           evaluator.setContext( m );
-          evalLoad(
-            nonAllMembers, cnt - 1, evaluator,
-            axis, calc, axisMembers );
+          evalLoad( nonAllMembers, cnt - 1, evaluator, axis, calc, axisMembers );
         }
       }
     } finally {
@@ -852,18 +766,13 @@ public class RolapResult extends ResultBase {
     }
   }
 
-  TupleIterable evalExecute(
-    List<List<Member>> nonAllMembers,
-    int cnt,
-    RolapEvaluator evaluator,
-    QueryAxis queryAxis,
-    Calc calc ) {
+  TupleIterable evalExecute( List<List<Member>> nonAllMembers, int cnt, RolapEvaluator evaluator, QueryAxis queryAxis,
+      Calc calc ) {
     final int savepoint = evaluator.savepoint();
     final int arity = calc == null ? 0 : calc.getType().getArity();
     if ( cnt < 0 ) {
       try {
-        final TupleIterable axis =
-          executeAxis( evaluator, queryAxis, calc, true, null );
+        final TupleIterable axis = executeAxis( evaluator, queryAxis, calc, true, null );
         return axis;
       } finally {
         evaluator.restore( savepoint );
@@ -875,10 +784,7 @@ public class RolapResult extends ResultBase {
         TupleList axisResult = TupleCollections.emptyList( arity );
         for ( Member m : nonAllMembers.get( cnt ) ) {
           evaluator.setContext( m );
-          TupleIterable axis =
-            evalExecute(
-              nonAllMembers, cnt - 1,
-              evaluator, queryAxis, calc );
+          TupleIterable axis = evalExecute( nonAllMembers, cnt - 1, evaluator, queryAxis, calc );
           boolean ordered = false;
           if ( queryAxis != null ) {
             ordered = queryAxis.isOrdered();
@@ -896,14 +802,15 @@ public class RolapResult extends ResultBase {
    * Finds all root Members 1) whose Hierarchy does not have an ALL Member, 2) whose default Member is not the ALL
    * Member and 3) all Measures.
    *
-   * @param nonDefaultAllMembers List of all root Members for Hierarchies whose default Member is not the ALL Member.
-   * @param nonAllMembers        List of root Members for Hierarchies that have no ALL Member.
-   * @param measureMembers       List all Measures
+   * @param nonDefaultAllMembers
+   *          List of all root Members for Hierarchies whose default Member is not the ALL Member.
+   * @param nonAllMembers
+   *          List of root Members for Hierarchies that have no ALL Member.
+   * @param measureMembers
+   *          List all Measures
    */
-  protected void loadSpecialMembers(
-    List<Member> nonDefaultAllMembers,
-    List<List<Member>> nonAllMembers,
-    List<Member> measureMembers ) {
+  protected void loadSpecialMembers( List<Member> nonDefaultAllMembers, List<List<Member>> nonAllMembers,
+      List<Member> measureMembers ) {
     SchemaReader schemaReader = evaluator.getSchemaReader();
     Member[] evalMembers = evaluator.getMembers();
     for ( Member em : evalMembers ) {
@@ -916,8 +823,7 @@ public class RolapResult extends ResultBase {
         continue;
       }
       if ( !em.isAll() ) {
-        List<Member> rootMembers =
-          schemaReader.getHierarchyRootMembers( h );
+        List<Member> rootMembers = schemaReader.getHierarchyRootMembers( h );
         if ( em.isMeasure() ) {
           for ( Member mm : rootMembers ) {
             measureMembers.add( mm );
@@ -954,13 +860,13 @@ public class RolapResult extends ResultBase {
   /**
    * Get the Cell for the given Cell position.
    *
-   * @param pos Cell position.
+   * @param pos
+   *          Cell position.
    * @return the Cell associated with the Cell position.
    */
   public Cell getCell( int[] pos ) {
     if ( pos.length != point.size() ) {
-      throw Util.newError(
-        "coordinates should have dimension " + point.size() );
+      throw Util.newError( "coordinates should have dimension " + point.size() );
     }
 
     for ( int i = 0; i < pos.length; i++ ) {
@@ -979,8 +885,8 @@ public class RolapResult extends ResultBase {
     CellInfo ci = cellInfos.lookup( pos );
     if ( ci.value == null ) {
       for ( int i = 0; i < pos.length; i++ ) {
-        int po = pos[ i ];
-        if ( po < 0 || po >= axes[ i ].getPositions().size() ) {
+        int po = pos[i];
+        if ( po < 0 || po >= axes[i].getPositions().size() ) {
           throw Util.newError( "coordinates out of range" );
         }
       }
@@ -990,25 +896,18 @@ public class RolapResult extends ResultBase {
     return new RolapCell( this, pos.clone(), ci );
   }
 
-  private TupleIterable executeAxis(
-    Evaluator evaluator,
-    QueryAxis queryAxis,
-    Calc axisCalc,
-    boolean construct,
-    AxisMemberList axisMembers ) {
+  private TupleIterable executeAxis( Evaluator evaluator, QueryAxis queryAxis, Calc axisCalc, boolean construct,
+      AxisMemberList axisMembers ) {
     if ( queryAxis == null ) {
       // Create an axis containing one position with no members (not
       // the same as an empty axis).
-      return new DelegatingTupleList(
-        0,
-        Collections.singletonList( Collections.<Member>emptyList() ) );
+      return new DelegatingTupleList( 0, Collections.singletonList( Collections.<Member> emptyList() ) );
     }
     final int savepoint = evaluator.savepoint();
     try {
       evaluator.setNonEmpty( queryAxis.isNonEmpty() );
       evaluator.setEvalAxes( true );
-      final TupleIterable iterable =
-        ( (IterCalc) axisCalc ).evaluateIterable( evaluator );
+      final TupleIterable iterable = ( (IterCalc) axisCalc ).evaluateIterable( evaluator );
       if ( axisCalc.getClass().getName().indexOf( "OrderFunDef" ) != -1 ) {
         queryAxis.setOrdered( true );
       }
@@ -1032,10 +931,7 @@ public class RolapResult extends ResultBase {
     }
   }
 
-  private void executeBody(
-    RolapEvaluator evaluator,
-    Query query,
-    final int[] pos ) {
+  private void executeBody( RolapEvaluator evaluator, Query query, final int[] pos ) {
     // Compute the cells several times. The first time, use a dummy
     // evaluator which collects requests.
     int count = 0;
@@ -1069,16 +965,12 @@ public class RolapResult extends ResultBase {
           // The dependency testing evaluator can trigger new
           // requests every cycle. So let is run as normal for
           // the first N times, then run it disabled.
-          ( (RolapDependencyTestingEvaluator.DteRoot)
-            evaluator.root ).disabled = true;
+          ( (RolapDependencyTestingEvaluator.DteRoot) evaluator.root ).disabled = true;
           if ( count > maxEvalDepth * 2 ) {
-            throw Util.newInternal(
-              "Query required more than " + count
-                + " iterations" );
+            throw Util.newInternal( "Query required more than " + count + " iterations" );
           }
         } else {
-          throw Util.newInternal(
-            "Query required more than " + count + " iterations" );
+          throw Util.newInternal( "Query required more than " + count + " iterations" );
         }
       }
 
@@ -1093,17 +985,18 @@ public class RolapResult extends ResultBase {
   /**
    * Evaluates an expression. Intended for evaluating named sets.
    *
-   * <p>Does not modify the contents of the evaluator.
+   * <p>
+   * Does not modify the contents of the evaluator.
    *
-   * @param calc             Compiled expression
-   * @param slicerEvaluator  Evaluation context for slicers
-   * @param contextEvaluator Evaluation context (optional)
+   * @param calc
+   *          Compiled expression
+   * @param slicerEvaluator
+   *          Evaluation context for slicers
+   * @param contextEvaluator
+   *          Evaluation context (optional)
    * @return Result
    */
-  Object evaluateExp(
-    Calc calc,
-    RolapEvaluator slicerEvaluator,
-    Evaluator contextEvaluator ) {
+  Object evaluateExp( Calc calc, RolapEvaluator slicerEvaluator, Evaluator contextEvaluator ) {
     int attempt = 0;
 
     RolapEvaluator evaluator = slicerEvaluator.push();
@@ -1140,9 +1033,8 @@ public class RolapResult extends ResultBase {
         }
 
         if ( attempt++ > maxEvalDepth ) {
-          throw Util.newInternal(
-            "Failed to load all aggregations after "
-              + maxEvalDepth + "passes; there's probably a cycle" );
+          throw Util.newInternal( "Failed to load all aggregations after " + maxEvalDepth
+              + "passes; there's probably a cycle" );
         }
       }
 
@@ -1163,10 +1055,7 @@ public class RolapResult extends ResultBase {
     }
   }
 
-  private void executeStripe(
-    int axisOrdinal,
-    RolapEvaluator revaluator,
-    final int[] pos ) {
+  private void executeStripe( int axisOrdinal, RolapEvaluator revaluator, final int[] pos ) {
     if ( axisOrdinal < 0 ) {
       RolapAxis axis = (RolapAxis) slicerAxis;
       TupleList tupleList = axis.getTupleList();
@@ -1208,15 +1097,12 @@ public class RolapResult extends ResultBase {
           // for it. If not, then find or create a Locale based
           // FormatValueFormatter.
           final RolapCube cube = getCube();
-          Hierarchy measuresHierarchy =
-            cube.getMeasuresHierarchy();
-          RolapMeasure m =
-            (RolapMeasure) revaluator.getContext( measuresHierarchy );
+          Hierarchy measuresHierarchy = cube.getMeasuresHierarchy();
+          RolapMeasure m = (RolapMeasure) revaluator.getContext( measuresHierarchy );
           ValueFormatter valueFormatter = m.getFormatter();
           if ( valueFormatter == null ) {
             cachedFormatString = revaluator.getFormatString();
-            Locale locale =
-              statement.getMondrianConnection().getLocale();
+            Locale locale = statement.getMondrianConnection().getLocale();
             valueFormatter = formatValueFormatters.get( locale );
             if ( valueFormatter == null ) {
               valueFormatter = new FormatValueFormatter( locale );
@@ -1248,39 +1134,33 @@ public class RolapResult extends ResultBase {
         }
       }
     } else {
-      RolapAxis axis = (RolapAxis) axes[ axisOrdinal ];
+      RolapAxis axis = (RolapAxis) axes[axisOrdinal];
       TupleList tupleList = axis.getTupleList();
       Util.discard( tupleList.size() ); // force materialize
       if ( isAxisHighCardinality( axisOrdinal, tupleList ) ) {
-        final int limit =
-          MondrianProperties.instance().HighCardChunkSize.get();
+        final int limit = MondrianProperties.instance().HighCardChunkSize.get();
         if ( positionsIterators.get( axisOrdinal ) == null ) {
           final TupleCursor tupleCursor = tupleList.tupleCursor();
           positionsIterators.put( axisOrdinal, tupleCursor );
           positionsIndexes.put( axisOrdinal, 0 );
-          final List<List<Member>> subPositions =
-            new ArrayList<List<Member>>();
+          final List<List<Member>> subPositions = new ArrayList<List<Member>>();
           for ( int i = 0; i < limit && tupleCursor.forward(); i++ ) {
             subPositions.add( tupleCursor.current() );
           }
           positionsCurrent.put( axisOrdinal, subPositions );
         }
-        final TupleCursor tupleCursor =
-          positionsIterators.get( axisOrdinal );
+        final TupleCursor tupleCursor = positionsIterators.get( axisOrdinal );
         final int positionIndex = positionsIndexes.get( axisOrdinal );
-        List<List<Member>> subTuples =
-          positionsCurrent.get( axisOrdinal );
+        List<List<Member>> subTuples = positionsCurrent.get( axisOrdinal );
 
         if ( subTuples == null ) {
           return;
         }
 
         int pi;
-        if ( pos[ axisOrdinal ] > positionIndex + subTuples.size() - 1
-          && subTuples.size() == limit ) {
+        if ( pos[axisOrdinal] > positionIndex + subTuples.size() - 1 && subTuples.size() == limit ) {
           pi = positionIndex + subTuples.size();
-          positionsIndexes.put(
-            axisOrdinal, positionIndex + subTuples.size() );
+          positionsIndexes.put( axisOrdinal, positionIndex + subTuples.size() );
           subTuples.subList( 0, subTuples.size() ).clear();
           for ( int i = 0; i < limit && tupleCursor.forward(); i++ ) {
             subTuples.add( tupleCursor.current() );
@@ -1303,17 +1183,12 @@ public class RolapResult extends ResultBase {
         }
       } else {
         for ( List<Member> tuple : tupleList ) {
-          List<Member> measures =
-            new ArrayList<Member>(
-              statement.getQuery().getMeasuresMembers() );
+          List<Member> measures = new ArrayList<Member>( statement.getQuery().getMeasuresMembers() );
           for ( Member measure : measures ) {
             if ( measure instanceof RolapBaseCubeMeasure ) {
-              RolapBaseCubeMeasure baseCubeMeasure =
-                (RolapBaseCubeMeasure) measure;
-              if ( baseCubeMeasure.getAggregator()
-                == RolapAggregator.DistinctCount ) {
-                processDistinctMeasureExpr(
-                  tuple, baseCubeMeasure );
+              RolapBaseCubeMeasure baseCubeMeasure = (RolapBaseCubeMeasure) measure;
+              if ( baseCubeMeasure.getAggregator() == RolapAggregator.DistinctCount ) {
+                processDistinctMeasureExpr( tuple, baseCubeMeasure );
               }
             }
           }
@@ -1337,27 +1212,19 @@ public class RolapResult extends ResultBase {
     }
   }
 
-  private boolean isAxisHighCardinality(
-    int axisOrdinal,
-    TupleList tupleList ) {
-    Boolean highCardinality =
-      positionsHighCardinality.get( axisOrdinal );
+  private boolean isAxisHighCardinality( int axisOrdinal, TupleList tupleList ) {
+    Boolean highCardinality = positionsHighCardinality.get( axisOrdinal );
     if ( highCardinality != null ) {
       return highCardinality;
     }
     highCardinality = false;
-    //noinspection LoopStatementThatDoesntLoop
-    List<Member> tuple = !tupleList.isEmpty()
-      ? tupleList.get( 0 )
-      : null;
+    // noinspection LoopStatementThatDoesntLoop
+    List<Member> tuple = !tupleList.isEmpty() ? tupleList.get( 0 ) : null;
     if ( tuple != null && !tuple.isEmpty() ) {
       Dimension dimension = tuple.get( 0 ).getDimension();
       highCardinality = dimension.isHighCardinality();
       if ( highCardinality ) {
-        LOGGER.warn(
-          MondrianResource.instance()
-            .HighCardinalityInDimension.str(
-            dimension.getUniqueName() ) );
+        LOGGER.warn( MondrianResource.instance().HighCardinalityInDimension.str( dimension.getUniqueName() ) );
       }
     }
     positionsHighCardinality.put( axisOrdinal, highCardinality );
@@ -1365,16 +1232,18 @@ public class RolapResult extends ResultBase {
   }
 
   /**
-   * Distinct counts are aggregated separately from other measures. We need to apply filters to each level in the
-   * query.
+   * Distinct counts are aggregated separately from other measures. We need to apply filters to each level in the query.
    *
-   * <p>Replace VisualTotalMember expressions with new expressions
-   * where all leaf level members are included.</p>
+   * <p>
+   * Replace VisualTotalMember expressions with new expressions where all leaf level members are included.
+   * </p>
    *
-   * <p>Example.
-   * For MDX query:
+   * <p>
+   * Example. For MDX query:
    *
-   * <blockquote><pre>
+   * <blockquote>
+   * 
+   * <pre>
    * WITH SET [XL_Row_Dim_0] AS
    *         VisualTotals(
    *           Distinct(
@@ -1387,35 +1256,49 @@ public class RolapResult extends ResultBase {
    *              {DrilldownLevel({[Store].[All Stores]})},
    *              [XL_Row_Dim_0])) ON COLUMNS
    *        from [HR]
-   *        where [Measures].[Number of Employees]</pre></blockquote>
+   *        where [Measures].[Number of Employees]
+   * </pre>
+   * 
+   * </blockquote>
    *
-   * <p>For member [Store].[All Stores],
-   * we replace aggregate expression
+   * <p>
+   * For member [Store].[All Stores], we replace aggregate expression
    *
-   * <blockquote><pre>
+   * <blockquote>
+   * 
+   * <pre>
    * Aggregate({[Store].[All Stores].[USA]})
-   * </pre></blockquote>
+   * </pre>
+   * 
+   * </blockquote>
    * <p>
    * with
    *
-   * <blockquote><pre>
+   * <blockquote>
+   * 
+   * <pre>
    * Aggregate({[Store].[All Stores].[USA].[CA].[Alameda].[HQ],
    *               [Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6],
    *               [Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7],
    *               [Store].[All Stores].[USA].[CA].[San Diego].[Store 24],
    *               [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]
    *              })
-   * </pre></blockquote>
+   * </pre>
+   * 
+   * </blockquote>
    *
-   * <p>TODO:
-   * Can be optimized. For that particular query we don't need to go to the lowest level. We can simply replace it
+   * <p>
+   * TODO: Can be optimized. For that particular query we don't need to go to the lowest level. We can simply replace it
    * with:
-   * <pre>Aggregate({[Store].[All Stores].[USA].[CA]})</pre>
-   * Because all children of [Store].[All Stores].[USA].[CA] are included.</p>
+   * 
+   * <pre>
+   * Aggregate({[Store].[All Stores].[USA].[CA]})
+   * </pre>
+   * 
+   * Because all children of [Store].[All Stores].[USA].[CA] are included.
+   * </p>
    */
-  private List<Member> processDistinctMeasureExpr(
-    List<Member> tuple,
-    RolapBaseCubeMeasure measure ) {
+  private List<Member> processDistinctMeasureExpr( List<Member> tuple, RolapBaseCubeMeasure measure ) {
     for ( Member member : tuple ) {
       if ( !( member instanceof VisualTotalMember ) ) {
         continue;
@@ -1455,8 +1338,9 @@ public class RolapResult extends ResultBase {
   /**
    * Converts a set of cell coordinates to a cell ordinal.
    *
-   * <p>This method can be expensive, because the ordinal is computed from the
-   * length of the axes, and therefore the axes need to be instantiated.
+   * <p>
+   * This method can be expensive, because the ordinal is computed from the length of the axes, and therefore the axes
+   * need to be instantiated.
    */
   int getCellOrdinal( int[] pos ) {
     if ( modulos == null ) {
@@ -1468,8 +1352,9 @@ public class RolapResult extends ResultBase {
   /**
    * Instantiates the calculator to convert cell coordinates to a cell ordinal and vice versa.
    *
-   * <p>To create the calculator, any axis that is based upon an Iterable is
-   * converted into a List - thus increasing memory usage.
+   * <p>
+   * To create the calculator, any axis that is based upon an Iterable is converted into a List - thus increasing memory
+   * usage.
    */
   protected void makeModulos() {
     modulos = Modulos.Generator.create( axes );
@@ -1478,17 +1363,18 @@ public class RolapResult extends ResultBase {
   /**
    * Called only by RolapCell. Use this when creating an Evaluator is not required.
    *
-   * @param pos Coordinates of cell
+   * @param pos
+   *          Coordinates of cell
    * @return Members which form the context of the given cell
    */
   RolapMember[] getCellMembers( int[] pos ) {
     RolapMember[] members = (RolapMember[]) evaluator.getMembers().clone();
     for ( int i = 0; i < pos.length; i++ ) {
-      Position position = axes[ i ].getPositions().get( pos[ i ] );
+      Position position = axes[i].getPositions().get( pos[i] );
       for ( Member member : position ) {
         RolapMember m = (RolapMember) member;
         int ordinal = m.getHierarchy().getOrdinalInCube();
-        members[ ordinal ] = m;
+        members[ordinal] = m;
       }
     }
     return members;
@@ -1517,8 +1403,8 @@ public class RolapResult extends ResultBase {
         }
         index = 0;
       } else {
-        axis = axes[ i ];
-        index = pos[ i ];
+        axis = axes[i];
+        index = pos[i];
       }
       Position position = axis.getPositions().get( index );
       evaluator.setContext( position );
@@ -1528,16 +1414,21 @@ public class RolapResult extends ResultBase {
   /**
    * Collection of members found on an axis.
    *
-   * <p>The behavior depends on the mode (i.e. the kind of axis).
-   * If it collects, it generally eliminates duplicates. It also has a mode where it only counts members, does not
-   * collect them.</p>
+   * <p>
+   * The behavior depends on the mode (i.e. the kind of axis). If it collects, it generally eliminates duplicates. It
+   * also has a mode where it only counts members, does not collect them.
+   * </p>
    *
-   * <p>This class does two things. First it collects all Members
-   * found during the Member-Determination phase. Second, it counts how many Members are on each axis and forms the
-   * product, the totalCellCount which is checked against the ResultLimit property value.</p>
+   * <p>
+   * This class does two things. First it collects all Members found during the Member-Determination phase. Second, it
+   * counts how many Members are on each axis and forms the product, the totalCellCount which is checked against the
+   * ResultLimit property value.
+   * </p>
    */
   private static class AxisMemberList implements Iterable<Member> {
     private final List<Member> members;
+    // Also store members by hierarchy for faster de-duplication and also reuse in RolapEvaluator
+    private final Map<Hierarchy, Set<Member>> membersByHierarchy;
     private final int limit;
     private boolean isSlicer;
     private int totalCellCount;
@@ -1546,7 +1437,8 @@ public class RolapResult extends ResultBase {
 
     AxisMemberList() {
       this.countOnly = false;
-      this.members = new ConcatenableList<Member>();
+      this.members = new ArrayList<Member>();
+      this.membersByHierarchy = new HashMap<Hierarchy, Set<Member>>();
       this.totalCellCount = 1;
       this.axisCount = 0;
       // Now that the axes are evaluated, make sure that the number of
@@ -1574,10 +1466,7 @@ public class RolapResult extends ResultBase {
       if ( this.limit > 0 ) {
         this.totalCellCount *= this.axisCount;
         if ( this.totalCellCount > this.limit ) {
-          throw MondrianResource.instance().TotalMembersLimitExceeded
-            .ex(
-              this.totalCellCount,
-              this.limit );
+          throw MondrianResource.instance().TotalMembersLimitExceeded.ex( this.totalCellCount, this.limit );
         }
         this.axisCount = 0;
       }
@@ -1593,6 +1482,7 @@ public class RolapResult extends ResultBase {
 
     void clearMembers() {
       this.members.clear();
+      this.membersByHierarchy.clear();
       this.axisCount = 0;
       this.totalCellCount = 1;
     }
@@ -1605,8 +1495,7 @@ public class RolapResult extends ResultBase {
       int currentIteration = 0;
       Execution execution = Locus.peek().execution;
       while ( cursor.forward() ) {
-        CancellationChecker.checkCancelOrTimeout(
-          currentIteration++, execution );
+        CancellationChecker.checkCancelOrTimeout( currentIteration++, execution );
         mergeTuple( cursor );
       }
     }
@@ -1632,8 +1521,8 @@ public class RolapResult extends ResultBase {
       this.axisCount++;
       if ( !countOnly ) {
         if ( isSlicer ) {
-          if ( !members.contains( member ) ) {
-            members.add( member );
+          if ( !contains( member ) ) {
+            addMember( member );
           }
         } else {
           if ( member.isNull() ) {
@@ -1646,31 +1535,57 @@ public class RolapResult extends ResultBase {
             return;
           }
           Member topParent = getTopParent( member );
-          if ( !this.members.contains( topParent ) ) {
-            this.members.add( topParent );
+          if ( !contains( topParent ) ) {
+            addMember( topParent );
           }
         }
       }
     }
+
+    private boolean contains( Member member ) {
+      if ( !membersByHierarchy.containsKey( member.getHierarchy() ) ) {
+        return false;
+      }
+      return membersByHierarchy.get( member.getHierarchy() ).contains( member );
+    }
+
+    private void addMember( Member member ) {
+      members.add( member );
+      Hierarchy hierarchy = member.getHierarchy();
+      if ( !membersByHierarchy.containsKey( hierarchy ) ) {
+        membersByHierarchy.put( hierarchy, new HashSet<>() );
+      }
+      membersByHierarchy.get( hierarchy ).add( member );
+    }
+
+    public List<Member> getMembers() {
+      return members;
+    }
+
+    public Map<Hierarchy, Set<Member>> getMembersByHierarchy() {
+      return membersByHierarchy;
+    }
   }
 
   /**
-   * Extension to {@link RolapEvaluatorRoot} which is capable of evaluating sets and named sets.<p/>
+   * Extension to {@link RolapEvaluatorRoot} which is capable of evaluating sets and named sets.
+   * <p/>
    * <p>
-   * A given set is only evaluated once each time a query is executed; the result is added to the {@link
-   * #namedSetEvaluators} cache on first execution and re-used.<p/>
+   * A given set is only evaluated once each time a query is executed; the result is added to the
+   * {@link #namedSetEvaluators} cache on first execution and re-used.
+   * <p/>
    *
-   * <p>Named sets are always evaluated in the context of the slicer.<p/>
+   * <p>
+   * Named sets are always evaluated in the context of the slicer.
+   * <p/>
    */
-  protected static class RolapResultEvaluatorRoot
-    extends RolapEvaluatorRoot {
+  protected static class RolapResultEvaluatorRoot extends RolapEvaluatorRoot {
     /**
      * Maps the names of sets to their values. Populated on demand.
      */
-    private final Map<String, RolapSetEvaluator> setEvaluators =
-      new HashMap<String, RolapSetEvaluator>();
+    private final Map<String, RolapSetEvaluator> setEvaluators = new HashMap<String, RolapSetEvaluator>();
     private final Map<String, RolapNamedSetEvaluator> namedSetEvaluators =
-      new HashMap<String, RolapNamedSetEvaluator>();
+        new HashMap<String, RolapNamedSetEvaluator>();
 
     final RolapResult result;
     private static final Object CycleSentinel = new Object();
@@ -1681,9 +1596,7 @@ public class RolapResult extends ResultBase {
       this.result = result;
     }
 
-    protected Evaluator.NamedSetEvaluator evaluateNamedSet(
-      final NamedSet namedSet,
-      boolean create ) {
+    protected Evaluator.NamedSetEvaluator evaluateNamedSet( final NamedSet namedSet, boolean create ) {
       final String name = namedSet.getNameUniqueWithinQuery();
       RolapNamedSetEvaluator value;
       if ( namedSet.isDynamic() && !create ) {
@@ -1698,15 +1611,11 @@ public class RolapResult extends ResultBase {
       return value;
     }
 
-    protected Evaluator.SetEvaluator evaluateSet(
-      final Exp exp,
-      boolean create ) {
+    protected Evaluator.SetEvaluator evaluateSet( final Exp exp, boolean create ) {
       // Sanity check: This expression HAS to return a set.
       if ( !( exp.getType() instanceof SetType ) ) {
-        throw Util.newInternal(
-          "Trying to evaluate set but expression does not return a set" );
+        throw Util.newInternal( "Trying to evaluate set but expression does not return a set" );
       }
-
 
       // Should be acceptable to use the string representation of the
       // expression as the name
@@ -1762,9 +1671,7 @@ public class RolapResult extends ResultBase {
       Object value;
       if ( liftedValue != null ) {
         if ( liftedValue == CycleSentinel ) {
-          throw MondrianResource.instance()
-            .CycleDuringParameterEvaluation.ex(
-              slot.getParameter().getName() );
+          throw MondrianResource.instance().CycleDuringParameterEvaluation.ex( slot.getParameter().getName() );
         }
         if ( liftedValue == NullSentinel ) {
           value = null;
@@ -1775,9 +1682,7 @@ public class RolapResult extends ResultBase {
       }
       // Set value to a sentinel, so we can detect cyclic evaluation.
       slot.setCachedDefaultValue( CycleSentinel );
-      value =
-        result.evaluateExp(
-          slot.getDefaultValueCalc(), result.slicerEvaluator, null );
+      value = result.evaluateExp( slot.getDefaultValueCalc(), result.slicerEvaluator, null );
       if ( value == null ) {
         liftedValue = NullSentinel;
       } else {
@@ -1791,25 +1696,28 @@ public class RolapResult extends ResultBase {
   /**
    * Formatter to convert values into formatted strings.
    *
-   * <p>Every Cell has a value, a format string (or CellFormatter) and a
-   * formatted value string. There are a wide range of possible values (pick a Double, any Double - its a value).
-   * Because there are lots of possible values, there are also lots of possible formatted value strings. On the other
-   * hand, there are only a very small number of format strings and CellFormatter's. These formatters are to be cached
-   * in a synchronized HashMaps in order to limit how many copies need to be kept around.
+   * <p>
+   * Every Cell has a value, a format string (or CellFormatter) and a formatted value string. There are a wide range of
+   * possible values (pick a Double, any Double - its a value). Because there are lots of possible values, there are
+   * also lots of possible formatted value strings. On the other hand, there are only a very small number of format
+   * strings and CellFormatter's. These formatters are to be cached in a synchronized HashMaps in order to limit how
+   * many copies need to be kept around.
    *
    * <p>
-   * There are two implementations of the ValueFormatter interface:<ul>
-   * <li>{@link CellFormatterValueFormatter}, which formats using a
-   * user-registered {@link CellFormatter}; and
-   * <li> {@link FormatValueFormatter}, which takes the {@link Locale} object.
+   * There are two implementations of the ValueFormatter interface:
+   * <ul>
+   * <li>{@link CellFormatterValueFormatter}, which formats using a user-registered {@link CellFormatter}; and
+   * <li>{@link FormatValueFormatter}, which takes the {@link Locale} object.
    * </ul>
    */
   interface ValueFormatter {
     /**
      * Formats a value according to a format string.
      *
-     * @param value        Value
-     * @param formatString Format string
+     * @param value
+     *          Value
+     * @param formatString
+     *          Format string
      * @return Formatted value
      */
     String format( Object value, String formatString );
@@ -1833,7 +1741,8 @@ public class RolapResult extends ResultBase {
     /**
      * Creates a CellFormatterValueFormatter
      *
-     * @param cf Cell formatter
+     * @param cf
+     *          Cell formatter
      */
     CellFormatterValueFormatter( CellFormatter cf ) {
       this.cf = cf;
@@ -1854,7 +1763,8 @@ public class RolapResult extends ResultBase {
     /**
      * Creates a FormatValueFormatter.
      *
-     * @param locale Locale
+     * @param locale
+     *          Locale
      */
     FormatValueFormatter( Locale locale ) {
       this.locale = locale;
@@ -1877,20 +1787,18 @@ public class RolapResult extends ResultBase {
   }
 
   /**
-   * Synchronized Map from Locale to ValueFormatter. It is expected that there will be only a small number of
-   * Locale's.
+   * Synchronized Map from Locale to ValueFormatter. It is expected that there will be only a small number of Locale's.
    * Should these be a WeakHashMap?
    */
-  protected static final Map<Locale, ValueFormatter>
-    formatValueFormatters =
-    Collections.synchronizedMap( new HashMap<Locale, ValueFormatter>() );
+  protected static final Map<Locale, ValueFormatter> formatValueFormatters =
+      Collections.synchronizedMap( new HashMap<Locale, ValueFormatter>() );
 
   /**
    * A CellInfo contains all of the information that a Cell requires. It is placed in the cellInfos map during
    * evaluation and serves as a constructor parameter for {@link RolapCell}.
    *
-   * <p>During the evaluation stage they are mutable but after evaluation has
-   * finished they are not changed.
+   * <p>
+   * During the evaluation stage they are mutable but after evaluation has finished they are not changed.
    */
   static class CellInfo {
     Object value;
@@ -1901,7 +1809,8 @@ public class RolapResult extends ResultBase {
     /**
      * Creates a CellInfo representing the position of a cell.
      *
-     * @param key Ordinal representing the position of a cell
+     * @param key
+     *          Ordinal representing the position of a cell
      */
     CellInfo( long key ) {
       this( key, null, null, ValueFormatter.EMPTY );
@@ -1910,16 +1819,16 @@ public class RolapResult extends ResultBase {
     /**
      * Creates a CellInfo with position, value, format string and formatter of a cell.
      *
-     * @param key            Ordinal representing the position of a cell
-     * @param value          Value of cell, or null if not yet known
-     * @param formatString   Format string of cell, or null
-     * @param valueFormatter Formatter for cell, or null
+     * @param key
+     *          Ordinal representing the position of a cell
+     * @param value
+     *          Value of cell, or null if not yet known
+     * @param formatString
+     *          Format string of cell, or null
+     * @param valueFormatter
+     *          Formatter for cell, or null
      */
-    CellInfo(
-      long key,
-      Object value,
-      String formatString,
-      ValueFormatter valueFormatter ) {
+    CellInfo( long key, Object value, String formatString, ValueFormatter valueFormatter ) {
       this.key = key;
       this.value = value;
       this.formatString = formatString;
@@ -1956,8 +1865,7 @@ public class RolapResult extends ResultBase {
   }
 
   /**
-   * API for the creation and lookup of {@link CellInfo} objects. There are two implementations, one that uses a
-   * Map for
+   * API for the creation and lookup of {@link CellInfo} objects. There are two implementations, one that uses a Map for
    * storage and the other uses an ObjectPool.
    */
   interface CellInfoContainer {
@@ -1982,7 +1890,8 @@ public class RolapResult extends ResultBase {
     /**
      * Creates a new CellInfo object, adds it to the container a location <code>pos</code> and returns it.
      *
-     * @param pos where to store CellInfo object.
+     * @param pos
+     *          where to store CellInfo object.
      * @return the newly create CellInfo object.
      */
     CellInfo create( int[] pos );
@@ -1990,7 +1899,8 @@ public class RolapResult extends ResultBase {
     /**
      * Gets the CellInfo object at the location <code>pos</code>.
      *
-     * @param pos where to find the CellInfo object.
+     * @param pos
+     *          where to find the CellInfo object.
      * @return the CellInfo found or null.
      */
     CellInfo lookup( int[] pos );
@@ -1999,9 +1909,9 @@ public class RolapResult extends ResultBase {
   /**
    * Implementation of {@link CellInfoContainer} which uses a {@link Map} to store CellInfo Objects.
    *
-   * <p>Note that the CellKey point instance variable is the same
-   * Object (NOT a copy) that is used and modified during the recursive calls to executeStripe - the
-   * <code>create</code> method relies on this fact.
+   * <p>
+   * Note that the CellKey point instance variable is the same Object (NOT a copy) that is used and modified during the
+   * recursive calls to executeStripe - the <code>create</code> method relies on this fact.
    */
   static class CellInfoMap implements CellInfoContainer {
     private final Map<CellKey, CellInfo> cellInfoMap;
@@ -2010,7 +1920,8 @@ public class RolapResult extends ResultBase {
     /**
      * Creates a CellInfoMap
      *
-     * @param point Cell position
+     * @param point
+     *          Cell position
      */
     CellInfoMap( CellKey point ) {
       this.point = point;
@@ -2048,18 +1959,17 @@ public class RolapResult extends ResultBase {
   /**
    * Implementation of {@link CellInfoContainer} which uses an {@link ObjectPool} to store {@link CellInfo} Objects.
    *
-   * <p>There is an inner interface (<code>CellKeyMaker</code>) and
-   * implementations for 0 through 4 axes that convert the Cell position integer array into a long.
+   * <p>
+   * There is an inner interface (<code>CellKeyMaker</code>) and implementations for 0 through 4 axes that convert the
+   * Cell position integer array into a long.
    *
    * <p>
    * It should be noted that there is an alternate approach. As the <code>executeStripe</code> method is recursively
    * called, at each call it is known which axis is being iterated across and it is known whether or not the Position
    * object for that axis is a List or just an Iterable. It it is a List, then one knows the real size of the axis. If
    * it is an Iterable, then one has to use one of the MAX_AXIS_SIZE values. Given that this information is available
-   * when one recursives down to the next
-   * <code>executeStripe</code> call, the Cell ordinal, the position
-   * integer array could converted to an <code>long</code>, could be generated on the call stack!! Just a thought for
-   * the future.
+   * when one recursives down to the next <code>executeStripe</code> call, the Cell ordinal, the position integer array
+   * could converted to an <code>long</code>, could be generated on the call stack!! Just a thought for the future.
    */
   static class CellInfoPool implements CellInfoContainer {
     /**
@@ -2078,33 +1988,33 @@ public class RolapResult extends ResultBase {
     /**
      * Implementations of CellKeyMaker convert the Cell position integer array to a <code>long</code>.
      *
-     * <p>Generates a long ordinal based upon the values of the integers
-     * stored in the cell position array. With this mechanism, the Cell information can be stored using a long key
-     * (rather than the array integer of positions) thus saving memory. The trick is to use a 'large number' per
-     * axis in
-     * order to convert from position array to long key where the 'large number' is greater than the number of
-     * members
-     * in the axis. The largest 'long' is java.lang.Long.MAX_VALUE which is 9,223,372,036,854,776,000. The
-     * product of
-     * the maximum number of members per axis must be less than this maximum 'long' value (otherwise one gets
-     * hashing
-     * collisions).</p>
+     * <p>
+     * Generates a long ordinal based upon the values of the integers stored in the cell position array. With this
+     * mechanism, the Cell information can be stored using a long key (rather than the array integer of positions) thus
+     * saving memory. The trick is to use a 'large number' per axis in order to convert from position array to long key
+     * where the 'large number' is greater than the number of members in the axis. The largest 'long' is
+     * java.lang.Long.MAX_VALUE which is 9,223,372,036,854,776,000. The product of the maximum number of members per
+     * axis must be less than this maximum 'long' value (otherwise one gets hashing collisions).
+     * </p>
      *
-     * <p>For a single axis, the maximum number of members is equal to
-     * the max 'long' number, 9,223,372,036,854,776,000.
+     * <p>
+     * For a single axis, the maximum number of members is equal to the max 'long' number, 9,223,372,036,854,776,000.
      *
-     * <p>For two axes, the maximum number of members is the square root
-     * of the max 'long' number, 9,223,372,036,854,776,000, which is slightly bigger than 2,147,483,647 (which is the
-     * maximum integer).
+     * <p>
+     * For two axes, the maximum number of members is the square root of the max 'long' number,
+     * 9,223,372,036,854,776,000, which is slightly bigger than 2,147,483,647 (which is the maximum integer).
      *
-     * <p>For three axes, the maximum number of members per axis is the
-     * cube root of the max 'long' which is about 2,000,000.
+     * <p>
+     * For three axes, the maximum number of members per axis is the cube root of the max 'long' which is about
+     * 2,000,000.
      *
-     * <p>For four axes the forth root is about 50,000.
+     * <p>
+     * For four axes the forth root is about 50,000.
      *
-     * <p>For five or more axes, the maximum number of members per axis
-     * based upon the root of the maximum 'long' number, start getting too small to guarantee that it will be smaller
-     * than the number of members on a given axis and so we must resort to the Map-base Cell container.
+     * <p>
+     * For five or more axes, the maximum number of members per axis based upon the root of the maximum 'long' number,
+     * start getting too small to guarantee that it will be smaller than the number of members on a given axis and so we
+     * must resort to the Map-base Cell container.
      */
     interface CellKeyMaker {
       long generate( int[] pos );
@@ -2124,7 +2034,7 @@ public class RolapResult extends ResultBase {
      */
     static class One implements CellKeyMaker {
       public long generate( int[] pos ) {
-        return pos[ 0 ];
+        return pos[0];
       }
     }
 
@@ -2133,8 +2043,8 @@ public class RolapResult extends ResultBase {
      */
     static class Two implements CellKeyMaker {
       public long generate( int[] pos ) {
-        long l = pos[ 0 ];
-        l += ( MAX_AXIS_SIZE_2 * (long) pos[ 1 ] );
+        long l = pos[0];
+        l += ( MAX_AXIS_SIZE_2 * (long) pos[1] );
         return l;
       }
     }
@@ -2144,9 +2054,9 @@ public class RolapResult extends ResultBase {
      */
     static class Three implements CellKeyMaker {
       public long generate( int[] pos ) {
-        long l = pos[ 0 ];
-        l += ( MAX_AXIS_SIZE_3 * (long) pos[ 1 ] );
-        l += ( MAX_AXIS_SIZE_3 * MAX_AXIS_SIZE_3 * (long) pos[ 2 ] );
+        long l = pos[0];
+        l += ( MAX_AXIS_SIZE_3 * (long) pos[1] );
+        l += ( MAX_AXIS_SIZE_3 * MAX_AXIS_SIZE_3 * (long) pos[2] );
         return l;
       }
     }
@@ -2156,11 +2066,10 @@ public class RolapResult extends ResultBase {
      */
     static class Four implements CellKeyMaker {
       public long generate( int[] pos ) {
-        long l = pos[ 0 ];
-        l += ( MAX_AXIS_SIZE_4 * (long) pos[ 1 ] );
-        l += ( MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * (long) pos[ 2 ] );
-        l += ( MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4
-          * (long) pos[ 3 ] );
+        long l = pos[0];
+        l += ( MAX_AXIS_SIZE_4 * (long) pos[1] );
+        l += ( MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * (long) pos[2] );
+        l += ( MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * MAX_AXIS_SIZE_4 * (long) pos[3] );
         return l;
       }
     }
@@ -2191,8 +2100,7 @@ public class RolapResult extends ResultBase {
         case 4:
           return new Four();
         default:
-          throw new RuntimeException(
-            "Creating CellInfoPool with axisLength=" + axisLength );
+          throw new RuntimeException( "Creating CellInfoPool with axisLength=" + axisLength );
       }
     }
 
@@ -2219,10 +2127,7 @@ public class RolapResult extends ResultBase {
     }
   }
 
-  static TupleList mergeAxes(
-    TupleList axis1,
-    TupleIterable axis2,
-    boolean ordered ) {
+  static TupleList mergeAxes( TupleList axis1, TupleIterable axis2, boolean ordered ) {
     if ( axis1.isEmpty() && axis2 instanceof TupleList ) {
       return (TupleList) axis2;
     }
@@ -2250,22 +2155,23 @@ public class RolapResult extends ResultBase {
   }
 
   /**
-   * Member which holds the AggregateCalc used when evaluating a compound slicer.  This is used to better handle some
+   * Member which holds the AggregateCalc used when evaluating a compound slicer. This is used to better handle some
    * cases where calculated members elsewhere in the query can override the context of the slicer members. See
    * MONDRIAN-1226.
    */
-  public class CompoundSlicerRolapMember extends DelegatingRolapMember
-    implements RolapMeasure {
+  public class CompoundSlicerRolapMember extends DelegatingRolapMember implements RolapMeasure {
     private final Calc calc;
     private final ValueFormatter valueFormatter;
     private final TupleList tupleList;
+    private final int solveOrder;
 
-    public CompoundSlicerRolapMember(
-      RolapMember placeholderMember, Calc calc, ValueFormatter formatter, TupleList tupleList ) {
+    public CompoundSlicerRolapMember( RolapMember placeholderMember, Calc calc, ValueFormatter formatter,
+        TupleList tupleList ) {
       super( placeholderMember );
       this.calc = calc;
       valueFormatter = formatter;
       this.tupleList = tupleList;
+      this.solveOrder = MondrianProperties.instance().CompoundSlicerMemberSolveOrder.get();
     }
 
     @Override
@@ -2283,9 +2189,15 @@ public class RolapResult extends ResultBase {
       return calc;
     }
 
+    /**
+     * CompoundSlicerRolapMember is always wrapped inside a CacheCalc.  To maximize the benefit
+     * of the CacheCalc and the expression cache, the solve order of the CompoundSlicerRolapMember
+     * should be lower than all other calculations.
+     * 
+     */
     @Override
     public int getSolveOrder() {
-      return 0;
+      return solveOrder;
     }
 
     @Override
