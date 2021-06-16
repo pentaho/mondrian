@@ -4,14 +4,26 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+// Copyright (c) 2002-2021 Hitachi Vantara..  All rights reserved.
 */
 package mondrian.rolap.agg;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import mondrian.calc.TupleList;
 import mondrian.calc.impl.ArrayTupleList;
 import mondrian.calc.impl.UnaryTupleList;
-import mondrian.olap.*;
+import mondrian.olap.Id;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Result;
+import mondrian.olap.ResultBase;
+import mondrian.olap.SchemaReader;
+import mondrian.olap.Util;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.CrossJoinFunDef;
 import mondrian.rolap.BatchTestCase;
@@ -22,8 +34,6 @@ import mondrian.spi.Dialect;
 import mondrian.spi.Dialect.DatabaseProduct;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
-
-import java.util.*;
 
 /**
  * <code>AggregationOnDistinctCountMeasureTest</code> tests the
@@ -1614,6 +1624,168 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             true,
             true);
     }
+    
+  /**
+   * Verify that the CACHE MDX function includes aggregation lists in the current evaluation context. In this test, the
+   * CM with solve order 20 will set an aggregation list for the distinct count measure. The cache key on the CM with
+   * solve order 10 needs to include the aggregation list or else the cache generated for [Gender].[F], [Store
+   * Type].[*TOTAL_MEMBER_SEL~AGG] would be re-used for [Gender].[M], [Store Type].[*TOTAL_MEMBER_SEL~AGG]
+   * 
+   */
+  public void testCachedAggregate() {
+
+    Result result =
+        executeQuery( " WITH\r\n"
+            + " SET [*NATIVE_CJ_SET_WITH_SLICER] AS 'NONEMPTYCROSSJOIN([*BASE_MEMBERS__Gender_],NONEMPTYCROSSJOIN([*BASE_MEMBERS__Store Type_],[*BASE_MEMBERS__Product_]))'\r\n"
+            + " SET [*NATIVE_CJ_SET] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Gender].CURRENTMEMBER,[Store Type].CURRENTMEMBER)})'\r\n"
+            + " SET [*BASE_MEMBERS__Store Type_] AS '{[Store Type].[All Store Types].[Gourmet Supermarket],[Store Type].[All Store Types].[Supermarket]}'\r\n"
+            + " SET [*BASE_MEMBERS__Gender_] AS '[Gender].[Gender].MEMBERS'\r\n"
+            + " SET [*CJ_SLICER_AXIS] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Product].CURRENTMEMBER)})'\r\n"
+            + " SET [*BASE_MEMBERS__Product_] AS '{[Product].[All Products].[Food],[Product].[All Products].[Drink]}'\r\n"
+            + " SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Gender].CURRENTMEMBER,[Store Type].CURRENTMEMBER)})'\r\n"
+            + " MEMBER [Store Type].[*TOTAL_MEMBER_SEL~AGG] AS '([Education Level].[*TOTAL_MEMBER_SEL~AGG], [Time].[*TOTAL_MEMBER_SEL~AGG])'\r\n"
+            + " MEMBER [Education Level].[*TOTAL_MEMBER_SEL~AGG] AS 'CACHE(AGGREGATE([*CJ_SLICER_AXIS]))', SOLVE_ORDER=10\r\n"
+            + " MEMBER [Time].[*TOTAL_MEMBER_SEL~AGG] AS 'AGGREGATE(EXISTS([*CJ_ROW_AXIS],([Gender].CURRENTMEMBER)))', SOLVE_ORDER=20\r\n"
+            + " SELECT\r\n" + " {[Measures].[Customer Count]} ON COLUMNS\r\n" + " , NON EMPTY\r\n"
+            + " UNION(CROSSJOIN(GENERATE([*CJ_ROW_AXIS], {([Gender].CURRENTMEMBER)}),{[Store Type].[*TOTAL_MEMBER_SEL~AGG]}),[*CJ_ROW_AXIS]) ON ROWS\r\n"
+            + " FROM [Sales]\r\n" );
+    String resultString = TestContext.toString( result );
+    TestContext.assertEqualsVerbose( "Axis #0:\n" + "{}\n" + "Axis #1:\n" + "{[Measures].[Customer Count]}\n"
+        + "Axis #2:\n" + "{[Gender].[F], [Store Type].[*TOTAL_MEMBER_SEL~AGG]}\n"
+        + "{[Gender].[M], [Store Type].[*TOTAL_MEMBER_SEL~AGG]}\n"
+        + "{[Gender].[F], [Store Type].[Gourmet Supermarket]}\n" + "{[Gender].[F], [Store Type].[Supermarket]}\n"
+        + "{[Gender].[M], [Store Type].[Gourmet Supermarket]}\n" + "{[Gender].[M], [Store Type].[Supermarket]}\n"
+        + "Row #0: 2,044\n" + "Row #1: 2,084\n" + "Row #2: 519\n" + "Row #3: 1,896\n" + "Row #4: 540\n"
+        + "Row #5: 1,945\n", getTestContext().upgradeActual( resultString ) );
+    Execution e = ( (ResultBase) result ).getExecution();
+    assertEquals( 2, e.getExpCacheHitCount() );
+    assertEquals( 10, e.getExpCacheMissCount() );
+  }
+
+  /**
+   * Similar to above test except now we verify the cache key is correct when generated for the slicer compound member.
+   */
+  public void testCachedCompoundSlicer() {
+
+    Result result =
+        executeQuery( " WITH\r\n"
+            + " SET [*NATIVE_CJ_SET_WITH_SLICER] AS 'NONEMPTYCROSSJOIN([*BASE_MEMBERS__Gender_],NONEMPTYCROSSJOIN([*BASE_MEMBERS__Store Type_],[*BASE_MEMBERS__Product_]))'\r\n"
+            + " SET [*NATIVE_CJ_SET] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Gender].CURRENTMEMBER,[Store Type].CURRENTMEMBER)})'\r\n"
+            + " SET [*BASE_MEMBERS__Store Type_] AS '{[Store Type].[All Store Types].[Gourmet Supermarket],[Store Type].[All Store Types].[Supermarket]}'\r\n"
+            + " SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[Gender].CURRENTMEMBER.ORDERKEY,BASC,[Store Type].CURRENTMEMBER.ORDERKEY,BASC)'\r\n"
+            + " SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0]}'\r\n"
+            + " SET [*BASE_MEMBERS__Gender_] AS '[Gender].[Gender].MEMBERS'\r\n"
+            + " SET [*CJ_SLICER_AXIS] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Product].CURRENTMEMBER)})'\r\n"
+            + " SET [*BASE_MEMBERS__Product_] AS '{[Product].[All Products].[Food],[Product].[All Products].[Drink]}'\r\n"
+            + " SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Gender].CURRENTMEMBER,[Store Type].CURRENTMEMBER)})'\r\n"
+            + " MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Customer Count]', FORMAT_STRING = '#,###', SOLVE_ORDER=500\r\n"
+            + " MEMBER [Store Type].[*TOTAL_MEMBER_SEL~AGG] AS 'AGGREGATE(CACHEDEXISTS([*CJ_ROW_AXIS],([Gender].CURRENTMEMBER),\"[*CJ_ROW_AXIS]\"))', SOLVE_ORDER=-101\r\n"
+            + " SELECT\r\n" + " [*BASE_MEMBERS__Measures_] ON COLUMNS\r\n" + " , NON EMPTY\r\n"
+            + " UNION(CROSSJOIN(GENERATE([*CJ_ROW_AXIS], {([Gender].CURRENTMEMBER)}),{[Store Type].[*TOTAL_MEMBER_SEL~AGG]}),[*SORTED_ROW_AXIS]) ON ROWS\r\n"
+            + " FROM [Sales]\r\n" + " WHERE ([*CJ_SLICER_AXIS])\r\n" );
+    String resultString = TestContext.toString( result );
+    TestContext.assertEqualsVerbose( "Axis #0:\n" + "{[Product].[Drink]}\n" + "{[Product].[Food]}\n" + "Axis #1:\n"
+        + "{[Measures].[*FORMATTED_MEASURE_0]}\n" + "Axis #2:\n"
+        + "{[Gender].[F], [Store Type].[*TOTAL_MEMBER_SEL~AGG]}\n"
+        + "{[Gender].[M], [Store Type].[*TOTAL_MEMBER_SEL~AGG]}\n"
+        + "{[Gender].[F], [Store Type].[Gourmet Supermarket]}\n" + "{[Gender].[F], [Store Type].[Supermarket]}\n"
+        + "{[Gender].[M], [Store Type].[Gourmet Supermarket]}\n" + "{[Gender].[M], [Store Type].[Supermarket]}\n"
+        + "Row #0: 2,044\n" + "Row #1: 2,084\n" + "Row #2: 512\n" // Less than 519 above because slicer was applied
+        + "Row #3: 1,884\n" + "Row #4: 531\n" + "Row #5: 1,929\n", getTestContext().upgradeActual( resultString ) );
+    Execution e = ( (ResultBase) result ).getExecution();
+    assertEquals( 1, e.getExpCacheHitCount() );
+    assertEquals( 15, e.getExpCacheMissCount() );
+
+  }
+
+  /**
+   * Verifies that expression cache entries generated with aggregation lists can be re-used.
+   */
+  public void testExpCacheHit() {
+
+    Result result =
+        executeQuery( "WITH\r\n"
+            + " SET [*NATIVE_CJ_SET_WITH_SLICER] AS 'NONEMPTYCROSSJOIN([*BASE_MEMBERS__Gender_],NONEMPTYCROSSJOIN([*BASE_MEMBERS__Store Type_],[*BASE_MEMBERS__Product_]))'\r\n"
+            + " SET [*NATIVE_CJ_SET] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Gender].CURRENTMEMBER,[Store Type].CURRENTMEMBER)})'\r\n"
+            + " SET [*METRIC_CJ_SET] AS 'FILTER([*NATIVE_CJ_SET],[Gender].CURRENTMEMBER IN [*METRIC_CACHE_SET])'\r\n"
+            + " SET [*BASE_MEMBERS__Store Type_] AS '{[Store Type].[All Store Types].[Gourmet Supermarket],[Store Type].[All Store Types].[Supermarket]}'\r\n"
+            + " SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[Gender].CURRENTMEMBER.ORDERKEY,BASC,[Store Type].CURRENTMEMBER.ORDERKEY,BASC)'\r\n"
+            + " SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[Customer Count]}'\r\n"
+            + " SET [*BASE_MEMBERS__Gender_] AS '[Gender].[Gender].MEMBERS'\r\n"
+            + " SET [*METRIC_CACHE_SET] AS 'FILTER(GENERATE([*NATIVE_CJ_SET],{([Gender].CURRENTMEMBER)}),2044 <= [Measures].[*Customer Count_SEL~AGG] and [Measures].[*Customer Count_SEL~AGG] <= 2084)'\r\n"
+            + " SET [*CJ_SLICER_AXIS] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Product].CURRENTMEMBER)})'\r\n"
+            + " SET [*BASE_MEMBERS__Product_] AS '{[Product].[All Products].[Drink],[Product].[All Products].[Food]}'\r\n"
+            + " SET [*CJ_ROW_AXIS] AS 'GENERATE([*METRIC_CJ_SET], {([Gender].CURRENTMEMBER,[Store Type].CURRENTMEMBER)})'\r\n"
+            + " MEMBER [Education Level].[*METRIC_CTX_SET_AGG] AS 'CACHE(AGGREGATE(CACHEDEXISTS([*NATIVE_CJ_SET],([Gender].CURRENTMEMBER),\"[*NATIVE_CJ_SET]\")))', SOLVE_ORDER=-100\r\n"
+            + " MEMBER [Measures].[*Customer Count_SEL~AGG] AS '([Measures].[Customer Count], [Education Level].[*METRIC_CTX_SET_AGG])', SOLVE_ORDER=400\r\n"
+            + " MEMBER [Store Type].[*TOTAL_MEMBER_SEL~AGG] AS 'AGGREGATE(CACHEDEXISTS([*CJ_ROW_AXIS],([Gender].CURRENTMEMBER),\"[*CJ_ROW_AXIS]\"))', SOLVE_ORDER=-101\r\n"
+            + " SELECT\r\n" + " [*BASE_MEMBERS__Measures_] ON COLUMNS\r\n" + " , NON EMPTY\r\n"
+            + " UNION(CROSSJOIN(GENERATE([*CJ_ROW_AXIS], {([Gender].CURRENTMEMBER)}),{[Store Type].[*TOTAL_MEMBER_SEL~AGG]}),[*SORTED_ROW_AXIS]) ON ROWS\r\n"
+            + " FROM [Sales]\r\n" + " WHERE ([*CJ_SLICER_AXIS])" );
+    String resultString = TestContext.toString( result );
+    TestContext.assertEqualsVerbose( "Axis #0:\n" + "{[Product].[Drink]}\n" + "{[Product].[Food]}\n" + "Axis #1:\n"
+        + "{[Measures].[Customer Count]}\n" + "Axis #2:\n" + "{[Gender].[F], [Store Type].[*TOTAL_MEMBER_SEL~AGG]}\n"
+        + "{[Gender].[M], [Store Type].[*TOTAL_MEMBER_SEL~AGG]}\n"
+        + "{[Gender].[F], [Store Type].[Gourmet Supermarket]}\n" + "{[Gender].[F], [Store Type].[Supermarket]}\n"
+        + "{[Gender].[M], [Store Type].[Gourmet Supermarket]}\n" + "{[Gender].[M], [Store Type].[Supermarket]}\n"
+        + "Row #0: 2,044\n" + "Row #1: 2,084\n" + "Row #2: 512\n" + "Row #3: 1,884\n" + "Row #4: 531\n"
+        + "Row #5: 1,929\n", getTestContext().upgradeActual( resultString ) );
+    Execution e = ( (ResultBase) result ).getExecution();
+    assertEquals( 13, e.getExpCacheHitCount() );
+    assertEquals( 23, e.getExpCacheMissCount() );
+  }
+  
+  public void testExpCacheHit2() {
+
+    Result result =
+        executeQuery( "WITH\r\n" + 
+            " SET [*NATIVE_CJ_SET_WITH_SLICER] AS 'NONEMPTYCROSSJOIN([*BASE_MEMBERS__Customers_],NONEMPTYCROSSJOIN([*BASE_MEMBERS__Education Level_],NONEMPTYCROSSJOIN([*BASE_MEMBERS__Time_],NONEMPTYCROSSJOIN([*BASE_MEMBERS__Product_],[*BASE_MEMBERS__Promotion Media_]))))'\r\n" + 
+            " SET [*NATIVE_CJ_SET] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Customers].CURRENTMEMBER,[Education Level].CURRENTMEMBER,[Time].CURRENTMEMBER)})'\r\n" + 
+            " SET [*METRIC_CJ_SET] AS 'FILTER([*NATIVE_CJ_SET],[Customers].CURRENTMEMBER IN [*METRIC_CACHE_SET])'\r\n" + 
+            " SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[Customers].CURRENTMEMBER.ORDERKEY,BASC,ANCESTOR([Customers].CURRENTMEMBER,[Customers].[City]).ORDERKEY,BASC,[Measures].[*SORTED_MEASURE],BASC)'\r\n" + 
+            " SET [*BASE_MEMBERS__Education Level_] AS '{[Education Level].[All Education Levels].[Graduate Degree],[Education Level].[All Education Levels].[High School Degree],[Education Level].[All Education Levels].[Partial College],[Education Level].[All Education Levels].[Partial High School]}'\r\n" + 
+            " SET [*BASE_MEMBERS__Customers_] AS '[Customers].[Name].MEMBERS'\r\n" + 
+            " SET [*METRIC_CACHE_SET] AS 'FILTER(GENERATE([*NATIVE_CJ_SET],{([Customers].CURRENTMEMBER)}),[Measures].[**CALCULATED_MEASURE_3_SEL~SUM] > 0)'\r\n" + 
+            " SET [*METRIC_MEMBERS__Time_] AS 'GENERATE([*METRIC_CJ_SET], {[Time].CURRENTMEMBER})'\r\n" + 
+            " SET [*SORTED_COL_AXIS] AS 'ORDER([*CJ_COL_AXIS],[Time].CURRENTMEMBER.ORDERKEY,BASC,ANCESTOR([Time].CURRENTMEMBER,[Time].[Quarter]).ORDERKEY,BASC,[Measures].CURRENTMEMBER.ORDERKEY,BASC)'\r\n" + 
+            " SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_2],[Measures].[*CALCULATED_MEASURE_1],[Measures].[*CALCULATED_MEASURE_4],[Measures].[*CALCULATED_MEASURE_3]}'\r\n" + 
+            " SET [*CJ_SLICER_AXIS] AS 'GENERATE([*NATIVE_CJ_SET_WITH_SLICER], {([Product].CURRENTMEMBER,[Promotion Media].CURRENTMEMBER)})'\r\n" + 
+            " SET [*CJ_COL_AXIS] AS 'GENERATE([*METRIC_CJ_SET], {([Time].CURRENTMEMBER)})'\r\n" + 
+            " SET [*BASE_MEMBERS__Product_] AS '{[Product].[All Products].[Drink]}'\r\n" + 
+            " SET [*CJ_ROW_AXIS] AS 'GENERATE([*METRIC_CJ_SET], {([Customers].CURRENTMEMBER,[Education Level].CURRENTMEMBER)})'\r\n" + 
+            " SET [*BASE_MEMBERS__Time_] AS '{[Time].[1997].[Q4].[12]}'\r\n" + 
+            " SET [*BASE_MEMBERS__Promotion Media_] AS '{[Promotion Media].[All Media].[Bulk Mail],[Promotion Media].[All Media].[Cash Register Handout]}'\r\n" + 
+            " MEMBER [Store].[*METRIC_CTX_SET_SUM] AS 'CACHE(SUM(CACHEDEXISTS([*NATIVE_CJ_SET],([Customers].CURRENTMEMBER),\"[*NATIVE_CJ_SET]\")))', SOLVE_ORDER=100\r\n" + 
+            " MEMBER [Measures].[**CALCULATED_MEASURE_3_SEL~SUM] AS '([Measures].[*CALCULATED_MEASURE_3], [Store].[*METRIC_CTX_SET_SUM])', SOLVE_ORDER=400\r\n" + 
+            " MEMBER [Measures].[*CALCULATED_MEASURE_1] AS 'CACHE(SUM(\r\n" + 
+            "\r\n" + 
+            "PERIODSTODATE([Time].[Year], \r\n" + 
+            "\r\n" + 
+            "ParallelPeriod(\r\n" + 
+            "[Time].[Quarter], 1,\r\n" + 
+            "[Time].CurrentMember)\r\n" + 
+            "\r\n" + 
+            ")\r\n" + 
+            ", [Measures].[Unit Sales]))', SOLVE_ORDER=200\r\n" + 
+            " MEMBER [Measures].[*CALCULATED_MEASURE_2] AS 'CACHE(SUM(\r\n" + 
+            "\r\n" + 
+            "PERIODSTODATE([Time].[Year], [Time].CurrentMember), [Measures].[Unit Sales]))', SOLVE_ORDER=0\r\n" + 
+            " MEMBER [Measures].[*CALCULATED_MEASURE_3] AS '([Measures].[*CALCULATED_MEASURE_2]-[Measures].[*CALCULATED_MEASURE_1])/[Measures].[*CALCULATED_MEASURE_1]', FORMAT_STRING = '###0.00%', SOLVE_ORDER=0\r\n" + 
+            " MEMBER [Measures].[*CALCULATED_MEASURE_4] AS '[Measures].[*CALCULATED_MEASURE_2]-[Measures].[*CALCULATED_MEASURE_1]', SOLVE_ORDER=0\r\n" + 
+            " MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=500\r\n" + 
+            " MEMBER [Measures].[*SORTED_MEASURE] AS '([Measures].[*CALCULATED_MEASURE_3],[Time].[*CTX_MEMBER_SEL~SUM])', SOLVE_ORDER=400\r\n" + 
+            " MEMBER [Time].[*CTX_MEMBER_SEL~SUM] AS 'SUM([*METRIC_MEMBERS__Time_])', SOLVE_ORDER=98\r\n" + 
+            " SELECT\r\n" + 
+            " CROSSJOIN([*SORTED_COL_AXIS],[*BASE_MEMBERS__Measures_]) ON COLUMNS\r\n" + 
+            " , NON EMPTY\r\n" + 
+            " [*SORTED_ROW_AXIS] ON ROWS\r\n" + 
+            " FROM [Sales]\r\n" + 
+            " WHERE ([*CJ_SLICER_AXIS])" );
+    Execution e = ( (ResultBase) result ).getExecution();
+    assertEquals( 3581, e.getExpCacheHitCount() );
+    assertEquals( 8300, e.getExpCacheMissCount() );
+  }
+  
 }
 
 // End AggregationOnDistinctCountMeasuresTest.java

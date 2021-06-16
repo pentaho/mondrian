@@ -259,15 +259,6 @@ abstract class MondrianOlap4jCellSet
             return;
         }
         this.closed = true;
-        final ProfileHandler profileHandler =
-            olap4jStatement.getProfileHandler();
-        if (profileHandler != null) {
-            final StringWriter stringWriter = new StringWriter();
-            final PrintWriter printWriter = new PrintWriter(stringWriter);
-            olap4jStatement.getQuery().explain(printWriter);
-            printWriter.close();
-            profileHandler.explain(stringWriter.toString(), getQueryTiming());
-        }
         if (this.result != null) {
             this.result.close();
         }

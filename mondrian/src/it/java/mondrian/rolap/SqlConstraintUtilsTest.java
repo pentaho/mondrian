@@ -5,11 +5,30 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2018 Hitachi Vantara and others
+// Copyright (C) 2005-2020 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.mockito.Mockito;
+
+import junit.framework.Assert;
 import mondrian.calc.TupleIterable;
 import mondrian.calc.TupleList;
 import mondrian.calc.impl.AbstractTupleCursor;
@@ -42,22 +61,6 @@ import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
-
-import junit.framework.Assert;
-
-import org.mockito.Mockito;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * <code>SqlConstraintUtilsTest</code> tests the functions defined in
@@ -431,7 +434,7 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
         final RolapEvaluator rolapEvaluator =
             new RolapEvaluator(rolapEvaluatorRoot);
         final Member expectedMember = slicerMember;
-        rolapEvaluator.setSlicerContext(expectedMember);
+        setSlicerContext(rolapEvaluator, expectedMember);
 
         RolapResult.CompoundSlicerRolapMember placeHolderMember =
             Mockito.mock(RolapResult.CompoundSlicerRolapMember.class);
@@ -646,7 +649,7 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
       final RolapEvaluator rolapEvaluator =
           new RolapEvaluator(rolapEvaluatorRoot);
       final Member expectedMember = slicerMember;
-      rolapEvaluator.setSlicerContext(expectedMember);
+      setSlicerContext(rolapEvaluator, expectedMember);
 
       RolapResult.CompoundSlicerRolapMember placeHolderMember =
           Mockito.mock(RolapResult.CompoundSlicerRolapMember.class);
@@ -843,6 +846,14 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
 
         String levelStr = SqlConstraintUtils.constrainLevel(level, query, baseCube, aggStar, columnValue, false);
         assertEquals("dummyName = 'dummyValue'",  levelStr);
+    }
+    
+    private void setSlicerContext(RolapEvaluator e, Member m) {
+      List<Member> members = new ArrayList<Member>();
+      members.add( m );
+      Map<Hierarchy, Set<Member>> membersByHierarchy = new HashMap<Hierarchy, Set<Member>>();
+      membersByHierarchy.put( m.getHierarchy(), new HashSet<Member>(members) );
+      e.setSlicerContext( members, membersByHierarchy );
     }
 }
 
