@@ -4826,7 +4826,7 @@ public class SchemaExplorer
                         if (((MondrianGuiDef.Hierarchy) pathSelected).relation
                             == null)
                         {
-                            addLevel.setEnabled(false);
+                            addLevel.setEnabled(true);
                             addTable.setEnabled(true);
                             addJoin.setEnabled(true);
                             addView.setEnabled(true);
