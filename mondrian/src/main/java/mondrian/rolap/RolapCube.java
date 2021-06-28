@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2018 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -484,12 +484,15 @@ public class RolapCube extends CubeBase {
             new TreeMap<RolapCube, List<MondrianDef.CalculatedMember>>(
                 cubeComparator);
         Member defaultMeasure = null;
+        Map<String, Boolean> visibilityMap = new HashMap<>();
 
         this.cubeUsages = new RolapCubeUsages(xmlVirtualCube.cubeUsage);
 
         for (MondrianDef.VirtualCubeMeasure xmlMeasure
             : xmlVirtualCube.measures)
         {
+            // used later to set the final visibility for calculated measures
+            visibilityMap.put(xmlMeasure.name, xmlMeasure.visible);
             // Lookup a measure in an existing cube.
             RolapCube cube = schema.lookupCube(xmlMeasure.cubeName);
             if (cube == null) {
@@ -610,6 +613,9 @@ public class RolapCube extends CubeBase {
         }
         xmlCalculatedMemberList.addAll(
             Arrays.asList(xmlVirtualCube.calculatedMembers));
+        for (MondrianDef.CalculatedMember measure : xmlVirtualCube.calculatedMembers) {
+            visibilityMap.put( RolapSchema.calcMemberFqName( measure ), measure.visible );
+        }
 
 
         // Resolve all calculated members relative to this virtual cube,
@@ -720,6 +726,14 @@ public class RolapCube extends CubeBase {
                 ((RolapHierarchy.RolapCalculatedMeasure) calcMeasure)
                         .setBaseCube(calcMeasuresWithBaseCube.get(calcMeasure.getUniqueName()).getBaseCube());
             }
+            // need to set visibility per the virtual cube's definition
+            Boolean visible = visibilityMap.get( calcMeasure.getUniqueName() );
+            if (visible == null) {
+                visible = Boolean.TRUE;
+            }
+            calcMeasure.setProperty(
+              Property.VISIBLE.name,
+              visible);
             finalMeasureMembers.add(calcMeasure);
         }
         setMeasuresHierarchyMemberReader(
