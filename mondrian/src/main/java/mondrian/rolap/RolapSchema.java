@@ -963,7 +963,7 @@ public class RolapSchema implements Schema {
         return null;
     }
 
-    private String calcMemberFqName(MondrianDef.CalculatedMember xmlCalcMember)
+    public static String calcMemberFqName(MondrianDef.CalculatedMember xmlCalcMember)
     {
         if (xmlCalcMember.dimension != null) {
             return Util.makeFqName(
