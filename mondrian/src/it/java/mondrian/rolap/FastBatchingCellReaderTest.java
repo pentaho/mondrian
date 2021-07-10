@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+// Copyright (c) 2002-2021 Hitachi Vantara..  All rights reserved.
 */
 package mondrian.rolap;
 
@@ -2394,6 +2394,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             new Double[] {};
         final Object[] dblSet4 =
             new Double[] {2.7, 1.9};
+        final Object[] dblSet5 =
+            new Double[] {-1.2, -3.4};
 
         // Arrays of ints
         final Object[] intSet1 =
@@ -2415,6 +2417,11 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             null,
             RolapAggregator.Max.aggregate(
                 Arrays.asList(dblSet2),
+                Dialect.Datatype.Numeric));
+        Assert.assertEquals(
+            -1.2,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(dblSet5),
                 Dialect.Datatype.Numeric));
         try {
             RolapAggregator.Max.aggregate(

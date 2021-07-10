@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde and others
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -181,7 +181,7 @@ public abstract class RolapAggregator
                         ? null
                         : maxInt;
                 case Numeric:
-                    double maxDouble = Double.MIN_VALUE;
+                    double maxDouble = Double.NEGATIVE_INFINITY;
                     for (Object data : rawData) {
                         if (data != null) {
                             maxDouble =
@@ -191,7 +191,7 @@ public abstract class RolapAggregator
                         }
                     }
 
-                    return maxDouble == Double.MIN_VALUE
+                    return maxDouble == Double.NEGATIVE_INFINITY
                         ? null
                         : maxDouble;
                 default:
