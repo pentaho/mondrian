@@ -311,7 +311,9 @@ public class VirtualCubeTest extends BatchTestCase {
             + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Sales Count]\" visible=\"true\" />\n"
             + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Cost]\" visible=\"false\" />\n"
             + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
+            + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Profit last Period]\" visible=\"true\" />\n"
             + "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Units Shipped]\" visible=\"false\" />\n"
+            + "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Average Warehouse Sale]\" visible=\"false\" />\n"
             + "  <CalculatedMember name=\"Profit\" dimension=\"Measures\" visible=\"false\" >\n"
             + "    <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>\n"
             + "  </CalculatedMember>\n"
@@ -324,7 +326,9 @@ public class VirtualCubeTest extends BatchTestCase {
             + " [Measures].[Store Cost],\n"
             + " [Measures].[Store Sales],\n"
             + " [Measures].[Units Shipped],\n"
-            + " [Measures].[Profit]} on columns\n"
+            + " [Measures].[Profit],\n"
+            + " [Measures].[Profit last Period],\n"
+            + " [Measures].[Average Warehouse Sale]} on columns\n"
             + "from [Warehouse and Sales Member Visibility]");
         assertVisibility(result, 0, "Sales Count", true); // explicitly visible
         assertVisibility(
@@ -333,6 +337,20 @@ public class VirtualCubeTest extends BatchTestCase {
         assertVisibility(
             result, 3, "Units Shipped", false); // explicitly invisible
         assertVisibility(result, 4, "Profit", false); // explicitly invisible
+        assertVisibility(result, 5, "Profit last Period", true); // explicitly visible
+        assertVisibility(result, 6, "Average Warehouse Sale", false); // explicitly visible
+
+        // check that visibilities in the base cubes are still the same
+        result = testContext.executeQuery(
+          "select {[Measures].[Profit last Period]} on columns from [Sales]");
+        assertVisibility(result, 0, "Profit last Period", false); // explicitly invisible in base cube
+
+        result = testContext.executeQuery(
+          "select {[Measures].[Units Shipped],\n"
+            + " [Measures].[Average Warehouse Sale]} on columns\n"
+            + " from [Warehouse]");
+        assertVisibility(result, 0, "Units Shipped", true); // implicitly visible in base cube
+        assertVisibility(result, 1, "Average Warehouse Sale", true); // implicitly visible in base cube
     }
 
     private void assertVisibility(
