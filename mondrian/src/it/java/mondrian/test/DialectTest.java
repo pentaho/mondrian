@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2002-2020 Hitachi Vantara and others. All rights reserved.
+// Copyright (c) 2002-2021 Hitachi Vantara and others. All rights reserved.
 */
 package mondrian.test;
 
@@ -1411,6 +1411,9 @@ public class DialectTest extends TestCase {
     }
     switch ( getDialect().getDatabaseProduct() ) {
       case MYSQL:
+        assertNull( throwable );
+        assertTrue( couldTranslate );
+        break;
       case MARIADB:
         assertNotNull( throwable );
         assertTrue( couldTranslate );
@@ -1725,7 +1728,7 @@ public class DialectTest extends TestCase {
 
     public ResultSetMetaData build() {
       return (ResultSetMetaData) Proxy.newProxyInstance(
-        null,
+        this.getClass().getClassLoader(),
         new Class[] { ResultSetMetaData.class },
         this );
     }

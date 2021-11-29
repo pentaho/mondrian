@@ -4,23 +4,22 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2015-2017 Hitachi Vantara.
+// Copyright (c) 2015-2021 Hitachi Vantara.
 // All rights reserved.
  */
 package mondrian.spi.impl;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.sql.Statement;
+import junit.framework.TestCase;
+import mondrian.olap.Util;
+import mondrian.spi.Dialect;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 
-import com.mysql.jdbc.Statement;
-
-import junit.framework.TestCase;
-import mondrian.olap.Util;
-import mondrian.spi.Dialect;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class MicrosoftSqlServerDialectTest extends TestCase {
 
