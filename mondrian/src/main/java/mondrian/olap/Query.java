@@ -20,8 +20,6 @@ import mondrian.server.*;
 import mondrian.spi.ProfileHandler;
 import mondrian.util.ArrayStack;
 
-import org.apache.commons.collections.collection.CompositeCollection;
-
 import org.olap4j.impl.*;
 import org.olap4j.mdx.IdentifierSegment;
 
@@ -552,13 +550,12 @@ public class Query extends QueryPart {
    * @return Collection of all axes including slicer
    */
   private Collection<QueryAxis> allAxes() {
-    if ( slicerAxis == null ) {
-      return Arrays.asList( axes );
-    } else {
-      // noinspection unchecked
-      return new CompositeCollection( new Collection[] { Collections.singletonList( slicerAxis ), Arrays.asList(
-          axes ) } );
-    }
+    List<QueryAxis> list=new ArrayList<>();
+    list.addAll( Arrays.asList( axes ));
+    if ( slicerAxis != null ) {
+	list.add(slicerAxis);
+    } 
+    return list;
   }
 
   public void unparse( PrintWriter pw ) {
