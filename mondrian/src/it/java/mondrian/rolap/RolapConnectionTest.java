@@ -18,11 +18,9 @@ import mondrian.olap.Result;
 import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 import mondrian.test.TestContext;
-import mondrian.util.Pair;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.lang.StringUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -493,7 +491,7 @@ public class RolapConnectionTest extends TestCase {
         } catch (RuntimeException ex) {
             assertTrue(
                 connectInfo.toString(),
-                StringUtils.isBlank(connectInfo.toString()));
+                Util.isBlank(connectInfo.toString()));
         }
     }
 
@@ -511,7 +509,7 @@ public class RolapConnectionTest extends TestCase {
         DataSource dataSource =
             RolapConnection.createDataSource(null, properties, connectInfo);
 
-        assertFalse(StringUtils.isBlank(connectInfo.toString()));
+        assertFalse(Util.isBlank(connectInfo.toString()));
 
         String[] parseconnectInfo = connectInfo.toString().split(";");
         for (String parseconnectInfoVals : parseconnectInfo) {
@@ -535,7 +533,7 @@ public class RolapConnectionTest extends TestCase {
         DataSource dataSource =
             RolapConnection.createDataSource(null, properties, connectInfo);
 
-        assertFalse(StringUtils.isBlank(connectInfo.toString()));
+        assertFalse(Utils.isBlank(connectInfo.toString()));
         assertFalse(connectInfo.toString().contains("databaseName"));
     }
 
@@ -549,7 +547,7 @@ public class RolapConnectionTest extends TestCase {
         DataSource dataSource =
             RolapConnection.createDataSource(null, properties, connectInfo);
 
-        assertFalse(StringUtils.isBlank(connectInfo.toString()));
+        assertFalse(Utils.isBlank(connectInfo.toString()));
         assertFalse(connectInfo.toString().contains("integratedSecurity"));
     }
 }
