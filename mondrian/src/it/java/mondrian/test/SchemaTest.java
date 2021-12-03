@@ -22,13 +22,13 @@ import mondrian.spi.Dialect;
 import mondrian.spi.PropertyFormatter;
 import mondrian.util.Bug;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.*;
 import org.apache.log4j.varia.LevelRangeFilter;
 
 import org.olap4j.metadata.NamedList;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -4827,9 +4827,7 @@ public class SchemaTest extends FoodMartTestCase {
             "<Hierarchy name=\"地域\" hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">");
         File schemaFile = File.createTempFile("multiByteSchema", ",xml");
         schemaFile.deleteOnExit();
-        FileOutputStream output = new FileOutputStream(schemaFile);
-        IOUtils.write(rawSchema, output);
-        output.close();
+        Files.writeString(schemaFile.toPath(), rawSchema);
         TestContext context = getTestContext();
         final Util.PropertyList properties =
             context.getConnectionProperties().clone();
