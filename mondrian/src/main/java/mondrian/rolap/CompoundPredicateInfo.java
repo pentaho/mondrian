@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 //
 */
@@ -16,11 +16,13 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
 import mondrian.olap.Member;
+import mondrian.olap.Util;
 import mondrian.olap.fun.VisualTotalsFunDef;
 import mondrian.olap.type.SetType;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AndPredicate;
+import mondrian.rolap.agg.ListColumnPredicate;
 import mondrian.rolap.agg.OrPredicate;
 import mondrian.rolap.agg.ValueColumnPredicate;
 import mondrian.rolap.sql.SqlQuery;
@@ -298,6 +300,8 @@ public class CompoundPredicateInfo {
         for (List<RolapCubeMember[]> group : compoundGroupMap.values()) {
             // e.g {[USA].[CA], [Canada].[BC]}
             StarPredicate compoundGroupPredicate = null;
+            List<StarPredicate> tuplePredicateList =
+                new ArrayList<StarPredicate> ();
             for (RolapCubeMember[] tuple : group) {
                 // [USA].[CA]
                 StarPredicate tuplePredicate = null;
@@ -307,13 +311,23 @@ public class CompoundPredicateInfo {
                         member, baseCube, tuplePredicate, evaluator);
                 }
                 if (tuplePredicate != null) {
-                    if (compoundGroupPredicate == null) {
-                        compoundGroupPredicate = tuplePredicate;
-                    } else {
-                        compoundGroupPredicate =
-                            compoundGroupPredicate.or(tuplePredicate);
-                    }
+                  tuplePredicateList.add( tuplePredicate );
                 }
+            }
+            if (tuplePredicateList.size() == 1) {
+              compoundGroupPredicate = tuplePredicateList.get( 0 );
+            } else if (tuplePredicateList.size() > 1 ) {
+              // All tuples in the same group will constrain the same set of columns so
+              // when combining the tuple predicates we can optimize to create the
+              // ListColumnPredicate or OrPredicate in a single batch.  See MONDRIAN-2719
+              if (tuplePredicateList.get(0) instanceof StarColumnPredicate) {
+                StarColumnPredicate scp = (StarColumnPredicate) tuplePredicateList.get(0);
+                compoundGroupPredicate = new ListColumnPredicate(
+                  scp.getConstrainedColumn(),
+                  Util.cast( tuplePredicateList ));
+              } else {
+                compoundGroupPredicate = new OrPredicate(tuplePredicateList);
+              }
             }
 
             if (compoundGroupPredicate != null) {

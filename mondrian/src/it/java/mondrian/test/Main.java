@@ -77,6 +77,7 @@ import mondrian.rolap.RolapConnectionTest;
 import mondrian.rolap.RolapCubeDimensionTest;
 import mondrian.rolap.RolapCubeHierarchyTest;
 import mondrian.rolap.RolapCubeTest;
+import mondrian.rolap.RolapEvaluatorTest;
 import mondrian.rolap.RolapMemberBaseTest;
 import mondrian.rolap.RolapNativeSqlInjectionTest;
 import mondrian.rolap.RolapNativeTopCountTest;
@@ -401,6 +402,7 @@ public class Main extends TestSuite {
       addTest( suite, RolapSchemaReaderTest.class );
       addTest( suite, RolapCubeTest.class );
       addTest( suite, NumberSqlCompilerTest.class );
+      addTest( suite, RolapEvaluatorTest.class );
       addTest( suite, RolapNativeSqlInjectionTest.class );
       addTest( suite, RolapNativeTopCountTest.class );
       addTest( suite, RolapNativeTopCountVersusNonNativeTest.class );
