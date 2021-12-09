@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 
@@ -112,7 +112,6 @@ public class DriverManager {
         }
         final RolapConnection connection =
             new RolapConnection(server, properties, dataSource);
-        server.addConnection(connection);
         return connection;
     }
 }
