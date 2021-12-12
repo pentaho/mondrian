@@ -6,7 +6,7 @@ Mondrian is an Online Analytical Processing (OLAP) server that enables business 
 * Maven 3.3 or higher
 
 #### Quick Start
-The following command will build the Mondrian jar, run the full integration test suite using an embedded MySQL server and install the jar file into your local Maven repository.
+The following command will build the Mondrian jar, run the full integration test suite using an embedded MySQL server and install the jar file into your local Maven repository. Note: For this to work, you need to have the following config in your Maven settings file: https://github.com/pentaho/maven-parent-poms/blob/master/maven-support-files/settings.xml
 ```
 mvn -DrunITs install
 ```
