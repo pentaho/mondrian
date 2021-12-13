@@ -45,4 +45,10 @@ public class MariaDBDialect extends MySqlDialect {
       return productName;
   }
 
+  // PATCH: MariaDB ColumnStore does not support selecting columns that are not in group by
+  @Override
+  protected boolean deduceSupportsSelectNotInGroupBy(Connection connection) throws SQLException {
+      return false;
+  }
+
 }
