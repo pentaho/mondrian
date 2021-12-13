@@ -140,7 +140,12 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     null,
                     "Don't know how to rollup aggregator '" + aggregator + "'");
             }
-            if (aggregator != RolapAggregator.DistinctCount
+            // PATCH: If Aggregate is called with single dimension stored members then try to optimize it
+            // using the same logic as for distinct count which will generate a single SQL query with IN conditions.
+            // This will perform better when large compound slicers are used with multiple dimensions and multiple members
+            // that could result in OutOfMemoryError.
+            if (useRollupAggregate(calc, evaluator, tupleList)
+                && aggregator != RolapAggregator.DistinctCount
                 && aggregator != RolapAggregator.Avg)
             {
                 final int savepoint = evaluator.savepoint();
@@ -202,6 +207,29 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             // cancel nonEmpty context
             evaluator2.setNonEmpty(false);
             return evaluator2.evaluateCurrent();
+        }
+
+        // PATCH: New method to check when the default rollup aggregate approach should be used.
+        private static boolean useRollupAggregate(Calc calc, Evaluator evaluator, TupleList tupleList) {
+            // Use optimization only when mondrian.rolap.EnableInMemoryRollup=false
+            if (MondrianProperties.instance().EnableInMemoryRollup.get() ||
+                // Only when single dimension members are used.
+                tupleList.size() == 0 || tupleList.get(0).size() != 1 ||
+                // RolapEvaluator will fail on member hierarchies without the all member (e.g. Measures).
+                tupleList.get(0).get(0).getHierarchy().getAllMember() == null ||
+                // Only if the expression argument is not provided.
+                !(calc instanceof ValueCalc))
+            {
+                return true;
+            }
+            for (List<Member> tuple : tupleList) {
+                Member member = tuple.get(0);
+                // Do not use optimization if any member is calculated.
+                if (member.isCalculated()) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /**
