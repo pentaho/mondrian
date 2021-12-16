@@ -19,7 +19,9 @@ import mondrian.spi.UserDefinedFunction;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.NormalDistribution;
 import org.apache.commons.math.distribution.NormalDistributionImpl;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 
 /**
@@ -43,7 +45,7 @@ import org.apache.log4j.Logger;
  */
 public class InverseNormalUdf implements UserDefinedFunction {
     private static final Logger LOGGER =
-        Logger.getLogger(InverseNormalUdf.class);
+        LogManager.getLogger(InverseNormalUdf.class);
 
 
     // the zero arg constructor sets the mean equal to zero and standard

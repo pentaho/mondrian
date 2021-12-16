@@ -17,7 +17,8 @@ import mondrian.olap.Role.RollupPolicy;
 import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapEvaluator;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.eigenbase.util.property.IntegerProperty;
 
@@ -34,7 +35,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
     private static final String TIMING_NAME =
         AggregateFunDef.class.getSimpleName();
     private static final Logger LOGGER =
-        Logger.getLogger(AggregateFunDef.class);
+        LogManager.getLogger(AggregateFunDef.class);
     static final ReflectiveMultiResolver resolver =
         new ReflectiveMultiResolver(
             "Aggregate", "Aggregate(<Set>[, <Numeric Expression>])",

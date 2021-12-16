@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 
-import com.mysql.jdbc.Statement;
+import java.sql.Statement;
 
 import junit.framework.TestCase;
 import mondrian.olap.Util;

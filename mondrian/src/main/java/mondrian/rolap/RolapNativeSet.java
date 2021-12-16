@@ -38,7 +38,9 @@ import mondrian.rolap.sql.MemberListCrossJoinArg;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
 import org.apache.commons.collections.Predicate;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,7 +66,7 @@ import static org.apache.commons.collections.CollectionUtils.filter;
  */
 public abstract class RolapNativeSet extends RolapNative {
   protected static final Logger LOGGER =
-    Logger.getLogger( RolapNativeSet.class );
+    LogManager.getLogger( RolapNativeSet.class );
 
   private SmartCache<Object, TupleList> cache =
     new SoftSmartCache<Object, TupleList>();

@@ -14,7 +14,8 @@ import mondrian.server.Execution;
 import mondrian.spi.Dialect;
 import mondrian.spi.StatisticsProvider;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.sql.*;
 import javax.sql.DataSource;
@@ -25,7 +26,7 @@ import javax.sql.DataSource;
  */
 public class JdbcStatisticsProvider implements StatisticsProvider {
     private static final Logger LOG =
-        Logger.getLogger(JdbcStatisticsProvider.class);
+        LogManager.getLogger(JdbcStatisticsProvider.class);
     public long getTableCardinality(
         Dialect dialect,
         DataSource dataSource,

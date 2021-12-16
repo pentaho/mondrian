@@ -11,7 +11,8 @@ package mondrian.test;
 
 import junit.framework.TestCase;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Those performance tests use the steel wheels schema
@@ -24,7 +25,7 @@ public class SteelWheelsPerformanceTest extends TestCase {
      * Certain tests are enabled only if logging is enabled.
      */
     private static final Logger LOGGER =
-        Logger.getLogger(SteelWheelsPerformanceTest.class);
+        LogManager.getLogger(SteelWheelsPerformanceTest.class);
 
     public SteelWheelsPerformanceTest(String name) {
         super(name);

@@ -13,7 +13,8 @@ package mondrian.web.taglib;
 
 import mondrian.olap.*;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.w3c.dom.*;
 
@@ -32,7 +33,7 @@ import javax.xml.transform.stream.StreamSource;
  * @author Andreas Voss, 22 March, 2002
  */
 public class DomBuilder {
-    private static final Logger LOGGER = Logger.getLogger(DomBuilder.class);
+    private static final Logger LOGGER = LogManager.getLogger(DomBuilder.class);
 
     Document factory;
     Result result;

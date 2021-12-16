@@ -9,7 +9,8 @@
 
 package mondrian.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.lang.management.*;
 import javax.management.*;
@@ -34,7 +35,7 @@ import javax.management.*;
  */
 public class NotificationMemoryMonitor extends AbstractMemoryMonitor {
     private static final Logger LOGGER =
-                Logger.getLogger(NotificationMemoryMonitor.class);
+        LogManager.getLogger(NotificationMemoryMonitor.class);
 
 
     protected static final MemoryPoolMXBean TENURED_POOL;

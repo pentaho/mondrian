@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.MDC;
+import org.apache.logging.log4j.ThreadContext;
 
 /**
  * MdcUtil is a small helper class for copying log4j MDC context between threads. The main use case is for maintaining
@@ -22,15 +22,15 @@ import org.apache.log4j.MDC;
  * @author benny
  */
 public class MDCUtil {
-  private final Map<String, Object> mdc = new HashMap<>();
+  private final Map<String, String> mdc = new HashMap<>();
 
   /**
    * Constructor is called on parent thread so a snapshot of the MDC context is saved here.
    * 
    */
   public MDCUtil() {
-    if ( MDC.getContext() != null ) {
-      this.mdc.putAll( MDC.getContext() );
+    if ( ThreadContext.getContext() != null ) {
+      this.mdc.putAll( ThreadContext.getContext() );
     }
   }
 
@@ -39,12 +39,12 @@ public class MDCUtil {
    * 
    */
   public void setContextMap() {
-    final Map<String, Object> old = MDC.getContext();
+    final Map<String, String> old = ThreadContext.getContext();
     if ( old != null ) {
       old.clear();
     }
-    for ( Entry<String, Object> entry : mdc.entrySet() ) {
-      MDC.put( entry.getKey(), entry.getValue() );
+    for ( Entry<String, String> entry : mdc.entrySet() ) {
+      ThreadContext.put( entry.getKey(), entry.getValue() );
     }
   }
 

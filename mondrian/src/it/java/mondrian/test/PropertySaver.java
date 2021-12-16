@@ -16,9 +16,12 @@ package mondrian.test;
 import mondrian.olap.MondrianProperties;
 import mondrian.rolap.RolapUtil;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.eigenbase.util.property.*;
 
 import java.util.HashMap;
@@ -142,7 +145,10 @@ public class PropertySaver {
             }
         }
         for (Map.Entry<Logger, Level> entry : originalLoggerLevels.entrySet()) {
-            entry.getKey().setLevel(entry.getValue());
+            LoggerContext ctx = (LoggerContext) LogManager.getContext( false );
+            Configuration config = ctx.getConfiguration();
+            LoggerConfig loggerConfig = config.getLoggerConfig( entry.getKey().getName() );
+            loggerConfig.setLevel(entry.getValue());
         }
     }
 
@@ -157,7 +163,10 @@ public class PropertySaver {
         if (!originalLoggerLevels.containsKey(logger)) {
             originalLoggerLevels.put(logger, prevLevel);
         }
-        logger.setLevel(level);
+        LoggerContext ctx = (LoggerContext) LogManager.getContext( false );
+        Configuration config = ctx.getConfiguration();
+        LoggerConfig loggerConfig = config.getLoggerConfig( logger.getName() );
+        loggerConfig.setLevel(level);
     }
 
     /**
@@ -169,7 +178,7 @@ public class PropertySaver {
     public void setAtLeast(Logger logger, Level level) {
         final Level prevLevel = logger.getLevel();
         if (prevLevel == null
-            || !prevLevel.isGreaterOrEqual(level))
+            || !(prevLevel.compareTo(level) <= 0))
         {
             set(logger, level);
         }

@@ -19,7 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -197,7 +198,7 @@ import mondrian.xmla.test.XmlaTest;
  * @author jhyde
  */
 public class Main extends TestSuite {
-  private static final Logger logger = Logger.getLogger( Main.class );
+  private static final Logger logger = LogManager.getLogger( Main.class );
   /**
    * Scratch area to store information on the emerging test suite.
    */
