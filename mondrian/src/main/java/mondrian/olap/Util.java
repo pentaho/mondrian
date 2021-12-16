@@ -73,6 +73,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.filter.LevelRangeFilter;
+import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.LogManager;
+
 import org.apache.commons.collections.keyvalue.AbstractMapEntry;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.vfs2.FileContent;
@@ -81,7 +92,6 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
 import org.apache.commons.vfs2.provider.http.HttpFileObject;
-import org.apache.log4j.Logger;
 import org.eigenbase.xom.XOMUtil;
 import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.mdx.IdentifierNode;
@@ -128,7 +138,7 @@ public class Util extends XOMUtil {
 
     public static final String nl = System.getProperty("line.separator");
 
-    private static final Logger LOGGER = Logger.getLogger(Util.class);
+    private static final Logger LOGGER = LogManager.getLogger(Util.class);
 
     /**
      * Placeholder which indicates a value NULL.
@@ -4587,6 +4597,37 @@ public class Util extends XOMUtil {
     }
     printWriter.close();
     handler.explain( stringWriter.toString(), timing );
+  }
+
+  public static void addAppender(Appender appender, Logger logger) {
+    LoggerContext ctx = (LoggerContext) LogManager.getContext( false );
+    Configuration config = ctx.getConfiguration();
+    LoggerConfig loggerConfig = config.getLoggerConfig( logger.getName() );
+    loggerConfig.addAppender( appender, org.apache.logging.log4j.Level.ALL, null );
+    ctx.updateLoggers();
+  }
+
+  public static void removeAppender(Appender appender, Logger logger) {
+    LoggerContext ctx = (LoggerContext) LogManager.getContext( false );
+    Configuration config = ctx.getConfiguration();
+    LoggerConfig loggerConfig = config.getLoggerConfig( logger.getName() );
+    loggerConfig.removeAppender( appender.getName() );
+    ctx.updateLoggers();
+  }
+
+  public static Appender makeAppender(
+      String name,
+      org.apache.logging.log4j.Level minLevel,
+      StringWriter sw,
+      Layout<? extends Serializable> layout)
+  {
+    final LevelRangeFilter filter = LevelRangeFilter.createFilter(minLevel, null, null, null);
+    return WriterAppender.newBuilder()
+            .setName(name)
+            .setFilter(filter)
+            .setLayout(layout)
+            .setTarget(sw)
+            .build();
   }
 }
 

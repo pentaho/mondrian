@@ -38,7 +38,9 @@ import mondrian.spi.SegmentHeader;
 import mondrian.util.BlockingHashMap;
 import mondrian.util.MDCUtil;
 import mondrian.util.Pair;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -294,7 +296,7 @@ public class SegmentCacheManager {
   private final SegmentCacheIndexRegistry indexRegistry;
 
   private static final Logger LOGGER =
-    Logger.getLogger( AggregationManager.class );
+    LogManager.getLogger( AggregationManager.class );
   private final MondrianServer server;
 
 

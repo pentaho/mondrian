@@ -23,8 +23,6 @@ import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.*;
 import mondrian.util.*;
 
-import org.apache.log4j.Logger;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -53,8 +51,6 @@ import java.util.concurrent.*;
  * @since 24 May 2007
  */
 public class SegmentLoader {
-
-  private static final Logger LOGGER = Logger.getLogger( SegmentLoader.class );
 
   private final SegmentCacheManager cacheMgr;
 

@@ -12,8 +12,14 @@
 */
 package mondrian.test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -35,13 +41,20 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.eigenbase.util.property.StringProperty;
 import org.olap4j.CellSet;
 import org.olap4j.OlapConnection;
@@ -4019,12 +4032,14 @@ public class BasicQueryTest extends FoodMartTestCase {
     final mondrian.server.Statement stmt = conn.getInternalStatement();
     // use the logger to block and trigger cancelation at the right time
     Logger sqlLog = RolapUtil.SQL_LOGGER;
-    propSaver.set( sqlLog, org.apache.log4j.Level.DEBUG );
+    propSaver.set( sqlLog, org.apache.logging.log4j.Level.DEBUG );
     final Execution exec = new Execution( stmt, 50000 );
     final CountDownLatch okToGo = new CountDownLatch( 1 );
-    SqlCancelingAppender canceler = new SqlCancelingAppender( component, triggerSql, exec, okToGo );
+    AtomicLong rows = new AtomicLong();
+    Appender canceler = makeAppender( component, triggerSql, exec, okToGo, "executeAndCancelAtSqlFetch", rows );
     stmt.setQuery( conn.parseQuery( query ) );
-    sqlLog.addAppender( canceler );
+    //sqlLog.addAppender( canceler );
+    addAppender(canceler, sqlLog);
     try {
       conn.execute( exec );
       Assert.fail( "Query not canceled." );
@@ -4033,37 +4048,68 @@ public class BasicQueryTest extends FoodMartTestCase {
       if ( !okToGo.await( 5, TimeUnit.SECONDS ) ) {
         Assert.fail( "Timeout reading sql statement end from log." );
       }
-      return canceler.rows;
+      return rows.longValue();
     } finally {
-      sqlLog.removeAppender( canceler );
+      //sqlLog.removeAppender( canceler );
+      removeAppender(canceler.getName());
       context.close();
     }
     return null;
   }
 
+  private static void addAppender(Appender appender, Logger logger) {
+    LoggerContext ctx = (LoggerContext) LogManager.getContext( false );
+    Configuration config = ctx.getConfiguration();
+    LoggerConfig loggerConfig = config.getLoggerConfig( logger.getName() );
+    loggerConfig.addAppender( appender, Level.ALL, null );
+    ctx.updateLoggers();
+  }
+
+  private static void removeAppender(String name) {
+    LoggerContext ctx = (LoggerContext) LogManager.getContext( false );
+    Configuration config = ctx.getConfiguration();
+    LoggerConfig loggerConfig = config.getLoggerConfig( name );
+    loggerConfig.removeAppender( name );
+    ctx.updateLoggers();
+  }
+
+  private static Appender makeAppender(
+      String comp, String trigger, Execution exec,
+      CountDownLatch latch, String name, AtomicLong rows)
+  {
+    return WriterAppender.createAppender(
+        null, null, new SqlCancelingWriter(comp, trigger, exec, latch, rows), name, false, false);
+  }
+
   /**
    * Listens to sql log for a specific query, cancels mdx when it's executed and reads number of fetched rows.
    */
-  private static class SqlCancelingAppender extends AppenderSkeleton {
+  private static class SqlCancelingWriter extends Writer {
+    private ByteArrayOutputStream out = new ByteArrayOutputStream();
     private String trigger;
     private Pattern stmtNbrGetter, stmtCanceler, stmtRowCounter;
     private int state = 0;
-    Long rows = null;
+    final AtomicLong rows;
     Execution exec;
     CountDownLatch latch;
 
-    SqlCancelingAppender( String comp, String trigger, Execution exec, CountDownLatch latch ) {
+    SqlCancelingWriter( String comp, String trigger, Execution exec, CountDownLatch latch, AtomicLong rows) {
       super();
       this.trigger = trigger;
       this.latch = latch;
       // capture stalked statement's number
       stmtNbrGetter = Pattern.compile( "^([0-9]*):\\s*" + Pattern.quote( comp ) + "\\s*: executing sql " );
       this.exec = exec;
+      this.rows = rows;
     }
 
-    @Override
-    protected synchronized void append( LoggingEvent event ) {
-      String msg = event.getMessage().toString();
+    @Override public void write( char[] cbuf, int off, int len ) throws IOException {
+      final ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode( CharBuffer.wrap(cbuf));
+      byte[] bytes = Arrays.copyOf(byteBuffer.array(), byteBuffer.limit());
+      out.write( bytes, off, len );
+      String msg = new String(bytes);
+
+      //String msg = event.getMessage().toString();
       if ( state == 0 && msg.contains( trigger ) ) {
         Matcher matcher = stmtNbrGetter.matcher( msg );
         if ( matcher.find() ) {
@@ -4085,7 +4131,7 @@ public class BasicQueryTest extends FoodMartTestCase {
       } else if ( state == 2 ) {
         Matcher matcher = stmtRowCounter.matcher( msg );
         if ( matcher.find() ) {
-          rows = new Long( matcher.group( 1 ) );
+          rows.set( new Long( matcher.group( 1 ) ) );
           // invalidate
           state++;
           // release test
@@ -4093,14 +4139,11 @@ public class BasicQueryTest extends FoodMartTestCase {
         }
       }
     }
-
-    @Override
-    public void close() {
+    @Override public void flush() throws IOException {
+      out.flush();
     }
-
-    @Override
-    public boolean requiresLayout() {
-      return false;
+    @Override public void close() throws IOException {
+      out.close();
     }
   }
 

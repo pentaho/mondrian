@@ -17,7 +17,10 @@ import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.*;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -95,7 +98,7 @@ public class MondrianFoodMartLoader {
     // Constants
 
     private static final Logger LOGGER =
-        Logger.getLogger(MondrianFoodMartLoader.class);
+        LogManager.getLogger(MondrianFoodMartLoader.class);
     private static final String nl = Util.nl;
 
     // Fields
@@ -163,22 +166,24 @@ public class MondrianFoodMartLoader {
         StringBuilder parametersMessage = new StringBuilder();
 
         // Add a console appender for error messages.
-        final ConsoleAppender consoleAppender =
-            new ConsoleAppender(
-                // Formats the message on its own line,
-                // omits timestamp, priority etc.
-                new PatternLayout("%m%n"),
-                "System.out");
-        consoleAppender.setThreshold(Level.ERROR);
-        LOGGER.addAppender(consoleAppender);
+        //LOG4JFIXME
+//        final ConsoleAppender consoleAppender =
+//            new ConsoleAppender(
+//                // Formats the message on its own line,
+//                // omits timestamp, priority etc.
+//                new PatternLayout("%m%n"),
+//                "System.out");
+//        consoleAppender.setThreshold(Level.ERROR);
+//        LOGGER.addAppender(consoleAppender);
 
         for (String arg : args) {
             if (arg.equals("-verbose")) {
-                // Make sure the logger is passing at least debug events.
-                consoleAppender.setThreshold(Level.DEBUG);
-                if (!LOGGER.isDebugEnabled()) {
-                    LOGGER.setLevel(Level.DEBUG);
-                }
+                  //LOG4JFIXME
+//                // Make sure the logger is passing at least debug events.
+//                consoleAppender.setThreshold(Level.DEBUG);
+//                if (!LOGGER.isDebugEnabled()) {
+//                    LOGGER.setLevel(Level.DEBUG);
+//                }
             } else if (arg.equals("-aggregates")) {
                 aggregates = true;
             } else if (arg.equals("-tables")) {

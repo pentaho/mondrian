@@ -17,7 +17,8 @@ import mondrian.olap.*;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.olap4j.impl.Olap4jUtil;
 
@@ -36,7 +37,7 @@ public class NativizeSetFunDef extends FunDefBase {
      * Static final fields.
      */
     protected static final Logger LOGGER =
-        Logger.getLogger(NativizeSetFunDef.class);
+        LogManager.getLogger(NativizeSetFunDef.class);
 
     private static final String SENTINEL_PREFIX = "_Nativized_Sentinel_";
     private static final String MEMBER_NAME_PREFIX = "_Nativized_Member_";

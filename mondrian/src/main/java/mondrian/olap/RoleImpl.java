@@ -13,7 +13,8 @@ package mondrian.olap;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapCubeDimension;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.*;
 
@@ -34,7 +35,7 @@ public class RoleImpl implements Role {
     private final Map<Hierarchy, HierarchyAccessImpl> hierarchyGrants =
         new HashMap<Hierarchy, HierarchyAccessImpl>();
     private static final Logger LOGGER =
-        Logger.getLogger(RoleImpl.class);
+        LogManager.getLogger(RoleImpl.class);
     private final List<Object[]> hashCache = new ArrayList<Object[]>();
     private int hash = 0;
 
