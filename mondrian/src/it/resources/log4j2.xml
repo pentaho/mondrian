@@ -16,6 +16,7 @@
               <SizeBasedTriggeringPolicy size="20 MB" />
               <TimeBasedTriggeringPolicy />
             </Policies>
+            <DefaultRolloverStrategy max="1" fileIndex="min"/>
         </RollingFile>
 
         <RollingFile name="MDXLOG"
@@ -30,6 +31,7 @@
               <SizeBasedTriggeringPolicy size="20 MB" />
               <TimeBasedTriggeringPolicy />
             </Policies>
+            <DefaultRolloverStrategy max="1" fileIndex="min"/>
         </RollingFile>
 
         <RollingFile name="SQLLOG"
@@ -44,6 +46,7 @@
               <SizeBasedTriggeringPolicy size="20 MB" />
               <TimeBasedTriggeringPolicy />
             </Policies>
+            <DefaultRolloverStrategy max="1" fileIndex="min"/>
         </RollingFile>
 
         <RollingFile name="MONITORLOG"
@@ -58,6 +61,7 @@
               <SizeBasedTriggeringPolicy size="20 MB" />
               <TimeBasedTriggeringPolicy />
             </Policies>
+            <DefaultRolloverStrategy max="1" fileIndex="min"/>
         </RollingFile>
 
         <Console name="CONSOLE">

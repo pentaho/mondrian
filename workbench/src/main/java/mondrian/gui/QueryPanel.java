@@ -16,7 +16,8 @@ import mondrian.gui.validate.ValidationUtils;
 import mondrian.olap.*;
 import mondrian.olap.Util.PropertyList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -31,7 +32,7 @@ import javax.swing.text.DefaultEditorKit;
  */
 public class QueryPanel extends javax.swing.JPanel {
 
-    private static final Logger LOGGER = Logger.getLogger(QueryPanel.class);
+    private static final Logger LOGGER = LogManager.getLogger(QueryPanel.class);
 
     Connection connection;
     JMenuItem queryMenuItem;
