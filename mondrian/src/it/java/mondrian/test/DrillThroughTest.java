@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2018 Hitachi Vantara
+// Copyright (C) 2005-2021 Hitachi Vantara
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -930,7 +930,7 @@ public class DrillThroughTest extends FoodMartTestCase {
            result.getCell(new int[]{0, 0}).getDrillThroughSQL(true);
 
        testContext.assertSqlEquals(
-           "select store.frozen_sqft as Frozen sqft, store.grocery_sqft as Grocery sqft, store.meat_sqft as Meat sqft, store.store_sqft as Store sqft, store.store_sqft as Store sqft_0 from foodmart.store as store where store.frozen_sqft = 2452 order by store.frozen_sqft ASC, store.grocery_sqft ASC, store.meat_sqft ASC, store.store_sqft ASC",
+           "select store.frozen_sqft as Frozen sqft, store.grocery_sqft as Grocery sqft, store.meat_sqft as Meat sqft, store.store_sqft as Store sqft, store.store_sqft as Store sqft_0 from foodmart.store as store where store.frozen_sqft = 2452 order by Frozen sqft ASC, Grocery sqft ASC, Meat sqft ASC, Store sqft ASC",
            sql,
            1);
    }
@@ -1937,6 +1937,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         ResultSet rs = null;
         final TestContext testContext =
             TestContext.instance().withSchema(SALES_ONLY_WITH_NAME_COLUMN);
+        int rowCount = 0;
         try {
             rs = testContext.executeStatement(
                 DRILLTHROUGH_QUERY_WITH_CUSTOMER_FULL_NAME);
@@ -1957,6 +1958,7 @@ public class DrillThroughTest extends FoodMartTestCase {
                 "Store Sales", rs.getMetaData().getColumnLabel(5));
 
             while (rs.next()) {
+                ++rowCount;
                 assertEquals(
                     "Each Customer full name in results should be Jeanne Derry",
                     "Jeanne Derry", rs.getObject(1));
@@ -1973,9 +1975,8 @@ public class DrillThroughTest extends FoodMartTestCase {
                     "Should be a non-null value for store sales",
                         rs.getObject(5));
             }
-            rs.last();
             assertEquals(
-                17, rs.getRow());
+                17, rowCount);
         } finally {
             if (rs != null) {
                 rs.close();
@@ -1990,6 +1991,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         final TestContext testContext =
                 TestContext.instance().withSchema(
                     SALES_ONLY_WITHOUT_NAME_COLUMN);
+        int rowCount = 0;
         try {
             rs = testContext.executeStatement(
                 DRILLTHROUGH_QUERY_WITH_CUSTOMER_ID);
@@ -2003,6 +2005,7 @@ public class DrillThroughTest extends FoodMartTestCase {
                 "Store Sales", rs.getMetaData().getColumnLabel(3));
 
             while (rs.next()) {
+                ++rowCount;
                 assertEquals(
                     "Each customer key should be 3",
                         3, rs.getObject(1));
@@ -2013,9 +2016,8 @@ public class DrillThroughTest extends FoodMartTestCase {
                     "Should be a non-null value for store sales",
                         rs.getObject(3));
             }
-            rs.last();
             assertEquals(
-                17, rs.getRow());
+                17, rowCount);
         } finally {
             if (rs != null) {
                 rs.close();
@@ -2036,6 +2038,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         Set<String> expectedValues =
             new HashSet<String>(Arrays.asList(expectedColumnValues));
         int expectedRowCount = 10859;
+        int rowCount = 0;
         ResultSet rs = null;
         try {
             rs = getTestContext().executeStatement(
@@ -2057,13 +2060,13 @@ public class DrillThroughTest extends FoodMartTestCase {
             assertEquals(
                 "Store Type", rs.getMetaData().getColumnLabel(1));
             while (rs.next()) {
+                ++rowCount;
                 assertTrue(
                     "Store Type in results should be either Small Grocery or Gourmet Supermarket",
                     expectedValues.contains(rs.getObject(1)));
             }
-            rs.last();
             assertEquals(
-                expectedRowCount, rs.getRow());
+                expectedRowCount, rowCount);
         } finally {
             if (rs != null) {
                 rs.close();

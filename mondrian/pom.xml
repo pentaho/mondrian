@@ -353,6 +353,57 @@
       <build>
         <plugins>
           <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <version>0.26.0</version>
+            <executions>
+              <execution>
+                <id>start</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                  <goal>start</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>stop</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                  <goal>remove</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <images>
+                <image>
+                  <name>mysql:8.0.27</name>
+                  <run>
+                    <!-- prevents spam of mbind: Operation not permitted log messages -->
+                    <capAdd>SYS_NICE</capAdd>
+                    <env>
+                      <MYSQL_ROOT_PASSWORD>${mondrian.foodmart.jdbcPassword}</MYSQL_ROOT_PASSWORD>
+                      <MYSQL_DATABASE>foodmart</MYSQL_DATABASE>
+                      <MYSQL_USER>${mondrian.foodmart.jdbcUser}</MYSQL_USER>
+                      <MYSQL_PASSWORD>${mondrian.foodmart.jdbcPassword}</MYSQL_PASSWORD>
+                    </env>
+                    <!-- dramatic performance improvement on docker -->
+                    <cmd>mysqld --disable-log-bin</cmd>
+                    <ports>
+                      <port>3306:3306</port>
+                    </ports>
+                    <wait>
+                      <log>.*ready for connections.*port: 3306.*</log>
+                      <time>150000</time>
+                      <tcp><ports><port>3306</port></ports></tcp>
+                    </wait>
+                    <log><color>yellow</color></log>
+                  </run>
+                </image>
+              </images>
+            </configuration>
+          </plugin>
+          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>
             <executions>
@@ -365,67 +416,6 @@
                   <portNames>
                     <portName>mysql.port</portName>
                   </portNames>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <version>${maven-dependency-plugin.version}</version>
-            <executions>
-              <execution>
-                <phase>pre-integration-test</phase>
-                <goals>
-                  <goal>unpack</goal>
-                </goals>
-                <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>com.jcabi</groupId>
-                      <artifactId>mysql-dist</artifactId>
-                      <version>${mysql-dist.version}</version>
-                      <classifier>${mysql.classifier}</classifier>
-                      <type>zip</type>
-                      <overWrite>false</overWrite>
-                      <outputDirectory>${project.build.directory}/mysql-dist</outputDirectory>
-                    </artifactItem>
-                  </artifactItems>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>copy-mysql-cnf</id>
-                <phase>pre-integration-test</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <configuration>
-                  <tasks>
-                    <copy file="${project.build.directory}/mysql-dist/my-default.ini" tofile="${project.build.directory}/mysql-dist/support-files/my-default.cnf" failonerror="false" />
-                  </tasks>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>          
-          <plugin>
-            <groupId>com.jcabi</groupId>
-            <artifactId>jcabi-mysql-maven-plugin</artifactId>
-            <version>${jcabi-mysql-maven-plugin.version}</version>
-            <executions>
-              <execution>
-                <id>mysql-test</id>
-                <goals>
-                  <goal>classify</goal>
-                  <goal>start</goal>
-                  <goal>stop</goal>
-                </goals>
-                <configuration>
-                  <port>${mysql.port}</port>
-                  <data>${java.io.tmpdir}/mondrian/mysql-data</data>
                 </configuration>
               </execution>
             </executions>
@@ -484,22 +474,21 @@
             <configuration>
               <driver>${mysql.driver}</driver>
               <url>${mondrian.foodmart.jdbcURL}</url>
-              <username>${mondrian.foodmart.jdbcUser}</username>
+              <username>${root.foodmart.jdbcUser}</username>
               <password>${mondrian.foodmart.jdbcPassword}</password>
             </configuration>
           </plugin>
         </plugins>
       </build>
       <properties>
-        <jcabi-mysql-maven-plugin.version>0.9</jcabi-mysql-maven-plugin.version>
-        <mondrian.foodmart.jdbcPassword>root</mondrian.foodmart.jdbcPassword>
-        <mondrian.foodmart.jdbcUser>root</mondrian.foodmart.jdbcUser>
+        <mondrian.foodmart.jdbcPassword>password</mondrian.foodmart.jdbcPassword>
+        <root.foodmart.jdbcUser>root</root.foodmart.jdbcUser>
+        <mondrian.foodmart.jdbcUser>mondrian</mondrian.foodmart.jdbcUser>
         <mondrian.jdbcDrivers>${mysql.driver}</mondrian.jdbcDrivers>
-        <mysql.driver>com.mysql.jdbc.Driver</mysql.driver>
-        <mondrian.foodmart.jdbcURL>jdbc:mysql://localhost:${mysql.port}/foodmart?useSSL=false</mondrian.foodmart.jdbcURL>
+        <mysql.driver>com.mysql.cj.jdbc.Driver</mysql.driver>
+        <mondrian.foodmart.jdbcURL>jdbc:mysql://127.0.0.1:3306/foodmart</mondrian.foodmart.jdbcURL>
         <dependency.sql-maven-plugin.version>1.5</dependency.sql-maven-plugin.version>
-        <mysql-dist.version>5.6.14</mysql-dist.version>
-        <mysql.url.default>jdbc:mysql://localhost:${mysql.port}/mysql</mysql.url.default>
+        <mysql.url.default>jdbc:mysql://127.0.0.1:3306/mysql</mysql.url.default>
       </properties>
     </profile>
     <profile>

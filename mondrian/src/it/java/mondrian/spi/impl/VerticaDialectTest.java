@@ -4,25 +4,22 @@
  * http://www.eclipse.org/legal/epl-v10.html.
  * You must accept the terms of that agreement to use this software.
  *
- * Copyright (c) 2020 Hitachi Vantara..  All rights reserved.
+ * Copyright (c) 2020-2021 Hitachi Vantara..  All rights reserved.
  */
 package mondrian.spi.impl;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-
-import com.mysql.jdbc.Statement;
 
 import junit.framework.TestCase;
 import mondrian.spi.Dialect;
 
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 public class VerticaDialectTest extends TestCase {
   private Connection connection = mock( Connection.class );
   private DatabaseMetaData metaData = mock( DatabaseMetaData.class );
-  Statement statmentMock = mock( Statement.class );
   private VerticaDialect dialect;
 
   @Override

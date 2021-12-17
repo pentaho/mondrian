@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2020 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -11653,8 +11653,7 @@ Intel platforms):
         + "on 0 from sales",
       Util.IBM_JVM
         ? "StringIndexOutOfBoundsException: null"
-        : "StringIndexOutOfBoundsException: String index out of range: "
-        + "-20" );
+        : "java.lang.StringIndexOutOfBoundsException: begin 0, end -20, length 10" );
   }
 
   public void testMidFunctionWithValidArguments() {
@@ -12012,8 +12011,7 @@ Intel platforms):
       "right(\"abc\", -4)",
       Util.IBM_JVM
         ? "StringIndexOutOfBoundsException: null"
-        : "StringIndexOutOfBoundsException: "
-        + "String index out of range: -4" );
+        : "java.lang.StringIndexOutOfBoundsException: begin 7, end 3, length 3" );
   }
 
   public void testVbaDateTime() {

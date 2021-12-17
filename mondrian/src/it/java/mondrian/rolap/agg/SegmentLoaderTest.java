@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 
@@ -162,7 +162,7 @@ public class SegmentLoaderTest extends BatchTestCase {
             new MyDelegatingInvocationHandler(list);
         Object o =
             Proxy.newProxyInstance(
-                null,
+                this.getClass().getClassLoader(), 
                 new Class[] {ResultSet.class, ResultSetMetaData.class},
                 handler);
         handler.resultSetMetaData = (ResultSetMetaData) o;

@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2017 Hitachi Vantara
+// Copyright (C) 2009-2021 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -362,7 +362,7 @@ public class NativeEvalVirtualCubeTest extends BatchTestCase {
       + "group by\n"
       + "    `customer`.`gender`\n"
       + "order by\n"
-      + "    ISNULL(`customer`.`gender`) ASC, `customer`.`gender` ASC";
+      + "    ISNULL(`c0`) ASC, `c0` ASC";
     TestContext tc = getTestContext().withFreshConnection();
     SqlPattern mysqlPattern =
       new SqlPattern(
