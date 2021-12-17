@@ -1611,10 +1611,9 @@ public class SchemaTest extends FoodMartTestCase {
         final Appender appender =
             Util.makeAppender(
                 "testUnknownUsages",
-                org.apache.logging.log4j.Level.WARN,
                 sw,
-                PatternLayout.createDefaultLayout());
-        Util.addAppender(appender, logger);
+                null);
+        Util.addAppender(appender, logger, org.apache.logging.log4j.Level.WARN);
 
         try {
             final TestContext testContext = TestContext.instance().withSchema(

@@ -4599,15 +4599,18 @@ public class Util extends XOMUtil {
     handler.explain( stringWriter.toString(), timing );
   }
 
-  public static void addAppender(Appender appender, Logger logger) {
+  public static void addAppender(Appender appender, Logger logger, org.apache.logging.log4j.Level level) {
     LoggerContext ctx = (LoggerContext) LogManager.getContext( false );
     Configuration config = ctx.getConfiguration();
+    appender.start();
+    config.addAppender(appender);
     LoggerConfig loggerConfig = config.getLoggerConfig( logger.getName() );
-    loggerConfig.addAppender( appender, org.apache.logging.log4j.Level.ALL, null );
+    loggerConfig.addAppender( appender, level, null );
     ctx.updateLoggers();
   }
 
   public static void removeAppender(Appender appender, Logger logger) {
+    appender.stop();
     LoggerContext ctx = (LoggerContext) LogManager.getContext( false );
     Configuration config = ctx.getConfiguration();
     LoggerConfig loggerConfig = config.getLoggerConfig( logger.getName() );
@@ -4617,17 +4620,17 @@ public class Util extends XOMUtil {
 
   public static Appender makeAppender(
       String name,
-      org.apache.logging.log4j.Level minLevel,
       StringWriter sw,
-      Layout<? extends Serializable> layout)
+      String layout)
   {
-    final LevelRangeFilter filter = LevelRangeFilter.createFilter(minLevel, null, null, null);
+    if (layout == null) {
+      layout = PatternLayout.createDefaultLayout().getConversionPattern();
+    }
     return WriterAppender.newBuilder()
-            .setName(name)
-            .setFilter(filter)
-            .setLayout(layout)
-            .setTarget(sw)
-            .build();
+        .setName(name)
+        .setLayout(PatternLayout.newBuilder().withPattern(layout).build())
+        .setTarget(sw)
+        .build();
   }
 }
 
