@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Configuration status="Warn">
+
+    <Appenders>
+
+        <RollingFile name="MONDRIANLOG"
+          fileName="target/test-logs/mondrian.log"
+          filePattern="mondrian_%d{MM-dd-yyyy}-%i.log"
+          append="false">
+            <PatternLayout>
+                <Pattern>%d %-5p [%c] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+              <OnStartupTriggeringPolicy />
+              <SizeBasedTriggeringPolicy size="20 MB" />
+              <TimeBasedTriggeringPolicy />
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="MDXLOG"
+          fileName="target/test-logs/mondrian_mdx.log"
+          filePattern="mondrian_mdx_%d{MM-dd-yyyy}-%i.log"
+          append="false">
+            <PatternLayout>
+                <Pattern>%d %-5p [%c] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+              <OnStartupTriggeringPolicy />
+              <SizeBasedTriggeringPolicy size="20 MB" />
+              <TimeBasedTriggeringPolicy />
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="SQLLOG"
+          fileName="target/test-logs/mondrian_sql.log"
+          filePattern="mondrian_sql_%d{MM-dd-yyyy}-%i.log"
+          append="false">
+            <PatternLayout>
+                <Pattern>%d %-5p [%c] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+              <OnStartupTriggeringPolicy />
+              <SizeBasedTriggeringPolicy size="20 MB" />
+              <TimeBasedTriggeringPolicy />
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="MONITORLOG"
+          fileName="target/test-logs/mondrian_monitor.log"
+          filePattern="mondrian_monitor_%d{MM-dd-yyyy}-%i.log"
+          append="false">
+            <PatternLayout>
+                <Pattern>%d %-5p [%c] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+              <OnStartupTriggeringPolicy />
+              <SizeBasedTriggeringPolicy size="20 MB" />
+              <TimeBasedTriggeringPolicy />
+            </Policies>
+        </RollingFile>
+
+        <Console name="CONSOLE">
+            <PatternLayout>
+                <Pattern>%d{ABSOLUTE} %-5p [%c{1}] %m%n</Pattern>
+            </PatternLayout>
+        </Console>
+
+    </Appenders>
+
+    <Loggers>
+
+        <Logger name="mondrian" level="info" additivity="false">
+            <appender-ref ref="MONDRIANLOG"/>
+        </Logger>
+
+        <Logger name="mondrian.mdx" level="debug" additivity="false">
+            <appender-ref ref="MDXLOG"/>
+        </Logger>
+
+        <Logger name="mondrian.sql" level="debug" additivity="false">
+            <appender-ref ref="SQLLOG"/>
+        </Logger>
+
+        <Logger name="mondrian.server.monitor" level="info" additivity="false">
+            <appender-ref ref="MONITORLOG"/>
+        </Logger>
+
+        <Root level="info">
+            <appender-ref ref="CONSOLE"/>
+        </Root>
+
+    </Loggers>
+
+</Configuration>

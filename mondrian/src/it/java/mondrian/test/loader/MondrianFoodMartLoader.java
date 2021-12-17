@@ -19,6 +19,8 @@ import mondrian.spi.DialectManager;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
@@ -166,24 +168,15 @@ public class MondrianFoodMartLoader {
         StringBuilder parametersMessage = new StringBuilder();
 
         // Add a console appender for error messages.
-        //LOG4JFIXME
-//        final ConsoleAppender consoleAppender =
-//            new ConsoleAppender(
-//                // Formats the message on its own line,
-//                // omits timestamp, priority etc.
-//                new PatternLayout("%m%n"),
-//                "System.out");
-//        consoleAppender.setThreshold(Level.ERROR);
-//        LOGGER.addAppender(consoleAppender);
+        ConsoleAppender ca = ConsoleAppender.newBuilder()
+          .setName("mfml")
+          .setLayout(PatternLayout.newBuilder().withPattern("%m%n").build())
+          .build();
+        Util.addAppender(ca, LOGGER, Level.ERROR);
 
         for (String arg : args) {
             if (arg.equals("-verbose")) {
                   //LOG4JFIXME
-//                // Make sure the logger is passing at least debug events.
-//                consoleAppender.setThreshold(Level.DEBUG);
-//                if (!LOGGER.isDebugEnabled()) {
-//                    LOGGER.setLevel(Level.DEBUG);
-//                }
             } else if (arg.equals("-aggregates")) {
                 aggregates = true;
             } else if (arg.equals("-tables")) {

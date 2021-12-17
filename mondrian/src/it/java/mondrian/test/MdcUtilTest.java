@@ -14,7 +14,7 @@ import java.io.StringWriter;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 
 import mondrian.olap.Util;
@@ -33,19 +33,19 @@ public class MdcUtilTest extends BatchTestCase {
   public void testMdcContext() throws Exception {
 
     TestContext.instance().flushSchemaCache();
-    
+
     ThreadContext.put( "sessionName", "hello-world" );
     StringWriter writer = new StringWriter();
 
     final Appender appender =
         Util.makeAppender(
-            "testUnknownUsages",
-            org.apache.logging.log4j.Level.DEBUG,
+            "testMdcContext",
             writer,
-            PatternLayout.newBuilder().withPattern("sessionName:%X{sessionName} %t %m").build());
-    Util.addAppender(appender, rolapUtilLogger);
-    Util.addAppender(appender, RolapUtil.MONITOR_LOGGER);
-    Util.addAppender(appender, RolapUtil.MDX_LOGGER);
+            "sessionName:%X{sessionName} %t %m");
+
+    Util.addAppender(appender, rolapUtilLogger, Level.ALL);
+    Util.addAppender(appender, RolapUtil.MONITOR_LOGGER, Level.ALL);
+    Util.addAppender(appender, RolapUtil.MDX_LOGGER, Level.ALL);
 
     String log = "";
     try {
@@ -60,8 +60,7 @@ public class MdcUtilTest extends BatchTestCase {
   
       assertQueryReturns( query, expected );
       log = writer.toString();
-      System.out.println(log);
-      
+
     } finally {
       Util.removeAppender(appender, rolapUtilLogger);
       Util.removeAppender(appender, RolapUtil.MONITOR_LOGGER);
@@ -70,12 +69,9 @@ public class MdcUtilTest extends BatchTestCase {
     
     // Mondrian uses another thread pool to execute SQL statements.  
     // Verify that sessionName is now present on the SQL log statements
-    assertContains(log, "sessionName:hello-world mondrian.rolap.agg.SegmentCacheManager$sqlExecutor_");
+    assertContains(log, "sessionName:hello-world mondrian.rolap.RolapResultShepherd$executor_1 18: SqlTupleReader.readTuples");
     assertContains(log, "sessionName:hello-world Mondrian Monitor StatementStartEvent");
     assertContains(log, "sessionName:hello-world mondrian.rolap.RolapResultShepherd$executor_");
-    
-    
-    
   }
   
   public void assertContains( String actual, String contains ) {
