@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2020 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1480,12 +1480,12 @@ public class TestContext {
   public static Dialect getFakeDialect( Dialect.DatabaseProduct product ) {
     final DatabaseMetaData metaData =
       (DatabaseMetaData) Proxy.newProxyInstance(
-        null,
+        TestContext.class.getClassLoader(),
         new Class<?>[] { DatabaseMetaData.class },
         new DatabaseMetaDataInvocationHandler( product ) );
     final java.sql.Connection connection =
       (java.sql.Connection) Proxy.newProxyInstance(
-        null,
+        TestContext.class.getClassLoader(),
         new Class<?>[] { java.sql.Connection.class },
         new ConnectionInvocationHandler( metaData ) );
     final Dialect dialect = DialectManager.createDialect( null, connection );
