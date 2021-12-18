@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 
@@ -993,7 +993,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             "Failed to load formatter class 'java.lang.String' for member '[Measures].[Foo]'.");
         assertQueryThrows(
             query,
-            "java.lang.ClassCastException: java.lang.String");
+              "class java.lang.String cannot be cast to class mondrian.spi.CellFormatter" );
     }
 
     public void testCalcMemberCustomFormatterInNonMeasureInQuery() {
