@@ -378,6 +378,7 @@
               <images>
                 <image>
                   <name>mysql:8.0.27</name>
+                  <alias>mondrian-mysql8027-db</alias>
                   <run>
                     <!-- prevents spam of mbind: Operation not permitted log messages -->
                     <capAdd>SYS_NICE</capAdd>
@@ -433,6 +434,7 @@
                 </goals>
                 <configuration>
                   <url>${mysql.url.default}</url>
+                  <!--url>jdbc:mysql://${docker.container.mondrian-mysql8027-db.ip}:3306/mysql</url-->
                   <autocommit>true</autocommit>
                   <orderFile>ascending</orderFile>
                   <fileset>
@@ -452,6 +454,7 @@
                 </goals>
                 <configuration>
                   <url>${mysql.url.default}</url>
+                  <url>jdbc:mysql://${docker.container.mondrian-mysql8027-db.ip}:3306/mysql</url>
                   <autocommit>true</autocommit>
                   <orderFile>ascending</orderFile>
                   <fileset>
@@ -474,6 +477,7 @@
             <configuration>
               <driver>${mysql.driver}</driver>
               <url>${mondrian.foodmart.jdbcURL}</url>
+      <!--url>jdbc:mysql://${docker.container.mondrian-mysql8027-db.ip}:3306/foodmart</url-->
               <username>${root.foodmart.jdbcUser}</username>
               <password>${mondrian.foodmart.jdbcPassword}</password>
             </configuration>
@@ -486,9 +490,10 @@
         <mondrian.foodmart.jdbcUser>mondrian</mondrian.foodmart.jdbcUser>
         <mondrian.jdbcDrivers>${mysql.driver}</mondrian.jdbcDrivers>
         <mysql.driver>com.mysql.cj.jdbc.Driver</mysql.driver>
-        <mondrian.foodmart.jdbcURL>jdbc:mysql://127.0.0.1:3306/foodmart</mondrian.foodmart.jdbcURL>
+        <mondrian.foodmart.jdbcURL>jdbc:mysql://${docker.mysql.db.ipaddr}:3306/foodmart</mondrian.foodmart.jdbcURL>
         <dependency.sql-maven-plugin.version>1.5</dependency.sql-maven-plugin.version>
-	<mysql.url.default>jdbc:mysql://${docker.container.mysql-1.ip}:3306/mysql</mysql.url.default>
+	<docker.mysql.db.ipaddr>${docker.container.mondrian-mysql8027-db.ip}</docker.mysql.db.ipaddr>
+	<mysql.url.default>jdbc:mysql://${docker.mysql.db.ipaddr}:3306/mysql</mysql.url.default>
       </properties>
     </profile>
     <profile>
