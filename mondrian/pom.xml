@@ -488,7 +488,7 @@
         <mysql.driver>com.mysql.cj.jdbc.Driver</mysql.driver>
         <mondrian.foodmart.jdbcURL>jdbc:mysql://127.0.0.1:3306/foodmart</mondrian.foodmart.jdbcURL>
         <dependency.sql-maven-plugin.version>1.5</dependency.sql-maven-plugin.version>
-        <mysql.url.default>jdbc:mysql://127.0.0.1:3306/mysql</mysql.url.default>
+	<mysql.url.default>jdbc:mysql://${docker.container.mysql-1.ip}:3306/mysql</mysql.url.default>
       </properties>
     </profile>
     <profile>
