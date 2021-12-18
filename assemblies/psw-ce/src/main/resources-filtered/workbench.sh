@@ -71,6 +71,12 @@ else
 fi
 setPentahoEnv
 
-exec "$_PENTAHO_JAVA" $JAVA_FLAGS -cp "$CP" mondrian.gui.Workbench
+JAVA_LOCALE_COMPAT=""
+if $($_PENTAHO_JAVA -version 2>&1 | grep "version \"11\..*" > /dev/null )
+then
+  JAVA_LOCALE_COMPAT="-Djava.locale.providers=COMPAT,SPI"
+fi
+
+exec "$_PENTAHO_JAVA" $JAVA_FLAGS $JAVA_LOCALE_COMPAT -cp "$CP" mondrian.gui.Workbench
 
 # End workbench.sh
