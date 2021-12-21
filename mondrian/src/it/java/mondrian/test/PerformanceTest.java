@@ -735,7 +735,7 @@ public class PerformanceTest extends FoodMartTestCase {
             }
         }
         @SuppressWarnings( "unchecked" ) final Comparator<Integer> comp =
-          ComparatorUtils.naturalComparator();
+          Comparator.naturalOrder();
         final long start = System.currentTimeMillis();
         List<Integer> x = sort( list, comp, limit );
         statistician.record( start );
