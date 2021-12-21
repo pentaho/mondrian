@@ -17,7 +17,6 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.*;

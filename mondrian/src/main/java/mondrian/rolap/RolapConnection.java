@@ -20,7 +20,6 @@ import mondrian.spi.*;
 import mondrian.spi.impl.JndiDataSourceResolver;
 import mondrian.util.*;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.util.property.StringProperty;
@@ -1136,11 +1135,11 @@ public class RolapConnection extends ConnectionBase {
 
     String jdbc = connectInfo.get( RolapConnectionProperties.Jdbc.name() );
 
-    if ( StringUtils.isBlank( jdbc ) ) {
+    if ( Util.isBlank( jdbc ) ) {
       return null;
     }
 
-    String database = StringUtils.isBlank( connectInfo.get( "databaseName" ) )
+    String database = Util.isBlank( connectInfo.get( "databaseName" ) )
       ? "" : ";databaseName=" + connectInfo.get( "databaseName" );
     String integratedSecurity = Boolean.parseBoolean( connectInfo.get( "integratedSecurity" ) )
       ? ";integratedSecurity=true" : "";
