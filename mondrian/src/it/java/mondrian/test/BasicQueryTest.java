@@ -13,16 +13,7 @@
 package mondrian.test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.StandardCharsets;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,21 +36,15 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.appender.WriterAppender;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.eigenbase.util.property.StringProperty;
 import org.olap4j.CellSet;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapStatement;
-import org.olap4j.layout.RectangularCellSetFormatter;
 
 import junit.framework.Assert;
 import mondrian.calc.ResultStyle;
@@ -77,7 +62,6 @@ import mondrian.olap.Position;
 import mondrian.olap.Property;
 import mondrian.olap.Query;
 import mondrian.olap.QueryCanceledException;
-import mondrian.olap.QueryTiming;
 import mondrian.olap.Result;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Syntax;
@@ -90,7 +74,6 @@ import mondrian.rolap.RolapUtil;
 import mondrian.server.Execution;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
-import mondrian.spi.ProfileHandler;
 import mondrian.spi.StatisticsProvider;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.spi.impl.JdbcStatisticsProvider;
@@ -4036,10 +4019,10 @@ public class BasicQueryTest extends FoodMartTestCase {
     final Execution exec = new Execution( stmt, 50000 );
     final CountDownLatch okToGo = new CountDownLatch( 1 );
     AtomicLong rows = new AtomicLong();
-    Appender canceler = makeAppender( component, triggerSql, exec, okToGo, "executeAndCancelAtSqlFetch", rows );
+    Appender canceler = new SqlCancelingAppender( component, triggerSql, exec, okToGo, rows );
     stmt.setQuery( conn.parseQuery( query ) );
     //sqlLog.addAppender( canceler );
-    addAppender(canceler, sqlLog);
+    Util.addAppender(canceler, sqlLog, null);
     try {
       conn.execute( exec );
       Assert.fail( "Query not canceled." );
@@ -4051,40 +4034,16 @@ public class BasicQueryTest extends FoodMartTestCase {
       return rows.longValue();
     } finally {
       //sqlLog.removeAppender( canceler );
-      removeAppender(canceler.getName());
+      Util.removeAppender(canceler, sqlLog );
       context.close();
     }
     return null;
   }
 
-  private static void addAppender(Appender appender, Logger logger) {
-    LoggerContext ctx = (LoggerContext) LogManager.getContext( false );
-    Configuration config = ctx.getConfiguration();
-    LoggerConfig loggerConfig = config.getLoggerConfig( logger.getName() );
-    loggerConfig.addAppender( appender, Level.ALL, null );
-    ctx.updateLoggers();
-  }
-
-  private static void removeAppender(String name) {
-    LoggerContext ctx = (LoggerContext) LogManager.getContext( false );
-    Configuration config = ctx.getConfiguration();
-    LoggerConfig loggerConfig = config.getLoggerConfig( name );
-    loggerConfig.removeAppender( name );
-    ctx.updateLoggers();
-  }
-
-  private static Appender makeAppender(
-      String comp, String trigger, Execution exec,
-      CountDownLatch latch, String name, AtomicLong rows)
-  {
-    return WriterAppender.createAppender(
-        null, null, new SqlCancelingWriter(comp, trigger, exec, latch, rows), name, false, false);
-  }
-
   /**
    * Listens to sql log for a specific query, cancels mdx when it's executed and reads number of fetched rows.
    */
-  private static class SqlCancelingWriter extends Writer {
+  private static class SqlCancelingAppender extends AbstractAppender {
     private ByteArrayOutputStream out = new ByteArrayOutputStream();
     private String trigger;
     private Pattern stmtNbrGetter, stmtCanceler, stmtRowCounter;
@@ -4093,8 +4052,8 @@ public class BasicQueryTest extends FoodMartTestCase {
     Execution exec;
     CountDownLatch latch;
 
-    SqlCancelingWriter( String comp, String trigger, Execution exec, CountDownLatch latch, AtomicLong rows) {
-      super();
+    SqlCancelingAppender( String comp, String trigger, Execution exec, CountDownLatch latch, AtomicLong rows) {
+      super( "SqlCancelingWriter", null, PatternLayout.createDefaultLayout(), true, org.apache.logging.log4j.core.config.Property.EMPTY_ARRAY );
       this.trigger = trigger;
       this.latch = latch;
       // capture stalked statement's number
@@ -4103,13 +4062,8 @@ public class BasicQueryTest extends FoodMartTestCase {
       this.rows = rows;
     }
 
-    @Override public void write( char[] cbuf, int off, int len ) throws IOException {
-      final ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode( CharBuffer.wrap(cbuf));
-      byte[] bytes = Arrays.copyOf(byteBuffer.array(), byteBuffer.limit());
-      out.write( bytes, off, len );
-      String msg = new String(bytes);
-
-      //String msg = event.getMessage().toString();
+    @Override public void append( LogEvent event ) {
+      String msg = event.getMessage().getFormattedMessage();
       if ( state == 0 && msg.contains( trigger ) ) {
         Matcher matcher = stmtNbrGetter.matcher( msg );
         if ( matcher.find() ) {
@@ -4138,12 +4092,6 @@ public class BasicQueryTest extends FoodMartTestCase {
           latch.countDown();
         }
       }
-    }
-    @Override public void flush() throws IOException {
-      out.flush();
-    }
-    @Override public void close() throws IOException {
-      out.close();
     }
   }
 

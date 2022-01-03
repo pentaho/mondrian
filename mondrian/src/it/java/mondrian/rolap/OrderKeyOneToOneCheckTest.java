@@ -10,76 +10,36 @@
 */
 package mondrian.rolap;
 
-import mondrian.test.FoodMartTestCase;
-import mondrian.test.TestContext;
-
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
-import java.util.ArrayList;
-import java.util.List;
+import mondrian.olap.Util;
+import mondrian.test.FoodMartTestCase;
+import mondrian.test.TestAppender;
+import mondrian.test.TestContext;
 
 public class OrderKeyOneToOneCheckTest extends FoodMartTestCase {
 
-  private Appender memberSourceAppender;
-  private Appender sqlReaderAppender;
-
-  private final List<Object> memberSourceLogErrors = new ArrayList<>();
-  private final List<Object> sqlReaderLogErrors = new ArrayList<>();
+  private TestAppender memberSourceAppender;
+  private TestAppender sqlReaderAppender;
 
   @Override
   protected void setUp() throws Exception {
-    //LOG4JFIXME
-    /*
     Logger memberSourceLogger = LogManager.getLogger(SqlMemberSource.class);
     Logger sqlReaderLogger = LogManager.getLogger(SqlTupleReader.class);
 
-
-    memberSourceAppender = Mockito.mock(Appender.class);
-    sqlReaderAppender = Mockito.mock(Appender.class);
-    memberSourceLogger.addAppender(memberSourceAppender);
-    sqlReaderLogger.addAppender(sqlReaderAppender);
-
-    Mockito.doAnswer(
-        new Answer() {
-          public Object answer(InvocationOnMock invocation) {
-            Object loggingEvent = invocation.getArguments()[0];
-            memberSourceLogErrors.add(loggingEvent.toString());
-            return null;
-          }})
-        .when(memberSourceAppender).doAppend(Mockito.any(LogEvent.class));
-
-    Mockito.doAnswer(
-        new Answer() {
-          public Object answer(InvocationOnMock invocation) {
-            Object loggingEvent = invocation.getArguments()[0];
-            sqlReaderLogErrors.add(loggingEvent.toString());
-            return null;
-          }})
-        .when(sqlReaderAppender).doAppend(Mockito.any(LogEvent.class));
-        */
+    memberSourceAppender = new TestAppender();
+    sqlReaderAppender = new TestAppender();
+    Util.addAppender( memberSourceAppender, memberSourceLogger, null );
+    Util.addAppender( sqlReaderAppender, sqlReaderLogger, null );
   }
 
   @Override
   protected void tearDown() throws Exception {
-    //LOG4JFIXME
-    /*
     Logger memberSourceLogger = LogManager.getLogger(SqlMemberSource.class);
     Logger sqlReaderLogger = LogManager.getLogger(SqlTupleReader.class);
-
-    memberSourceLogger.removeAppender(memberSourceAppender);
-    sqlReaderLogger.removeAppender(sqlReaderAppender);
-
-    memberSourceLogErrors.clear();
-    sqlReaderLogErrors.clear();
-    */
+    Util.removeAppender( memberSourceAppender, memberSourceLogger );
+    Util.removeAppender( sqlReaderAppender, sqlReaderLogger );
   }
 
   @Override
@@ -123,11 +83,11 @@ public class OrderKeyOneToOneCheckTest extends FoodMartTestCase {
     assertEquals(
         "Running with modified schema should log 8 error",
         8,
-        sqlReaderLogErrors.size());
+        sqlReaderAppender.getLogEvents().size());
     assertEquals(
         "Running with modified schema should log 8 error",
         8,
-        memberSourceLogErrors.size());
+        memberSourceAppender.getLogEvents().size());
   }
 
   public void testSqlReader() {
@@ -140,7 +100,7 @@ public class OrderKeyOneToOneCheckTest extends FoodMartTestCase {
     assertEquals(
         "Running with modified schema should log 16 error",
         16,
-        sqlReaderLogErrors.size());
+        sqlReaderAppender.getLogEvents().size());
   }
 }
 // End OrderKeyOneToOneCheckTest.java

@@ -74,19 +74,19 @@
 
     <Loggers>
 
-        <Logger name="mondrian" level="info" additivity="false">
+        <Logger name="mondrian" level="info">
             <appender-ref ref="MONDRIANLOG"/>
         </Logger>
 
-        <Logger name="mondrian.mdx" level="debug" additivity="false">
+        <Logger name="mondrian.mdx" level="debug">
             <appender-ref ref="MDXLOG"/>
         </Logger>
 
-        <Logger name="mondrian.sql" level="debug" additivity="false">
+        <Logger name="mondrian.sql" level="debug">
             <appender-ref ref="SQLLOG"/>
         </Logger>
 
-        <Logger name="mondrian.server.monitor" level="info" additivity="false">
+        <Logger name="mondrian.server.monitor" level="info">
             <appender-ref ref="MONITORLOG"/>
         </Logger>
 

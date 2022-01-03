@@ -13,19 +13,20 @@
 
 package mondrian.test;
 
-import mondrian.olap.MondrianProperties;
-import mondrian.rolap.RolapUtil;
-
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.eigenbase.util.property.*;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.eigenbase.util.property.BooleanProperty;
+import org.eigenbase.util.property.DoubleProperty;
+import org.eigenbase.util.property.IntegerProperty;
+import org.eigenbase.util.property.Property;
+import org.eigenbase.util.property.StringProperty;
+
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
+import mondrian.rolap.RolapUtil;
 
 /**
  * Sets properties and logging levels, and remembers the original values so they
@@ -145,10 +146,7 @@ public class PropertySaver {
             }
         }
         for (Map.Entry<Logger, Level> entry : originalLoggerLevels.entrySet()) {
-            LoggerContext ctx = (LoggerContext) LogManager.getContext( false );
-            Configuration config = ctx.getConfiguration();
-            LoggerConfig loggerConfig = config.getLoggerConfig( entry.getKey().getName() );
-            loggerConfig.setLevel(entry.getValue());
+            Util.setLevel( entry.getKey() , entry.getValue() );
         }
     }
 
@@ -163,10 +161,7 @@ public class PropertySaver {
         if (!originalLoggerLevels.containsKey(logger)) {
             originalLoggerLevels.put(logger, prevLevel);
         }
-        LoggerContext ctx = (LoggerContext) LogManager.getContext( false );
-        Configuration config = ctx.getConfiguration();
-        LoggerConfig loggerConfig = config.getLoggerConfig( logger.getName() );
-        loggerConfig.setLevel(level);
+        Util.setLevel( logger, level );
     }
 
     /**
