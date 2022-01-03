@@ -5,10 +5,19 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2020 Hitachi Vantara
+// Copyright (C) 2005-2021 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.rolap;
+
+import java.util.Collection;
+import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LogEvent;
+import org.eigenbase.util.property.BooleanProperty;
+import org.eigenbase.util.property.StringProperty;
 
 import junit.framework.Assert;
 import mondrian.olap.Axis;
@@ -21,6 +30,7 @@ import mondrian.olap.Member;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.NativeEvaluationUnsupportedException;
 import mondrian.olap.Result;
+import mondrian.olap.Util;
 import mondrian.rolap.RolapConnection.NonEmptyResult;
 import mondrian.rolap.RolapNative.Listener;
 import mondrian.rolap.RolapNative.NativeEvent;
@@ -30,18 +40,9 @@ import mondrian.rolap.sql.TupleConstraint;
 import mondrian.spi.Dialect;
 import mondrian.spi.Dialect.DatabaseProduct;
 import mondrian.test.SqlPattern;
+import mondrian.test.TestAppender;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LogEvent;
-import org.eigenbase.util.property.BooleanProperty;
-import org.eigenbase.util.property.StringProperty;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Tests for NON EMPTY Optimization, includes SqlConstraint type hierarchy and RolapNative classes.
@@ -2918,8 +2919,6 @@ public class NonEmptyTest extends BatchTestCase {
   }
 
   public void testNotNativeVirtualCubeCrossJoinUnsupported() {
-    //LOG4JFIXME
-    /*
     switch ( getTestContext().getDialect().getDatabaseProduct() ) {
       case INFOBRIGHT:
         // Hits same Infobright bug as NamedSetTest.testNamedSetOnMember.
@@ -2942,24 +2941,12 @@ public class NonEmptyTest extends BatchTestCase {
         + "[Store].[All Stores].children) on rows "
         + "from [Warehouse and Sales]";
 
-    final List<LogEvent> events = new ArrayList<LogEvent>();
 
     // set up log4j listener to detect alerts
-    Appender alertListener = new AppenderSkeleton() {
-      protected void append( LogEvent event ) {
-        events.add( event );
-      }
-
-      public void close() {
-      }
-
-      public boolean requiresLayout() {
-        return false;
-      }
-    };
+    TestAppender alertListener = new TestAppender();
     final Logger rolapUtilLogger = LogManager.getLogger( RolapUtil.class );
     propSaver.setAtLeast( rolapUtilLogger, org.apache.logging.log4j.Level.WARN );
-    rolapUtilLogger.addAppender( alertListener );
+    Util.addAppender( alertListener, rolapUtilLogger, null );
     String expectedMessage =
       "Unable to use native SQL evaluation for 'NonEmptyCrossJoin'";
 
@@ -2985,9 +2972,9 @@ public class NonEmptyTest extends BatchTestCase {
 
     // should have gotten one ERROR
     int nEvents = countFilteredEvents(
-      events, org.apache.logging.log4j.Level.ERROR, expectedMessage );
+      alertListener.getLogEvents(), org.apache.logging.log4j.Level.ERROR, expectedMessage );
     assertEquals( "logged error count check", 1, nEvents );
-    events.clear();
+    alertListener.clear();
 
     // verify that exactly one warning is posted but execution succeeds
     // if alerting is set to WARN
@@ -3002,9 +2989,9 @@ public class NonEmptyTest extends BatchTestCase {
 
     // should have gotten one WARN
     nEvents = countFilteredEvents(
-      events, org.apache.logging.log4j.Level.WARN, expectedMessage );
+      alertListener.getLogEvents(), org.apache.logging.log4j.Level.WARN, expectedMessage );
     assertEquals( "logged warning count check", 1, nEvents );
-    events.clear();
+    alertListener.clear();
 
     // verify that no warning is posted if native evaluation is
     // explicitly disabled
@@ -3021,14 +3008,13 @@ public class NonEmptyTest extends BatchTestCase {
 
     // should have gotten no WARN
     nEvents = countFilteredEvents(
-      events, org.apache.logging.log4j.Level.WARN, expectedMessage );
+      alertListener.getLogEvents(), org.apache.logging.log4j.Level.WARN, expectedMessage );
     assertEquals( "logged warning count check", 0, nEvents );
-    events.clear();
+    alertListener.clear();
 
     // no biggie if we don't get here for some reason; just being
     // half-heartedly clean
-    rolapUtilLogger.removeAppender( alertListener );
-    */
+    Util.removeAppender( alertListener, rolapUtilLogger );
   }
 
   private int countFilteredEvents(
@@ -6708,7 +6694,6 @@ public class NonEmptyTest extends BatchTestCase {
         + " from [virtual] ",
       "", context );
   }
-
 }
 
 // End NonEmptyTest.java

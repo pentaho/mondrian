@@ -29,6 +29,7 @@ import mondrian.olap.CacheControl;
 import mondrian.olap.Cube;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.QueryTiming;
+import mondrian.olap.Util;
 import mondrian.rolap.RolapUtil;
 import mondrian.spi.ProfileHandler;
 
@@ -49,10 +50,8 @@ public class ExplainPlanTest extends FoodMartTestCase {
   }
 
   public void testExplain() throws SQLException {
-    //LOG4JFIXME
-    /*
     Level originalLevel = RolapUtil.PROFILE_LOGGER.getLevel();
-    RolapUtil.PROFILE_LOGGER.setLevel( Level.OFF ); // Must turn off in case test environment has enabled profiling
+    Util.setLevel( RolapUtil.PROFILE_LOGGER, Level.OFF ); // Must turn off in case test environment has enabled profiling
     OlapConnection connection = TestContext.instance().getOlap4jConnection();
     final OlapStatement statement = connection.createStatement();
     final ResultSet resultSet =
@@ -83,15 +82,12 @@ public class ExplainPlanTest extends FoodMartTestCase {
         + "type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit "
         + "Sales])\n" + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=NUMERIC, "
         + "resultStyle=VALUE_NOT_NULL, value=100.0)\n" + "\n", s );
-    RolapUtil.PROFILE_LOGGER.setLevel( originalLevel );
-    **/
+    Util.setLevel( RolapUtil.PROFILE_LOGGER, originalLevel );
   }
 
   public void testExplainComplex() throws SQLException {
-    //LOG4JFIXME
-    /*
     Level originalLevel = RolapUtil.PROFILE_LOGGER.getLevel();
-    RolapUtil.PROFILE_LOGGER.setLevel( Level.OFF ); // Must turn off in case test environment has enabled profiling
+    Util.setLevel( RolapUtil.PROFILE_LOGGER, Level.OFF );; // Must turn off in case test environment has enabled profiling
     OlapConnection connection = TestContext.instance().getOlap4jConnection();
     final OlapStatement statement = connection.createStatement();
     final String mdx =
@@ -186,7 +182,7 @@ public class ExplainPlanTest extends FoodMartTestCase {
 
     assertTrue( strings.get( 3 ), strings.get( 3 ).contains(
         "SqlStatement-SqlTupleReader.readTuples [[Product].[Product " + "Category]] invoked 1 times for total of " ) );
-    RolapUtil.PROFILE_LOGGER.setLevel( originalLevel );
+    Util.setLevel( RolapUtil.PROFILE_LOGGER, originalLevel );
   }
 
   public void testExplainInvalid() throws SQLException {
@@ -200,7 +196,6 @@ public class ExplainPlanTest extends FoodMartTestCase {
     } catch ( SQLException e ) {
       TestContext.checkThrowable( e, "MDX object '[Measures].[Store Margin]' not found in cube 'Sales'" );
     }
-    */
   }
 
   /**

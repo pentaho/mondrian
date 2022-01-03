@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2020 Hitachi Vantara
+// Copyright (C) 2005-2021 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -43,10 +43,18 @@ public class MdcUtilTest extends BatchTestCase {
             writer,
             "sessionName:%X{sessionName} %t %m");
 
-    Util.addAppender(appender, rolapUtilLogger, Level.ALL);
-    Util.addAppender(appender, RolapUtil.MONITOR_LOGGER, Level.ALL);
-    Util.addAppender(appender, RolapUtil.MDX_LOGGER, Level.ALL);
-
+    Util.addAppender(appender, rolapUtilLogger, null);
+    Level oldLevel = rolapUtilLogger.getLevel();
+    Util.setLevel( rolapUtilLogger, Level.DEBUG );
+    
+    Util.addAppender(appender, RolapUtil.MONITOR_LOGGER, null);
+    Level oldMonitorLevel = RolapUtil.MONITOR_LOGGER.getLevel();
+    Util.setLevel( RolapUtil.MONITOR_LOGGER, Level.DEBUG );
+    
+    Util.addAppender(appender, RolapUtil.MDX_LOGGER, null);
+    Level oldMdxLevel = RolapUtil.MDX_LOGGER.getLevel();
+    Util.setLevel( RolapUtil.MDX_LOGGER, Level.DEBUG );
+    
     String log = "";
     try {
       
@@ -62,14 +70,21 @@ public class MdcUtilTest extends BatchTestCase {
       log = writer.toString();
 
     } finally {
+      
       Util.removeAppender(appender, rolapUtilLogger);
+      Util.setLevel( rolapUtilLogger, oldLevel );
+      
       Util.removeAppender(appender, RolapUtil.MONITOR_LOGGER);
+      Util.setLevel( RolapUtil.MONITOR_LOGGER, oldMonitorLevel );
+      
       Util.removeAppender(appender, RolapUtil.MDX_LOGGER);
+      Util.setLevel( RolapUtil.MDX_LOGGER, oldMdxLevel );
+      
     }
     
     // Mondrian uses another thread pool to execute SQL statements.  
     // Verify that sessionName is now present on the SQL log statements
-    assertContains(log, "sessionName:hello-world mondrian.rolap.RolapResultShepherd$executor_1 18: SqlTupleReader.readTuples");
+    assertContains(log, "sessionName:hello-world mondrian.rolap.agg.SegmentCacheManager$sqlExecutor_");
     assertContains(log, "sessionName:hello-world Mondrian Monitor StatementStartEvent");
     assertContains(log, "sessionName:hello-world mondrian.rolap.RolapResultShepherd$executor_");
   }
