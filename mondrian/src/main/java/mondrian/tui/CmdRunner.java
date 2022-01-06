@@ -20,6 +20,8 @@ import mondrian.rolap.RolapConnectionProperties;
 import mondrian.rolap.RolapCube;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Level;
 
@@ -38,6 +40,7 @@ import java.sql.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -935,8 +938,8 @@ public class CmdRunner {
                     resultString = executeHelp(cmd);
                 } else if (cmd.startsWith("set")) {
                     resultString = executeSet(cmd);
-//                } else if (cmd.startsWith("log")) {
-//                    resultString = executeLog(cmd);
+                } else if (cmd.startsWith("log")) {
+                    resultString = executeLog(cmd);
                 } else if (cmd.startsWith("file")) {
                     resultString = executeFile(cmd);
                 } else if (cmd.startsWith("list")) {
@@ -1660,68 +1663,66 @@ public class CmdRunner {
             "With \"classname=level\" set log level to new value.");
     }
 
-// LOG4JFIXME Disabling this for now.
-//    protected String executeLog(String mdxCmd) {
-//        StringBuilder buf = new StringBuilder(200);
-//        String[] tokens = mdxCmd.split("\\s+");
-//
-//        if (tokens.length == 1) {
-//            //Enumeration e = LogManager.getCurrentLoggers();
-//            LogManager.getContext().`
-//            while (e.hasMoreElements()) {
-//                Logger logger = (Logger) e.nextElement();
-//                buf.append(logger.getName());
-//                buf.append(':');
-//                buf.append(logger.getLevel());
-//                buf.append(nl);
-//            }
-//
-//        } else if (tokens.length == 2) {
-//            String arg = tokens[1];
-//            int index = arg.indexOf('=');
-//            if (index == -1) {
-//                Logger logger = LogManager.exists(arg);
-//                if (logger == null) {
-//                    buf.append("Bad log name: ");
-//                    buf.append(arg);
-//                    buf.append(nl);
-//                } else {
-//                    buf.append(logger.getName());
-//                    buf.append(':');
-//                    buf.append(logger.getLevel());
-//                    buf.append(nl);
-//                }
-//            } else {
-//                String[] nv = arg.split("=");
-//                String classname = nv[0];
-//                String levelStr = nv[1];
-//
-//                Logger logger = LogManager.getLogger(classname);
-//
-//                if (logger == null) {
-//                    buf.append("Bad log name: ");
-//                    buf.append(classname);
-//                    buf.append(nl);
-//                } else {
-//                    Level level = Level.toLevel(levelStr, null);
-//                    if (level == null) {
-//                        buf.append("Bad log level: ");
-//                        buf.append(levelStr);
-//                        buf.append(nl);
-//                    } else {
-//                        logger.setLevel(level);
-//                    }
-//                }
-//            }
-//        } else {
-//            buf.append("Bad command usage: \"");
-//            buf.append(mdxCmd);
-//            buf.append('"');
-//            buf.append(nl);
-//            appendSet(buf);
-//        }
-//        return buf.toString();
-//    }
+    protected String executeLog(String mdxCmd) {
+        StringBuilder buf = new StringBuilder(200);
+        String[] tokens = mdxCmd.split("\\s+");
+        LoggerContext logContext = (LoggerContext) LogManager.getContext(false);
+        Map<String, LoggerConfig> map = logContext.getConfiguration().getLoggers();
+
+        if (tokens.length == 1) {
+            for (Entry<String, LoggerConfig> e : map.entrySet()) {
+                buf.append(e.getValue().getName());
+                buf.append(':');
+                buf.append(e.getValue().getLevel());
+                buf.append(nl);
+            }
+        } else if (tokens.length == 2) {
+            String arg = tokens[1];
+            int index = arg.indexOf('=');
+            if (index == -1) {
+                Logger logger = LogManager.getLogger(arg);
+                if (logger == null) {
+                    buf.append("Bad log name: ");
+                    buf.append(arg);
+                    buf.append(nl);
+                } else {
+                    buf.append(logger.getName());
+                    buf.append(':');
+                    buf.append(logger.getLevel());
+                    buf.append(nl);
+                }
+            } else {
+                String[] nv = arg.split("=");
+                String classname = nv[0];
+                String levelStr = nv[1];
+
+                Logger logger = LogManager.getLogger(classname);
+
+                if (logger == null) {
+                    buf.append("Bad log name: ");
+                    buf.append(classname);
+                    buf.append(nl);
+                } else {
+                    Level level = Level.toLevel(levelStr, null);
+                    if (level == null) {
+                        buf.append("Bad log level: ");
+                        buf.append(levelStr);
+                        buf.append(nl);
+                    } else {
+                        map.get(classname).setLevel(level);
+                        logContext.updateLoggers();
+                    }
+                }
+            }
+        } else {
+            buf.append("Bad command usage: \"");
+            buf.append(mdxCmd);
+            buf.append('"');
+            buf.append(nl);
+            appendSet(buf);
+        }
+        return buf.toString();
+    }
 
     //////////////////////////////////////////////////////////////////////////
     // file

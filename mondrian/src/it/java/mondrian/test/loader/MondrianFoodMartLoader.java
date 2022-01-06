@@ -167,16 +167,10 @@ public class MondrianFoodMartLoader {
         StringBuilder errorMessage = new StringBuilder();
         StringBuilder parametersMessage = new StringBuilder();
 
-        // Add a console appender for error messages.
-        ConsoleAppender ca = ConsoleAppender.newBuilder()
-          .setName("mfml")
-          .setLayout(PatternLayout.newBuilder().withPattern("%m%n").build())
-          .build();
-        Util.addAppender(ca, LOGGER, Level.ERROR);
-
+        boolean verbose = false;
         for (String arg : args) {
             if (arg.equals("-verbose")) {
-                  //LOG4JFIXME
+                verbose = true;
             } else if (arg.equals("-aggregates")) {
                 aggregates = true;
             } else if (arg.equals("-tables")) {
@@ -237,6 +231,14 @@ public class MondrianFoodMartLoader {
                 parametersMessage.append("\t").append(arg).append(nl);
             }
         }
+
+        // Add a console appender for error messages.
+        ConsoleAppender ca = ConsoleAppender.newBuilder()
+          .setName("mfml")
+          .setLayout(PatternLayout.newBuilder().withPattern("%m%n").build())
+          .build();
+        Util.addAppender(ca, LOGGER, verbose ? Level.DEBUG : Level.ERROR);
+
         if (inputJdbcURL != null) {
             jdbcInput = true;
             if (inputFile != null) {
