@@ -19,16 +19,15 @@
         <!-- ================================= -->
 
         <!-- A time/date based rolling appender -->
-        <RollingFile name="FILE" fileName="${sys:user.home}/.schemaWorkbench/workbench.log" filePattern="'.'%d{yyyy-MM-dd}" append="false" bufferedIO="true" immediateFlush="true">
+        <RollingFile name="FILE" fileName="${sys:user.home}/.schemaWorkbench/workbench.log" filePattern="${sys:user.home}/.schemaWorkbench/workbench.log.%d{yyyy-MM-dd}" append="false" bufferedIO="true" immediateFlush="true">
             <PatternLayout>
                 <Pattern>%d %-5p [%c] %m%n</Pattern>
             </PatternLayout>
             <Policies>
                 <OnStartupTriggeringPolicy />
                 <SizeBasedTriggeringPolicy size="500KB" />
-                <TimeBasedTriggeringPolicy />
             </Policies>
-            <DefaultRolloverStrategy max="1" fileIndex="min"/>
+            <DefaultRolloverStrategy max="1" />
         </RollingFile>
 
 
