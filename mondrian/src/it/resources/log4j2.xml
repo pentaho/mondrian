@@ -4,64 +4,46 @@
 
     <Appenders>
 
-        <RollingFile name="MONDRIANLOG"
+        <RollingFile name="FILE"
           fileName="target/test-logs/mondrian.log"
-          filePattern="mondrian_%d{MM-dd-yyyy}-%i.log"
+          filePattern="target/test-logs/mondrian.log.%i"
           append="false">
             <PatternLayout>
                 <Pattern>%d %-5p [%c] %m%n</Pattern>
             </PatternLayout>
             <Policies>
               <OnStartupTriggeringPolicy />
-              <SizeBasedTriggeringPolicy size="20 MB" />
-              <TimeBasedTriggeringPolicy />
+              <SizeBasedTriggeringPolicy size="10 MB" />
             </Policies>
-            <DefaultRolloverStrategy max="1" fileIndex="min"/>
+            <DefaultRolloverStrategy max="1" />
         </RollingFile>
 
         <RollingFile name="MDXLOG"
           fileName="target/test-logs/mondrian_mdx.log"
-          filePattern="mondrian_mdx_%d{MM-dd-yyyy}-%i.log"
+          filePattern="target/test-logs/mondrian_mdx.log.%i"
           append="false">
             <PatternLayout>
                 <Pattern>%d %-5p [%c] %m%n</Pattern>
             </PatternLayout>
             <Policies>
               <OnStartupTriggeringPolicy />
-              <SizeBasedTriggeringPolicy size="20 MB" />
-              <TimeBasedTriggeringPolicy />
+              <SizeBasedTriggeringPolicy size="10 MB" />
             </Policies>
-            <DefaultRolloverStrategy max="1" fileIndex="min"/>
+            <DefaultRolloverStrategy max="1" />
         </RollingFile>
 
         <RollingFile name="SQLLOG"
           fileName="target/test-logs/mondrian_sql.log"
-          filePattern="mondrian_sql_%d{MM-dd-yyyy}-%i.log"
+          filePattern="target/test-logs/mondrian_sql.log.%i"
           append="false">
             <PatternLayout>
                 <Pattern>%d %-5p [%c] %m%n</Pattern>
             </PatternLayout>
             <Policies>
               <OnStartupTriggeringPolicy />
-              <SizeBasedTriggeringPolicy size="20 MB" />
-              <TimeBasedTriggeringPolicy />
+              <SizeBasedTriggeringPolicy size="10 MB" />
             </Policies>
-            <DefaultRolloverStrategy max="1" fileIndex="min"/>
-        </RollingFile>
-
-        <RollingFile name="MONITORLOG"
-          fileName="target/test-logs/mondrian_monitor.log"
-          filePattern="mondrian_monitor_%d{MM-dd-yyyy}-%i.log"
-          append="false">
-            <PatternLayout>
-                <Pattern>%d %-5p [%c] %m%n</Pattern>
-            </PatternLayout>
-            <Policies>
-              <OnStartupTriggeringPolicy />
-              <SizeBasedTriggeringPolicy size="20 MB" />
-              <TimeBasedTriggeringPolicy />
-            </Policies>
-            <DefaultRolloverStrategy max="1" fileIndex="min"/>
+            <DefaultRolloverStrategy max="1" />
         </RollingFile>
 
         <Console name="CONSOLE">
@@ -73,27 +55,18 @@
     </Appenders>
 
     <Loggers>
-
-        <Logger name="mondrian" level="info">
-            <appender-ref ref="MONDRIANLOG"/>
-        </Logger>
-
+        <Logger name="org.apache" level="info" />
+        <Logger name="mondrian" level="info" />
         <Logger name="mondrian.mdx" level="debug">
             <appender-ref ref="MDXLOG"/>
         </Logger>
-
         <Logger name="mondrian.sql" level="debug">
             <appender-ref ref="SQLLOG"/>
         </Logger>
-
-        <Logger name="mondrian.server.monitor" level="info">
-            <appender-ref ref="MONITORLOG"/>
-        </Logger>
-
         <Root level="info">
             <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
         </Root>
-
     </Loggers>
 
 </Configuration>
