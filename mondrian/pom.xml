@@ -1,14 +1,13 @@
-<?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-mondrian-parent-pom</artifactId>
-    <version>9.3.0.0-SNAPSHOT</version>
+    <version>9.3.0.0-38</version>
   </parent>
   <artifactId>mondrian</artifactId>
-  <version>9.3.0.0-SNAPSHOT</version>
+  <version>9.3.0.0-38</version>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>Mondrian OLAP Engine</description>
   <url>http://mondrian.pentaho.com</url>
@@ -188,25 +187,25 @@
             </goals>
             <configuration>
               <target>
-                <property name="classpath" refid="maven.compile.classpath" />
-                <property name="java.dir" value="${project.build.sourceDirectory}" />
-                <property name="relative.java.dir" value="src/main/java" />
-                <property name="relative.resources.dir" value="src/main/resources" />
-                <property name="generated.java.dir" value="${project.basedir}/src/generated/java" />
-                <property name="generated.resources.dir" value="${project.basedir}/src/generated/resources" />
-                <property name="relative.generated.java.dir" value="src/generated/java" />
-                <property name="classes.dir" value="${project.build.outputDirectory}" />
+                <property name="classpath" refid="maven.compile.classpath"/>
+                <property name="java.dir" value="${project.build.sourceDirectory}"/>
+                <property name="relative.java.dir" value="src/main/java"/>
+                <property name="relative.resources.dir" value="src/main/resources"/>
+                <property name="generated.java.dir" value="${project.basedir}/src/generated/java"/>
+                <property name="generated.resources.dir" value="${project.basedir}/src/generated/resources"/>
+                <property name="relative.generated.java.dir" value="src/generated/java"/>
+                <property name="classes.dir" value="${project.build.outputDirectory}"/>
                 <property name="build.compiler" value="extJavac"/>
-                <mkdir dir="${project.build.outputDirectory}" />
-                <mkdir dir="${generated.java.dir}/mondrian/olap" />
-                <mkdir dir="${generated.java.dir}/mondrian/rolap/aggmatcher" />
-                <mkdir dir="${generated.java.dir}/mondrian/xmla" />
-                <mkdir dir="${generated.java.dir}/mondrian/parser" />
-                <ant target="def" />
-                <ant target="generate.properties" />
-                <ant target="generate.resources" />
-                <ant target="parser" />
-                <ant target="version" />
+                <mkdir dir="${project.build.outputDirectory}"/>
+                <mkdir dir="${generated.java.dir}/mondrian/olap"/>
+                <mkdir dir="${generated.java.dir}/mondrian/rolap/aggmatcher"/>
+                <mkdir dir="${generated.java.dir}/mondrian/xmla"/>
+                <mkdir dir="${generated.java.dir}/mondrian/parser"/>
+                <ant target="def"/>
+                <ant target="generate.properties"/>
+                <ant target="generate.resources"/>
+                <ant target="parser"/>
+                <ant target="version"/>
               </target>
             </configuration>
           </execution>
@@ -405,7 +404,7 @@
                 </goals>
                 <configuration>
                   <tasks>
-                    <copy file="${project.build.directory}/mysql-dist/my-default.ini" tofile="${project.build.directory}/mysql-dist/support-files/my-default.cnf" failonerror="false" />
+                    <copy failonerror="false" file="${project.build.directory}/mysql-dist/my-default.ini" tofile="${project.build.directory}/mysql-dist/support-files/my-default.cnf"/>
                   </tasks>
                 </configuration>
               </execution>
