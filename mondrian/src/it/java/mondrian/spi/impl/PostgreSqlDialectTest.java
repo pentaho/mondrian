@@ -14,6 +14,7 @@ import mondrian.spi.Dialect;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+
 import java.sql.Statement;
 
 import static org.mockito.Mockito.mock;

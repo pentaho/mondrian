@@ -19,7 +19,8 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.util.Pair;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ import java.util.List;
  * @author Richard M. Emberson
  */
 class AggQuerySpec {
-    private static final Logger LOGGER = Logger.getLogger(AggQuerySpec.class);
+    private static final Logger LOGGER = LogManager.getLogger(AggQuerySpec.class);
 
     private final AggStar aggStar;
     private final List<Segment> segments;

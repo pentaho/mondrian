@@ -15,7 +15,8 @@ import mondrian.spi.*;
 import mondrian.util.ClassResolver;
 import mondrian.util.ServiceDiscovery;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.*;
 
@@ -28,7 +29,7 @@ import java.util.*;
 public final class SegmentCacheWorker {
 
     private static final Logger LOGGER =
-        Logger.getLogger(SegmentCacheWorker.class);
+        LogManager.getLogger(SegmentCacheWorker.class);
 
     final SegmentCache cache;
     private final Thread cacheMgrThread;

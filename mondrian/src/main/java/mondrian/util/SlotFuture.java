@@ -9,7 +9,8 @@
 
 package mondrian.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -26,7 +27,7 @@ public class SlotFuture<V> implements Future<V> {
     private final CountDownLatch dataGate = new CountDownLatch(1);
     private final ReentrantReadWriteLock stateLock =
         new ReentrantReadWriteLock();
-    private static final Logger LOG = Logger.getLogger(SlotFuture.class);
+    private static final Logger LOG = LogManager.getLogger(SlotFuture.class);
 
     private final String thisString;
 

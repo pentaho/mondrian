@@ -22,7 +22,8 @@ import mondrian.server.*;
 import mondrian.spi.Dialect;
 import mondrian.util.ClassResolver;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.eigenbase.util.property.StringProperty;
 
@@ -40,14 +41,14 @@ import javax.sql.DataSource;
  * @since 22 December, 2001
  */
 public class RolapUtil {
-    public static final Logger MDX_LOGGER = Logger.getLogger("mondrian.mdx");
-    public static final Logger SQL_LOGGER = Logger.getLogger("mondrian.sql");
+    public static final Logger MDX_LOGGER = LogManager.getLogger("mondrian.mdx");
+    public static final Logger SQL_LOGGER = LogManager.getLogger("mondrian.sql");
     public static final Logger MONITOR_LOGGER =
-        Logger.getLogger("mondrian.server.monitor");
+        LogManager.getLogger("mondrian.server.monitor");
     public static final Logger PROFILE_LOGGER =
-        Logger.getLogger("mondrian.profile");
+        LogManager.getLogger("mondrian.profile");
 
-    static final Logger LOGGER = Logger.getLogger(RolapUtil.class);
+    static final Logger LOGGER = LogManager.getLogger(RolapUtil.class);
 
     /**
      * Special cell value indicates that the value is not in cache yet.
@@ -378,11 +379,11 @@ public class RolapUtil {
         String alertValue = alertProperty.get();
 
         if (alertValue.equalsIgnoreCase(
-                org.apache.log4j.Level.WARN.toString()))
+                org.apache.logging.log4j.Level.WARN.toString()))
         {
             LOGGER.warn(alertMsg);
         } else if (alertValue.equalsIgnoreCase(
-                org.apache.log4j.Level.ERROR.toString()))
+                org.apache.logging.log4j.Level.ERROR.toString()))
         {
             LOGGER.error(alertMsg);
             throw MondrianResource.instance().NativeEvaluationUnsupported.ex(

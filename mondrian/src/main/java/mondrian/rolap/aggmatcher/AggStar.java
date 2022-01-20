@@ -24,7 +24,8 @@ import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.spi.Dialect;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -55,7 +56,7 @@ import javax.sql.DataSource;
  * @author Richard M. Emberson
  */
 public class AggStar {
-    private static final Logger LOGGER = Logger.getLogger(AggStar.class);
+    private static final Logger LOGGER = LogManager.getLogger(AggStar.class);
     private boolean hasIgnoredColumns;
 
     static Logger getLogger() {
@@ -461,7 +462,7 @@ public class AggStar {
     }
 
     private static final Logger JOIN_CONDITION_LOGGER =
-            Logger.getLogger(AggStar.Table.JoinCondition.class);
+            LogManager.getLogger(AggStar.Table.JoinCondition.class);
 
     public boolean hasIgnoredColumns() {
         return hasIgnoredColumns;

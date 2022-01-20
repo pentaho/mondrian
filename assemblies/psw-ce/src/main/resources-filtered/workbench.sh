@@ -45,8 +45,8 @@ if test ! -e ${HOME}/.schemaWorkbench/mondrian.properties; then
     cp mondrian.properties ${HOME}/.schemaWorkbench/mondrian.properties
 fi
 
-if test ! -e ${HOME}/.schemaWorkbench/log4j.xml; then
-    cp log4j.xml ${HOME}/.schemaWorkbench/log4j.xml
+if test ! -e ${HOME}/.schemaWorkbench/log4j2.xml; then
+    cp log4j2.xml ${HOME}/.schemaWorkbench/log4j2.xml
 fi
 
 CP="${CP}${PS}${HOME}/.schemaWorkbench"

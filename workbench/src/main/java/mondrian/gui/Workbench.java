@@ -21,7 +21,9 @@ import mondrian.util.UnionIterator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.eigenbase.xom.XMLOutput;
 import org.eigenbase.xom.*;
@@ -77,7 +79,7 @@ public class Workbench extends javax.swing.JFrame {
         "mondrian.gui.resources.text";
     private static final String FILTER_SCHEMA_LIST = "FILTER_SCHEMA_LIST";
 
-    private static final Logger LOGGER = Logger.getLogger(Workbench.class);
+    private static final Logger LOGGER = LogManager.getLogger(Workbench.class);
 
     private String jdbcDriverClassName;
     private String jdbcConnectionUrl;

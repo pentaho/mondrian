@@ -12,11 +12,8 @@
 */
 package mondrian.test;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.sql.ResultSet;
+import java.io.ByteArrayOutputStream;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,18 +32,19 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.eigenbase.util.property.StringProperty;
 import org.olap4j.CellSet;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapStatement;
-import org.olap4j.layout.RectangularCellSetFormatter;
 
 import junit.framework.Assert;
 import mondrian.calc.ResultStyle;
@@ -64,7 +62,6 @@ import mondrian.olap.Position;
 import mondrian.olap.Property;
 import mondrian.olap.Query;
 import mondrian.olap.QueryCanceledException;
-import mondrian.olap.QueryTiming;
 import mondrian.olap.Result;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Syntax;
@@ -77,7 +74,6 @@ import mondrian.rolap.RolapUtil;
 import mondrian.server.Execution;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
-import mondrian.spi.ProfileHandler;
 import mondrian.spi.StatisticsProvider;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.spi.impl.JdbcStatisticsProvider;
@@ -4019,12 +4015,14 @@ public class BasicQueryTest extends FoodMartTestCase {
     final mondrian.server.Statement stmt = conn.getInternalStatement();
     // use the logger to block and trigger cancelation at the right time
     Logger sqlLog = RolapUtil.SQL_LOGGER;
-    propSaver.set( sqlLog, org.apache.log4j.Level.DEBUG );
+    propSaver.set( sqlLog, org.apache.logging.log4j.Level.DEBUG );
     final Execution exec = new Execution( stmt, 50000 );
     final CountDownLatch okToGo = new CountDownLatch( 1 );
-    SqlCancelingAppender canceler = new SqlCancelingAppender( component, triggerSql, exec, okToGo );
+    AtomicLong rows = new AtomicLong();
+    Appender canceler = new SqlCancelingAppender( component, triggerSql, exec, okToGo, rows );
     stmt.setQuery( conn.parseQuery( query ) );
-    sqlLog.addAppender( canceler );
+    //sqlLog.addAppender( canceler );
+    Util.addAppender(canceler, sqlLog, null);
     try {
       conn.execute( exec );
       Assert.fail( "Query not canceled." );
@@ -4033,9 +4031,10 @@ public class BasicQueryTest extends FoodMartTestCase {
       if ( !okToGo.await( 5, TimeUnit.SECONDS ) ) {
         Assert.fail( "Timeout reading sql statement end from log." );
       }
-      return canceler.rows;
+      return rows.longValue();
     } finally {
-      sqlLog.removeAppender( canceler );
+      //sqlLog.removeAppender( canceler );
+      Util.removeAppender(canceler, sqlLog );
       context.close();
     }
     return null;
@@ -4044,26 +4043,27 @@ public class BasicQueryTest extends FoodMartTestCase {
   /**
    * Listens to sql log for a specific query, cancels mdx when it's executed and reads number of fetched rows.
    */
-  private static class SqlCancelingAppender extends AppenderSkeleton {
+  private static class SqlCancelingAppender extends AbstractAppender {
+    private ByteArrayOutputStream out = new ByteArrayOutputStream();
     private String trigger;
     private Pattern stmtNbrGetter, stmtCanceler, stmtRowCounter;
     private int state = 0;
-    Long rows = null;
+    final AtomicLong rows;
     Execution exec;
     CountDownLatch latch;
 
-    SqlCancelingAppender( String comp, String trigger, Execution exec, CountDownLatch latch ) {
-      super();
+    SqlCancelingAppender( String comp, String trigger, Execution exec, CountDownLatch latch, AtomicLong rows) {
+      super( "SqlCancelingWriter", null, PatternLayout.createDefaultLayout(), true, org.apache.logging.log4j.core.config.Property.EMPTY_ARRAY );
       this.trigger = trigger;
       this.latch = latch;
       // capture stalked statement's number
       stmtNbrGetter = Pattern.compile( "^([0-9]*):\\s*" + Pattern.quote( comp ) + "\\s*: executing sql " );
       this.exec = exec;
+      this.rows = rows;
     }
 
-    @Override
-    protected synchronized void append( LoggingEvent event ) {
-      String msg = event.getMessage().toString();
+    @Override public void append( LogEvent event ) {
+      String msg = event.getMessage().getFormattedMessage();
       if ( state == 0 && msg.contains( trigger ) ) {
         Matcher matcher = stmtNbrGetter.matcher( msg );
         if ( matcher.find() ) {
@@ -4085,22 +4085,13 @@ public class BasicQueryTest extends FoodMartTestCase {
       } else if ( state == 2 ) {
         Matcher matcher = stmtRowCounter.matcher( msg );
         if ( matcher.find() ) {
-          rows = new Long( matcher.group( 1 ) );
+          rows.set( new Long( matcher.group( 1 ) ) );
           // invalidate
           state++;
           // release test
           latch.countDown();
         }
       }
-    }
-
-    @Override
-    public void close() {
-    }
-
-    @Override
-    public boolean requiresLayout() {
-      return false;
     }
   }
 
