@@ -35,14 +35,15 @@
     <mysql-connector-java.version>8.0.27</mysql-connector-java.version>
     <olap4j-tck.version>1.0.1.539</olap4j-tck.version>
     <eigenbase-resgen.version>1.3.1</eigenbase-resgen.version>
-    <junit.version>3.8.1</junit.version>
+    <junit.version>4.13.2</junit.version>
+    <junit5.version>5.8.2</junit5.version>
     <commons-pool.version>1.2</commons-pool.version>
     <validation-api.version>1.0.0.GA</validation-api.version>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-math.version>1.1</commons-math.version>
     <olap4j-xmla.version>1.2.0</olap4j-xmla.version>
     <jsp-api.version>2.0</jsp-api.version>
-    <mockito-all.version>1.9.5</mockito-all.version>
+    <mockito-all.version>1.10.5</mockito-all.version>
     <commons-dbcp.version>1.2.1</commons-dbcp.version>
     <olap4j-xmlaserver.version>1.2.0</olap4j-xmlaserver.version>
     <eigenbase-xom.version>1.3.5</eigenbase-xom.version>

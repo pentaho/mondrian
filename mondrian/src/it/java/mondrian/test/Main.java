@@ -279,7 +279,6 @@ public class Main extends TestSuite {
         addTest( suite, PartialCacheVCTest.class, "suite" );
         addTest( suite, QueryAllTest.class, "suite" );
         addTest( suite, QueryAllVCTest.class, "suite" );
-        addTest( suite, Base64Test.class );
         addTest( suite, CodeComplianceTest.class );
         return suite;
       }
@@ -330,7 +329,6 @@ public class Main extends TestSuite {
       addTest( suite, HierarchyBugTest.class );
       addTest( suite, ScheduleTest.class );
       addTest( suite, UtilTestCase.class );
-      addTest( suite, CancellationCheckerTest.class );
       addTest( suite, PartiallyOrderedSetTest.class );
       addTest( suite, ConcatenableListTest.class );
       addTest( suite, ExpiringReferenceTest.class );
@@ -377,7 +375,6 @@ public class Main extends TestSuite {
       addTest( suite, PropertiesTest.class );
       addTest( suite, MultipleHierarchyTest.class );
       addTest( suite, I18nTest.class );
-      addTest( suite, FormatTest.class );
       addTest( suite, ParallelTest.class );
       addTest( suite, SchemaVersionTest.class );
       addTest( suite, SchemaTest.class );
@@ -396,7 +393,6 @@ public class Main extends TestSuite {
       if ( Bug.BugMondrian503Fixed ) {
         addTest( suite, RolapResultTest.class );
       }
-      addTest( suite, ConstantCalcTest.class );
       addTest( suite, SharedDimensionTest.class );
       addTest( suite, CellPropertyTest.class );
       addTest( suite, QueryTest.class );
