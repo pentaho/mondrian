@@ -17,7 +17,8 @@ import mondrian.rolap.RolapUtil;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -162,7 +163,7 @@ import java.util.regex.Pattern;
  * @author Richard M. Emberson
  */
 public abstract class DBLoader {
-    protected static final Logger LOGGER = Logger.getLogger(DBLoader.class);
+    protected static final Logger LOGGER = LogManager.getLogger(DBLoader.class);
     public static final String nl = System.getProperty("line.separator");
     private static final int DEFAULT_BATCH_SIZE = 50;
 

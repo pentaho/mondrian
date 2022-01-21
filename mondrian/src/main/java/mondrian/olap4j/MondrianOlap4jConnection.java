@@ -17,7 +17,8 @@ import mondrian.rolap.*;
 import mondrian.util.Bug;
 import mondrian.xmla.XmlaHandler;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.olap4j.Axis;
 import org.olap4j.Cell;
@@ -66,7 +67,7 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     private static final Logger LOGGER =
-        Logger.getLogger(MondrianOlap4jConnection.class);
+        LogManager.getLogger(MondrianOlap4jConnection.class);
 
     /**
      * Handler for errors.

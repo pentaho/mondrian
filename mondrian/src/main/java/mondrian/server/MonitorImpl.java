@@ -16,7 +16,8 @@ import mondrian.server.monitor.*;
 import mondrian.server.monitor.MonitorMXBean;
 import mondrian.util.*;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -59,11 +60,9 @@ import java.util.concurrent.BlockingQueue;
  *     </ul>
  * </ul>
  */
-class MonitorImpl
-    implements Monitor, MonitorMXBean
-{
-    private static final Logger LOGGER = Logger.getLogger(MonitorImpl.class);
-    private final Handler handler = new Handler();
+class MonitorImpl implements Monitor, MonitorMXBean {
+  private static final Logger LOGGER = LogManager.getLogger( MonitorImpl.class );
+  private final Handler handler = new Handler();
 
     protected static final Util.MemoryInfo MEMORY_INFO = Util.getMemoryInfo();
 

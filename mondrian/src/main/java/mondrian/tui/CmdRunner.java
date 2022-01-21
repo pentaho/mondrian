@@ -19,8 +19,11 @@ import mondrian.olap.type.TypeUtil;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.rolap.RolapCube;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.*;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Level;
 
 import org.eigenbase.util.property.Property;
 
@@ -37,6 +40,7 @@ import java.sql.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1661,24 +1665,22 @@ public class CmdRunner {
 
     protected String executeLog(String mdxCmd) {
         StringBuilder buf = new StringBuilder(200);
-
         String[] tokens = mdxCmd.split("\\s+");
+        LoggerContext logContext = (LoggerContext) LogManager.getContext(false);
+        Map<String, LoggerConfig> map = logContext.getConfiguration().getLoggers();
 
         if (tokens.length == 1) {
-            Enumeration e = LogManager.getCurrentLoggers();
-            while (e.hasMoreElements()) {
-                Logger logger = (Logger) e.nextElement();
-                buf.append(logger.getName());
+            for (Entry<String, LoggerConfig> e : map.entrySet()) {
+                buf.append(e.getValue().getName());
                 buf.append(':');
-                buf.append(logger.getLevel());
+                buf.append(e.getValue().getLevel());
                 buf.append(nl);
             }
-
         } else if (tokens.length == 2) {
             String arg = tokens[1];
             int index = arg.indexOf('=');
             if (index == -1) {
-                Logger logger = LogManager.exists(arg);
+                Logger logger = LogManager.getLogger(arg);
                 if (logger == null) {
                     buf.append("Bad log name: ");
                     buf.append(arg);
@@ -1707,11 +1709,11 @@ public class CmdRunner {
                         buf.append(levelStr);
                         buf.append(nl);
                     } else {
-                        logger.setLevel(level);
+                        map.get(classname).setLevel(level);
+                        logContext.updateLoggers();
                     }
                 }
             }
-
         } else {
             buf.append("Bad command usage: \"");
             buf.append(mdxCmd);
@@ -1719,7 +1721,6 @@ public class CmdRunner {
             buf.append(nl);
             appendSet(buf);
         }
-
         return buf.toString();
     }
 

@@ -20,7 +20,9 @@ import mondrian.server.monitor.*;
 import mondrian.spi.*;
 import mondrian.util.*;
 
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -271,10 +273,8 @@ public class SegmentCacheManager {
     public final SegmentCache compositeCache;
     private final SegmentCacheIndexRegistry indexRegistry;
 
-    private static final Logger LOGGER =
-        Logger.getLogger(AggregationManager.class);
+    private static final Logger LOGGER = LogManager.getLogger( AggregationManager.class );
     private final MondrianServer server;
-
     public SegmentCacheManager(MondrianServer server) {
         this.server = server;
         ACTOR = new Actor();

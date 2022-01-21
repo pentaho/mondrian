@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -22,7 +22,8 @@ import mondrian.util.*;
 
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.comparators.ComparatorChain;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
@@ -35,7 +36,7 @@ import java.util.*;
  */
 public class FunUtil extends Util {
     private static final Logger LOGGER =
-        Logger.getLogger(FunUtil.class);
+        LogManager.getLogger( FunUtil.class);
     private static final String SORT_TIMING_NAME = "Sort";
     private static final String SORT_EVAL_TIMING_NAME = "EvalForSort";
 
@@ -2808,7 +2809,7 @@ public class FunUtil extends Util {
         public final int TOO_SMALL = 8;
 
         private static final Logger LOGGER =
-            Logger.getLogger(Quicksorter.class);
+            LogManager.getLogger( Quicksorter.class);
         private final T[] vec;
         private final Comparator<T> comp;
         private final boolean traced;
@@ -3030,7 +3031,7 @@ public class FunUtil extends Util {
     private static abstract class MemberComparator implements Comparator<Member>
     {
         private static final Logger LOGGER =
-            Logger.getLogger(MemberComparator.class);
+            LogManager.getLogger(MemberComparator.class);
         final Evaluator evaluator;
         final Calc exp;
 

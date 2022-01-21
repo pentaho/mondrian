@@ -12,7 +12,7 @@ import mondrian.olap.*;
 import mondrian.rolap.RolapCell;
 import mondrian.rolap.SqlStatement;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import org.olap4j.*;
 import org.olap4j.Cell;

@@ -16,7 +16,8 @@ import mondrian.olap4j.IMondrianOlap4jProperty;
 import mondrian.util.CompositeList;
 import mondrian.xmla.impl.DefaultSaxWriter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.olap4j.*;
 import org.olap4j.impl.Olap4jUtil;
@@ -46,7 +47,7 @@ import static org.olap4j.metadata.XmlaConstants.*;
  * @since 27 April, 2003
  */
 public class XmlaHandler {
-    private static final Logger LOGGER = Logger.getLogger(XmlaHandler.class);
+    private static final Logger LOGGER = LogManager.getLogger(XmlaHandler.class);
 
     /**
      * Name of property used by JDBC to hold user name.

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -21,11 +21,12 @@ import mondrian.server.Locus;
 import mondrian.spi.*;
 import mondrian.util.*;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.MDC;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.*;
 import java.util.concurrent.Future;
+import org.apache.logging.log4j.ThreadContext;
 
 /**
  * A <code>FastBatchingCellReader</code> doesn't really Read cells: when asked
@@ -42,7 +43,7 @@ import java.util.concurrent.Future;
  */
 public class FastBatchingCellReader implements CellReader {
     private static final Logger LOGGER =
-        Logger.getLogger(FastBatchingCellReader.class);
+        LogManager.getLogger(FastBatchingCellReader.class);
 
     private final int cellRequestLimit;
 
@@ -550,7 +551,7 @@ public class FastBatchingCellReader implements CellReader {
  */
 class BatchLoader {
     private static final Logger LOGGER =
-        Logger.getLogger(FastBatchingCellReader.class);
+        LogManager.getLogger(FastBatchingCellReader.class);
 
     private final Locus locus;
     private final SegmentCacheManager cacheMgr;
@@ -994,8 +995,8 @@ class BatchLoader {
         private final Dialect dialect;
         private final RolapCube cube;
         private final List<CellRequest> cellRequests;
-        private final Map<String, Object> mdc =
-            new HashMap<String, Object>();
+        private final Map<String, String> mdc =
+            new HashMap<String, String>();
 
         public LoadBatchCommand(
             Locus locus,
@@ -1010,14 +1011,14 @@ class BatchLoader {
             this.cube = cube;
             this.cellRequests = cellRequests;
 
-            if (MDC.getContext() != null) {
-                this.mdc.putAll(MDC.getContext());
+            if (ThreadContext.getContext() != null) {
+                this.mdc.putAll(ThreadContext.getContext());
             }
         }
 
         public LoadBatchResponse call() {
-            if (MDC.getContext() != null) {
-                final Map<String, Object> old = MDC.getContext();
+            if (ThreadContext.getContext() != null) {
+                final Map<String, String> old = ThreadContext.getContext();
                 old.clear();
                 old.putAll(mdc);
             }
@@ -1078,7 +1079,7 @@ class BatchLoader {
         }
     }
 
-    private static final Logger BATCH_LOGGER = Logger.getLogger(Batch.class);
+    private static final Logger BATCH_LOGGER = LogManager.getLogger(Batch.class);
 
     public static class RollupInfo {
         final RolapStar.Column[] constrainedColumns;

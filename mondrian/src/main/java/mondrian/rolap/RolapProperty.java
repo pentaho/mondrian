@@ -15,7 +15,8 @@ import mondrian.olap.MondrianDef;
 import mondrian.olap.Property;
 import mondrian.spi.PropertyFormatter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * <code>RolapProperty</code> is the definition of a member property.
@@ -24,7 +25,7 @@ import org.apache.log4j.Logger;
  */
 class RolapProperty extends Property {
 
-    private static final Logger LOGGER = Logger.getLogger(RolapProperty.class);
+    private static final Logger LOGGER = LogManager.getLogger(RolapProperty.class);
 
     /** Array of RolapProperty of length 0. */
     static final RolapProperty[] emptyArray = new RolapProperty[0];

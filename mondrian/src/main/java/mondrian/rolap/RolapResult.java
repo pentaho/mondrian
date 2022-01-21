@@ -10,6 +10,7 @@
 */
 package mondrian.rolap;
 
+
 import mondrian.calc.*;
 import mondrian.calc.impl.*;
 import mondrian.mdx.*;
@@ -26,9 +27,10 @@ import mondrian.server.Locus;
 import mondrian.spi.CellFormatter;
 import mondrian.util.*;
 
-import org.apache.log4j.Logger;
-
 import java.util.*;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 
 /**
@@ -39,7 +41,7 @@ import java.util.*;
  */
 public class RolapResult extends ResultBase {
 
-    static final Logger LOGGER = Logger.getLogger(ResultBase.class);
+  static final Logger LOGGER = LogManager.getLogger( ResultBase.class );
 
     private RolapEvaluator evaluator;
     RolapEvaluator slicerEvaluator;

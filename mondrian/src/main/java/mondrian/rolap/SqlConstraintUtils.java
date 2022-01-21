@@ -49,7 +49,8 @@ import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.Dialect;
 import mondrian.util.FilteredIterableList;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,9 +74,8 @@ import java.util.Set;
  */
 public class SqlConstraintUtils {
 
-    private static final Logger LOG =
-        Logger.getLogger(SqlConstraintUtils.class);
-    private static final MondrianResource mres = MondrianResource.instance();
+  private static final Logger LOG = LogManager.getLogger( SqlConstraintUtils.class );
+  private static final MondrianResource mres = MondrianResource.instance();
 
     /** Utility class */
     private SqlConstraintUtils() {
