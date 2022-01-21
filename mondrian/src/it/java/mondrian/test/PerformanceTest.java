@@ -22,7 +22,9 @@ import mondrian.olap.type.Type;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.util.Bug;
 import org.apache.commons.collections.ComparatorUtils;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,7 +44,7 @@ public class PerformanceTest extends FoodMartTestCase {
    * Certain tests are enabled only if logging is enabled at debug level or higher.
    */
   public static final Logger LOGGER =
-    Logger.getLogger( PerformanceTest.class );
+    LogManager.getLogger( PerformanceTest.class );
 
   public PerformanceTest( String name ) {
     super( name );

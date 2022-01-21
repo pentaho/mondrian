@@ -20,7 +20,7 @@ import mondrian.server.*;
 import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.Dialect;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import org.olap4j.AllocationPolicy;
 import org.olap4j.Scenario;

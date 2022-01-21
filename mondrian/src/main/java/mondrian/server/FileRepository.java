@@ -25,7 +25,8 @@ import mondrian.util.LockBox;
 import mondrian.util.Pair;
 import mondrian.xmla.DataSourcesConfig;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
@@ -61,7 +62,7 @@ public class FileRepository implements Repository {
     private static final Object SERVER_INFO_LOCK = new Object();
     private final RepositoryContentFinder repositoryContentFinder;
 
-    private static final Logger LOGGER = Logger.getLogger(MondrianServer.class);
+    private static final Logger LOGGER = LogManager.getLogger(MondrianServer.class);
 
     private static final ScheduledExecutorService executorService =
         Util.getScheduledExecutorService(

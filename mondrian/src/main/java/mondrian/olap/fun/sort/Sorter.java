@@ -31,7 +31,9 @@ import mondrian.server.Execution;
 import mondrian.util.CancellationChecker;
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.comparators.ComparatorChain;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -56,7 +58,7 @@ public class Sorter {
   private static final String SORT_TIMING_NAME = "Sort";
   private static final String SORT_EVAL_TIMING_NAME = "EvalForSort";
 
-  private static final Logger LOGGER = Logger.getLogger( Sorter.class );
+  private static final Logger LOGGER = LogManager.getLogger( Sorter.class );
 
   /**
    * For each member in a list, evaluates an expression and creates a map from members to values.

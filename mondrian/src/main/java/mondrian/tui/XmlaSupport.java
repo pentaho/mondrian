@@ -19,7 +19,8 @@ import mondrian.xmla.*;
 import mondrian.xmla.Enumeration;
 import mondrian.xmla.impl.*;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
@@ -42,7 +43,7 @@ import javax.xml.xpath.XPathException;
  * @author Richard M. Emberson
  */
 public class XmlaSupport {
-    private static final Logger LOGGER = Logger.getLogger(XmlaSupport.class);
+    private static final Logger LOGGER = LogManager.getLogger(XmlaSupport.class);
 
     public static final String nl = Util.nl;
     public static final String SOAP_PREFIX = XmlaConstants.SOAP_PREFIX;

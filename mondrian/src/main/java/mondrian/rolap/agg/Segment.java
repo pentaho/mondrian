@@ -17,8 +17,6 @@ import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.spi.SegmentHeader;
 
-import org.apache.log4j.Logger;
-
 import java.io.PrintWriter;
 import java.util.*;
 
@@ -109,8 +107,6 @@ public class Segment {
   protected final List<StarPredicate> compoundPredicateList;
 
   private final SegmentHeader segmentHeader;
-
-  private static final Logger LOGGER = Logger.getLogger( Segment.class );
 
   /**
    * Creates a <code>Segment</code>; it's not loaded yet.

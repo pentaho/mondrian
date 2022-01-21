@@ -18,7 +18,8 @@ import mondrian.server.Execution;
 import mondrian.spi.*;
 import mondrian.util.*;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.PrintWriter;
 import java.sql.Statement;
@@ -39,7 +40,7 @@ import java.util.concurrent.Future;
 public class SegmentCacheIndexImpl implements SegmentCacheIndex {
 
     private static final Logger LOGGER =
-        Logger.getLogger(SegmentCacheIndexImpl.class);
+        LogManager.getLogger(SegmentCacheIndexImpl.class);
 
     private final Map<List, List<SegmentHeader>> bitkeyMap =
         new HashMap<List, List<SegmentHeader>>();

@@ -30,7 +30,7 @@ public abstract class AbstractRecorder implements MessageRecorder {
         final String context,
         final String msg,
         final MsgType msgType,
-        final org.apache.log4j.Logger logger)
+        final org.apache.logging.log4j.Logger logger)
     {
         StringBuilder buf = new StringBuilder(64);
         buf.append(context);
