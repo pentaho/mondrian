@@ -16,9 +16,15 @@ import mondrian.spi.UserDefinedFunction;
 import mondrian.util.Bug;
 
 import org.apache.commons.collections.ComparatorUtils;
-import org.apache.log4j.Logger;
 
-import java.util.*;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -28,12 +34,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since August 7, 2006
  */
 public class PerformanceTest extends FoodMartTestCase {
-    /**
-     * Certain tests are enabled only if logging is enabled at debug level or
-     * higher.
-     */
-    public static final Logger LOGGER =
-        Logger.getLogger(PerformanceTest.class);
+  /**
+   * Certain tests are enabled only if logging is enabled at debug level or higher.
+   */
+  public static final Logger LOGGER =
+    LogManager.getLogger( PerformanceTest.class );
 
     public PerformanceTest(String name) {
         super(name);

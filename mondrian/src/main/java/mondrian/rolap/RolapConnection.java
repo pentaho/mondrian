@@ -21,7 +21,9 @@ import mondrian.spi.impl.JndiDataSourceResolver;
 import mondrian.util.*;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.eigenbase.util.property.StringProperty;
 
@@ -52,7 +54,7 @@ import javax.sql.DataSource;
  */
 public class RolapConnection extends ConnectionBase {
   private static final Logger LOGGER =
-    Logger.getLogger( RolapConnection.class );
+    LogManager.getLogger( RolapConnection.class );
   private static final AtomicInteger ID_GENERATOR = new AtomicInteger();
 
   private final MondrianServer server;

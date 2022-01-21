@@ -31,10 +31,6 @@ import mondrian.util.Bug;
 
 import junit.framework.Assert;
 
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggingEvent;
-
 import org.eigenbase.util.property.StringProperty;
 
 import org.olap4j.*;
@@ -47,8 +43,16 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import java.io.ByteArrayOutputStream;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 
 /**
  * <code>BasicQueryTest</code> is a test case which tests simple queries
@@ -6773,105 +6777,90 @@ public class BasicQueryTest extends FoodMartTestCase {
         TestContext context = getTestContext().withFreshConnection();
         context.flushSchemaCache();
 
-        RolapConnection conn =  (RolapConnection) context.getConnection();
+        RolapConnection conn = (RolapConnection) context.getConnection();
         final mondrian.server.Statement stmt = conn.getInternalStatement();
         // use the logger to block and trigger cancelation at the right time
         Logger sqlLog = RolapUtil.SQL_LOGGER;
-        propSaver.set(sqlLog, org.apache.log4j.Level.DEBUG);
-        final Execution exec = new Execution(stmt, 50000);
-        final CountDownLatch okToGo = new CountDownLatch(1);
-        SqlCancelingAppender canceler =
-            new SqlCancelingAppender(component, triggerSql, exec, okToGo);
-        stmt.setQuery(conn.parseQuery(query));
-        sqlLog.addAppender(canceler);
+        propSaver.set( sqlLog, org.apache.logging.log4j.Level.DEBUG );
+        final Execution exec = new Execution( stmt, 50000 );
+        final CountDownLatch okToGo = new CountDownLatch( 1 );
+        AtomicLong rows = new AtomicLong();
+        Appender canceler = new SqlCancelingAppender( component, triggerSql, exec, okToGo, rows );
+        stmt.setQuery( conn.parseQuery( query ) );
+        //sqlLog.addAppender( canceler );
+        Util.addAppender(canceler, sqlLog, null);
         try {
-            conn.execute(exec);
-            Assert.fail("Query not canceled.");
-        } catch (QueryCanceledException e) {
-            // 5 sec just in case it all goes wrong
-            if (!okToGo.await(5, TimeUnit.SECONDS)) {
-                Assert.fail("Timeout reading sql statement end from log.");
-            }
-            return canceler.rows;
+          conn.execute( exec );
+          Assert.fail( "Query not canceled." );
+        } catch ( QueryCanceledException e ) {
+          // 5 sec just in case it all goes wrong
+          if ( !okToGo.await( 5, TimeUnit.SECONDS ) ) {
+            Assert.fail( "Timeout reading sql statement end from log." );
+          }
+          return rows.longValue();
         } finally {
-            sqlLog.removeAppender(canceler);
-            context.close();
+          //sqlLog.removeAppender( canceler );
+          Util.removeAppender(canceler, sqlLog );
+          context.close();
         }
         return null;
     }
 
-    /**
-     * Listens to sql log for a specific query, cancels mdx when it's
-     * executed and reads number of fetched rows.
-     */
-    private static class SqlCancelingAppender extends AppenderSkeleton {
-        private String trigger;
-        private Pattern stmtNbrGetter, stmtCanceler, stmtRowCounter;
-        private int state = 0;
-        Long rows = null;
-        Execution exec;
-        CountDownLatch latch;
 
-        SqlCancelingAppender(
-            String comp, String trigger, Execution exec, CountDownLatch latch)
-        {
-            super();
-            this.trigger = trigger;
-            this.latch = latch;
-            // capture stalked statement's number
-            stmtNbrGetter = Pattern.compile(
-                "^([0-9]*):\\s*"
-                    + Pattern.quote(comp) + "\\s*: executing sql ");
-            this.exec = exec;
-        }
+  /**
+   * Listens to sql log for a specific query, cancels mdx when it's executed and reads number of fetched rows.
+   */
+  private static class SqlCancelingAppender extends AbstractAppender {
+    private ByteArrayOutputStream out = new ByteArrayOutputStream();
+    private String trigger;
+    private Pattern stmtNbrGetter, stmtCanceler, stmtRowCounter;
+    private int state = 0;
+    final AtomicLong rows;
+    Execution exec;
+    CountDownLatch latch;
 
-        @Override
-        protected synchronized void append(LoggingEvent event) {
-            String msg = event.getMessage().toString();
-            if (state == 0
-                && msg.contains(trigger))
-            {
-                Matcher matcher = stmtNbrGetter.matcher(msg);
-                if (matcher.find()) {
-                    // get sql statement number
-                    String stmt = matcher.group(1);
-                    // log entry to trigger cancel
-                    stmtCanceler =
-                        Pattern.compile("^" + stmt + ":\\s*,\\s*exec\\s");
-                    // log entry to find fetched rows
-                    stmtRowCounter = Pattern.compile(
-                        "^" + stmt + ":\\s*,[^,]*,\\s+([0-9]*)\\s+rows\\s*$");
-                    state = 1;
-                }
-            } else if (state == 1) {
-                if (stmtCanceler.matcher(msg).find()) {
-                    // sql in fetch phase
-                    // cancel the mdx query
-                    exec.cancel();
-                    state = 2;
-                }
-            } else if (state == 2) {
-                Matcher matcher = stmtRowCounter.matcher(msg);
-                if (matcher.find()) {
-                    rows = new Long(matcher.group(1));
-                    // invalidate
-                    state++;
-                    // release test
-                    latch.countDown();
-                }
-            }
-        }
-
-        @Override
-        public void close() {
-        }
-
-        @Override
-        public boolean requiresLayout() {
-            return false;
-        }
+    SqlCancelingAppender( String comp, String trigger, Execution exec, CountDownLatch latch, AtomicLong rows) {
+      super( "SqlCancelingWriter", null, PatternLayout.createDefaultLayout(), true, org.apache.logging.log4j.core.config.Property.EMPTY_ARRAY );
+      this.trigger = trigger;
+      this.latch = latch;
+      // capture stalked statement's number
+      stmtNbrGetter = Pattern.compile( "^([0-9]*):\\s*" + Pattern.quote( comp ) + "\\s*: executing sql " );
+      this.exec = exec;
+      this.rows = rows;
     }
 
+    @Override public void append( LogEvent event ) {
+      String msg = event.getMessage().getFormattedMessage();
+      if ( state == 0 && msg.contains( trigger ) ) {
+        Matcher matcher = stmtNbrGetter.matcher( msg );
+        if ( matcher.find() ) {
+          // get sql statement number
+          String stmt = matcher.group( 1 );
+          // log entry to trigger cancel
+          stmtCanceler = Pattern.compile( "^" + stmt + ":\\s*,\\s*exec\\s" );
+          // log entry to find fetched rows
+          stmtRowCounter = Pattern.compile( "^" + stmt + ":\\s*,[^,]*,\\s+([0-9]*)\\s+rows\\s*$" );
+          state = 1;
+        }
+      } else if ( state == 1 ) {
+        if ( stmtCanceler.matcher( msg ).find() ) {
+          // sql in fetch phase
+          // cancel the mdx query
+          exec.cancel();
+          state = 2;
+        }
+      } else if ( state == 2 ) {
+        Matcher matcher = stmtRowCounter.matcher( msg );
+        if ( matcher.find() ) {
+          rows.set( new Long( matcher.group( 1 ) ) );
+          // invalidate
+          state++;
+          // release test
+          latch.countDown();
+        }
+      }
+    }
+  }
     public void testQueryTimeout() {
         // timeout is issued after 2 seconds so the test query needs to
         // run for at least that long; it will because the query references
@@ -6903,19 +6892,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         }
         TestContext.checkThrowable(
             throwable, "Query timeout of 2 seconds reached");
-    }
-
-    public void testFormatInheritance() {
-        assertQueryReturns(
-            "with member measures.foo as 'measures.bar' "
-            + "member measures.bar as "
-            + "'measures.profit' select {measures.foo} on 0 from sales",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[foo]}\n"
-            + "Row #0: $339,610.90\n");
-    }
+  }
 
     public void testFormatInheritanceWithIIF() {
         assertQueryReturns(

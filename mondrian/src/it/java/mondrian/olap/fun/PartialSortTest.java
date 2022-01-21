@@ -15,7 +15,7 @@ import junit.framework.TestCase;
 
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.comparators.ReverseComparator;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 

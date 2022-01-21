@@ -9,7 +9,8 @@
 
 package mondrian.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.*;
 
@@ -33,7 +34,7 @@ import java.util.*;
  */
 public abstract class UnsupportedList<T> implements List<T> {
     private static final Logger LOGGER =
-        Logger.getLogger(UnsupportedList.class);
+        LogManager.getLogger(UnsupportedList.class);
 
     protected UnsupportedList() {
     }

@@ -16,7 +16,8 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * A <code>HierarchyUsage</code> is the usage of a hierarchy in the context
@@ -37,7 +38,7 @@ import org.apache.log4j.Logger;
  * @since 21 March, 2002
  */
 public class HierarchyUsage {
-    private static final Logger LOGGER = Logger.getLogger(HierarchyUsage.class);
+    private static final Logger LOGGER = LogManager.getLogger(HierarchyUsage.class);
 
     enum Kind {
         UNKNOWN,

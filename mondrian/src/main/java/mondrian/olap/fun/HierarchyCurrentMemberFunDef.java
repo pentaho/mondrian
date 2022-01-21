@@ -15,7 +15,10 @@ import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapEvaluator;
 import mondrian.rolap.RolapHierarchy;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.eigenbase.util.property.StringProperty;
 
 import java.util.Map;
@@ -29,8 +32,7 @@ import java.util.Set;
  * @since Mar 23, 2006
  */
 public class HierarchyCurrentMemberFunDef extends FunDefBase {
-    private static final Logger LOGGER =
-            Logger.getLogger(HierarchyCurrentMemberFunDef.class);
+  private static final Logger LOGGER = LogManager.getLogger( HierarchyCurrentMemberFunDef.class );
 
     static final HierarchyCurrentMemberFunDef instance =
             new HierarchyCurrentMemberFunDef();
@@ -135,11 +137,11 @@ public class HierarchyCurrentMemberFunDef extends FunDefBase {
                 String alertValue = alertProperty.get();
 
                 if (alertValue.equalsIgnoreCase(
-                        org.apache.log4j.Level.WARN.toString()))
+                        org.apache.logging.log4j.Level.WARN.toString()))
                 {
                     LOGGER.warn(exception.getMessage());
                 } else if (alertValue.equalsIgnoreCase(
-                        org.apache.log4j.Level.ERROR.toString()))
+                        org.apache.logging.log4j.Level.ERROR.toString()))
                 {
                     throw MondrianResource.instance()
                         .CurrentMemberWithCompoundSlicer.ex(

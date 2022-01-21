@@ -15,7 +15,8 @@ import mondrian.recorder.MessageRecorder;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -29,7 +30,7 @@ import java.util.regex.Pattern;
  * @author Richard M. Emberson
  */
 public class ExplicitRules {
-    private static final Logger LOGGER = Logger.getLogger(ExplicitRules.class);
+    private static final Logger LOGGER = LogManager.getLogger(ExplicitRules.class);
 
     private static final MondrianResource mres = MondrianResource.instance();
 

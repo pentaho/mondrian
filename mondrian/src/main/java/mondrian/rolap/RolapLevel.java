@@ -17,7 +17,8 @@ import mondrian.rolap.format.FormatterFactory;
 import mondrian.spi.Dialect;
 import mondrian.spi.PropertyFormatter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.olap4j.impl.UnmodifiableArrayMap;
 
@@ -34,7 +35,7 @@ import java.util.Map;
  */
 public class RolapLevel extends LevelBase {
 
-    private static final Logger LOGGER = Logger.getLogger(RolapLevel.class);
+    private static final Logger LOGGER = LogManager.getLogger(RolapLevel.class);
 
     /**
      * The column or expression which yields the level's key.

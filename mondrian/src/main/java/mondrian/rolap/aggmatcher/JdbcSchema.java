@@ -22,7 +22,8 @@ import mondrian.rolap.RolapStar;
 import mondrian.spi.Dialect;
 import mondrian.util.ClassResolver;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.olap4j.impl.Olap4jUtil;
 
@@ -55,7 +56,7 @@ import javax.sql.DataSource;
  */
 public class JdbcSchema {
     private static final Logger LOGGER =
-        Logger.getLogger(JdbcSchema.class);
+        LogManager.getLogger(JdbcSchema.class);
 
     private static final MondrianResource mres = MondrianResource.instance();
 

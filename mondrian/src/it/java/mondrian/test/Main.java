@@ -12,6 +12,9 @@
 */
 package mondrian.test;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import mondrian.calc.impl.ConstantCalcTest;
 import mondrian.olap.*;
 import mondrian.olap.fun.*;
@@ -51,7 +54,6 @@ import mondrian.xmla.test.XmlaTest;
 import junit.framework.Test;
 import junit.framework.*;
 
-import org.apache.log4j.Logger;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -68,7 +70,7 @@ import java.util.regex.Pattern;
  * @author jhyde
  */
 public class Main extends TestSuite {
-  private static final Logger logger = Logger.getLogger( Main.class );
+  private static final Logger logger = LogManager.getLogger( Main.class );
   /**
    * Scratch area to store information on the emerging test suite.
    */

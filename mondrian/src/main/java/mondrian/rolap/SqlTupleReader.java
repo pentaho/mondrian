@@ -30,7 +30,8 @@ import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.util.CancellationChecker;
 import mondrian.util.Pair;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -78,11 +79,11 @@ import javax.sql.DataSource;
  * @since Nov 11, 2005
  */
 public class SqlTupleReader implements TupleReader {
-    private static final Logger LOGGER =
-        Logger.getLogger(SqlTupleReader.class);
-    protected final TupleConstraint constraint;
-    List<TargetBase> targets = new ArrayList<TargetBase>();
-    int maxRows = 0;
+  private static final Logger LOGGER =
+    LogManager.getLogger( SqlTupleReader.class );
+  protected final TupleConstraint constraint;
+  List<TargetBase> targets = new ArrayList<TargetBase>();
+  int maxRows = 0;
 
     /**
      * How many members could not be instantiated in this iteration. This
