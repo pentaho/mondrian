@@ -17,7 +17,12 @@ import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.*;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -95,7 +100,7 @@ public class MondrianFoodMartLoader {
     // Constants
 
     private static final Logger LOGGER =
-        Logger.getLogger(MondrianFoodMartLoader.class);
+        LogManager.getLogger(MondrianFoodMartLoader.class);
     private static final String nl = Util.nl;
 
     // Fields
@@ -162,23 +167,10 @@ public class MondrianFoodMartLoader {
         StringBuilder errorMessage = new StringBuilder();
         StringBuilder parametersMessage = new StringBuilder();
 
-        // Add a console appender for error messages.
-        final ConsoleAppender consoleAppender =
-            new ConsoleAppender(
-                // Formats the message on its own line,
-                // omits timestamp, priority etc.
-                new PatternLayout("%m%n"),
-                "System.out");
-        consoleAppender.setThreshold(Level.ERROR);
-        LOGGER.addAppender(consoleAppender);
-
+        boolean verbose = false;
         for (String arg : args) {
             if (arg.equals("-verbose")) {
-                // Make sure the logger is passing at least debug events.
-                consoleAppender.setThreshold(Level.DEBUG);
-                if (!LOGGER.isDebugEnabled()) {
-                    LOGGER.setLevel(Level.DEBUG);
-                }
+                verbose = true;
             } else if (arg.equals("-aggregates")) {
                 aggregates = true;
             } else if (arg.equals("-tables")) {
@@ -239,6 +231,14 @@ public class MondrianFoodMartLoader {
                 parametersMessage.append("\t").append(arg).append(nl);
             }
         }
+
+        // Add a console appender for error messages.
+        ConsoleAppender ca = ConsoleAppender.newBuilder()
+          .setName("mfml")
+          .setLayout(PatternLayout.newBuilder().withPattern("%m%n").build())
+          .build();
+        Util.addAppender(ca, LOGGER, verbose ? Level.DEBUG : Level.ERROR);
+
         if (inputJdbcURL != null) {
             jdbcInput = true;
             if (inputFile != null) {

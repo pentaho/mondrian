@@ -23,8 +23,16 @@ import mondrian.spi.PropertyFormatter;
 import mondrian.util.Bug;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.*;
-import org.apache.log4j.varia.LevelRangeFilter;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.filter.LevelRangeFilter;
+import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.LogManager;
 
 import org.olap4j.metadata.NamedList;
 
@@ -1596,15 +1604,17 @@ public class SchemaTest extends FoodMartTestCase {
         if (!MondrianProperties.instance().ReadAggregates.get()) {
             return;
         }
-        final Logger logger = Logger.getLogger(AggTableManager.class);
-        propSaver.setAtLeast(logger, org.apache.log4j.Level.WARN);
+        final Logger logger = LogManager.getLogger(AggTableManager.class);
+        propSaver.setAtLeast(logger, org.apache.logging.log4j.Level.WARN);
+
         final StringWriter sw = new StringWriter();
         final Appender appender =
-            new WriterAppender(new SimpleLayout(), sw);
-        final LevelRangeFilter filter = new LevelRangeFilter();
-        filter.setLevelMin(org.apache.log4j.Level.WARN);
-        appender.addFilter(filter);
-        logger.addAppender(appender);
+            Util.makeAppender(
+                "testUnknownUsages",
+                sw,
+                null);
+        Util.addAppender(appender, logger, org.apache.logging.log4j.Level.WARN);
+
         try {
             final TestContext testContext = TestContext.instance().withSchema(
                 "<?xml version=\"1.0\"?>\n"
@@ -1656,7 +1666,7 @@ public class SchemaTest extends FoodMartTestCase {
                 + "{}\n"
                 + "225,627.23");
         } finally {
-            logger.removeAppender(appender);
+            Util.removeAppender(appender, logger);
         }
         // Note that 'product_id' is NOT one of the columns with unknown usage.
         // It is used as a level in the degenerate dimension [Time Degenerate].
@@ -1673,15 +1683,24 @@ public class SchemaTest extends FoodMartTestCase {
         if (!MondrianProperties.instance().ReadAggregates.get()) {
             return;
         }
-        final Logger logger = Logger.getLogger(AggTableManager.class);
-        propSaver.setAtLeast(logger, org.apache.log4j.Level.WARN);
+        final Logger logger = LogManager.getLogger(AggTableManager.class);
+        propSaver.setAtLeast(logger, org.apache.logging.log4j.Level.WARN);
+
         final StringWriter sw = new StringWriter();
+        final LevelRangeFilter filter = LevelRangeFilter.createFilter(org.apache.logging.log4j.Level.WARN, null, null, null);
         final Appender appender =
-            new WriterAppender(new SimpleLayout(), sw);
-        final LevelRangeFilter filter = new LevelRangeFilter();
-        filter.setLevelMin(org.apache.log4j.Level.WARN);
-        appender.addFilter(filter);
-        logger.addAppender(appender);
+            WriterAppender.newBuilder()
+                .setFilter(filter)
+                .setLayout(PatternLayout.createDefaultLayout())
+                .setTarget(sw)
+                .build();
+
+        LoggerContext ctx = (LoggerContext) LogManager.getContext( false );
+        Configuration config = ctx.getConfiguration();
+        LoggerConfig loggerConfig = config.getLoggerConfig( logger.getName() );
+        loggerConfig.addAppender( appender, org.apache.logging.log4j.Level.ALL, null );
+        ctx.updateLoggers();
+
         try {
             final TestContext testContext = TestContext.instance().withSchema(
                 "<?xml version=\"1.0\"?>\n"
@@ -1741,7 +1760,8 @@ public class SchemaTest extends FoodMartTestCase {
                 + "{}\n"
                 + "225,627.23");
         } finally {
-            logger.removeAppender(appender);
+            loggerConfig.removeAppender( appender.getName() );
+            ctx.updateLoggers();
         }
         TestContext.assertEqualsVerbose(
             "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_l_03_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'time_id' with unknown usage.\n",

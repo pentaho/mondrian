@@ -20,7 +20,7 @@ import mondrian.spi.MemberFormatter;
 import mondrian.spi.PropertyFormatter;
 import mondrian.spi.*;
 
-import org.apache.log4j.MDC;
+import org.apache.logging.log4j.ThreadContext;
 
 import org.olap4j.*;
 import org.olap4j.metadata.Property;
@@ -1356,7 +1356,7 @@ public class UdfTest extends FoodMartTestCase {
     }
 
     private static String MDC_KEY = "Chunky Bacon!";
-    private static Object MDC_OBJECT = new Object();
+    private static String MDC_OBJECT = new String();
 
     /**
      * This is a test for
@@ -1370,13 +1370,13 @@ public class UdfTest extends FoodMartTestCase {
                 "<UserDefinedFunction name=\"Mdc\" className=\""
                 + MdcUdf.class.getName()
                 + "\"/>\n");
-        MDC.put(MDC_KEY, MDC_OBJECT);
+        ThreadContext.put(MDC_KEY, MDC_OBJECT);
         try {
             context.executeQuery(
                 "with member [Measures].[MDC] as 'Mdc([Measures].[Unit Sales])' "
                 + "select {[Measures].[MDC]} on columns from [Sales]");
         } finally {
-            MDC.remove(MDC_KEY);
+            ThreadContext.remove(MDC_KEY);
         }
     }
 
@@ -1407,7 +1407,7 @@ public class UdfTest extends FoodMartTestCase {
         }
 
         public Object execute(Evaluator evaluator, Argument[] arguments) {
-            Map<String, Object> context = org.apache.log4j.MDC.getContext();
+            Map<String, String> context = ThreadContext.getContext();
             if (!context.containsKey(MDC_KEY)
                 || context.get(MDC_KEY) != MDC_OBJECT)
             {

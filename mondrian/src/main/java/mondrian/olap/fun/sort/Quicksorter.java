@@ -14,7 +14,8 @@
 
 package mondrian.olap.fun.sort;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.Comparator;
 
@@ -38,7 +39,7 @@ class Quicksorter<T> {
   public static final int TOO_SMALL = 8;
 
   private static final Logger LOGGER =
-    Logger.getLogger( Quicksorter.class );
+    LogManager.getLogger( Quicksorter.class );
   private final T[] vec;
   private final Comparator<T> comp;
   private final boolean traced;

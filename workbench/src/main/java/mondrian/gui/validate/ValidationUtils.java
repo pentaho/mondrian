@@ -12,7 +12,8 @@ package mondrian.gui.validate;
 import mondrian.gui.MondrianGuiDef;
 import mondrian.gui.SchemaExplorer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.lang.reflect.Field;
 import java.util.TreeSet;
@@ -26,7 +27,7 @@ import java.util.TreeSet;
 public class ValidationUtils {
 
     private static final Logger LOGGER =
-        Logger.getLogger(ValidationUtils.class);
+        LogManager.getLogger(ValidationUtils.class);
 
     static String[] DEF_LEVEL = {
         "column", "nameColumn", "parentColumn", "ordinalColumn", "captionColumn"

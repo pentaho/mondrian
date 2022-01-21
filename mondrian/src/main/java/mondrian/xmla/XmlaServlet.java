@@ -11,7 +11,8 @@
 
 package mondrian.xmla;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.w3c.dom.Element;
 
@@ -32,7 +33,7 @@ public abstract class XmlaServlet
     extends HttpServlet
     implements XmlaConstants
 {
-    protected static final Logger LOGGER = Logger.getLogger(XmlaServlet.class);
+    protected static final Logger LOGGER = LogManager.getLogger(XmlaServlet.class);
 
     public static final String PARAM_DATASOURCES_CONFIG = "DataSourcesConfig";
     public static final String PARAM_OPTIONAL_DATASOURCE_CONFIG =

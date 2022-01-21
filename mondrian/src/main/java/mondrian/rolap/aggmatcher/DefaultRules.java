@@ -16,7 +16,8 @@ import mondrian.recorder.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapStar;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.eigenbase.util.property.Property;
 import org.eigenbase.util.property.Trigger;
@@ -42,7 +43,7 @@ import java.util.Map;
  */
 public class DefaultRules {
 
-    private static final Logger LOGGER = Logger.getLogger(DefaultRules.class);
+    private static final Logger LOGGER = LogManager.getLogger(DefaultRules.class);
 
     private static final MondrianResource mres = MondrianResource.instance();
     /**

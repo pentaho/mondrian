@@ -13,8 +13,9 @@ import mondrian.olap.*;
 import mondrian.rolap.RolapConnection;
 import mondrian.test.FoodMartTestCase;
 
-import org.apache.log4j.*;
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.StringWriter;
 import java.sql.Connection;
@@ -40,14 +41,13 @@ public class AggGenTest extends FoodMartTestCase {
         testCallingLoadColumnsInAddCollapsedColumnOrAddzSpecialCollapsedColumn()
         throws Exception
     {
-        Logger logger = Logger.getLogger(AggGen.class);
+        Logger logger = LogManager.getLogger(AggGen.class);
         StringWriter writer = new StringWriter();
-        Appender myAppender = new WriterAppender(new SimpleLayout(), writer);
-        logger.addAppender(myAppender);
-        propSaver.setAtLeast(logger, Level.DEBUG);
 
-        // This modifies the MondrianProperties for the whole of the
-        // test run
+        final Appender appender =
+            Util.makeAppender("testMdcContext", writer, null);
+
+        Util.addAppender(appender, logger, org.apache.logging.log4j.Level.DEBUG);
 
         MondrianProperties props = MondrianProperties.instance();
         // If run in Ant and with mondrian.jar, please comment out this line:
@@ -62,7 +62,7 @@ public class AggGenTest extends FoodMartTestCase {
                 "select {[Measures].[Count]} on columns from [HR]");
         rolapConn.execute(query);
 
-        logger.removeAppender(myAppender);
+        Util.removeAppender(appender, logger);
 
         final DataSource dataSource = rolapConn.getDataSource();
         Connection sqlConnection = null;

@@ -4,19 +4,20 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2020 Hitachi Vantara
+// Copyright (C) 2005-2021 Hitachi Vantara
 // All Rights Reserved.
 */
 package mondrian.test;
 
 import java.io.StringWriter;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.MDC;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.WriterAppender;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 
+import mondrian.olap.Util;
 import mondrian.rolap.BatchTestCase;
 import mondrian.rolap.RolapUtil;
 
@@ -27,31 +28,32 @@ import mondrian.rolap.RolapUtil;
  */
 public class MdcUtilTest extends BatchTestCase {
 
-  private static Logger rolapUtilLogger = Logger.getLogger( mondrian.rolap.RolapUtil.class );
+  private static Logger rolapUtilLogger = LogManager.getLogger( mondrian.rolap.RolapUtil.class );
 
   public void testMdcContext() throws Exception {
 
     TestContext.instance().flushSchemaCache();
-    
-    MDC.put( "sessionName", "hello-world" );
+
+    ThreadContext.put( "sessionName", "hello-world" );
     StringWriter writer = new StringWriter();
-    WriterAppender appender = new WriterAppender();
-    PatternLayout layout = new PatternLayout( "sessionName:%X{sessionName} %t %m" );
-    appender.setLayout( layout );
-    appender.setWriter( writer );
-    
-    rolapUtilLogger.addAppender( appender );
+
+    final Appender appender =
+        Util.makeAppender(
+            "testMdcContext",
+            writer,
+            "sessionName:%X{sessionName} %t %m");
+
+    Util.addAppender(appender, rolapUtilLogger, null);
     Level oldLevel = rolapUtilLogger.getLevel();
-    rolapUtilLogger.setLevel( Level.DEBUG );
+    Util.setLevel( rolapUtilLogger, Level.DEBUG );
     
-    RolapUtil.MONITOR_LOGGER.addAppender( appender );
+    Util.addAppender(appender, RolapUtil.MONITOR_LOGGER, null);
     Level oldMonitorLevel = RolapUtil.MONITOR_LOGGER.getLevel();
-    RolapUtil.MONITOR_LOGGER.setLevel( Level.DEBUG );
-
-    RolapUtil.MDX_LOGGER.addAppender( appender );
+    Util.setLevel( RolapUtil.MONITOR_LOGGER, Level.DEBUG );
+    
+    Util.addAppender(appender, RolapUtil.MDX_LOGGER, null);
     Level oldMdxLevel = RolapUtil.MDX_LOGGER.getLevel();
-    RolapUtil.MDX_LOGGER.setLevel( Level.DEBUG );
-
+    Util.setLevel( RolapUtil.MDX_LOGGER, Level.DEBUG );
     
     String log = "";
     try {
@@ -66,17 +68,18 @@ public class MdcUtilTest extends BatchTestCase {
   
       assertQueryReturns( query, expected );
       log = writer.toString();
-      System.out.println(log);
-      
+
     } finally {
-      rolapUtilLogger.removeAppender( appender );
-      rolapUtilLogger.setLevel( oldLevel );
       
-      RolapUtil.MONITOR_LOGGER.removeAppender( appender );
-      RolapUtil.MONITOR_LOGGER.setLevel( oldMonitorLevel );
+      Util.removeAppender(appender, rolapUtilLogger);
+      Util.setLevel( rolapUtilLogger, oldLevel );
       
-      RolapUtil.MDX_LOGGER.removeAppender( appender );
-      RolapUtil.MDX_LOGGER.setLevel( oldMdxLevel );
+      Util.removeAppender(appender, RolapUtil.MONITOR_LOGGER);
+      Util.setLevel( RolapUtil.MONITOR_LOGGER, oldMonitorLevel );
+      
+      Util.removeAppender(appender, RolapUtil.MDX_LOGGER);
+      Util.setLevel( RolapUtil.MDX_LOGGER, oldMdxLevel );
+      
     }
     
     // Mondrian uses another thread pool to execute SQL statements.  
@@ -84,9 +87,6 @@ public class MdcUtilTest extends BatchTestCase {
     assertContains(log, "sessionName:hello-world mondrian.rolap.agg.SegmentCacheManager$sqlExecutor_");
     assertContains(log, "sessionName:hello-world Mondrian Monitor StatementStartEvent");
     assertContains(log, "sessionName:hello-world mondrian.rolap.RolapResultShepherd$executor_");
-    
-    
-    
   }
   
   public void assertContains( String actual, String contains ) {
