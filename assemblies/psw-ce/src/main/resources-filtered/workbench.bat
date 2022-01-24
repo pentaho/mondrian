@@ -37,6 +37,6 @@ rem in the java command below to adjust workbench logging
 set PENTAHO_JAVA=java
 call "%~dp0set-pentaho-env.bat"
 
-"%_PENTAHO_JAVA%" -Xms1024m -Xmx2048m -cp "%CP%" -Dlog4j.configuration=file:///%ROOT%\.schemaWorkbench\log4j2.xml mondrian.gui.Workbench
+"%_PENTAHO_JAVA%" -Xms1024m -Xmx2048m -cp "%CP%" -Dlog4j.configurationFile=file:///%ROOT%\.schemaWorkbench\log4j2.xml mondrian.gui.Workbench
 
 rem End workbench.bat
