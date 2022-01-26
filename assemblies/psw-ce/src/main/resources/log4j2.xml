@@ -19,7 +19,7 @@
         <!-- ================================= -->
 
         <!-- A time/date based rolling appender -->
-        <RollingFile name="FILE" fileName="${sys:user.home}/.schemaWorkbench/workbench.log" filePattern="${sys:user.home}/.schemaWorkbench/workbench.log.%d{yyyy-MM-dd}" append="false" bufferedIO="true" immediateFlush="true">
+        <RollingFile name="FILE" fileName="${sys:user.home}/.schemaWorkbench/workbench.log" filePattern="${sys:user.home}/.schemaWorkbench/workbench.log.%i" append="false">
             <PatternLayout>
                 <Pattern>%d %-5p [%c] %m%n</Pattern>
             </PatternLayout>
@@ -58,7 +58,7 @@
 
         <Root level="ERROR">
             <appender-ref ref="CONSOLE"/>
-			<appender-ref ref="FILE"/>
+            <appender-ref ref="FILE"/>
         </Root>
     </Loggers>
 </Configuration>
