@@ -18,13 +18,12 @@
         <!-- Preserve messages in a local file -->
         <!-- ================================= -->
 
-        <!-- A time/date based rolling appender -->
-        <RollingFile name="FILE" fileName="${sys:user.home}/.schemaWorkbench/workbench.log" filePattern="${sys:user.home}/.schemaWorkbench/workbench.log.%d{yyyy-MM-dd}" append="false" bufferedIO="true" immediateFlush="true">
+        <!-- A size based rolling appender -->
+        <RollingFile name="FILE" fileName="${sys:user.home}/.schemaWorkbench/workbench.log" filePattern="${sys:user.home}/.schemaWorkbench/workbench.log.%i">
             <PatternLayout>
                 <Pattern>%d %-5p [%c] %m%n</Pattern>
             </PatternLayout>
             <Policies>
-                <OnStartupTriggeringPolicy />
                 <SizeBasedTriggeringPolicy size="500KB" />
             </Policies>
             <DefaultRolloverStrategy max="1" />
@@ -35,6 +34,7 @@
         <!-- Append messages to the console -->
         <!-- ============================== -->
         <Console name="CONSOLE">
+            <ThresholdFilter level="INFO" />
             <PatternLayout>
                 <Pattern>%d{ABSOLUTE} %-5p [%c{1}] %m%n</Pattern>
             </PatternLayout>
@@ -58,7 +58,7 @@
 
         <Root level="ERROR">
             <appender-ref ref="CONSOLE"/>
-			<appender-ref ref="FILE"/>
+            <appender-ref ref="FILE"/>
         </Root>
     </Loggers>
 </Configuration>
