@@ -6,11 +6,13 @@
 
         <RollingFile name="FILE"
           fileName="target/test-logs/mondrian.log"
-          filePattern="target/test-logs/mondrian.log.%i">
+          filePattern="target/test-logs/mondrian.log.%i"
+          append="false">
             <PatternLayout>
                 <Pattern>%d %-5p [%c] %m%n</Pattern>
             </PatternLayout>
             <Policies>
+              <OnStartupTriggeringPolicy />
               <SizeBasedTriggeringPolicy size="10 MB" />
             </Policies>
             <DefaultRolloverStrategy max="1" />
@@ -18,11 +20,13 @@
 
         <RollingFile name="MDXLOG"
           fileName="target/test-logs/mondrian_mdx.log"
-          filePattern="target/test-logs/mondrian_mdx.log.%i">
+          filePattern="target/test-logs/mondrian_mdx.log.%i"
+          append="false">
             <PatternLayout>
                 <Pattern>%d %-5p [%c] %m%n</Pattern>
             </PatternLayout>
             <Policies>
+              <OnStartupTriggeringPolicy />
               <SizeBasedTriggeringPolicy size="10 MB" />
             </Policies>
             <DefaultRolloverStrategy max="1" />
@@ -30,11 +34,13 @@
 
         <RollingFile name="SQLLOG"
           fileName="target/test-logs/mondrian_sql.log"
-          filePattern="target/test-logs/mondrian_sql.log.%i">
+          filePattern="target/test-logs/mondrian_sql.log.%i"
+          append="false">
             <PatternLayout>
                 <Pattern>%d %-5p [%c] %m%n</Pattern>
             </PatternLayout>
             <Policies>
+              <OnStartupTriggeringPolicy />
               <SizeBasedTriggeringPolicy size="10 MB" />
             </Policies>
             <DefaultRolloverStrategy max="1" />
