@@ -18,12 +18,13 @@
         <!-- Preserve messages in a local file -->
         <!-- ================================= -->
 
-        <!-- A size based rolling appender -->
-        <RollingFile name="FILE" fileName="${sys:user.home}/.schemaWorkbench/workbench.log" filePattern="${sys:user.home}/.schemaWorkbench/workbench.log.%i">
+        <!-- A time/date based rolling appender -->
+        <RollingFile name="FILE" fileName="${sys:user.home}/.schemaWorkbench/workbench.log" filePattern="${sys:user.home}/.schemaWorkbench/workbench.log.%i" append="false">
             <PatternLayout>
                 <Pattern>%d %-5p [%c] %m%n</Pattern>
             </PatternLayout>
             <Policies>
+                <OnStartupTriggeringPolicy />
                 <SizeBasedTriggeringPolicy size="500KB" />
             </Policies>
             <DefaultRolloverStrategy max="1" />
