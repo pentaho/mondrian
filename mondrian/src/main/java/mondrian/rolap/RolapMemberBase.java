@@ -327,7 +327,12 @@ public class RolapMemberBase
             setOrdinal((int) d);
         }
 
-        mapPropertyNameToValue.put(name, value);
+        // PATCH: ConcurrentHashMap does not support null values
+        if (value == null) {
+            mapPropertyNameToValue.remove(name);
+        } else {
+            mapPropertyNameToValue.put(name, value);
+        }
     }
 
     public Object getPropertyValue(String propertyName) {
@@ -474,7 +479,8 @@ public class RolapMemberBase
         String propertyName,
         boolean matchCase)
     {
-        synchronized (this) {
+        // PATCH: Remove synchronized as ConcurrentHashMap will be used.
+        // synchronized (this) {
             if (matchCase) {
                 return mapPropertyNameToValue.get(propertyName);
             } else {
@@ -485,7 +491,8 @@ public class RolapMemberBase
                 }
                 return null;
             }
-        }
+        // PATCH: Remove synchronized as ConcurrentHashMap will be used.
+        // }
     }
 
     protected boolean childLevelHasApproxRowCount() {
@@ -997,16 +1004,18 @@ public class RolapMemberBase
          */
         @SuppressWarnings({"unchecked"})
         public Map<String, Object> create(Member member) {
-            assert member != null;
-            Property[] props = member.getProperties();
-            if ((member instanceof RolapMeasure)
-                || (props == null)
-                || (props.length > 3))
-            {
-                return new HashMap<String, Object>();
-            } else {
-                return new Flat3Map();
-            }
+            // PATCH: Use ConcurrentHashMap to avoid synchronized get.
+            // assert member != null;
+            // Property[] props = member.getProperties();
+            // if ((member instanceof RolapMeasure)
+            //     || (props == null)
+            //     || (props.length > 3))
+            // {
+            //     return new HashMap<String, Object>();
+            // } else {
+            //     return new Flat3Map();
+            // }
+            return new java.util.concurrent.ConcurrentHashMap<String, Object>();
         }
     }
 
