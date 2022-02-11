@@ -185,7 +185,9 @@ class RolapConnectionPool {
             // use GenericObjectPool, which provides for resource limits
             connectionPool = new GenericObjectPool(
                 null, // PoolableObjectFactory, can be null
-                50, // max active
+                // PATCH: Set the max active pool connections based on mondrian.rolap.maxSqlThreads property + 10 extra
+                // 50, // max active
+                mondrian.olap.MondrianProperties.instance().SegmentCacheManagerNumberSqlThreads.get() + 10, // max active
                 GenericObjectPool.WHEN_EXHAUSTED_BLOCK, // action when exhausted
                 3000, // max wait (milli seconds)
                 10, // max idle
