@@ -57,13 +57,13 @@ public class MondrianTestRunner extends BaseTestRunner {
         fPrinter = printer;
     }
 
-    /**
-     * Always use the StandardTestSuiteLoader. Overridden from
-     * BaseTestRunner.
-     */
-    public TestSuiteLoader getLoader() {
-        return new StandardTestSuiteLoader();
-    }
+//    /**
+//     * Always use the StandardTestSuiteLoader. Overridden from
+//     * BaseTestRunner.
+//     */
+//    public TestSuiteLoader getLoader() {
+//        return new StandardTestSuiteLoader();
+//    }
 
     public void testFailed(int status, Test test, Throwable t) {
     }
