@@ -9,13 +9,13 @@ Mondrian is an Online Analytical Processing (OLAP) server that enables business 
 #### Quick Start
 The following command will build the Mondrian jar, run the full integration test suite using a MySQL server running on Docker and install the jar file into your local Maven repository.
 ```
-mvn -DrunITs -P embedded-mysql,load-foodmart install -Djava.locale.providers=COMPAT,SPI
+mvn -DrunITs -P embedded-mysql,load-foodmart install
 ```
 Skip the integration tests by omitting `-DrunITs -P embedded-mysql,load-foodmart`
 
 #### Run Isolate Integration Test
 ```
-mvn verify -DrunITs -Dit.test=NonEmptyTest.java -DfailIfNoTests=false -Djava.locale.providers=COMPAT,SPI
+mvn verify -DrunITs -Dit.test=NonEmptyTest.java -DfailIfNoTests=false
 ```
 
 #### Alternate Foodmart
