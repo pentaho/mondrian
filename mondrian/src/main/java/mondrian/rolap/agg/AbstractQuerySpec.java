@@ -84,6 +84,10 @@ public abstract class AbstractQuerySpec implements QuerySpec {
 
     protected Map<String, String> nonDistinctGenerateSql(SqlQuery sqlQuery)
     {
+        // PATCH: Taken from https://github.com/SergeiSemenkov/mondrian/commit/365ea5eb57c3e76900b3688894539c059c13d174
+        // for better ClickHouse query performance.
+        // First add fact table to From.
+        getStar().getFactTable().addToFrom(sqlQuery, false, false);
         // add constraining dimensions
         RolapStar.Column[] columns = getColumns();
         int arity = columns.length;

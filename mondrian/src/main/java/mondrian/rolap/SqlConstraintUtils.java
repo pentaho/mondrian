@@ -140,6 +140,18 @@ public class SqlConstraintUtils {
     RolapStar.Column[] columns = request.getConstrainedColumns();
     Object[] values = request.getSingleValues();
 
+    // PATCH: Taken from https://github.com/SergeiSemenkov/mondrian/commit/365ea5eb57c3e76900b3688894539c059c13d174
+    // for better ClickHouse query performance.
+    if (columns.length > 0) {
+      // First add fact table to From.
+      if(aggStar != null) {
+        aggStar.getFactTable().addToFrom(sqlQuery, false, false);
+      }
+      else {
+        baseCube.getStar().getFactTable().addToFrom(sqlQuery, false, false);
+      }
+    }
+
     Map<MondrianDef.Expression, Set<RolapMember>> mapOfSlicerMembers = null;
     HashMap<MondrianDef.Expression, Boolean> done = new HashMap<MondrianDef.Expression, Boolean>();
 
