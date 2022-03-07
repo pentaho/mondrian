@@ -33,8 +33,7 @@
         debug="${project.build.debug}"
         classpath="${classpath}"
         includeantruntime="false"
-        source="${source.jdk.version}"
-        target="${target.jdk.version}">
+        release="${release.jdk.version}">
       <include name="mondrian/olap/MondrianException.java" />
       <include name="mondrian/olap/ResultLimitExceededException.java" />
       <include name="mondrian/olap/InvalidHierarchyException.java" />
