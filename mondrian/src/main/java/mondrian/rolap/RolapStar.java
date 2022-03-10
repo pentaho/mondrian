@@ -1746,7 +1746,8 @@ public class RolapStar {
             boolean failIfExists,
             boolean joinToParent)
         {
-            query.addFrom(relation, alias, failIfExists);
+            // PATCH: Add at first parent table to improve join performance on ClickHouse
+            // query.addFrom(relation, alias, failIfExists);
             Util.assertTrue((parent == null) == (joinCondition == null));
             if (joinToParent) {
                 if (parent != null) {
@@ -1756,6 +1757,8 @@ public class RolapStar {
                     query.addWhere(joinCondition.toString(query));
                 }
             }
+            // PATCH: Add after parent table to improve join performance on ClickHouse
+            query.addFrom(relation, alias, failIfExists);
         }
 
         /**
