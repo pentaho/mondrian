@@ -65,6 +65,8 @@ class RolapProperty extends Property {
         this.caption = caption;
         this.formatter = formatter;
         this.dependsOnLevelValue =
+        // PATCH: Set true for internal properties
+            internal ||
             dependsOnLevelValue != null && dependsOnLevelValue;
     }
 
