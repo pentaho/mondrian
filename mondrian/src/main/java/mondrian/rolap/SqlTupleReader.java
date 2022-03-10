@@ -1197,6 +1197,10 @@ public class SqlTupleReader implements TupleReader {
     Evaluator evaluator = getEvaluator( constraint );
     AggStar aggStar = chooseAggStar( constraint, evaluator, baseCube );
 
+    // PATCH: Add constraints at first to ensure that level tables are added last
+    // (which optimizes join performance on ClickHouse)
+    constraint.addConstraint( sqlQuery, baseCube, aggStar );
+
     // add the selects for all levels to fetch
     for ( TargetBase target : targetGroup ) {
       // if we're going to be enumerating the values for this target,
@@ -1211,7 +1215,8 @@ public class SqlTupleReader implements TupleReader {
       }
     }
 
-    constraint.addConstraint( sqlQuery, baseCube, aggStar );
+    // PATCH: Already added before
+    // constraint.addConstraint( sqlQuery, baseCube, aggStar );
 
     return sqlQuery.toSqlAndTypes();
   }
