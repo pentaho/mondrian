@@ -4,7 +4,8 @@ public interface DataLoader {
     /**
      * @param jdbcConnectionUrl - jdbcConnectionUrl
      * @return jdbc connection String
+     * @throws Exception 
      */
-    boolean loadDataData(String jdbcConnectionUrl);
+    boolean loadData(String jdbcConnectionUrl) throws Exception;
 
 }

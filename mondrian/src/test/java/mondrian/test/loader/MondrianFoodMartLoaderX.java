@@ -18,6 +18,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
@@ -515,6 +520,7 @@ public class MondrianFoodMartLoaderX {
             }
         }
     }
+    Path filea=null;
 
     /**
      * Parses a file of INSERT statements and output to the configured JDBC
@@ -619,6 +625,8 @@ public class MondrianFoodMartLoaderX {
 
                 // If table just changed, flush the previous batch.
                 if (!tableName.equals(prevTable)) {
+                    filea=Files.createFile(Paths.get("/home/stbischof/git/mondrian/mondrian/src/test/resources/mondrian/test/loader/"+tableName+".csv"));
+                    Files.writeString(filea,columnNames.trim(),StandardOpenOption.APPEND);
                     writeBatch(batch, pauseMillis);
                     batch.clear();
                     afterTable(prevTable, tableRowCount);
@@ -658,6 +666,9 @@ public class MondrianFoodMartLoaderX {
                         }
                     }
                 }
+
+                Files.writeString(filea,System.lineSeparator(),StandardOpenOption.APPEND);
+                Files.writeString(filea,values.replace("\"", "\\\"").replace(",'", ",\"").replace("',", "\",").replace("'", "\"").trim(),StandardOpenOption.APPEND);
 
                 ++tableRowCount;
                 if (pauseMillis > 0) {

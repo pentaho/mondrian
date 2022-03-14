@@ -5,11 +5,8 @@ import java.util.Map;
 
 public interface DatabaseHandler extends Closeable {
     
-    /**
-     * 
-     * @param props - properties
-     * @return jdbc connection String
-     */
-    String setUpDatabase(Map<String,Object> props);
+
+    boolean startDatabase(Map<String,Object> props);
+    String getJdbcUrl();
 
 }

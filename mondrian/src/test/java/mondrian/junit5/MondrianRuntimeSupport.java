@@ -18,6 +18,6 @@ ElementType.TYPE,ElementType.METHOD
 @ExtendWith(MondrianRuntimeExtension.class)
 public @interface MondrianRuntimeSupport {
     Class<? extends DatabaseHandler> database() default MySQLDatabaseHandler.class;
-    Class<? extends DataLoader> dataLoader() default FoodmardDataLoader.class;
+    Class<? extends DataLoader> dataLoader() default FastFoodmardDataLoader.class;
    
 }

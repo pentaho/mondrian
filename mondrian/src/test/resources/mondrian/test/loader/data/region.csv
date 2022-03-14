@@ -1,0 +1,111 @@
+"region_id","sales_city","sales_state_province","sales_district","sales_region","sales_country","sales_district_id"
+0,"None","None","No District","No Region","No Country",0
+1,"San Francisco","CA","San Francisco","Central West","USA",123
+2,"Mexico City","DF","Mexico City","Mexico Central","Mexico",118
+3,"Los Angeles","CA","Los Angeles","South West","USA",116
+4,"Guadalajara","Jalisco","Guadalajara","Mexico West","Mexico",114
+5,"Vancouver","BC","Vancouver","Canada West","Canada",128
+6,"Victoria","BC","Victoria","Canada West","Canada",129
+7,"San Diego","CA","San Diego","South West","USA",133
+8,"Coronado","CA","San Diego","South West","USA",133
+9,"National City","CA","San Diego","South West","USA",133
+10,"Lincoln Acres","CA","San Diego","South West","USA",133
+11,"La Mesa","CA","San Diego","South West","USA",133
+12,"Lemon Grove","CA","San Diego","South West","USA",133
+13,"Chula Vista","CA","San Diego","South West","USA",133
+14,"Imperial Beach","CA","San Diego","South West","USA",133
+15,"Spring Valley","CA","San Diego","South West","USA",133
+16,"El Cajon","CA","San Diego","South West","USA",133
+17,"Grossmont","CA","San Diego","South West","USA",133
+18,"Seattle","WA","Seattle","North West","USA",124
+19,"Redmond","WA","Seattle","North West","USA",124
+20,"Ballard","WA","Seattle","North West","USA",124
+21,"Issaquah","WA","Seattle","North West","USA",124
+22,"Portland","OR","Portland","North West","USA",120
+23,"Salem","OR","Salem","North West","USA",122
+24,"Orizaba","Veracruz","Orizaba","Mexico Central","Mexico",119
+25,"Hidalgo","Zacatecas","Hidalgo","Mexico Central","Mexico",115
+26,"Merida","Yucatan","Marida","Mexico South","Mexico",117
+27,"Camacho","Zacatecas","Camacho","Mexico Central","Mexico",113
+28,"Acapulco","Guerrero","Acapulco","Mexico West","Mexico",110
+29,"La Cruz","Sinaloa","Acapulco","Mexico West","Mexico",110
+30,"Tlaxiaco","Oaxaca","Tlaxiaco","Mexico South","Mexico",127
+31,"Daly City","CA","San Francisco","Central West","USA",123
+32,"Colma","CA","San Francisco","Central West","USA",123
+33,"La Jolla","CA","San Diego","South West","USA",133
+34,"Fremont","CA","San Francisco","Central West","USA",123
+35,"Richmond","CA","San Francisco","Central West","USA",123
+36,"Berkeley","CA","San Francisco","Central West","USA",123
+37,"Oakland","CA","San Francisco","Central West","USA",123
+38,"Mill Valley","CA","San Francisco","Central West","USA",123
+39,"San Jose","CA","San Francisco","Central West","USA",123
+40,"Santa Cruz","CA","San Francisco","Central West","USA",123
+41,"Palo Alto","CA","San Francisco","Central West","USA",123
+42,"Novato","CA","San Francisco","Central West","USA",123
+43,"Burlingame","CA","San Francisco","Central West","USA",123
+44,"San Carlos","CA","San Francisco","Central West","USA",123
+45,"Redwood City","CA","San Francisco","Central West","USA",123
+46,"Concord","CA","San Francisco","Central West","USA",123
+47,"Beverly Hills","CA","Los Angeles","South West","USA",116
+48,"Long Beach","CA","Los Angeles","South West","USA",116
+49,"Santa Monica","CA","Los Angeles","South West","USA",116
+50,"Altadena","CA","Los Angeles","South West","USA",116
+51,"Arcadia","CA","Los Angeles","South West","USA",116
+52,"San Gabriel","CA","Los Angeles","South West","USA",116
+53,"Burbank","CA","Los Angeles","South West","USA",116
+54,"Glendale","CA","Los Angeles","South West","USA",116
+55,"Bellflower","CA","Los Angeles","South West","USA",116
+56,"Lakewood","CA","Los Angeles","South West","USA",116
+57,"Torrance","CA","Los Angeles","South West","USA",116
+58,"Downey","CA","Los Angeles","South West","USA",116
+59,"Newport Beach","CA","Los Angeles","South West","USA",116
+60,"West Covina","CA","Los Angeles","South West","USA",116
+61,"Pomona","CA","Los Angeles","South West","USA",116
+62,"Woodland Hills","CA","Los Angeles","South West","USA",116
+63,"Kirkland","WA","Seattle","North West","USA",124
+64,"Lake Oswego","OR","Portland","North West","USA",120
+65,"Milwaukie","OR","Portland","North West","USA",120
+66,"W. Linn","OR","Portland","North West","USA",120
+67,"Beaverton","OR","Portland","North West","USA",120
+68,"Oregon City","OR","Portland","North West","USA",120
+69,"Woodburn","OR","Salem","North West","USA",122
+70,"Corvallis","OR","Salem","North West","USA",122
+71,"Albany","OR","Salem","North West","USA",122
+72,"Lebanon","OR","Salem","North West","USA",122
+73,"Renton","WA","Seattle","North West","USA",124
+74,"Burien","WA","Seattle","North West","USA",124
+75,"Lynnwood","WA","Seattle","North West","USA",124
+76,"Bremerton","WA","Bremerton","North West","USA",112
+77,"Port Orchard","WA","Bremerton","North West","USA",112
+78,"Bellingham","WA","Bellingham","North West","USA",111
+79,"Anacortes","WA","Bellingham","North West","USA",111
+80,"Sedro Woolley","WA","Bellingham","North West","USA",111
+81,"Everett","WA","Seattle","North West","USA",124
+82,"Marysville","WA","Seattle","North West","USA",124
+83,"Edmonds","WA","Seattle","North West","USA",124
+84,"Tacoma","WA","Tacoma","North West","USA",126
+85,"Olympia","WA","Tacoma","North West","USA",126
+86,"Puyallup","WA","Tacoma","North West","USA",126
+87,"Spokane","WA","Spokane","North West","USA",125
+88,"Walla Walla","WA","Walla Walla","North West","USA",131
+89,"Yakima","WA","Yakima","North West","USA",132
+90,"Richmond","BC","Vancouver","Canada West","Canada",128
+91,"Westminster","BC","Vancouver","Canada West","Canada",128
+92,"Burnaby","BC","Vancouver","Canada West","Canada",128
+93,"Haney","BC","Vancouver","Canada West","Canada",128
+94,"Langley","BC","Vancouver","Canada West","Canada",128
+95,"Newton","BC","Vancouver","Canada West","Canada",128
+96,"Ladner","BC","Vancouver","Canada West","Canada",128
+97,"N. Vancouver","BC","Vancouver","Canada West","Canada",128
+98,"Port Hammond","BC","Vancouver","Canada West","Canada",128
+99,"Oak Bay","BC","Victoria","Canada West","Canada",129
+100,"Royal Oak","BC","Victoria","Canada West","Canada",129
+101,"Sooke","BC","Victoria","Canada West","Canada",129
+102,"Langford","BC","Victoria","Canada West","Canada",129
+103,"Cliffside","BC","Victoria","Canada West","Canada",129
+104,"Metchosin","BC","Victoria","Canada West","Canada",129
+105,"Shawnee","BC","Victoria","Canada West","Canada",129
+106,"San Andres","DF","Mexico City","Mexico Central","Mexico",118
+107,"Tixapan","DF","Mexico City","Mexico Central","Mexico",118
+108,"Santa Anita","DF","Mexico City","Mexico Central","Mexico",118
+109,"Santa Fe","DF","Mexico City","Mexico Central","Mexico",118

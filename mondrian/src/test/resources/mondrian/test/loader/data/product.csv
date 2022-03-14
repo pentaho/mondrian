@@ -1,0 +1,1561 @@
+"product_class_id","product_id","brand_name","product_name","SKU","SRP","gross_weight","net_weight","recyclable_package","low_fat","units_per_case","cases_per_pallet","shelf_width","shelf_height","shelf_depth"
+30,1,"Washington","Washington Berry Juice",90748583674,2.8500,8.39,6.39,false,false,30,14,16.9,12.6,7.4
+52,2,"Washington","Washington Mango Drink",96516502499,0.7400,7.42,4.42,false,true,18,8,13.4,3.71,22.6
+52,3,"Washington","Washington Strawberry Drink",58427771925,0.8300,13.1,11.1,true,true,17,13,14.4,11.0,7.77
+19,4,"Washington","Washington Cream Soda",64412155747,3.6400,10.6,9.6,true,false,26,10,22.9,18.9,7.93
+19,5,"Washington","Washington Diet Soda",85561191439,2.1900,6.66,4.65,true,false,7,10,20.7,21.9,19.2
+19,6,"Washington","Washington Cola",29804642796,1.1500,15.8,13.8,false,false,14,10,6.42,18.1,21.3
+19,7,"Washington","Washington Diet Cola",20191444754,2.6100,18.0,17.0,true,false,11,7,15.0,16.9,21.0
+30,8,"Washington","Washington Orange Juice",89770532250,2.5900,8.97,6.97,true,false,27,7,7.56,11.8,8.92
+30,9,"Washington","Washington Cranberry Juice",49395100474,2.4200,7.14,5.13,false,false,34,7,18.5,16.1,14.4
+30,10,"Washington","Washington Apple Juice",22114084362,1.4200,8.13,7.13,true,false,28,14,21.6,7.32,9.2
+52,11,"Washington","Washington Apple Drink",17074288725,3.5100,20.0,19.0,false,true,3,10,19.4,10.3,20.4
+35,12,"Jeffers","Jeffers Oatmeal",49031038880,1.5400,8.9,6.89,true,true,14,6,15.9,15.4,10.8
+35,13,"Jeffers","Jeffers Corn Puffs",13229009509,2.6500,10.4,7.39,false,false,20,10,18.2,10.3,14.6
+35,14,"Jeffers","Jeffers Wheat Puffs",92942813038,1.9300,21.6,20.6,true,true,33,10,7.73,6.94,8.01
+35,15,"Jeffers","Jeffers Grits",26378549933,2.2900,21.3,20.2,false,true,14,9,8.96,18.3,12.4
+62,16,"Blue Label","Blue Label Canned Beets",62908702492,3.8300,21.2,18.2,false,true,31,10,19.0,21.9,9.39
+62,17,"Blue Label","Blue Label Creamed Corn",79484335780,2.9900,6.91,3.9,true,true,34,9,7.8,17.8,8.26
+62,18,"Blue Label","Blue Label Canned String Beans",85252254605,2.6700,12.6,10.6,true,false,26,10,8.87,5.18,13.3
+58,19,"Blue Label","Blue Label Chicken Soup",47163524031,3.1900,15.2,12.1,true,true,35,7,22.6,21.1,16.9
+62,20,"Blue Label","Blue Label Canned Yams",22169209122,2.7800,21.3,19.2,false,true,22,8,5.95,5.22,11.8
+58,21,"Blue Label","Blue Label Vegetable Soup",43318244814,2.3300,19.7,18.7,false,true,18,7,11.7,18.8,11.6
+62,22,"Blue Label","Blue Label Canned Tomatos",77561696171,2.2900,15.0,14.0,false,false,31,13,19.0,8.73,5.02
+58,23,"Blue Label","Blue Label Noodle Soup",32829326987,1.7500,10.6,9.6,true,false,17,9,19.8,3.16,15.7
+58,24,"Blue Label","Blue Label Regular Ramen Soup",12408414483,1.7300,12.8,10.8,false,true,23,8,20.7,21.3,6.98
+58,25,"Blue Label","Blue Label Chicken Noodle Soup",62032982707,1.5500,9.48,8.47,true,true,21,10,4.98,4.71,22.4
+58,26,"Blue Label","Blue Label Turkey Noodle Soup",34751966595,0.8800,16.5,13.5,true,true,21,11,12.8,11.0,12.0
+58,27,"Blue Label","Blue Label Beef Soup",29712170958,2.6500,11.2,8.19,false,true,14,12,9.91,7.62,3.1
+62,28,"Blue Label","Blue Label Canned Peas",61668921113,3.9100,21.9,20.8,true,false,33,9,8.1,22.0,21.5
+58,29,"Blue Label","Blue Label Chicken Ramen Soup",25866891741,1.7800,17.1,16.1,false,false,34,5,6.61,19.7,22.3
+93,30,"Blue Label","Blue Label Canned Tuna in Water",93159278035,1.4100,9.71,7.71,true,false,31,5,19.5,16.1,6.61
+93,31,"Blue Label","Blue Label Canned Tuna in Oil",50497145056,1.5500,17.2,15.2,true,false,28,12,19.7,13.6,3.63
+94,32,"Blue Label","Blue Label Large Canned Shrimp",87027297616,2.8600,8.86,6.85,false,false,2,11,8.73,3.34,13.1
+95,33,"Blue Label","Blue Label Fancy Canned Anchovies",44581629633,1.3600,8.27,6.27,false,true,16,5,5.9,9.12,17.7
+96,34,"Blue Label","Blue Label Fancy Canned Clams",50349548459,1.6900,16.7,14.7,true,true,30,9,20.6,14.4,11.9
+97,35,"Blue Label","Blue Label Fancy Canned Oysters",36162948012,2.2100,18.2,16.2,false,true,23,5,8.28,7.87,6.27
+98,36,"Blue Label","Blue Label Fancy Canned Sardines",11168633103,1.8000,14.0,11.0,true,false,26,5,17.4,16.7,19.4
+58,37,"Blue Label","Blue Label Rice Soup",32317668795,1.5900,21.0,19.0,true,true,9,6,15.4,17.5,6.65
+3,38,"Green Ribbon","Green Ribbon Canned Mixed Fruit",42658990025,1.3100,14.0,11.0,true,true,32,8,11.1,17.2,5.74
+3,39,"Green Ribbon","Green Ribbon Canned Peaches",33045791983,3.1100,17.5,15.5,true,false,5,7,10.8,17.7,9.04
+89,40,"King","King Rosy Sunglasses",36527009606,0.9900,11.7,10.6,true,false,25,13,15.7,12.1,7.7
+103,41,"Queen","Queen Eyeglass Screwdriver",86151577830,0.8900,8.61,5.6,true,false,29,12,18.3,6.34,8.7
+102,42,"Queen","Queen City Map",89849260449,2.8200,13.6,11.6,true,false,6,10,3.46,5.58,17.1
+15,43,"Club","Club Low Fat Cottage Cheese",18711594939,1.6700,17.7,15.7,true,false,33,11,15.4,3.71,10.7
+14,44,"Club","Club Low Fat Sour Cream",50668345093,2.9300,10.7,9.69,false,true,26,5,21.1,17.9,7.32
+14,45,"Club","Club Sour Cream",14866315722,0.5300,13.6,11.6,false,false,9,11,8.57,7.31,3.27
+11,46,"Club","Club Jack Cheese",82158702015,3.4400,14.4,12.3,true,false,19,7,12.7,20.9,7.42
+11,47,"Club","Club Muenster Cheese",39496569037,2.5700,17.8,15.7,true,false,21,13,22.3,7.03,13.2
+11,48,"Club","Club String Cheese",76026721596,1.8800,6.31,3.3,true,true,17,7,5.22,18.7,11.2
+11,49,"Club","Club Low Fat String Cheese",68700224757,3.3800,17.0,15.0,false,false,30,12,22.8,6.48,4.65
+11,50,"Club","Club Havarti Cheese",74468143582,3.9500,9.95,7.94,false,true,36,9,9.91,22.9,6.24
+11,51,"Club","Club Head Cheese",24898700118,1.4700,8.41,5.4,false,true,9,11,13.1,7.54,18.6
+11,52,"Club","Club Cheese Spread",66002255082,2.1700,14.5,13.5,true,true,27,13,7.4,10.4,6.06
+11,53,"Club","Club Sharp Cheddar Cheese",21053420901,3.6100,18.8,16.7,true,true,18,9,21.6,18.8,6.58
+11,54,"Club","Club Mild Cheddar Cheese",31394742131,2.9300,9.58,7.57,false,true,15,14,15.9,11.7,3.87
+15,55,"Club","Club Large Curd Cottage Cheese",21781544089,3.5000,14.3,12.3,true,false,20,7,12.3,16.8,14.2
+76,56,"Club","Club 2% Milk",25262761712,0.7100,20.6,18.6,true,false,21,7,4.1,15.3,11.6
+76,57,"Club","Club Buttermilk",74887329936,0.6100,20.1,18.1,false,false,33,6,13.5,8.69,16.7
+76,58,"Club","Club Chocolate Milk",23704183697,2.3100,15.5,13.5,false,false,18,12,10.7,15.0,13.1
+76,59,"Club","Club 1% Milk",42566518187,1.4000,18.8,15.7,false,false,1,6,5.57,16.3,22.1
+76,60,"Club","Club Whole Milk",50621138215,2.6600,7.03,5.03,false,false,2,6,4.42,13.3,20.8
+6,61,"Club","Club Strawberry Yogurt",93602067828,0.7400,13.4,11.3,false,true,22,12,16.3,11.5,13.8
+6,62,"Club","Club Blueberry Yogurt",70894454121,3.8200,14.1,11.1,false,true,32,8,11.0,17.4,5.51
+81,63,"Red Spade","Red Spade Chicken Hot Dogs",28232321143,2.9500,20.3,18.2,true,true,21,6,4.41,15.9,17.9
+91,64,"Red Spade","Red Spade Pimento Loaf",64762473702,1.6100,13.2,12.1,true,false,33,6,18.1,17.6,12.4
+91,65,"Red Spade","Red Spade Beef Bologna",57435976862,3.7600,10.3,9.3,false,true,21,12,4.44,8.8,22.7
+91,66,"Red Spade","Red Spade Low Fat Bologna",63203895688,3.4400,11.9,8.89,true,true,31,9,5.0,19.1,14.1
+81,67,"Red Spade","Red Spade Turkey Hot Dogs",25115165114,1.8600,6.15,4.15,false,true,27,12,19.9,7.96,10.3
+81,68,"Red Spade","Red Spade Foot-Long Hot Dogs",90120850205,3.5600,16.0,14.0,true,true,2,13,20.2,10.0,4.12
+16,69,"Red Spade","Red Spade Low Fat Cole Slaw",21269885897,3.1000,16.7,14.7,true,true,6,11,6.13,3.69,3.28
+16,70,"Red Spade","Red Spade Cole Slaw",42828248143,0.9700,8.83,6.82,false,false,6,13,16.9,12.2,12.6
+77,71,"Red Spade","Red Spade Roasted Chicken",33215050101,2.7600,21.8,20.7,false,false,7,12,4.55,5.69,7.95
+8,72,"Red Spade","Red Spade Corned Beef",36696267724,2.7400,20.2,17.2,false,true,6,6,20.8,11.4,15.2
+8,73,"Red Spade","Red Spade Sliced Turkey",86320835947,2.3300,19.1,16.1,false,false,22,11,15.9,9.46,4.95
+8,74,"Red Spade","Red Spade Sliced Ham",35137689709,1.5700,6.13,5.13,false,true,5,7,3.38,18.8,20.8
+16,75,"Red Spade","Red Spade Potato Salad",54000024199,0.6800,16.9,14.8,false,true,26,11,18.1,8.74,11.9
+8,76,"Red Spade","Red Spade Sliced Chicken",62054644227,1.6900,18.1,17.1,false,true,4,7,14.6,13.5,3.42
+66,77,"Blue Medal","Blue Medal Small Brown Eggs",50154744982,2.8000,14.7,12.6,false,true,13,12,20.0,10.2,8.86
+66,78,"Blue Medal","Blue Medal Large Brown Eggs",27447131276,2.1900,19.5,17.5,true,true,3,6,8.29,14.2,9.13
+66,79,"Blue Medal","Blue Medal Small Eggs",39665827155,1.3200,12.4,10.3,false,true,9,8,15.3,10.7,10.7
+66,80,"Blue Medal","Blue Medal Large Eggs",76195979714,3.6300,17.1,14.1,false,false,31,12,12.8,9.1,11.1
+66,81,"Blue Medal","Blue Medal Egg Substitute",68869482874,2.1300,17.0,15.0,false,false,35,7,12.8,18.2,10.5
+34,82,"Golden","Golden Low Fat Waffles",74637401700,2.7000,21.3,18.2,false,true,25,13,7.06,6.61,11.0
+110,83,"Golden","Golden Orange Popsicles",36548671126,3.8800,18.0,17.0,true,false,11,10,10.7,3.3,21.5
+100,84,"Golden","Golden Frozen Chicken Breast",11554356217,2.8100,14.6,11.6,false,false,3,10,4.7,3.34,4.44
+29,85,"Golden","Golden Frozen Pancakes",32703391909,1.3600,7.12,5.11,false,true,29,11,9.53,3.09,16.1
+63,86,"Golden","Golden Low Fat French Fries",66946843266,2.9700,14.2,13.1,false,true,3,8,8.7,21.7,10.7
+64,87,"Golden","Golden Frozen Sausage Pizza",57333645224,1.7800,19.0,17.0,true,false,19,6,15.2,21.2,18.6
+34,88,"Golden","Golden Blueberry Waffles",25695691704,0.8600,7.86,6.86,true,false,6,12,10.5,12.9,18.9
+63,89,"Golden","Golden Fajita French Fries",51418129801,1.5900,20.5,17.5,false,false,4,7,14.0,20.7,14.4
+34,90,"Golden","Golden Waffles",24137113690,0.7700,10.2,8.19,false,true,2,12,15.1,8.08,19.5
+64,91,"Golden","Golden Frozen Pepperoni Pizza",42999448180,2.6800,12.8,10.8,true,true,17,12,8.94,4.08,3.08
+64,92,"Golden","Golden Frozen Cheese Pizza",51054068207,0.8300,17.1,16.1,true,false,25,5,4.09,16.8,18.6
+64,93,"Golden","Golden Frozen Mushroom Pizza",39154168963,0.9600,16.4,14.3,true,false,21,12,3.11,11.5,13.1
+34,94,"Golden","Golden Apple Cinnamon Waffles",16446555256,0.6200,7.9,4.9,true,false,1,9,10.5,20.9,8.15
+60,95,"Golden","Golden Frozen Carrots",39882292151,1.4600,8.58,5.57,true,false,29,9,16.6,3.52,22.3
+10,96,"Golden","Golden Turkey TV Dinner",10314574837,2.1100,10.7,9.69,true,true,35,8,17.5,21.7,13.5
+10,97,"Golden","Golden Chicken TV Dinner",57605234980,0.5900,18.3,16.2,true,false,26,7,16.4,16.9,5.55
+10,98,"Golden","Golden Beef TV Dinner",63373153805,1.8300,9.43,6.43,false,false,33,11,4.38,3.28,15.2
+28,99,"Golden","Golden Pancake Mix",25284423232,2.3600,8.83,6.82,true,true,29,13,21.7,17.9,14.7
+110,100,"Golden","Golden Grape Popsicles",90290108323,1.9500,9.49,8.48,true,true,6,7,9.3,16.1,6.34
+63,101,"Golden","Golden Home Style French Fries",21439144015,0.7200,20.6,18.6,false,true,13,6,7.8,13.8,7.22
+110,102,"Golden","Golden Lime Popsicles",55682595372,2.4500,18.2,17.2,false,true,16,10,6.01,18.3,14.8
+9,103,"Golden","Golden Ice Cream",46069397330,0.9500,9.81,8.81,true,false,13,8,6.22,15.8,11.8
+9,104,"Golden","Golden Ice Cream Sandwich",49550614953,3.8900,12.3,10.3,false,true,11,8,9.93,17.4,17.9
+60,105,"Golden","Golden Frozen Cauliflower",75273053050,3.7200,6.16,4.15,true,false,21,11,22.7,9.49,4.28
+60,106,"Golden","Golden Frozen Broccoli",36774995923,2.9600,14.6,11.6,true,true,36,6,17.4,14.7,18.5
+60,107,"Golden","Golden Frozen Corn",55637330412,1.8100,19.9,18.8,false,false,25,11,4.91,8.76,11.2
+60,108,"Golden","Golden Frozen Peas",63691950440,2.1900,11.9,9.89,true,true,34,6,8.69,9.67,20.5
+9,109,"Golden","Golden Popsicles",51792051196,3.9500,19.0,16.0,false,false,11,12,6.69,10.4,7.67
+100,110,"Golden","Golden Frozen Chicken Thighs",29084437489,2.3500,12.0,10.0,true,true,34,13,22.3,10.2,6.75
+100,111,"Golden","Golden Frozen Chicken Wings",52520174384,3.4800,15.4,13.3,true,true,17,12,22.0,10.7,10.0
+110,112,"Golden","Golden Lemon Popsicles",89050326943,1.1300,9.35,7.35,false,true,35,5,21.9,15.0,13.8
+78,113,"Faux Products","Faux Products Silky Smooth Hair Conditioner",15625960230,2.2900,19.7,17.7,true,false,8,12,14.5,8.23,15.0
+39,114,"Faux Products","Faux Products Tartar Control Toothpaste",21393879055,0.9200,20.6,19.6,false,false,31,11,19.1,10.5,9.73
+39,115,"Faux Products","Faux Products Whitening Toothpast",14283847212,0.6500,20.6,18.6,true,false,33,13,10.6,11.7,9.62
+39,116,"Faux Products","Faux Products Toothpaste",79289532303,3.9700,8.33,5.32,true,false,8,10,7.45,20.8,13.4
+39,117,"Faux Products","Faux Products Deodorant",10438567996,2.7500,9.24,7.23,false,false,31,10,12.0,3.12,8.19
+79,118,"Faux Products","Faux Products Conditioning Shampoo",44682019352,1.4800,8.27,6.27,true,false,20,13,8.55,14.1,3.48
+79,119,"Faux Products","Faux Products Extra Moisture Shampoo",35068821310,2.2800,20.1,19.1,false,false,7,12,7.86,8.33,14.7
+88,120,"Faux Products","Faux Products Angled Toothbrush",14647908806,2.2600,12.9,9.89,false,false,23,13,9.99,5.6,22.0
+79,121,"Faux Products","Faux Products Apricot Shampoo",64272477030,2.9800,11.6,8.6,true,false,21,11,21.4,6.61,22.4
+70,122,"Faux Products","Faux Products Childrens Aspirin",36991460919,1.9900,12.5,10.5,false,false,9,10,6.11,8.89,17.1
+70,123,"Faux Products","Faux Products Buffered Aspirin",31951665282,3.8400,12.4,9.39,false,false,21,7,3.1,17.5,22.6
+71,124,"Faux Products","Faux Products 200 MG Ibuprofen",52691374421,1.2100,13.3,10.3,true,false,8,11,7.72,19.7,17.3
+72,125,"Faux Products","Faux Products 200 MG Acetominifen",16889345049,2.3200,11.1,9.1,false,false,31,11,15.1,5.18,8.03
+73,126,"Faux Products","Faux Products HCL Nasal Spray",18083861470,1.6100,20.8,19.7,true,false,22,6,21.3,18.0,5.03
+73,127,"Faux Products","Faux Products Dishwasher Detergent",41519598364,1.7400,16.7,13.7,true,false,10,14,20.6,12.2,16.3
+75,128,"Faux Products","Faux Products Multi-Symptom Cold Remedy",78049750924,0.5300,14.5,12.5,false,false,26,5,8.09,17.6,7.02
+75,129,"Faux Products","Faux Products Childrens Cold Remedy",94625384211,1.5500,9.49,7.48,true,false,23,13,14.2,10.6,3.49
+74,130,"Faux Products","Faux Products Laundry Detergent",10393303036,2.2300,21.3,20.2,true,false,10,12,13.5,4.82,14.7
+74,131,"Faux Products","Faux Products Mint Mouthwash",62304572463,2.4000,19.1,16.1,false,false,26,13,20.9,10.2,5.48
+80,132,"Denny","Denny 60 Watt Lightbulb",37310257554,1.9200,20.0,18.0,true,false,14,12,5.59,12.5,20.2
+56,133,"Denny","Denny Plastic Forks",90229007601,0.7000,14.0,12.0,false,false,3,6,16.7,15.4,12.0
+56,134,"Denny","Denny Plastic Spoons",34472458958,2.4300,6.83,4.82,true,false,18,7,18.8,12.6,19.3
+56,135,"Denny","Denny Plastic Knives",24859260916,3.8900,7.74,4.73,false,false,6,6,3.51,14.9,14.0
+101,136,"Denny","Denny C-Size Batteries",94438348412,3.8700,17.4,15.3,false,false,33,10,9.7,7.86,11.0
+80,137,"Denny","Denny 100 Watt Lightbulb",54062916636,3.7000,13.3,11.3,true,false,13,11,9.01,22.0,22.3
+101,138,"Denny","Denny AAA-Size Batteries",26781900525,2.7000,12.3,10.3,true,false,7,13,16.3,7.58,12.5
+55,139,"Denny","Denny Paper Plates",21742104887,1.7900,21.1,19.1,false,false,16,10,18.5,4.85,19.7
+55,140,"Denny","Denny Paper Cups",53698855042,1.8200,6.03,4.03,false,false,4,10,3.14,7.13,14.5
+80,141,"Denny","Denny 75 Watt Lightbulb",96679784655,3.9300,15.7,13.6,true,false,2,8,9.33,20.0,11.5
+22,142,"Denny","Denny Toilet Bowl Cleaner",97874301075,2.3200,8.48,6.47,false,false,11,5,11.4,17.2,18.7
+22,143,"Denny","Denny Counter Cleaner",31310037970,2.4600,9.39,7.39,false,false,5,8,16.0,19.5,13.4
+22,144,"Denny","Denny Glass Cleaner",67840190529,0.5100,20.3,18.2,true,false,2,7,22.2,12.6,9.96
+80,145,"Denny","Denny 25 Watt Lightbulb",84415823817,2.2700,21.2,20.2,false,false,25,6,6.82,14.9,4.67
+101,146,"Denny","Denny AA-Size Batteries",90183742642,3.8300,14.0,12.0,true,false,35,12,8.95,12.1,11.9
+101,147,"Denny","Denny D-Size Batteries",52095012068,0.6400,13.0,12.0,true,false,29,10,5.44,3.22,7.24
+18,148,"Denny","Denny Paper Towels",27100697159,3.9500,8.94,6.93,true,false,17,9,4.75,17.3,18.5
+18,149,"Denny","Denny Soft Napkins",48249732851,2.4900,17.6,16.6,true,false,27,6,6.87,14.6,5.81
+18,150,"Denny","Denny Scented Tissue",45905964970,3.4500,18.6,16.6,true,false,15,14,11.4,16.9,20.5
+18,151,"Denny","Denny Toilet Paper",36292766928,2.9100,12.3,10.3,true,false,12,13,17.6,9.81,17.5
+18,152,"Denny","Denny Tissues",15871854424,2.8900,17.2,15.2,true,false,31,13,19.9,6.55,6.38
+18,153,"Denny","Denny Scented Toilet Tissue",96475121378,2.7200,18.1,17.1,false,false,19,12,4.6,8.83,21.0
+20,154,"Denny","Denny Room Freshener",69194105267,1.9600,16.8,13.7,true,false,16,11,16.1,9.84,21.5
+40,155,"Denny","Denny Frying Pan",64154309630,3.8100,20.6,18.6,true,false,26,8,12.9,18.9,5.37
+87,156,"Denny","Denny Copper Cleaner",96111059784,0.5500,21.5,19.5,false,false,20,11,17.5,21.2,20.0
+47,157,"Denny","Denny Bees Wax Candles",60309030413,2.9500,20.2,18.2,true,false,18,9,9.04,22.2,20.5
+87,158,"Denny","Denny Silver Cleaner",37601416707,1.5800,21.1,18.1,false,false,5,8,13.6,4.56,15.2
+86,159,"Denny","Denny Copper Pot Scrubber",84939283728,1.7100,10.1,8.1,false,false,14,5,10.4,13.8,18.5
+85,160,"Denny","Denny Economy Toilet Brush",31469436287,2.1300,9.18,7.18,false,false,3,9,6.91,4.92,13.8
+41,161,"Denny","Denny Scissors",24142939448,1.5200,10.0,8.0,true,false,32,11,11.5,7.21,8.55
+42,162,"Denny","Denny Large Sponge",18693817257,2.8500,13.8,10.8,true,false,6,8,8.34,16.3,12.4
+41,163,"Denny","Denny Screw Driver",94507216811,2.3800,14.7,11.6,false,false,4,7,12.9,18.6,7.11
+65,164,"Ship Shape","Ship Shape Extra Lean Hamburger",69512901902,2.9700,13.4,11.3,true,true,27,6,4.46,19.6,7.53
+65,165,"Ship Shape","Ship Shape Seasoned Hamburger",90661937594,1.7500,8.26,6.26,false,false,31,10,9.36,3.99,16.0
+104,166,"Robust","Robust Monthly Sports Magazine",11003258824,2.4700,11.2,10.1,true,false,31,6,6.67,18.9,14.4
+108,167,"Robust","Robust Monthly Auto Magazine",91390060782,0.6000,14.4,13.3,false,false,6,11,13.8,5.88,18.3
+107,168,"Robust","Robust Monthly Computer Magazine",94871278405,1.2600,10.4,8.39,false,false,23,11,11.6,8.92,9.67
+105,169,"Robust","Robust Monthly Home Magazine",54495846629,1.9800,19.5,17.5,true,false,29,11,17.2,5.11,11.8
+106,170,"Robust","Robust Monthly Fashion Magazine",57929857373,3.2000,9.56,8.56,false,false,23,9,5.74,4.41,9.95
+61,171,"High Top","High Top Summer Squash",76792191863,2.9500,18.7,17.7,false,false,30,9,11.3,20.6,12.0
+61,172,"High Top","High Top Corn on the Cob",18748942017,3.3200,16.1,14.1,false,true,3,8,12.3,18.4,4.75
+61,173,"High Top","High Top Asparagus",72946912646,1.4300,21.9,20.8,false,false,13,13,22.0,9.15,7.34
+61,174,"High Top","High Top Sweet Peas",50239298939,1.7100,13.4,11.3,true,false,22,8,12.3,21.0,21.8
+61,175,"High Top","High Top New Potatos",97577165961,3.8500,6.82,4.82,true,true,16,8,13.0,15.4,13.2
+61,176,"High Top","High Top Beets",44107318520,2.2700,12.1,10.1,true,false,29,7,10.4,14.9,8.42
+61,177,"High Top","High Top Prepared Salad",36780821681,1.6600,10.5,8.5,false,false,19,14,5.0,16.2,3.3
+61,178,"High Top","High Top Onions",42548740506,1.3300,19.5,16.5,true,true,25,7,20.3,18.2,12.3
+61,179,"High Top","High Top Green Pepper",83242968916,2.7500,19.7,18.7,false,true,2,6,3.93,15.1,21.6
+61,180,"High Top","High Top Shitake Mushrooms",34346523880,0.6900,12.3,11.3,false,false,17,9,17.3,18.2,10.9
+61,181,"High Top","High Top Lettuce",79397689700,0.9300,16.1,14.1,false,true,23,5,16.1,15.1,14.5
+61,182,"High Top","High Top Elephant Garlic",89739010930,1.8400,9.05,6.05,false,true,11,12,13.2,6.07,13.5
+61,183,"High Top","High Top Red Pepper",80125812888,2.4100,7.06,5.05,true,false,22,8,4.13,19.5,18.6
+61,184,"High Top","High Top Garlic",83607030510,3.4000,20.0,18.0,true,true,22,13,22.7,11.8,6.41
+61,185,"High Top","High Top Potatos",43231598734,0.5700,9.3,7.3,true,false,24,12,11.4,8.03,4.14
+61,186,"High Top","High Top Cauliflower",82048452496,2.2300,18.7,17.7,false,false,20,7,9.53,13.4,8.09
+61,187,"High Top","High Top Tomatos",10910786986,1.3200,14.8,13.8,false,true,15,6,12.6,13.4,3.67
+61,188,"High Top","High Top Mushrooms",18965407013,2.5800,14.7,11.6,true,true,14,8,22.3,19.2,10.6
+61,189,"High Top","High Top Baby Onion",61946336627,3.4500,8.51,6.51,true,false,4,13,5.62,8.03,21.8
+61,190,"High Top","High Top Dried Mushrooms",39238722920,3.7400,18.7,17.7,true,true,29,6,9.59,17.9,5.47
+61,191,"High Top","High Top Fresh Lima Beans",86576589941,2.8700,12.6,9.6,true,false,22,7,19.9,14.4,16.7
+61,192,"High Top","High Top Squash",33106742501,1.5200,10.7,7.69,false,true,4,7,20.3,15.6,14.2
+99,193,"High Top","High Top Limes",25780245661,3.6800,11.8,9.8,true,false,11,13,8.64,14.9,18.3
+67,194,"High Top","High Top Firm Tofu",31548164486,3.3600,11.6,8.6,true,true,21,11,18.8,7.38,10.2
+1,195,"High Top","High Top Almonds",83459433913,1.7700,8.72,6.72,false,true,24,13,17.6,13.0,10.4
+99,196,"High Top","High Top Macintosh Apples",58465119004,2.4700,12.1,10.1,true,true,27,10,7.29,19.1,16.2
+99,197,"High Top","High Top Golden Delcious Apples",79614154696,2.9100,21.5,19.5,false,true,29,7,15.4,18.9,17.6
+99,198,"High Top","High Top Red Delcious Apples",78738434910,0.9200,17.2,14.2,true,true,27,13,6.26,7.83,5.92
+99,199,"High Top","High Top Lemons",69125236868,1.6700,19.2,18.2,true,false,33,10,19.8,4.92,4.65
+99,200,"High Top","High Top Fancy Plums",72606454491,2.6500,6.74,4.73,false,false,12,6,8.38,17.6,20.4
+99,201,"High Top","High Top Plums",32231022715,2.2500,14.7,12.6,false,false,29,14,10.8,11.8,7.33
+99,202,"High Top","High Top Peaches",71047876477,1.4900,11.8,8.8,false,false,24,6,6.61,10.7,10.1
+61,203,"High Top","High Top Broccoli",89910210967,0.6300,8.85,5.85,true,false,27,5,6.17,12.0,10.3
+99,204,"High Top","High Top Mandarin Oranges",97964830994,1.6000,13.6,10.6,false,false,31,7,22.6,17.0,20.7
+1,205,"High Top","High Top Mixed Nuts",86064931750,2.7100,13.9,11.8,true,false,9,5,4.96,11.8,5.0
+1,206,"High Top","High Top Canned Peanuts",50672228932,2.1100,10.9,7.89,false,true,15,7,22.6,19.6,17.8
+61,207,"High Top","High Top Sweet Onion",98010095953,1.2400,13.5,11.5,true,true,7,14,16.0,17.8,11.3
+99,208,"High Top","High Top Cantelope",44540248513,2.4700,13.4,10.3,true,true,23,6,6.06,21.4,8.32
+99,209,"High Top","High Top Honey Dew",37213751673,1.8700,17.3,15.2,true,false,16,6,7.99,18.6,21.4
+99,210,"High Top","High Top Fuji Apples",42981670498,1.5400,17.0,14.0,false,true,27,10,16.1,4.23,13.8
+1,211,"High Top","High Top Walnuts",94892939925,2.7200,14.5,12.5,true,false,1,7,4.6,12.1,14.0
+99,212,"High Top","High Top Oranges",69898625016,1.6600,9.78,7.77,false,false,14,9,13.1,4.27,12.3
+99,213,"High Top","High Top Tangerines",91047660708,0.5600,7.22,5.21,true,false,11,11,4.08,7.71,7.56
+1,214,"High Top","High Top Party Nuts",35291112065,2.8200,21.6,19.6,true,true,18,13,8.56,14.5,4.93
+24,215,"Tip Top","Tip Top Lox",80295071005,0.7900,14.1,11.1,true,false,10,13,12.1,12.0,11.6
+2,216,"Tip Top","Tip Top Scallops",83776288628,3.6000,21.3,20.2,true,true,22,7,18.3,18.3,6.31
+45,217,"Best Choice","Best Choice Low Fat Cookies",19498726725,0.6800,16.0,14.0,true,false,21,13,14.4,10.5,22.3
+12,218,"Best Choice","Best Choice BBQ Potato Chips",82217710614,3.4400,16.2,14.2,false,false,13,6,19.8,12.0,4.03
+12,219,"Best Choice","Best Choice Corn Chips",11080045104,2.5200,20.6,18.6,true,true,15,12,22.4,14.8,7.04
+12,220,"Best Choice","Best Choice Low Fat BBQ Chips",19134665131,2.5500,12.2,10.1,false,true,7,7,12.5,17.8,6.56
+45,221,"Best Choice","Best Choice Sugar Cookies",97234765887,3.6600,15.2,13.1,false,false,36,14,8.6,10.5,20.0
+45,222,"Best Choice","Best Choice Chocolate Chip Cookies",74527152180,3.9500,15.0,12.0,false,true,29,9,19.9,16.3,21.9
+45,223,"Best Choice","Best Choice Fudge Cookies",97962889075,3.1900,20.3,19.2,true,false,36,6,7.02,12.5,4.67
+45,224,"Best Choice","Best Choice Fudge Brownies",33276000618,1.7300,8.24,6.23,false,false,32,7,10.6,14.2,10.2
+12,225,"Best Choice","Best Choice Potato Chips",25949503779,3.8900,19.8,16.7,false,false,7,5,11.5,17.5,15.9
+45,226,"Best Choice","Best Choice Lemon Cookies",31717422604,0.7600,10.4,7.39,true,true,22,13,18.1,11.6,10.7
+45,227,"Best Choice","Best Choice Graham Crackers",83628692030,1.9800,15.7,14.6,false,true,12,9,5.65,5.62,3.49
+82,228,"Best Choice","Best Choice Cheese Crackers",58634377121,0.8200,8.71,6.71,false,true,11,14,22.6,7.63,7.58
+54,229,"Best Choice","Best Choice Buttered Popcorn",79783412814,2.2300,13.6,10.6,false,false,33,10,7.48,7.12,20.4
+54,230,"Best Choice","Best Choice No Salt Popcorn",24026864171,1.1900,14.7,12.6,true,true,21,12,5.64,11.9,6.97
+54,231,"Best Choice","Best Choice Low Fat Popcorn",14413666129,2.6500,10.0,8.0,false,false,30,11,22.8,7.41,22.8
+83,232,"Best Choice","Best Choice Salsa Dip",17894883751,2.6300,16.1,15.1,false,false,16,9,17.4,3.75,22.6
+83,233,"Best Choice","Best Choice Avocado Dip",98498150706,2.4600,18.6,16.6,true,false,1,9,12.4,21.9,11.2
+46,234,"Best Choice","Best Choice Salted Pretzels",71217134594,2.7000,14.4,12.3,false,true,17,5,22.1,17.5,9.5
+83,235,"Best Choice","Best Choice Cheese Dip",90079469084,3.5500,11.5,8.5,false,false,35,10,7.91,22.0,14.7
+83,236,"Best Choice","Best Choice Fondue Mix",98134089112,1.8100,10.8,8.8,false,true,7,13,17.0,11.1,6.88
+84,237,"Best Choice","Best Choice Mini Donuts",86234189867,2.6800,21.6,19.6,true,true,23,14,12.0,9.93,12.8
+17,238,"Best Choice","Best Choice Beef Jerky",63526576161,1.9700,8.17,5.17,false,true,32,8,17.0,13.7,3.98
+84,239,"Best Choice","Best Choice Chocolate Donuts",86962313055,2.2100,16.5,14.5,true,true,5,14,22.7,17.9,10.7
+12,240,"Best Choice","Best Choice Low Fat Chips",33492465615,0.8600,7.13,6.13,false,true,33,12,5.62,5.04,10.9
+82,241,"Best Choice","Best Choice Sesame Crackers",50068098902,2.9100,21.5,20.5,true,false,24,9,20.2,6.32,5.83
+45,242,"Best Choice","Best Choice Frosted Cookies",20716846585,2.5900,9.51,7.51,false,true,23,8,10.1,20.1,11.4
+109,243,"Best Choice","Best Choice Dried Apples",72628116011,2.1100,6.6,3.59,true,true,6,11,16.6,20.2,16.7
+109,244,"Best Choice","Best Choice Apple Fruit Roll",47633801102,2.7000,7.29,4.28,true,true,22,5,12.5,8.36,13.4
+109,245,"Best Choice","Best Choice Strawberry Fruit Roll",68782836794,1.4900,9.9,6.89,false,false,19,6,5.81,17.6,12.0
+109,246,"Best Choice","Best Choice Raspberry Fruit Roll",13026288151,3.2100,18.8,17.7,true,false,22,7,22.9,8.59,11.1
+109,247,"Best Choice","Best Choice Grape Fruit Roll",93413090109,1.7800,13.0,10.0,false,false,17,9,8.47,14.1,12.1
+109,248,"Best Choice","Best Choice Dried Dates",72992177605,0.8600,14.7,12.6,true,true,26,10,7.37,4.48,8.54
+109,249,"Best Choice","Best Choice Raisins",32616745829,1.5900,20.0,18.0,false,false,28,9,16.1,20.6,6.27
+109,250,"Best Choice","Best Choice Golden Raisins",95335729718,2.5900,13.4,12.3,false,false,18,9,14.2,6.05,10.2
+109,251,"Best Choice","Best Choice Dried Apricots",78815221190,2.4400,18.6,16.6,false,false,14,12,3.88,6.7,22.9
+84,252,"Best Choice","Best Choice Frosted Donuts",20771971344,2.7100,20.7,17.7,false,false,2,6,6.65,13.7,4.18
+36,253,"Choice","Choice Tasty Candy Bar",74969941973,0.8900,18.2,15.2,false,true,34,14,15.3,10.5,19.3
+36,254,"Choice","Choice Mint Chocolate Bar",76164458394,0.5600,11.6,8.6,false,true,33,7,6.13,19.3,8.18
+36,255,"Choice","Choice Malted Milk Balls",99600195288,0.6400,8.65,6.64,false,true,34,6,13.6,12.7,3.48
+36,256,"Choice","Choice Semi-Sweet Chocolate Bar",46130347847,2.6500,21.7,20.7,true,false,28,14,10.0,18.3,11.2
+37,257,"Choice","Choice Bubble Gum",62705981135,0.5300,6.89,5.88,false,true,5,5,18.2,17.6,15.3
+38,258,"Choice","Choice Spicy Mints",68473899960,1.7200,18.6,16.6,true,false,27,7,7.26,17.5,13.5
+38,259,"Choice","Choice Mints",61363868117,1.9000,18.4,17.3,true,false,20,14,7.38,15.6,7.96
+36,260,"Choice","Choice White Chocolate Bar",36369553208,1.8400,21.9,18.8,false,false,16,7,17.0,21.6,13.7
+5,261,"Medalist","Medalist Ravioli",57518588900,3.3800,17.5,14.5,true,false,5,6,9.16,17.2,4.39
+5,262,"Medalist","Medalist Manicotti",91762040257,1.3400,21.0,20.0,true,false,31,9,17.4,21.1,5.19
+5,263,"Medalist","Medalist Spaghetti",82148842215,3.8000,13.9,11.8,true,false,1,7,4.53,17.5,6.78
+57,264,"Medalist","Medalist Thai Rice",61727929711,2.7800,18.7,16.7,true,true,24,6,22.0,15.9,7.16
+57,265,"Medalist","Medalist Rice Medly",21352497935,3.6100,10.7,9.69,true,true,6,13,4.52,10.1,14.0
+43,266,"Good","Good Imported Beer",84071481823,1.6200,6.89,5.88,false,false,13,12,16.2,13.4,7.12
+44,267,"Good","Good Light Wine",79031686186,0.8300,6.98,4.98,false,false,24,5,14.6,13.4,12.1
+44,268,"Good","Good Chardonnay Wine",99771395325,1.7300,9.26,7.26,false,false,20,13,6.06,14.7,11.4
+44,269,"Good","Good Chablis Wine",63969365954,2.8400,10.5,8.5,false,false,12,13,9.88,22.3,21.4
+44,270,"Good","Good Merlot Wine",65163882374,2.2400,9.71,6.71,true,false,35,13,4.16,6.7,16.6
+44,271,"Good","Good Chardonnay",88599619269,2.3700,12.0,9.0,true,false,31,12,15.6,7.97,15.9
+44,272,"Good","Good White Zinfandel Wine",35129771828,3.9100,7.07,6.07,true,false,2,10,8.64,19.8,17.5
+43,273,"Good","Good Light Beer",51705405116,2.1800,9.35,6.35,false,false,33,8,20.0,21.1,16.8
+27,274,"Great","Great Pumpernickel Bread",57473323941,3.7400,8.5,7.5,false,true,21,9,14.3,5.48,12.1
+27,275,"Great","Great White Bread",19384593367,3.2700,17.4,14.3,true,false,35,11,12.6,14.2,18.5
+27,276,"Great","Great Rye Bread",84390278458,3.8600,6.2,5.19,true,true,11,8,9.13,19.2,8.96
+26,277,"Great","Great English Muffins",68952094912,2.4100,11.5,9.5,false,true,24,6,16.7,22.1,16.6
+26,278,"Great","Great Cranberry Muffins",13195546269,3.3600,8.55,5.55,true,true,2,7,14.4,9.99,9.49
+26,279,"Great","Great Muffins",93582348227,2.8200,6.44,5.44,false,true,18,5,7.53,10.1,14.5
+25,280,"Great","Great Bagels",73161435723,1.8100,6.29,3.28,false,false,34,7,17.5,13.7,11.4
+26,281,"Great","Great Blueberry Muffins",32786003947,2.6300,10.1,8.1,true,true,28,6,19.4,10.9,4.61
+27,282,"Great","Great Wheat Bread",95504987835,0.9300,13.6,11.6,true,false,30,7,7.43,17.0,15.4
+49,283,"Super","Super Sesame Oil",90465192198,2.7300,17.5,14.5,true,true,3,13,21.1,13.1,18.4
+53,284,"Super","Super Chunky Peanut Butter",32421942353,0.9900,7.71,5.71,false,true,22,9,4.45,17.2,13.4
+51,285,"Super","Super Hot Chocolate",86619912981,1.8600,9.85,7.85,false,true,28,7,15.6,18.7,17.1
+50,286,"Super","Super Brown Sugar",63912299275,1.4200,8.25,7.25,true,false,35,9,20.1,5.57,14.5
+50,287,"Super","Super White Sugar",10033125281,1.5600,11.7,10.6,true,true,21,5,18.3,14.9,17.8
+90,288,"Super","Super French Roast Coffee",46563277840,2.8600,18.9,16.8,false,false,33,8,4.62,21.2,12.4
+90,289,"Super","Super Decaf Coffee",39236781001,1.3700,7.96,5.96,false,false,16,10,9.75,20.5,20.8
+90,290,"Super","Super Regular Coffee",45004699826,1.7000,6.09,3.09,true,false,14,5,12.3,14.9,21.3
+49,291,"Super","Super Vegetable Oil",30818099379,2.2200,9.24,7.23,false,false,32,11,9.32,22.9,10.3
+49,292,"Super","Super Corn Oil",95823784470,1.8100,7.64,5.63,false,true,23,8,3.9,4.2,5.24
+48,293,"Super","Super Tomato Sauce",26972820162,1.6000,10.6,8.6,false,false,5,9,9.82,22.4,21.1
+49,294,"Super","Super Canola Oil",37314141392,1.3200,10.9,7.89,false,true,30,10,13.4,19.4,10.4
+33,295,"Super","Super Grape Preserves",27700943350,3.1200,9.4,8.39,true,true,21,13,16.2,6.24,12.8
+90,296,"Super","Super Columbian Coffee",62951875329,0.5000,11.0,8.0,true,false,36,7,5.45,19.9,21.7
+31,297,"Super","Super Strawberry Jelly",22576443552,0.9000,17.4,14.3,false,true,26,8,17.4,18.1,14.7
+4,298,"Super","Super Pepper",61393297314,2.8300,17.7,15.7,false,true,34,11,19.3,9.38,8.49
+33,299,"Super","Super Low Fat Apple Butter",80255631804,1.6800,16.6,14.6,false,false,27,12,15.0,14.0,3.22
+4,300,"Super","Super Salt",22212381958,2.9400,16.8,14.7,true,false,5,8,8.62,16.5,15.0
+33,301,"Super","Super Apple Butter",76410352587,0.5300,10.8,8.8,false,true,22,13,18.4,6.37,21.3
+4,302,"Super","Super Oregano",53702738881,3.4500,13.7,11.6,true,false,26,7,5.84,15.7,17.2
+31,303,"Super","Super Apple Jelly",11040605902,2.5800,13.6,11.6,true,true,32,8,5.96,13.7,11.7
+32,304,"Super","Super Grape Jam",47570758461,1.8900,10.1,8.1,true,false,24,10,22.1,20.4,14.6
+32,305,"Super","Super Apple Jam",29027220606,3.3900,6.72,5.71,false,true,4,10,7.47,17.2,20.1
+32,306,"Super","Super Strawberry Jam",34795139431,3.9600,16.5,14.5,false,true,29,13,21.0,9.34,3.8
+53,307,"Super","Super Creamy Peanut Butter",20608538985,1.4800,18.2,15.2,false,true,9,10,9.67,16.3,7.67
+33,308,"Super","Super Strawberry Preserves",61712093949,2.1800,8.82,7.81,false,true,24,10,15.3,6.02,7.47
+53,309,"Super","Super Extra Chunky Peanut Butter",16763259768,3.6200,18.7,17.7,true,true,6,13,5.92,11.4,13.7
+33,310,"Super","Super Apple Preserves",27104580998,0.7600,10.8,8.8,true,true,29,11,16.4,22.2,13.1
+31,311,"Super","Super Grape Jelly",17491382956,2.1500,9.67,8.67,false,false,5,9,13.2,20.2,17.8
+30,312,"Excellent","Excellent Berry Juice",20972600579,2.1300,12.6,10.6,true,false,2,12,12.4,8.55,3.71
+52,313,"Excellent","Excellent Mango Drink",11575867533,2.8500,7.12,5.11,false,true,16,12,4.89,3.73,10.4
+52,314,"Excellent","Excellent Strawberry Drink",50392721295,1.8500,9.26,7.26,false,true,22,10,16.0,5.25,14.1
+19,315,"Excellent","Excellent Cream Soda",69255055785,0.9600,15.5,14.5,false,false,29,12,18.0,7.06,4.09
+19,316,"Excellent","Excellent Diet Soda",77309675812,1.3100,7.28,5.28,true,false,22,9,16.8,4.27,21.6
+19,317,"Excellent","Excellent Cola",65409776568,2.1800,13.1,11.1,true,false,22,14,7.56,10.2,19.8
+19,318,"Excellent","Excellent Diet Cola",42702162861,2.4700,17.8,16.7,true,false,8,12,9.17,10.5,13.3
+30,319,"Excellent","Excellent Orange Juice",90040029883,1.6000,9.58,7.57,false,false,6,12,7.97,7.76,10.9
+30,320,"Excellent","Excellent Cranberry Juice",36570182442,3.2600,16.4,14.3,false,false,14,12,13.6,3.87,13.7
+30,321,"Excellent","Excellent Apple Juice",29243685603,2.4100,13.2,12.1,true,false,13,13,17.7,9.2,14.7
+52,322,"Excellent","Excellent Apple Drink",35011604428,2.9800,12.8,10.8,false,false,28,8,14.0,21.3,4.84
+35,323,"Best","Best Oatmeal",75705832839,3.5000,15.4,12.3,false,true,19,6,7.44,19.6,18.4
+35,324,"Best","Best Corn Puffs",50711517930,1.9700,7.43,5.42,false,false,13,9,19.9,8.22,22.8
+35,325,"Best","Best Wheat Puffs",71860553622,1.5100,19.1,18.1,true,false,29,7,19.3,20.4,8.52
+35,326,"Best","Best Grits",16104004979,2.4700,8.87,6.86,true,false,5,11,20.4,7.75,13.6
+62,327,"Better","Better Canned Beets",96490806937,0.6000,8.6,7.6,false,true,26,10,18.5,18.8,8.49
+62,328,"Better","Better Creamed Corn",99972024559,1.2600,11.6,10.6,true,false,26,9,4.6,5.99,19.4
+62,329,"Better","Better Canned String Beans",59596592783,1.7400,10.9,8.89,true,true,22,8,3.61,20.6,14.0
+58,330,"Better","Better Chicken Soup",98413446545,3.9800,7.47,5.46,false,false,8,7,19.9,16.2,11.9
+62,331,"Better","Better Canned Yams",57990807890,2.8300,15.9,13.8,false,false,22,14,3.51,13.7,18.7
+58,332,"Better","Better Vegetable Soup",66045427918,2.2100,9.36,7.35,false,false,25,8,22.8,21.3,7.64
+62,333,"Better","Better Canned Tomatos",54145528674,1.3200,17.9,16.8,false,true,33,14,5.86,12.2,9.37
+58,334,"Better","Better Noodle Soup",31437914967,0.7800,9.0,8.0,true,false,26,7,13.7,18.5,19.0
+58,335,"Better","Better Regular Ramen Soup",78775781989,3.7400,8.73,6.72,true,false,17,13,6.99,17.7,8.37
+58,336,"Better","Better Chicken Noodle Soup",25305934548,1.1500,13.1,11.1,true,false,2,10,19.9,3.92,3.89
+58,337,"Better","Better Turkey Noodle Soup",17979437708,0.7500,8.34,7.34,true,true,9,10,18.4,21.6,4.76
+58,338,"Better","Better Beef Soup",23747356534,0.5700,16.9,14.8,true,false,6,10,11.3,18.0,8.98
+62,339,"Better","Better Canned Peas",75658625960,1.4000,21.3,19.2,true,true,31,9,14.3,18.6,22.0
+58,340,"Better","Better Chicken Ramen Soup",50664311051,0.6300,16.0,13.0,true,true,6,12,20.5,5.21,15.5
+93,341,"Better","Better Canned Tuna in Water",60596305727,2.7700,21.7,19.7,false,false,19,6,22.9,19.2,3.0
+93,342,"Better","Better Canned Tuna in Oil",94839757084,1.5000,14.2,13.1,true,true,26,11,17.7,4.6,17.2
+94,343,"Better","Better Large Canned Shrimp",85226559042,2.3000,8.55,6.55,false,false,29,10,10.5,6.7,13.3
+95,344,"Better","Better Fancy Canned Anchovies",88707776665,2.2800,10.5,7.5,true,true,24,5,14.0,9.34,14.6
+96,345,"Better","Better Fancy Canned Clams",24430214762,2.1100,17.6,16.6,true,true,36,12,12.0,10.1,21.7
+97,346,"Better","Better Fancy Canned Oysters",87149198651,2.1200,15.6,12.6,false,false,30,8,12.9,18.0,4.3
+98,347,"Better","Better Fancy Canned Sardines",16011533141,1.2000,11.8,8.8,false,true,7,12,14.2,9.13,9.88
+58,348,"Better","Better Rice Soup",24066153168,1.2300,7.98,5.98,true,false,25,5,7.29,14.6,7.97
+3,349,"Swell","Swell Canned Mixed Fruit",65579034686,2.3400,8.62,7.61,false,true,3,7,5.14,16.2,12.0
+3,350,"Swell","Swell Canned Peaches",42871420979,1.6300,15.3,12.3,true,false,12,8,9.54,3.6,6.82
+89,351,"ADJ","ADJ Rosy Sunglasses",66307157874,2.7600,19.6,18.6,true,false,26,8,13.6,17.5,9.84
+103,352,"Black Tie","Black Tie Eyeglass Screwdriver",36739440560,0.6700,10.6,8.6,false,false,8,7,6.19,12.4,17.6
+102,353,"Black Tie","Black Tie City Map",29412943720,1.5700,8.78,7.77,true,false,1,14,17.1,16.7,3.26
+15,354,"Carlson","Carlson Low Fat Cottage Cheese",35180862545,2.2500,9.77,8.77,false,false,8,5,20.2,7.92,17.9
+14,355,"Carlson","Carlson Low Fat Sour Cream",87092131972,0.8100,12.2,11.1,false,false,17,7,22.2,20.3,14.4
+14,356,"Carlson","Carlson Sour Cream",62097817063,2.3600,8.79,5.78,true,false,33,6,7.61,17.0,19.9
+11,357,"Carlson","Carlson Jack Cheese",83246852755,1.8000,12.2,9.19,true,true,17,6,15.9,20.8,20.7
+11,358,"Carlson","Carlson Muenster Cheese",16273263096,3.7500,19.3,16.2,false,false,30,10,14.8,6.08,22.9
+11,359,"Carlson","Carlson String Cheese",96660065054,1.3200,20.9,18.8,true,false,16,6,15.2,7.58,19.2
+11,360,"Carlson","Carlson Low Fat String Cheese",10141282677,1.3100,9.8,6.8,true,true,20,10,20.4,4.85,22.1
+11,361,"Carlson","Carlson Havarti Cheese",35863720774,1.1300,14.1,12.1,true,false,15,12,14.7,13.2,22.6
+11,362,"Carlson","Carlson Head Cheese",98582704663,3.9700,10.8,9.8,false,false,26,9,18.3,9.91,13.1
+11,363,"Carlson","Carlson Cheese Spread",27445039153,1.8200,8.71,6.71,true,true,22,13,12.2,10.1,15.5
+11,364,"Carlson","Carlson Sharp Cheddar Cheese",35499659180,2.2000,17.1,15.1,false,false,7,10,17.1,9.87,7.25
+11,365,"Carlson","Carlson Mild Cheddar Cheese",23599759936,3.9600,11.9,9.89,true,false,29,5,21.6,16.4,5.76
+15,366,"Carlson","Carlson Large Curd Cottage Cheese",90892146229,2.3600,19.6,16.6,true,false,32,11,20.3,22.7,22.7
+76,367,"Carlson","Carlson 2% Milk",55306581854,3.4900,11.6,9.6,true,false,27,5,12.9,11.4,7.15
+76,368,"Carlson","Carlson Buttermilk",91836734414,1.1400,14.4,12.3,false,false,13,12,4.92,9.36,21.2
+76,369,"Carlson","Carlson Chocolate Milk",18412367701,2.3000,19.4,17.3,false,false,31,13,10.0,8.6,9.71
+76,370,"Carlson","Carlson 1% Milk",24180286526,0.9200,6.63,5.63,true,false,35,13,17.9,11.1,13.6
+76,371,"Carlson","Carlson Whole Milk",76091555953,0.6600,9.78,7.77,true,false,13,5,14.9,19.1,22.6
+6,372,"Carlson","Carlson Strawberry Yogurt",51097241044,3.9800,14.8,12.8,false,false,30,7,20.0,18.3,11.0
+6,373,"Carlson","Carlson Blueberry Yogurt",72246276736,2.7600,11.9,10.8,true,true,19,13,6.33,9.54,21.3
+81,374,"Moms","Moms Chicken Hot Dogs",16489728093,1.4900,11.3,10.3,true,false,32,6,13.7,18.6,18.4
+91,375,"Moms","Moms Pimento Loaf",96876530051,2.2900,18.4,17.3,true,false,27,13,11.5,10.5,10.5
+91,376,"Moms","Moms Beef Bologna",64974904656,2.2700,12.3,11.3,false,true,3,5,11.8,12.6,4.38
+91,377,"Moms","Moms Low Fat Bologna",24599472880,2.1000,18.0,17.0,false,false,7,12,3.03,14.3,6.97
+81,378,"Moms","Moms Turkey Hot Dogs",87318456768,1.1100,17.3,16.2,true,true,6,14,3.21,6.91,8.95
+81,379,"Moms","Moms Foot-Long Hot Dogs",82278661131,3.8500,16.2,14.2,true,false,34,6,18.9,11.5,3.68
+16,380,"Moms","Moms Low Fat Cole Slaw",24235411286,1.2200,21.4,19.3,true,true,6,7,17.7,22.1,18.9
+16,381,"Moms","Moms Cole Slaw",78433381915,2.3300,10.3,8.3,true,true,23,12,22.2,3.9,21.7
+77,382,"Moms","Moms Roasted Chicken",79627898335,1.6200,10.2,8.19,true,true,27,6,12.4,16.3,13.7
+8,383,"Moms","Moms Corned Beef",13063635230,2.7500,13.2,11.1,true,true,33,7,9.78,11.3,12.1
+8,384,"Moms","Moms Sliced Turkey",49593787789,0.5400,14.7,12.6,true,true,25,9,11.2,6.15,18.5
+8,385,"Moms","Moms Sliced Ham",31050249934,1.5600,11.3,9.3,false,false,5,9,16.6,22.8,3.99
+16,386,"Moms","Moms Potato Salad",36818168759,2.2300,16.9,13.8,true,true,15,10,14.4,9.91,19.5
+8,387,"Moms","Moms Sliced Chicken",88729438185,2.4100,17.7,16.7,true,false,14,8,19.0,21.3,13.6
+66,388,"Urban","Urban Small Brown Eggs",63735123276,2.3500,19.3,17.2,true,true,35,12,19.4,22.8,10.0
+66,389,"Urban","Urban Large Brown Eggs",84884158968,1.7900,14.1,12.1,false,false,27,10,14.0,3.86,6.05
+66,390,"Urban","Urban Small Eggs",29127610325,3.7400,10.3,8.3,true,false,34,9,5.77,7.19,19.1
+66,391,"Urban","Urban Large Eggs",19514412283,1.3100,9.21,7.21,false,false,9,7,22.5,5.17,3.87
+66,392,"Urban","Urban Egg Substitute",89093499779,1.3000,13.0,10.0,false,true,29,13,5.84,9.12,19.4
+34,393,"Big Time","Big Time Low Fat Waffles",48718068003,1.1200,21.5,19.5,true,false,14,9,10.6,8.88,11.1
+110,394,"Big Time","Big Time Orange Popsicles",76317880749,3.1300,10.4,7.39,true,false,13,12,5.83,11.7,16.5
+100,395,"Big Time","Big Time Frozen Chicken Breast",71278085112,2.2200,8.3,6.3,true,false,30,6,18.9,11.8,21.5
+29,396,"Big Time","Big Time Frozen Pancakes",13234835267,3.2400,16.3,14.2,true,false,25,10,11.4,20.4,5.92
+63,397,"Big Time","Big Time Low Fat French Fries",67432805895,1.3500,12.0,9.0,false,false,5,7,10.8,12.6,11.6
+64,398,"Big Time","Big Time Frozen Sausage Pizza",68627322316,0.8000,15.5,12.5,true,true,7,7,18.8,18.7,22.4
+34,399,"Big Time","Big Time Blueberry Waffles",92063059210,0.8700,10.2,8.19,false,false,29,7,15.1,19.7,13.4
+63,400,"Big Time","Big Time Fajita French Fries",38593211770,1.4300,9.57,8.56,true,false,34,10,15.8,18.9,20.4
+34,401,"Big Time","Big Time Waffles",55168845057,0.7000,13.9,11.8,false,false,30,8,20.1,21.7,18.4
+64,402,"Big Time","Big Time Frozen Pepperoni Pizza",60936763882,1.1300,9.16,7.15,true,true,8,5,7.49,11.6,11.8
+64,403,"Big Time","Big Time Frozen Cheese Pizza",77728862166,1.5500,13.6,11.6,true,true,33,6,9.78,16.6,4.85
+64,404,"Big Time","Big Time Frozen Mushroom Pizza",52734547257,1.2500,6.98,3.98,true,false,35,9,9.14,4.28,13.8
+34,405,"Big Time","Big Time Apple Cinnamon Waffles",73883582949,3.6900,19.6,17.6,false,false,33,12,13.3,7.65,9.24
+60,406,"Big Time","Big Time Frozen Carrots",18127034306,1.6400,20.7,18.7,false,false,1,8,22.8,4.74,20.6
+10,407,"Big Time","Big Time Turkey TV Dinner",98513836264,3.2100,6.35,5.34,false,true,34,9,13.2,20.6,14.5
+10,408,"Big Time","Big Time Chicken TV Dinner",78092923760,2.2000,15.7,14.6,true,true,19,6,11.5,14.9,13.4
+10,409,"Big Time","Big Time Beef TV Dinner",37717491984,3.9100,10.9,8.89,true,true,15,11,10.0,12.6,14.3
+28,410,"Big Time","Big Time Pancake Mix",10436475872,1.2600,19.8,18.7,false,true,8,7,7.9,19.1,13.4
+110,411,"Big Time","Big Time Grape Popsicles",95396680235,0.5100,8.25,7.25,true,true,33,6,10.9,19.7,6.45
+63,412,"Big Time","Big Time Home Style French Fries",91970587372,1.3800,18.9,15.8,true,true,14,12,17.1,6.28,19.9
+110,413,"Big Time","Big Time Lime Popsicles",56168558001,2.2500,18.4,17.3,true,false,28,6,14.2,12.0,4.55
+9,414,"Big Time","Big Time Ice Cream",33460944294,2.7700,19.9,16.8,true,true,3,12,12.0,19.9,16.3
+9,415,"Big Time","Big Time Ice Cream Sandwich",80798811316,2.9100,17.4,16.3,true,true,6,10,21.9,18.9,16.5
+60,416,"Big Time","Big Time Frozen Cauliflower",27328963875,3.3200,7.2,6.19,true,false,21,8,21.7,4.05,16.6
+60,417,"Big Time","Big Time Frozen Broccoli",20002467036,2.7200,14.2,12.1,true,false,4,9,19.7,4.82,3.76
+60,418,"Big Time","Big Time Frozen Corn",25770385861,3.1600,13.2,11.1,true,false,15,13,4.8,8.34,15.9
+60,419,"Big Time","Big Time Frozen Peas",11583785414,3.5700,8.5,6.5,false,false,10,9,22.0,3.84,11.8
+9,420,"Big Time","Big Time Popsicles",41470299363,2.2700,20.6,19.6,true,true,29,12,15.0,9.4,9.94
+100,421,"Big Time","Big Time Frozen Chicken Thighs",62619335055,2.9500,6.19,4.19,true,false,23,11,16.9,6.53,3.71
+100,422,"Big Time","Big Time Frozen Chicken Wings",72960656285,3.6700,7.87,5.86,false,true,33,12,16.0,5.8,15.0
+110,423,"Big Time","Big Time Lemon Popsicles",63347458243,1.4700,17.2,15.2,false,true,5,9,5.5,7.84,21.5
+78,424,"Steady","Steady Silky Smooth Hair Conditioner",66828675866,1.4500,9.65,7.64,true,false,14,7,21.1,17.6,10.7
+39,425,"Steady","Steady Tartar Control Toothpaste",26453244090,1.2800,9.18,6.18,false,false,29,7,18.9,20.9,20.9
+39,426,"Steady","Steady Whitening Toothpast",65270097851,0.6000,11.5,10.5,false,false,30,13,8.92,11.0,20.1
+39,427,"Steady","Steady Toothpaste",84132432341,2.1400,8.89,5.89,false,false,26,7,13.5,13.0,16.0
+39,428,"Steady","Steady Deodorant",26089182496,0.6700,8.43,7.43,false,false,6,7,11.3,16.3,6.18
+79,429,"Steady","Steady Conditioning Shampoo",67602064013,1.5100,12.0,10.0,true,false,7,13,21.2,6.71,4.93
+79,430,"Steady","Steady Extra Moisture Shampoo",44894450306,1.8000,11.5,8.5,true,false,32,12,19.0,10.0,15.0
+88,431,"Steady","Steady Angled Toothbrush",92232317328,0.9600,19.9,18.8,false,false,11,12,18.4,3.9,7.5
+79,432,"Steady","Steady Apricot Shampoo",38762469887,2.3500,11.3,9.3,false,false,13,9,13.7,22.1,10.2
+70,433,"Steady","Steady Childrens Aspirin",31435973048,1.7400,10.8,8.8,true,false,28,9,11.5,5.49,20.3
+70,434,"Steady","Steady Buffered Aspirin",37203891873,1.4200,19.1,18.1,false,false,17,8,10.8,19.3,12.7
+71,435,"Steady","Steady 200 MG Ibuprofen",23017291426,2.8300,11.8,9.8,true,false,18,6,6.09,17.8,14.9
+72,436,"Steady","Steady 200 MG Acetominifen",64120846390,1.5300,6.32,4.32,false,false,33,5,18.5,13.0,21.6
+73,437,"Steady","Steady HCL Nasal Spray",19172012209,1.9700,19.9,17.8,false,false,14,9,8.21,5.08,12.3
+73,438,"Steady","Steady Dishwasher Detergent",84394162297,1.9300,19.5,16.5,true,false,35,12,5.99,8.38,22.5
+75,439,"Steady","Steady Multi-Symptom Cold Remedy",74780964255,3.5000,21.8,20.7,true,false,1,10,15.9,18.5,21.8
+75,440,"Steady","Steady Childrens Cold Remedy",78262181878,0.6700,19.2,17.2,true,false,26,9,20.6,20.5,17.6
+74,441,"Steady","Steady Laundry Detergent",37886750102,0.5700,13.7,10.6,true,false,6,8,13.1,15.7,4.37
+74,442,"Steady","Steady Mint Mouthwash",76703603863,2.2400,21.1,20.1,false,false,8,6,8.4,14.0,7.08
+80,443,"Red Wing","Red Wing 60 Watt Lightbulb",95565938353,1.3300,20.6,18.6,true,false,29,10,6.18,17.3,17.2
+56,444,"Red Wing","Red Wing Plastic Forks",13620558381,2.5900,20.1,18.1,false,false,9,10,20.4,22.5,7.8
+56,445,"Red Wing","Red Wing Plastic Spoons",91720659136,3.4600,16.5,15.5,true,false,17,11,21.0,8.96,13.9
+56,446,"Red Wing","Red Wing Plastic Knives",69013045430,3.7500,11.0,9.0,false,false,31,10,13.4,4.14,20.6
+101,447,"Red Wing","Red Wing C-Size Batteries",81231741309,2.8800,19.4,17.3,true,false,15,6,12.8,18.0,13.0
+80,448,"Red Wing","Red Wing 100 Watt Lightbulb",27761893868,1.5400,15.8,14.8,false,false,23,7,13.4,4.44,19.2
+101,449,"Red Wing","Red Wing AAA-Size Batteries",20435397028,3.6900,10.3,8.3,true,false,9,10,5.9,19.6,5.93
+55,450,"Red Wing","Red Wing Paper Plates",26203315854,3.3700,18.9,17.8,false,false,18,10,10.2,3.56,13.2
+55,451,"Red Wing","Red Wing Paper Cups",78114585280,1.7800,13.4,11.3,true,false,25,11,22.7,18.7,19.9
+80,452,"Red Wing","Red Wing 75 Watt Lightbulb",53120270371,2.4800,11.1,8.1,false,false,5,11,3.26,5.32,5.54
+22,453,"Red Wing","Red Wing Toilet Bowl Cleaner",74269306063,2.9200,19.4,18.3,true,false,24,6,22.6,19.2,17.9
+22,454,"Red Wing","Red Wing Counter Cleaner",18512757420,0.9300,14.0,12.0,false,false,3,6,15.0,14.3,4.68
+22,455,"Red Wing","Red Wing Glass Cleaner",64571403861,1.6800,10.4,7.39,true,false,11,7,15.6,20.7,10.8
+80,456,"Red Wing","Red Wing 25 Watt Lightbulb",68052621483,2.6700,13.7,12.6,true,false,30,11,9.73,6.56,19.8
+101,457,"Red Wing","Red Wing AA-Size Batteries",27677189707,2.2600,13.2,11.1,true,false,10,11,7.51,9.86,9.95
+101,458,"Red Wing","Red Wing D-Size Batteries",66494043469,1.5000,16.8,14.7,true,false,10,9,17.4,20.1,8.7
+18,459,"Red Wing","Red Wing Paper Towels",85356377959,0.6400,16.4,15.3,false,false,31,12,15.2,3.49,18.8
+18,460,"Red Wing","Red Wing Soft Napkins",93410997986,1.6100,13.7,11.6,true,false,21,11,19.8,5.52,14.6
+18,461,"Red Wing","Red Wing Scented Tissue",81511098742,2.7200,16.1,13.1,false,false,23,8,9.86,15.6,13.9
+18,462,"Red Wing","Red Wing Toilet Paper",58803485035,2.1200,15.6,14.6,true,false,2,8,7.65,18.9,4.12
+18,463,"Red Wing","Red Wing Tissues",16141352057,1.2500,8.28,5.27,true,false,18,12,11.9,22.9,11.4
+18,464,"Red Wing","Red Wing Scented Toilet Tissue",41454463601,3.5600,15.6,14.6,true,false,20,9,7.28,21.1,14.1
+20,465,"Red Wing","Red Wing Room Freshener",34127966761,2.9500,15.2,13.1,false,false,35,9,5.06,4.5,4.26
+40,466,"Red Wing","Red Wing Frying Pan",39895885586,2.6300,8.79,5.78,false,false,23,8,4.36,18.5,16.1
+87,467,"Red Wing","Red Wing Copper Cleaner",91807155013,3.8100,8.33,7.32,true,false,3,7,22.1,21.8,6.3
+47,468,"Red Wing","Red Wing Bees Wax Candles",66812840104,1.7400,10.6,9.6,true,false,5,14,12.1,12.0,5.58
+87,469,"Red Wing","Red Wing Silver Cleaner",87961875796,1.2900,8.03,5.02,true,false,30,13,16.7,14.0,21.4
+86,470,"Red Wing","Red Wing Copper Pot Scrubber",32205327153,2.9000,7.57,5.57,true,false,15,7,14.5,17.3,11.5
+85,471,"Red Wing","Red Wing Economy Toilet Brush",22592129111,0.8300,9.93,7.93,false,false,17,14,4.55,7.5,10.8
+41,472,"Red Wing","Red Wing Scissors",57052045464,0.8200,9.47,8.47,true,false,10,12,22.3,10.8,20.9
+42,473,"Red Wing","Red Wing Large Sponge",82774483561,0.7300,14.0,12.0,false,false,24,12,21.8,4.17,15.0
+41,474,"Red Wing","Red Wing Screw Driver",55493467450,3.5200,21.3,19.2,true,false,26,10,17.1,22.4,17.7
+65,475,"Quick","Quick Extra Lean Hamburger",74355801939,2.6100,20.9,17.8,true,false,6,9,14.9,5.75,7.85
+65,476,"Quick","Quick Seasoned Hamburger",82410421967,3.6400,15.6,14.6,true,false,22,12,12.1,11.2,13.8
+104,477,"Dollar","Dollar Monthly Sports Magazine",70510522723,0.8600,19.1,18.1,true,false,7,12,20.4,15.0,14.6
+108,478,"Dollar","Dollar Monthly Auto Magazine",47802909016,2.9100,10.8,8.8,false,false,6,13,19.2,12.2,12.2
+107,479,"Dollar","Dollar Monthly Computer Magazine",71238645911,2.1500,16.4,14.3,true,false,14,13,4.95,8.2,15.5
+105,480,"Dollar","Dollar Monthly Home Magazine",41670928597,1.6900,13.2,12.1,false,false,13,13,9.06,13.5,16.5
+106,481,"Dollar","Dollar Monthly Fashion Magazine",23127390742,2.8500,14.1,12.1,true,false,33,12,5.31,5.9,6.13
+61,482,"Tell Tale","Tell Tale Summer Squash",28895309567,0.7300,18.7,16.7,false,true,25,14,6.92,6.21,19.6
+61,483,"Tell Tale","Tell Tale Corn on the Cob",80806578993,1.9400,13.0,10.0,true,false,3,10,20.8,21.6,5.86
+61,484,"Tell Tale","Tell Tale Asparagus",55812264084,3.6400,8.35,6.35,false,true,4,12,7.56,4.92,14.2
+61,485,"Tell Tale","Tell Tale Sweet Peas",76961299777,2.1900,14.5,12.5,false,true,23,11,19.6,21.1,21.6
+61,486,"Tell Tale","Tell Tale New Potatos",21204751133,1.1400,14.8,12.8,true,true,18,14,13.3,12.5,8.47
+61,487,"Tell Tale","Tell Tale Beets",11591553092,2.6000,9.09,6.09,false,true,5,7,18.5,20.3,19.5
+61,488,"Tell Tale","Tell Tale Prepared Salad",15072770714,2.5900,9.77,7.77,true,true,20,10,14.4,8.41,16.1
+61,489,"Tell Tale","Tell Tale Onions",40795208811,2.4100,16.4,13.3,true,true,12,12,8.95,10.2,8.48
+61,490,"Tell Tale","Tell Tale Green Pepper",44229219555,1.6500,13.4,11.3,false,true,24,6,7.33,13.6,21.2
+61,491,"Tell Tale","Tell Tale Shitake Mushrooms",63091554045,3.5100,19.6,18.6,true,false,14,13,20.7,12.1,13.7
+61,492,"Tell Tale","Tell Tale Lettuce",71146174073,1.7700,20.3,19.2,false,false,12,11,15.5,6.91,20.3
+61,493,"Tell Tale","Tell Tale Elephant Garlic",59246274828,2.6400,7.43,5.42,true,false,23,9,11.1,21.8,3.83
+61,494,"Tell Tale","Tell Tale Red Pepper",36538661122,1.9300,9.02,6.02,true,false,27,12,11.7,12.2,15.2
+61,495,"Tell Tale","Tell Tale Garlic",59974398016,1.1700,9.22,6.22,true,false,8,8,7.01,19.2,19.4
+61,496,"Tell Tale","Tell Tale Potatos",96504550576,0.8400,11.2,10.1,false,false,31,11,9.79,6.34,20.6
+61,497,"Tell Tale","Tell Tale Cauliflower",23080183863,1.8700,14.7,13.6,true,false,10,9,7.83,6.85,8.93
+61,498,"Tell Tale","Tell Tale Tomatos",28848102688,2.5500,11.9,10.8,true,true,28,12,4.0,3.58,21.7
+61,499,"Tell Tale","Tell Tale Mushrooms",69542331099,2.9600,13.9,11.8,true,false,28,12,16.8,5.12,20.4
+61,500,"Tell Tale","Tell Tale Baby Onion",44548016190,2.6600,17.0,14.0,false,true,11,12,22.6,14.4,21.4
+61,501,"Tell Tale","Tell Tale Dried Mushrooms",65697051882,1.4500,17.1,15.1,true,true,13,10,3.23,20.0,16.1
+61,502,"Tell Tale","Tell Tale Fresh Lima Beans",99940503239,3.1700,20.1,18.1,true,false,24,12,10.6,9.42,12.0
+61,503,"Tell Tale","Tell Tale Squash",90327305197,1.8600,21.2,20.2,false,true,31,7,19.8,13.1,11.1
+99,504,"Tell Tale","Tell Tale Limes",69906392693,1.8400,13.6,11.6,true,true,28,10,14.7,7.32,20.3
+67,505,"Tell Tale","Tell Tale Firm Tofu",29530960917,1.6700,18.1,16.1,false,false,30,7,17.5,19.0,18.3
+1,506,"Tell Tale","Tell Tale Almonds",92249944806,3.6800,11.5,8.5,true,false,3,8,15.2,6.59,12.2
+99,507,"Tell Tale","Tell Tale Macintosh Apples",87210149168,2.5300,20.4,18.3,true,false,14,9,22.3,3.04,13.8
+99,508,"Tell Tale","Tell Tale Golden Delcious Apples",82579680085,3.7900,13.9,11.8,true,true,22,11,20.2,19.5,22.8
+99,509,"Tell Tale","Tell Tale Red Delcious Apples",46777650713,1.9000,20.9,18.8,true,false,8,14,9.46,12.5,14.8
+99,510,"Tell Tale","Tell Tale Lemons",47972167134,0.6100,9.33,7.32,true,false,27,7,3.69,20.9,15.4
+99,511,"Tell Tale","Tell Tale Fancy Plums",71407904028,0.6800,21.0,19.0,false,true,31,6,3.31,22.0,16.1
+99,512,"Tell Tale","Tell Tale Plums",17938056588,2.7400,9.85,7.85,false,false,10,7,19.7,7.08,6.5
+99,513,"Tell Tale","Tell Tale Peaches",34513689875,0.5800,11.0,10.0,true,false,31,13,6.16,17.4,20.5
+61,514,"Tell Tale","Tell Tale Broccoli",40281608700,1.8100,20.9,17.8,true,true,35,11,6.63,8.38,9.31
+99,515,"Tell Tale","Tell Tale Mandarin Oranges",92192878127,1.9100,20.7,19.7,false,true,17,9,7.86,19.7,13.7
+1,516,"Tell Tale","Tell Tale Mixed Nuts",67198563218,1.8500,21.8,19.7,true,false,6,13,6.94,9.01,15.2
+1,517,"Tell Tale","Tell Tale Canned Peanuts",77130557894,3.4000,7.87,6.86,false,false,26,5,11.6,9.5,3.9
+61,518,"Tell Tale","Tell Tale Sweet Onion",21374009251,1.3600,13.5,11.5,false,true,19,7,12.6,16.8,8.99
+99,519,"Tell Tale","Tell Tale Cantelope",11760811209,3.8200,17.1,15.1,true,false,10,11,10.5,8.46,22.2
+99,520,"Tell Tale","Tell Tale Honey Dew",81339898705,2.8000,7.28,6.28,true,false,21,8,13.8,12.5,17.2
+99,521,"Tell Tale","Tell Tale Fuji Apples",40964466929,3.6300,8.48,6.47,true,false,17,7,20.9,18.4,11.2
+1,522,"Tell Tale","Tell Tale Walnuts",13683450818,1.6300,15.6,13.6,true,true,6,7,7.04,15.8,10.9
+99,523,"Tell Tale","Tell Tale Oranges",98643655180,1.7200,11.3,9.3,false,true,27,12,7.76,10.2,21.6
+99,524,"Tell Tale","Tell Tale Tangerines",40600405335,1.7400,13.8,11.8,false,false,16,13,4.57,13.0,22.6
+1,525,"Tell Tale","Tell Tale Party Nuts",94798375964,2.8500,11.3,9.3,false,true,30,14,12.8,11.9,7.77
+24,526,"Kiwi","Kiwi Lox",36971591114,2.2500,18.4,16.3,true,true,31,5,20.7,18.3,17.4
+2,527,"Kiwi","Kiwi Scallops",60407328009,2.3800,11.9,8.89,false,false,15,13,8.75,9.24,3.87
+45,528,"Fast","Fast Low Fat Cookies",96937480568,0.9600,6.59,4.59,true,true,8,13,16.0,9.16,7.4
+12,529,"Fast","Fast BBQ Potato Chips",23513113856,2.1900,17.7,15.7,false,true,9,9,14.5,6.88,8.27
+12,530,"Fast","Fast Corn Chips",29281032681,3.7600,9.41,6.4,true,false,24,11,3.38,7.67,22.7
+12,531,"Fast","Fast Low Fat BBQ Chips",81192302107,0.6000,16.9,14.8,false,true,21,8,3.6,5.14,19.8
+45,532,"Fast","Fast Sugar Cookies",56197987198,3.8700,21.7,18.7,true,false,15,14,16.8,9.92,20.6
+45,533,"Fast","Fast Chocolate Chip Cookies",77347022891,2.4200,20.1,17.1,false,false,12,10,9.95,20.0,15.4
+45,534,"Fast","Fast Fudge Cookies",21590474247,3.3800,12.6,10.6,false,true,26,5,4.69,5.39,9.71
+45,535,"Fast","Fast Fudge Brownies",90496563315,2.8400,7.92,6.92,true,true,4,12,21.5,3.1,15.5
+12,536,"Fast","Fast Potato Chips",70075650811,1.8200,21.8,20.7,true,false,20,10,3.81,13.2,3.1
+45,537,"Fast","Fast Lemon Cookies",29700219035,2.6500,20.7,18.7,true,false,3,11,19.3,8.98,22.8
+45,538,"Fast","Fast Graham Crackers",92419202923,0.9300,20.9,18.8,true,true,13,6,4.29,12.6,14.5
+82,539,"Fast","Fast Cheese Crackers",87379407286,3.7400,8.42,6.42,true,false,21,14,4.0,13.2,17.8
+54,540,"Fast","Fast Buttered Popcorn",29336157441,0.5100,12.3,11.3,true,true,26,14,14.5,13.7,8.48
+54,541,"Fast","Fast No Salt Popcorn",83534128069,1.8800,13.0,10.0,true,false,13,9,21.4,20.7,17.6
+54,542,"Fast","Fast Low Fat Popcorn",60826514363,1.5100,6.84,3.84,false,true,35,12,3.07,5.03,16.4
+83,543,"Fast","Fast Salsa Dip",18164381384,1.6400,8.05,6.05,false,false,30,6,10.0,22.0,15.4
+83,544,"Fast","Fast Avocado Dip",85673232674,2.9500,16.1,14.1,true,false,12,9,20.7,21.7,9.83
+46,545,"Fast","Fast Salted Pretzels",78346735835,1.4500,19.1,16.1,true,true,35,8,18.2,5.58,3.27
+83,546,"Fast","Fast Cheese Dip",84114654660,2.7800,14.7,12.6,false,false,30,9,20.6,4.52,6.4
+83,547,"Fast","Fast Fondue Mix",69928054213,2.3100,9.02,7.02,true,false,15,10,14.5,19.9,12.5
+84,548,"Fast","Fast Mini Donuts",44933739304,2.9000,8.39,5.39,true,true,34,13,22.5,15.7,14.6
+17,549,"Fast","Fast Beef Jerky",66082774996,1.6800,10.5,9.5,true,false,34,10,13.3,19.4,8.37
+84,550,"Fast","Fast Chocolate Donuts",76424096226,2.4000,10.7,8.69,false,false,30,13,7.09,10.8,15.1
+12,551,"Fast","Fast Low Fat Chips",66810898184,3.2100,7.87,5.86,true,false,6,12,13.5,10.9,20.4
+82,552,"Fast","Fast Sesame Crackers",70292115807,0.5500,18.6,16.6,true,true,25,11,10.9,9.83,18.8
+45,553,"Fast","Fast Frosted Cookies",18699643015,1.9100,7.41,5.4,false,false,24,11,17.3,20.4,11.7
+109,554,"Fast","Fast Dried Apples",57516496777,3.1400,13.1,12.1,true,false,34,6,17.3,14.4,6.85
+109,555,"Fast","Fast Apple Fruit Roll",76378831267,2.8800,19.3,18.2,true,false,18,14,10.6,12.9,19.2
+109,556,"Fast","Fast Strawberry Fruit Roll",18335581421,3.2500,11.3,8.3,true,false,24,10,3.95,17.1,3.67
+109,557,"Fast","Fast Raspberry Fruit Roll",72533552050,1.3600,18.4,15.3,false,false,18,10,20.8,4.53,20.8
+109,558,"Fast","Fast Grape Fruit Roll",49825938344,0.8000,15.0,13.0,false,true,21,13,16.0,6.79,8.77
+109,559,"Fast","Fast Dried Dates",97163805365,3.7800,19.9,17.8,false,true,20,7,20.7,17.3,6.64
+109,560,"Fast","Fast Raisins",43693957924,1.2000,15.0,12.0,false,true,5,12,6.55,7.06,5.45
+109,561,"Fast","Fast Golden Raisins",36367461085,0.7700,15.7,13.6,true,true,9,9,12.4,20.7,4.61
+109,562,"Fast","Fast Dried Apricots",42135379910,0.5900,17.8,15.7,false,false,21,10,13.8,5.58,20.8
+84,563,"Fast","Fast Frosted Donuts",58927478194,1.6800,19.9,18.8,false,true,31,9,6.76,7.11,19.5
+36,564,"Atomic","Atomic Tasty Candy Bar",10031033158,0.6600,17.9,15.8,true,true,9,13,7.18,8.35,17.0
+36,565,"Atomic","Atomic Mint Chocolate Bar",55082198977,0.9000,10.9,9.89,true,false,9,11,12.9,22.5,13.6
+36,566,"Atomic","Atomic Malted Milk Balls",65423520207,1.7800,13.9,10.8,false,false,20,13,20.3,11.9,9.61
+36,567,"Atomic","Atomic Semi-Sweet Chocolate Bar",55810322165,2.3500,15.9,13.8,true,true,35,13,4.46,5.77,13.2
+37,568,"Atomic","Atomic Bubble Gum",59291539788,3.3300,11.2,8.19,false,true,18,13,11.5,6.82,11.6
+38,569,"Atomic","Atomic Spicy Mints",18916108012,3.1600,7.79,5.78,true,true,33,13,16.9,3.52,17.0
+38,570,"Atomic","Atomic Mints",57732961773,2.1600,17.5,15.5,false,true,32,9,19.6,21.1,5.86
+36,571,"Atomic","Atomic White Chocolate Bar",65114583373,1.2500,10.4,8.39,false,false,31,8,6.66,17.6,7.45
+5,572,"Shady Lake","Shady Lake Ravioli",73169203400,2.5100,8.94,5.93,false,false,11,9,9.85,22.2,19.8
+5,573,"Shady Lake","Shady Lake Manicotti",61269304156,3.3900,19.7,18.7,true,true,9,10,4.48,3.23,15.8
+5,574,"Shady Lake","Shady Lake Spaghetti",38561690449,2.6700,19.0,17.0,true,false,29,11,13.4,3.46,12.9
+57,575,"Shady Lake","Shady Lake Thai Rice",85899557471,2.8100,11.0,8.0,true,true,26,7,7.64,16.5,9.69
+57,576,"Shady Lake","Shady Lake Rice Medly",32429710030,0.7000,18.6,16.6,true,true,11,12,16.2,8.5,9.2
+43,577,"Walrus","Walrus Imported Beer",25103213191,2.6200,6.11,3.11,true,false,31,9,15.8,20.1,17.5
+44,578,"Walrus","Walrus Light Wine",30871132016,2.2900,9.38,8.38,true,false,9,8,10.5,21.4,6.5
+44,579,"Walrus","Walrus Chardonnay Wine",82782401442,0.8300,15.7,13.6,false,false,35,9,22.5,19.6,19.5
+44,580,"Walrus","Walrus Chablis Wine",21200867295,2.4100,19.9,17.8,false,false,29,6,21.4,16.6,18.2
+44,581,"Walrus","Walrus Merlot Wine",42349902987,2.8400,19.4,17.3,true,false,6,14,10.8,9.99,3.24
+44,582,"Walrus","Walrus Chardonnay",76593354344,3.8000,9.9,6.89,true,false,32,6,22.7,8.21,16.2
+44,583,"Walrus","Walrus White Zinfandel Wine",66980156302,1.6100,19.4,17.3,true,false,18,7,11.9,3.33,13.2
+43,584,"Walrus","Walrus Light Beer",70461373925,2.5900,17.6,15.6,false,false,31,6,21.3,16.5,18.8
+27,585,"Colony","Colony Pumpernickel Bread",30085942149,2.1800,8.08,5.07,false,true,21,7,13.3,14.7,11.8
+27,586,"Colony","Colony White Bread",68902795910,1.4200,18.9,16.8,true,false,2,8,17.8,21.3,10.3
+27,587,"Colony","Colony Rye Bread",87765130400,3.2700,7.71,5.71,false,false,18,6,4.43,20.8,18.2
+26,588,"Colony","Colony English Muffins",95819750428,1.5400,7.55,5.55,false,false,35,8,14.4,4.41,15.1
+26,589,"Colony","Colony Cranberry Muffins",72702810168,2.6500,16.4,15.3,true,false,35,12,18.1,11.7,12.1
+26,590,"Colony","Colony Muffins",49995196461,1.9300,6.14,3.13,false,false,33,8,19.2,19.0,17.2
+25,591,"Colony","Colony Bagels",97333063483,1.1700,8.72,6.72,false,true,13,8,12.9,15.0,20.8
+26,592,"Colony","Colony Blueberry Muffins",43863216042,2.4800,12.7,11.6,true,false,30,6,3.16,17.8,21.4
+27,593,"Colony","Colony Wheat Bread",36536719202,1.8700,12.0,10.0,true,false,26,13,22.1,12.4,16.0
+49,594,"Landslide","Landslide Sesame Oil",42304638028,0.5800,7.27,4.26,true,false,4,10,9.48,22.4,9.45
+53,595,"Landslide","Landslide Chunky Peanut Butter",94215907454,1.4200,7.95,4.94,true,false,31,10,15.5,4.96,3.61
+51,596,"Landslide","Landslide Hot Chocolate",69221592545,0.6400,10.4,8.39,false,true,28,13,21.4,13.2,9.7
+50,597,"Landslide","Landslide Brown Sugar",90370628237,2.8000,19.3,16.2,true,true,19,12,20.3,8.61,21.1
+50,598,"Landslide","Landslide White Sugar",65592778325,1.5200,10.3,9.3,true,false,25,8,8.2,14.9,10.8
+90,599,"Landslide","Landslide French Roast Coffee",55979580283,2.3200,9.79,7.78,true,false,21,9,5.55,9.6,10.4
+90,600,"Landslide","Landslide Decaf Coffee",59460797905,2.3100,18.9,16.8,true,false,3,9,11.1,5.79,12.5
+90,601,"Landslide","Landslide Regular Coffee",85183236002,2.1300,14.9,12.8,false,false,9,9,9.02,8.84,3.85
+49,602,"Landslide","Landslide Vegetable Oil",57902219891,2.1400,15.9,13.8,true,false,3,7,12.1,20.0,18.5
+49,603,"Landslide","Landslide Corn Oil",76764554381,1.2300,16.5,14.5,true,true,19,10,8.1,8.11,15.2
+48,604,"Landslide","Landslide Tomato Sauce",84819174408,1.2500,9.48,6.47,false,false,27,10,6.6,5.74,16.7
+49,605,"Landslide","Landslide Canola Oil",72919275164,2.3600,21.2,20.2,true,false,31,10,15.9,3.49,4.93
+33,606,"Landslide","Landslide Grape Preserves",50211661458,2.6500,11.3,9.3,false,false,20,9,9.31,21.9,17.3
+90,607,"Landslide","Landslide Columbian Coffee",62430357336,2.7800,13.3,10.3,false,false,26,9,13.1,22.4,8.62
+31,608,"Landslide","Landslide Strawberry Jelly",32862640023,0.6800,10.2,8.19,true,false,25,13,15.8,16.6,9.61
+4,609,"Landslide","Landslide Pepper",25536143183,2.5900,11.3,9.3,false,true,2,14,4.08,15.8,13.6
+33,610,"Landslide","Landslide Low Fat Apple Butter",31304062008,2.2700,7.14,5.13,true,true,24,6,13.0,15.8,11.8
+4,611,"Landslide","Landslide Salt",83215331435,0.8200,15.1,13.1,true,false,30,6,15.6,18.8,13.7
+33,612,"Landslide","Landslide Apple Butter",58221016526,2.3800,11.6,10.6,true,false,12,7,22.7,20.1,11.5
+4,613,"Landslide","Landslide Oregano",79370052218,1.8200,21.1,20.1,true,false,20,7,10.8,19.9,13.0
+31,614,"Landslide","Landslide Apple Jelly",23613503575,3.7800,16.7,14.7,true,false,24,13,21.7,8.79,21.2
+32,615,"Landslide","Landslide Grape Jam",69672150015,1.3500,18.4,16.3,false,true,34,6,10.3,15.8,5.11
+32,616,"Landslide","Landslide Apple Jam",73153367638,1.3300,21.9,19.8,true,true,13,11,18.8,8.57,20.9
+32,617,"Landslide","Landslide Strawberry Jam",98875805735,1.1600,13.9,10.8,true,true,30,9,21.2,22.7,7.78
+53,618,"Landslide","Landslide Creamy Peanut Butter",71594789624,1.4000,7.28,6.28,true,true,21,7,17.2,21.1,12.1
+33,619,"Landslide","Landslide Strawberry Preserves",90457124114,2.2500,6.14,5.13,false,false,3,8,14.0,19.1,16.8
+53,620,"Landslide","Landslide Extra Chunky Peanut Butter",98511744141,0.7300,7.8,5.8,true,false,36,12,13.3,7.3,3.26
+33,621,"Landslide","Landslide Apple Preserves",86611844897,1.3900,9.36,7.35,true,false,22,13,4.69,7.69,12.1
+31,622,"Landslide","Landslide Grape Jelly",63904231190,0.8100,6.38,3.38,true,true,28,5,22.3,15.5,4.95
+30,623,"Token","Token Berry Juice",87339968085,1.8000,8.04,7.03,true,false,2,5,11.7,18.1,8.82
+52,624,"Token","Token Mango Drink",33870120644,2.4600,20.4,18.3,true,true,16,12,11.5,8.99,14.9
+52,625,"Token","Token Strawberry Drink",15326582789,1.6100,13.8,10.8,true,false,18,6,10.9,16.5,3.9
+19,626,"Token","Token Cream Soda",21094501614,1.2900,6.73,4.73,false,false,9,14,9.79,12.0,15.3
+19,627,"Token","Token Diet Soda",73005771040,1.7000,7.64,4.63,true,false,31,13,14.4,14.2,10.1
+19,628,"Token","Token Cola",48011456131,1.4000,16.4,14.3,true,false,12,13,16.5,11.5,17.3
+19,629,"Token","Token Diet Cola",69160491824,0.5500,10.0,8.0,false,false,10,12,22.7,4.44,14.3
+30,630,"Token","Token Orange Juice",13403943181,2.8000,11.0,10.0,true,false,33,11,7.34,6.72,9.09
+30,631,"Token","Token Cranberry Juice",93790745139,0.7800,19.7,17.7,true,false,7,8,9.47,3.99,16.3
+30,632,"Token","Token Apple Juice",73369832634,0.8300,20.6,18.6,false,false,1,11,14.0,6.27,11.0
+52,633,"Token","Token Apple Drink",32994400858,0.7400,15.6,13.6,true,false,33,10,20.2,19.3,7.55
+35,634,"Radius","Radius Oatmeal",60594213604,2.5300,13.1,10.1,true,true,12,9,18.8,21.6,5.2
+35,635,"Radius","Radius Corn Puffs",55554417967,1.3800,7.92,5.92,false,true,34,8,15.0,22.6,16.2
+35,636,"Radius","Radius Wheat Puffs",87511168122,2.6400,12.2,9.19,false,true,19,8,10.2,15.4,11.7
+35,637,"Radius","Radius Grits",51709138751,0.8600,8.4,7.39,false,true,2,13,12.0,13.2,22.3
+62,638,"Bravo","Bravo Canned Beets",52903655171,3.1500,6.8,5.8,true,false,22,9,16.5,20.0,19.7
+62,639,"Bravo","Bravo Creamed Corn",76339392066,3.2800,16.2,14.2,false,false,18,14,4.16,13.2,16.1
+62,640,"Bravo","Bravo Canned String Beans",22869544625,2.5900,9.63,7.63,false,true,20,8,3.52,20.8,5.09
+58,641,"Bravo","Bravo Chicken Soup",39445177912,3.9800,18.5,15.5,true,true,11,7,22.3,16.2,16.5
+62,642,"Bravo","Bravo Canned Yams",45213096737,1.6600,7.39,6.38,true,true,21,7,17.1,21.2,11.9
+58,643,"Bravo","Bravo Vegetable Soup",62005195021,1.8400,9.0,6.0,false,false,19,7,7.64,17.2,5.81
+62,644,"Bravo","Bravo Canned Tomatos",37010880112,0.8700,13.4,11.3,false,false,32,10,20.5,3.37,21.3
+58,645,"Bravo","Bravo Noodle Soup",58159915804,3.3200,6.41,5.4,false,false,8,5,5.97,19.8,7.91
+58,646,"Bravo","Bravo Regular Ramen Soup",92403367161,1.2800,6.18,4.17,true,false,1,10,17.2,5.63,9.86
+58,647,"Bravo","Bravo Chicken Noodle Soup",82790169119,2.7400,17.7,15.7,true,false,23,14,15.1,17.5,21.0
+58,648,"Bravo","Bravo Turkey Noodle Soup",62369256615,2.7200,12.5,11.5,true,false,5,11,21.3,4.13,14.5
+58,649,"Bravo","Bravo Beef Soup",21993824839,2.5500,17.2,14.2,false,true,15,14,8.85,8.08,17.4
+62,650,"Bravo","Bravo Canned Peas",84712808728,1.5500,17.5,15.5,true,true,17,6,21.1,8.36,4.22
+58,651,"Bravo","Bravo Chicken Ramen Soup",66987923979,0.8000,15.0,13.0,false,true,19,14,11.0,7.36,4.38
+93,652,"Bravo","Bravo Canned Tuna in Water",98944674134,1.6700,10.7,9.69,true,false,23,14,20.2,16.2,17.6
+93,653,"Bravo","Bravo Canned Tuna in Oil",63142644762,2.7800,9.71,7.71,true,true,28,13,15.7,11.9,17.3
+94,654,"Bravo","Bravo Large Canned Shrimp",64337161183,2.1700,10.8,7.8,false,false,29,7,13.8,16.7,3.85
+95,655,"Bravo","Bravo Fancy Canned Anchovies",87772898077,2.3100,8.33,5.32,false,true,5,11,15.0,8.05,8.9
+96,656,"Bravo","Bravo Fancy Canned Clams",34303050637,3.8500,20.4,17.3,true,false,16,6,8.12,13.6,6.99
+97,657,"Bravo","Bravo Fancy Canned Oysters",50878683924,2.1200,19.8,18.7,false,true,2,6,6.03,14.9,11.5
+98,658,"Bravo","Bravo Fancy Canned Sardines",56646602749,2.6800,6.44,5.44,true,false,28,5,9.18,9.84,12.6
+58,659,"Bravo","Bravo Rice Soup",18557872176,3.2100,15.8,14.8,true,true,1,10,18.6,11.8,19.1
+3,660,"Applause","Applause Canned Mixed Fruit",48180714249,2.8000,6.96,3.96,true,true,2,7,5.24,15.9,3.76
+3,661,"Applause","Applause Canned Peaches",69329749941,2.3400,19.0,17.0,false,false,20,6,9.29,20.4,14.3
+89,662,"Prelude","Prelude Rosy Sunglasses",13573201298,2.3000,21.5,19.5,true,false,29,9,14.2,4.22,5.44
+103,663,"Akron","Akron Eyeglass Screwdriver",93960003256,1.7600,11.4,10.3,true,false,19,11,15.8,4.7,18.4
+102,664,"Akron","Akron City Map",73539090752,1.7400,8.24,6.23,false,false,18,12,19.9,10.0,19.4
+15,665,"Gorilla","Gorilla Low Fat Cottage Cheese",33163658976,1.5700,8.79,6.78,false,false,21,8,20.3,17.8,19.3
+14,666,"Gorilla","Gorilla Low Fat Sour Cream",95882642865,0.8900,14.5,12.5,false,true,19,7,10.1,17.4,16.9
+14,667,"Gorilla","Gorilla Sour Cream",90842847228,2.6600,21.2,20.2,true,false,5,11,15.8,7.02,16.7
+11,668,"Gorilla","Gorilla Jack Cheese",32799597382,3.9300,21.9,18.8,true,false,27,14,19.8,11.7,5.87
+11,669,"Gorilla","Gorilla Muenster Cheese",51878396868,1.8000,19.4,18.3,true,true,3,8,11.5,15.3,18.4
+11,670,"Gorilla","Gorilla String Cheese",29170783162,1.7900,18.2,15.2,true,true,14,6,8.36,13.2,3.16
+11,671,"Gorilla","Gorilla Low Fat String Cheese",76508650183,2.9300,20.8,19.7,true,true,29,7,11.6,17.0,19.2
+11,672,"Gorilla","Gorilla Havarti Cheese",23038802742,3.3400,13.3,10.3,true,true,20,8,16.5,16.8,10.9
+11,673,"Gorilla","Gorilla Head Cheese",15712305903,2.7400,18.2,17.2,false,false,13,7,11.6,19.6,16.3
+11,674,"Gorilla","Gorilla Cheese Spread",21480224728,3.1800,21.1,20.1,true,true,30,9,10.0,7.9,4.79
+11,675,"Gorilla","Gorilla Sharp Cheddar Cheese",97293624281,3.5900,13.1,10.1,true,true,24,13,22.6,16.5,9.17
+11,676,"Gorilla","Gorilla Mild Cheddar Cheese",72299309372,3.2900,8.86,6.85,true,true,5,10,22.0,8.7,14.9
+15,677,"Gorilla","Gorilla Large Curd Cottage Cheese",93448345065,2.9600,8.58,6.57,true,false,16,5,10.1,14.2,7.27
+76,678,"Gorilla","Gorilla 2% Milk",68670495152,3.6900,14.3,13.3,true,false,3,14,21.1,7.13,14.8
+76,679,"Gorilla","Gorilla Buttermilk",59057297110,1.4900,20.3,17.2,true,false,31,12,9.6,6.43,13.0
+76,680,"Gorilla","Gorilla Chocolate Milk",62538514733,1.4700,13.4,10.3,true,false,3,12,15.2,22.6,15.1
+76,681,"Gorilla","Gorilla 1% Milk",22163082957,2.3000,9.43,8.43,true,false,20,11,13.0,5.66,6.42
+76,682,"Gorilla","Gorilla Whole Milk",60979936718,0.6100,10.4,7.39,true,false,14,9,16.2,16.8,21.1
+6,683,"Gorilla","Gorilla Strawberry Yogurt",79842271208,2.1600,8.58,5.57,true,false,20,9,7.16,21.1,6.7
+6,684,"Gorilla","Gorilla Blueberry Yogurt",21799021363,0.6800,9.71,7.71,true,true,18,12,16.7,7.13,13.1
+81,685,"Cutting Edge","Cutting Edge Chicken Hot Dogs",75996991991,1.5300,18.2,17.2,false,true,9,7,20.1,15.7,4.84
+91,686,"Cutting Edge","Cutting Edge Pimento Loaf",53289378285,1.8200,12.5,9.5,true,false,34,10,4.1,5.65,8.5
+91,687,"Cutting Edge","Cutting Edge Beef Bologna",65508074164,0.9700,7.67,4.67,false,false,35,13,3.52,7.82,4.38
+91,688,"Cutting Edge","Cutting Edge Low Fat Bologna",12038226723,2.3700,12.9,11.8,false,true,13,9,22.3,18.4,19.6
+81,689,"Cutting Edge","Cutting Edge Turkey Hot Dogs",94711729884,1.7600,21.9,19.8,true,false,7,12,8.13,12.6,16.2
+81,690,"Cutting Edge","Cutting Edge Foot-Long Hot Dogs",10479648709,1.4400,6.68,5.67,false,true,34,8,22.4,20.7,17.8
+16,691,"Cutting Edge","Cutting Edge Low Fat Cole Slaw",86293048262,2.8500,9.66,6.65,false,false,34,14,19.7,15.7,16.3
+16,692,"Cutting Edge","Cutting Edge Cole Slaw",37396603226,1.5500,6.19,4.19,true,true,23,9,6.78,16.9,14.1
+77,693,"Cutting Edge","Cutting Edge Roasted Chicken",82447769045,1.9900,15.6,14.6,false,true,25,6,14.9,16.7,15.5
+8,694,"Cutting Edge","Cutting Edge Corned Beef",92789090275,2.9500,11.2,9.19,false,true,29,11,5.75,5.61,3.81
+8,695,"Cutting Edge","Cutting Edge Sliced Turkey",83175892233,3.5200,12.9,9.89,true,true,3,13,14.3,12.6,7.68
+8,696,"Cutting Edge","Cutting Edge Sliced Ham",75176396965,0.7200,19.6,17.6,true,true,24,9,20.0,22.2,7.48
+16,697,"Cutting Edge","Cutting Edge Potato Salad",34800965189,1.3300,8.47,7.47,true,true,35,8,5.31,19.5,10.3
+8,698,"Cutting Edge","Cutting Edge Sliced Chicken",73617818951,2.3300,6.86,4.86,true,true,28,9,21.0,18.6,12.6
+66,699,"Jumbo","Jumbo Small Brown Eggs",92480153441,1.4200,21.7,19.7,false,true,4,7,17.8,16.6,17.3
+66,700,"Jumbo","Jumbo Large Brown Eggs",10534773468,2.6800,7.38,5.38,true,false,2,11,17.1,4.83,3.73
+66,701,"Jumbo","Jumbo Small Eggs",88634874224,0.7500,8.94,6.93,false,false,23,11,8.51,5.22,12.6
+66,702,"Jumbo","Jumbo Large Eggs",65927260518,3.8400,21.9,18.8,false,true,29,13,6.16,13.0,5.41
+66,703,"Jumbo","Jumbo Egg Substitute",23265127539,2.9700,7.62,5.61,true,false,3,13,15.5,15.6,9.28
+34,704,"Imagine","Imagine Low Fat Waffles",90773978829,1.6300,8.41,7.4,true,false,1,12,9.62,14.8,15.9
+110,705,"Imagine","Imagine Orange Popsicles",83447481989,0.8800,12.2,9.19,false,false,30,12,11.5,12.0,9.09
+100,706,"Imagine","Imagine Frozen Chicken Breast",89215400815,3.4600,11.0,8.0,false,true,24,9,15.6,22.0,11.7
+29,707,"Imagine","Imagine Frozen Pancakes",51126670241,1.8700,16.7,14.7,true,true,10,8,6.58,14.9,19.3
+63,708,"Imagine","Imagine Low Fat French Fries",26132355332,3.6800,9.79,8.78,true,true,33,9,22.0,5.8,3.43
+64,709,"Imagine","Imagine Frozen Sausage Pizza",47281391024,0.5700,16.9,14.8,true,true,16,5,18.5,15.4,10.5
+34,710,"Imagine","Imagine Blueberry Waffles",81524842381,1.1900,15.3,13.3,true,false,1,10,3.07,22.2,7.96
+63,711,"Imagine","Imagine Fajita French Fries",71911644339,2.8900,13.8,10.8,true,false,3,9,15.9,3.56,7.83
+34,712,"Imagine","Imagine Waffles",75392861962,3.8700,7.2,4.19,true,false,27,10,15.3,11.1,16.7
+64,713,"Imagine","Imagine Frozen Pepperoni Pizza",23800389170,3.4600,11.0,9.0,false,true,25,8,8.89,18.4,4.83
+64,714,"Imagine","Imagine Frozen Cheese Pizza",62617242932,2.7000,16.2,15.2,true,false,33,7,8.67,13.5,15.0
+64,715,"Imagine","Imagine Frozen Mushroom Pizza",81479577422,1.5500,6.88,4.88,true,true,24,13,4.45,17.6,12.3
+34,716,"Imagine","Imagine Apple Cinnamon Waffles",89534197449,1.8100,6.27,5.26,false,false,3,6,12.0,15.6,4.45
+60,717,"Imagine","Imagine Frozen Carrots",77634298205,3.9200,15.2,12.1,true,true,20,6,17.4,12.0,11.0
+10,718,"Imagine","Imagine Turkey TV Dinner",54926684498,2.3200,15.0,13.0,true,true,13,10,8.79,17.8,12.9
+10,719,"Imagine","Imagine Chicken TV Dinner",12264551520,2.4500,14.4,13.3,true,true,32,5,6.51,10.3,22.5
+10,720,"Imagine","Imagine Beef TV Dinner",48794704079,0.8600,9.18,7.18,false,true,10,13,12.7,16.8,16.0
+28,721,"Imagine","Imagine Pancake Mix",41468207240,2.2600,14.8,11.8,true,false,20,11,15.1,10.9,3.57
+110,722,"Imagine","Imagine Grape Popsicles",10648906826,2.8300,20.2,18.2,false,true,27,8,12.6,19.3,13.8
+63,723,"Imagine","Imagine Home Style French Fries",62560176253,0.5100,17.6,14.6,true,true,30,6,22.6,18.3,13.9
+110,724,"Imagine","Imagine Lime Popsicles",37565861344,2.9400,19.3,17.2,false,false,34,6,21.1,10.9,20.3
+9,725,"Imagine","Imagine Ice Cream",58714897036,1.4900,7.33,5.32,false,false,4,14,21.9,14.8,3.48
+9,726,"Imagine","Imagine Ice Cream Sandwich",92958348393,3.2100,8.47,6.47,false,true,5,9,20.1,19.6,10.0
+60,727,"Imagine","Imagine Frozen Cauliflower",83345150351,1.9100,21.0,19.0,true,true,8,8,6.41,20.8,10.4
+60,728,"Imagine","Imagine Frozen Broccoli",86826367974,1.8900,17.1,15.1,false,true,26,10,19.4,6.38,8.54
+60,729,"Imagine","Imagine Frozen Corn",22548806071,1.7200,17.7,15.7,true,true,4,12,17.2,7.89,12.5
+60,730,"Imagine","Imagine Frozen Peas",85267789959,1.7200,9.39,7.39,true,true,30,11,5.75,10.9,17.1
+9,731,"Imagine","Imagine Popsicles",92913083434,3.8100,13.7,10.6,false,false,9,11,9.89,4.82,20.1
+100,732,"Imagine","Imagine Frozen Chicken Thighs",10967703461,0.9100,9.91,7.9,true,false,9,7,21.8,17.0,8.21
+100,733,"Imagine","Imagine Frozen Chicken Wings",89067804217,1.9500,16.6,13.6,true,true,2,11,15.5,3.33,20.5
+110,734,"Imagine","Imagine Lemon Popsicles",66360190510,0.6300,19.1,16.1,false,false,10,14,20.5,7.11,11.5
+78,735,"Consolidated","Consolidated Silky Smooth Hair Conditioner",89795927405,1.4700,6.51,4.51,false,false,13,8,17.4,5.13,15.3
+39,736,"Consolidated","Consolidated Tartar Control Toothpaste",60228210091,2.1300,10.1,7.1,false,false,23,10,15.7,5.38,19.1
+39,737,"Consolidated","Consolidated Whitening Toothpast",52901713252,1.2800,11.6,9.6,true,false,2,8,20.9,4.36,8.75
+39,738,"Consolidated","Consolidated Toothpaste",58669632077,1.8500,7.12,4.11,true,false,34,8,16.7,19.5,5.17
+39,739,"Consolidated","Consolidated Deodorant",51295928359,2.3800,10.7,8.69,true,false,2,6,14.9,19.8,9.03
+79,740,"Consolidated","Consolidated Conditioning Shampoo",26301613450,1.9700,12.5,10.5,false,false,13,12,5.15,8.87,13.4
+79,741,"Consolidated","Consolidated Extra Moisture Shampoo",47450649142,0.7300,16.2,14.2,false,false,4,8,3.44,9.12,17.3
+88,742,"Consolidated","Consolidated Angled Toothbrush",81694100499,2.4700,11.7,10.6,false,false,14,10,19.2,4.35,13.7
+79,743,"Consolidated","Consolidated Apricot Shampoo",72080902457,0.9600,9.42,7.42,true,false,27,8,19.0,15.3,19.3
+70,744,"Consolidated","Consolidated Childrens Aspirin",75562120079,3.9100,13.0,11.0,true,false,1,9,17.3,15.6,3.21
+70,745,"Consolidated","Consolidated Buffered Aspirin",11284558176,0.8500,8.57,6.56,true,false,27,5,13.1,10.8,19.6
+71,746,"Consolidated","Consolidated 200 MG Ibuprofen",74003542065,3.9800,10.0,8.0,true,false,12,7,18.3,9.84,9.2
+72,747,"Consolidated","Consolidated 200 MG Acetominifen",92865876555,1.8300,13.6,11.6,true,false,15,5,16.6,10.0,13.0
+73,748,"Consolidated","Consolidated HCL Nasal Spray",65801325440,2.2000,9.19,6.18,true,false,6,10,12.4,5.32,9.48
+73,749,"Consolidated","Consolidated Dishwasher Detergent",53901426196,2.6700,12.8,10.8,true,false,16,12,10.6,5.58,13.3
+75,750,"Consolidated","Consolidated Multi-Symptom Cold Remedy",31193812489,1.9500,15.5,12.5,false,false,29,10,15.8,4.73,22.3
+75,751,"Consolidated","Consolidated Childrens Cold Remedy",54629549384,2.1900,11.0,9.0,false,false,26,10,11.6,19.9,18.7
+74,752,"Consolidated","Consolidated Laundry Detergent",91159701943,0.8500,14.7,12.6,false,false,29,8,9.9,20.2,22.6
+74,753,"Consolidated","Consolidated Mint Mouthwash",17735335230,1.8900,16.5,13.5,true,false,5,14,20.0,9.24,7.08
+80,754,"Cormorant","Cormorant 60 Watt Lightbulb",23503254055,2.5700,12.0,9.0,true,false,31,10,15.8,4.47,3.51
+56,755,"Cormorant","Cormorant Plastic Forks",75414523482,2.9800,15.6,13.6,true,false,6,12,14.1,4.72,7.36
+56,756,"Cormorant","Cormorant Plastic Spoons",15301037430,2.6800,17.1,16.1,true,false,19,9,19.3,3.7,16.9
+56,757,"Cormorant","Cormorant Plastic Knives",36450073122,1.4700,20.7,18.7,false,false,29,11,17.6,3.95,20.7
+101,758,"Cormorant","Cormorant C-Size Batteries",70693524479,3.1900,17.5,14.5,true,false,19,7,13.3,19.3,16.6
+80,759,"Cormorant","Cormorant 100 Watt Lightbulb",61080326437,1.8900,18.0,16.0,false,false,22,11,14.4,22.7,16.5
+101,760,"Cormorant","Cormorant AAA-Size Batteries",40659413933,1.8700,21.7,18.7,false,false,25,9,12.7,22.9,20.3
+55,761,"Cormorant","Cormorant Paper Plates",90283982157,1.7000,18.1,16.1,false,false,4,7,12.6,13.8,6.53
+55,762,"Cormorant","Cormorant Paper Cups",63002966046,3.7000,21.8,18.7,false,false,36,6,10.9,14.0,10.3
+80,763,"Cormorant","Cormorant 75 Watt Lightbulb",57963170409,2.5500,6.32,5.32,true,false,5,14,12.0,17.4,10.2
+22,764,"Cormorant","Cormorant Toilet Bowl Cleaner",89919920563,3.8100,15.9,13.8,false,false,32,7,8.31,19.0,4.2
+22,765,"Cormorant","Cormorant Counter Cleaner",18998720049,1.9200,19.6,16.6,false,false,36,6,6.6,19.2,8.06
+22,766,"Cormorant","Cormorant Glass Cleaner",20193236470,0.6200,20.1,18.1,true,false,3,9,7.71,22.6,7.91
+80,767,"Cormorant","Cormorant 25 Watt Lightbulb",43628973364,1.4500,16.9,15.8,true,false,2,8,12.5,3.52,8.92
+101,768,"Cormorant","Cormorant AA-Size Batteries",80159125924,2.7600,20.5,18.5,false,false,12,9,10.8,3.77,12.7
+101,769,"Cormorant","Cormorant D-Size Batteries",96734759211,0.5900,21.0,20.0,false,false,9,9,11.9,7.13,12.6
+18,770,"Cormorant","Cormorant Paper Towels",12502678036,1.8300,8.73,6.72,false,false,18,11,10.2,7.38,16.4
+18,771,"Cormorant","Cormorant Soft Napkins",64413947463,1.1200,21.1,20.1,true,false,26,5,10.1,18.2,22.6
+18,772,"Cormorant","Cormorant Scented Tissue",39419632554,1.9400,6.95,4.94,true,false,28,9,11.1,21.7,21.9
+18,773,"Cormorant","Cormorant Toilet Paper",26240512728,0.7100,10.6,7.6,true,false,32,7,9.45,22.0,5.8
+18,774,"Cormorant","Cormorant Tissues",60483964085,2.4500,6.11,4.11,true,false,29,7,5.25,17.2,22.2
+18,775,"Cormorant","Cormorant Scented Toilet Tissue",50870766043,0.9500,20.7,19.7,true,false,7,13,18.2,9.38,22.6
+20,776,"Cormorant","Cormorant Room Freshener",30449853539,3.8900,6.21,4.21,true,false,17,6,3.41,8.36,12.2
+40,777,"Cormorant","Cormorant Frying Pan",80074421763,3.7200,17.7,15.7,true,false,8,11,19.2,3.59,8.64
+87,778,"Cormorant","Cormorant Copper Cleaner",52793405652,2.7200,21.3,19.2,true,false,18,13,17.5,3.84,12.5
+47,779,"Cormorant","Cormorant Bees Wax Candles",47753610014,1.8100,8.09,5.09,false,false,30,11,22.6,3.0,21.5
+87,780,"Cormorant","Cormorant Silver Cleaner",79710360169,2.8400,19.5,18.5,false,false,21,7,18.4,18.2,17.9
+86,781,"Cormorant","Cormorant Copper Pot Scrubber",43908330798,3.9500,7.24,5.23,false,false,31,9,16.7,18.4,21.8
+85,782,"Cormorant","Cormorant Economy Toilet Brush",99983676075,2.3400,9.02,7.02,true,false,36,11,6.86,7.5,6.25
+41,783,"Cormorant","Cormorant Scissors",33419412970,2.4700,12.6,11.6,true,false,10,13,5.15,7.76,10.1
+42,784,"Cormorant","Cormorant Large Sponge",69949565529,0.5200,8.17,7.17,true,false,1,9,20.9,22.9,6.53
+41,785,"Cormorant","Cormorant Screw Driver",86525198817,2.2800,9.63,8.63,true,false,21,10,6.13,21.9,16.0
+65,786,"Footnote","Footnote Extra Lean Hamburger",92293117642,0.9700,13.2,11.1,false,false,25,9,4.42,22.2,19.9
+65,787,"Footnote","Footnote Seasoned Hamburger",54204387068,1.4900,13.0,11.0,false,true,32,11,7.55,7.0,11.7
+104,788,"Excel","Excel Monthly Sports Magazine",29210072159,0.5500,21.0,19.0,false,false,24,8,9.98,21.1,18.6
+108,789,"Excel","Excel Monthly Auto Magazine",50359107851,3.6200,19.7,18.7,true,false,12,7,21.4,22.1,19.0
+107,790,"Excel","Excel Monthly Computer Magazine",84602559208,0.7700,12.4,9.39,true,false,28,8,3.61,19.4,6.37
+105,791,"Excel","Excel Monthly Home Magazine",62304272055,2.1500,8.39,6.39,false,false,16,7,22.9,13.6,17.6
+106,792,"Excel","Excel Monthly Fashion Magazine",41883359551,2.1300,7.1,5.09,true,false,13,6,14.4,14.6,18.0
+61,793,"Ebony","Ebony Summer Squash",91507927775,2.8500,12.0,11.0,false,false,26,11,16.7,11.3,6.94
+61,794,"Ebony","Ebony Corn on the Cob",64226911664,1.2000,7.26,6.26,false,true,21,6,5.14,14.6,10.3
+61,795,"Ebony","Ebony Asparagus",59187116026,0.9600,21.6,20.6,false,true,12,11,20.6,20.3,20.1
+61,796,"Ebony","Ebony Sweet Peas",91143866181,1.3200,6.29,5.28,true,true,28,5,16.5,8.45,16.8
+61,797,"Ebony","Ebony New Potatos",55341836810,2.1900,7.96,4.96,true,true,8,8,5.76,22.1,5.72
+61,798,"Ebony","Ebony Beets",32634223103,2.7100,14.6,11.6,false,true,6,5,9.78,11.7,10.5
+61,799,"Ebony","Ebony Prepared Salad",79972090125,2.8400,20.8,18.7,true,false,30,12,3.16,10.2,22.9
+61,800,"Ebony","Ebony Onions",81383071541,3.2600,11.5,9.5,true,true,16,11,7.37,8.78,22.7
+61,801,"Ebony","Ebony Green Pepper",74056574702,2.6500,10.8,8.8,false,false,21,6,17.6,15.7,22.2
+61,802,"Ebony","Ebony Shitake Mushrooms",79824493527,2.9900,12.4,10.3,true,true,30,13,18.2,6.14,13.6
+61,803,"Ebony","Ebony Lettuce",65637893080,3.5100,21.4,19.3,false,true,18,13,4.15,9.25,5.21
+61,804,"Ebony","Ebony Elephant Garlic",40643578171,2.2100,7.48,4.48,false,false,6,7,6.92,16.3,6.44
+61,805,"Ebony","Ebony Red Pepper",61792613863,2.8800,16.9,13.8,false,true,14,9,14.3,20.5,7.88
+61,806,"Ebony","Ebony Garlic",72133935093,2.6000,8.1,6.1,true,false,32,13,21.1,13.5,7.53
+61,807,"Ebony","Ebony Potatos",62520737051,1.4100,21.1,20.1,false,false,33,13,8.7,6.98,22.8
+61,808,"Ebony","Ebony Cauliflower",30882783532,1.3900,19.4,17.3,true,false,6,9,14.1,18.2,15.2
+61,809,"Ebony","Ebony Tomatos",80507351756,1.2200,18.7,16.7,true,true,4,7,5.12,20.7,14.7
+61,810,"Ebony","Ebony Mushrooms",29324205517,0.5700,21.7,19.7,true,false,22,13,12.5,10.1,10.6
+61,811,"Ebony","Ebony Baby Onion",48186540007,2.9700,17.4,15.3,true,false,26,14,11.3,15.6,11.3
+61,812,"Ebony","Ebony Dried Mushrooms",80143290162,3.3400,20.9,18.8,true,false,28,11,21.0,21.7,17.1
+61,813,"Ebony","Ebony Fresh Lima Beans",44341260790,1.4500,14.3,11.3,true,false,30,8,9.16,21.5,18.6
+61,814,"Ebony","Ebony Squash",21633647084,1.7300,18.7,16.7,false,false,3,9,21.5,21.0,9.13
+99,815,"Ebony","Ebony Limes",68971514105,0.9200,11.7,9.69,false,false,8,7,8.6,17.4,10.7
+67,816,"Ebony","Ebony Firm Tofu",15501666665,2.2900,17.3,15.2,true,true,4,10,21.1,6.01,15.7
+1,817,"Ebony","Ebony Almonds",98175169825,1.6800,17.2,14.2,true,true,8,6,21.0,15.1,15.1
+99,818,"Ebony","Ebony Macintosh Apples",68560245633,1.3500,21.5,19.5,true,false,34,11,15.2,3.51,15.6
+99,819,"Ebony","Ebony Golden Delcious Apples",54373645186,2.7700,18.5,16.5,true,false,10,13,3.95,10.2,20.9
+99,820,"Ebony","Ebony Red Delcious Apples",95477200150,0.7000,7.36,5.36,false,false,2,13,20.4,15.3,11.3
+99,821,"Ebony","Ebony Lemons",50528365969,1.9100,7.65,5.65,true,false,28,14,22.7,10.0,15.6
+99,822,"Ebony","Ebony Fancy Plums",60869687199,1.8600,18.4,17.3,false,true,9,6,7.27,16.6,14.1
+99,823,"Ebony","Ebony Plums",51256489157,3.4300,7.28,6.28,true,true,25,13,13.8,16.1,22.0
+99,824,"Ebony","Ebony Peaches",54737706780,2.1100,19.3,16.2,true,true,9,5,4.02,19.1,20.5
+61,825,"Ebony","Ebony Broccoli",14362275004,2.8300,20.0,18.0,true,true,31,6,8.76,19.4,9.7
+99,826,"Ebony","Ebony Mandarin Oranges",41962087750,1.8300,9.79,7.78,true,false,29,11,9.83,6.84,14.7
+1,827,"Ebony","Ebony Mixed Nuts",60824422240,0.9500,8.29,7.28,true,false,20,6,22.3,10.3,4.66
+1,828,"Ebony","Ebony Canned Peanuts",68879042267,1.2900,19.4,17.3,false,true,32,8,10.9,22.4,3.04
+61,829,"Ebony","Ebony Sweet Onion",56979143023,2.1700,15.6,14.6,false,true,21,7,12.8,20.2,13.6
+99,830,"Ebony","Ebony Cantelope",34271529316,2.4500,8.11,7.1,false,false,9,8,18.8,17.8,12.7
+99,831,"Ebony","Ebony Honey Dew",81609396338,1.5800,8.79,6.78,false,true,2,8,4.84,20.4,6.91
+99,832,"Ebony","Ebony Fuji Apples",28139548897,3.2400,15.0,13.0,false,false,32,13,7.02,11.1,11.8
+1,833,"Ebony","Ebony Walnuts",20813052058,2.3900,18.8,16.7,false,false,25,10,9.68,3.9,5.01
+99,834,"Ebony","Ebony Oranges",26580970883,2.9600,9.96,7.96,false,true,32,5,17.5,10.2,14.6
+99,835,"Ebony","Ebony Tangerines",78492240309,3.4900,13.4,12.3,false,false,17,13,16.1,17.4,7.97
+1,836,"Ebony","Ebony Party Nuts",84476624131,1.1800,20.9,17.8,true,true,8,9,6.3,20.4,7.49
+24,837,"Curlew","Curlew Lox",15625659823,1.6200,8.97,6.97,false,false,19,13,6.38,8.74,10.6
+2,838,"Curlew","Curlew Scallops",49869111180,2.5800,6.87,3.86,false,true,4,10,20.4,17.8,8.06
+45,839,"Nationeel","Nationeel Low Fat Cookies",40255913138,0.6600,14.4,11.3,false,false,2,7,20.6,15.3,5.07
+12,840,"Nationeel","Nationeel BBQ Potato Chips",43737130761,1.3700,17.0,16.0,true,false,34,8,4.38,16.8,11.1
+12,841,"Nationeel","Nationeel Corn Chips",93361698985,1.8500,10.4,7.39,true,true,18,6,12.1,18.9,22.6
+12,842,"Nationeel","Nationeel Low Fat BBQ Chips",42178552746,3.2000,18.9,16.8,true,false,33,10,6.91,4.21,16.8
+45,843,"Nationeel","Nationeel Sugar Cookies",61040887236,2.9400,8.24,6.23,true,false,22,6,14.3,18.1,9.56
+45,844,"Nationeel","Nationeel Chocolate Chip Cookies",69095507264,3.3100,17.1,14.1,true,false,22,10,11.3,20.1,13.6
+45,845,"Nationeel","Nationeel Fudge Cookies",45978567004,1.4200,7.31,5.3,true,true,8,7,16.1,19.8,5.99
+45,846,"Nationeel","Nationeel Fudge Brownies",23270953297,1.7100,16.3,13.2,false,false,31,9,11.8,19.6,5.07
+12,847,"Nationeel","Nationeel Potato Chips",70608820319,3.8400,19.7,17.7,true,false,4,8,11.5,20.1,8.37
+45,848,"Nationeel","Nationeel Lemon Cookies",17138972878,2.2600,13.9,12.8,false,false,23,5,16.4,14.4,7.04
+45,849,"Nationeel","Nationeel Graham Crackers",99812476038,1.6500,8.31,6.31,false,false,31,12,9.02,7.69,8.19
+82,850,"Nationeel","Nationeel Cheese Crackers",15580394864,1.3300,7.17,6.17,false,true,18,6,15.9,20.1,10.4
+54,851,"Nationeel","Nationeel Buttered Popcorn",67491664290,2.5100,9.31,6.31,false,true,7,5,6.93,12.7,19.1
+54,852,"Nationeel","Nationeel No Salt Popcorn",42497349381,0.6900,8.63,6.63,false,true,15,9,16.0,21.8,11.2
+54,853,"Nationeel","Nationeel Low Fat Popcorn",94361411929,3.8800,10.6,8.6,false,true,28,6,5.9,12.0,15.4
+83,854,"Nationeel","Nationeel Salsa Dip",38604863286,1.6000,10.9,7.89,true,false,11,8,17.7,14.5,12.2
+83,855,"Nationeel","Nationeel Avocado Dip",28991665244,2.4100,10.2,8.19,false,true,25,5,16.9,18.0,21.7
+46,856,"Nationeel","Nationeel Salted Pretzels",32472882866,2.3900,15.5,13.5,true,true,9,8,14.3,17.6,17.0
+83,857,"Nationeel","Nationeel Cheese Dip",58195320963,2.2200,11.7,8.69,true,false,9,5,15.8,17.6,17.6
+83,858,"Nationeel","Nationeel Fondue Mix",30914304852,2.2200,6.98,5.98,false,false,5,8,4.22,20.8,20.9
+84,859,"Nationeel","Nationeel Mini Donuts",49776639342,1.3100,16.3,14.2,false,false,16,7,5.3,13.0,22.3
+17,860,"Nationeel","Nationeel Beef Jerky",57831259369,2.3400,17.0,15.0,true,true,31,11,21.2,21.1,18.9
+84,861,"Nationeel","Nationeel Chocolate Donuts",45931360125,2.4500,8.95,6.94,false,false,25,11,4.78,8.6,15.8
+12,862,"Nationeel","Nationeel Low Fat Chips",12006705403,2.7300,9.7,8.69,false,false,29,12,19.4,14.4,7.51
+82,863,"Nationeel","Nationeel Sesame Crackers",35442442297,2.9800,10.8,7.8,true,true,25,14,7.5,4.84,16.5
+45,864,"Nationeel","Nationeel Frosted Cookies",95874724984,1.6300,12.5,10.5,true,true,34,5,6.4,15.2,12.9
+109,865,"Nationeel","Nationeel Dried Apples",88548228144,2.7900,9.63,7.63,true,false,22,11,12.6,6.39,3.2
+109,866,"Nationeel","Nationeel Apple Fruit Roll",94316146969,3.4600,11.2,10.1,false,true,26,14,13.2,16.7,14.5
+109,867,"Nationeel","Nationeel Strawberry Fruit Roll",56227416396,1.8800,12.3,11.3,true,true,23,8,12.5,19.4,8.48
+109,868,"Nationeel","Nationeel Raspberry Fruit Roll",31233101487,3.5800,14.4,12.3,true,false,5,13,15.3,6.52,9.72
+109,869,"Nationeel","Nationeel Grape Fruit Roll",52382137179,2.1200,17.0,15.0,true,false,15,5,9.3,11.4,8.3
+109,870,"Nationeel","Nationeel Dried Dates",86625588536,1.9700,20.0,18.0,true,false,9,12,14.8,11.8,14.2
+109,871,"Nationeel","Nationeel Raisins",40425171256,2.5400,17.1,14.1,true,true,9,12,22.4,5.29,9.54
+109,872,"Nationeel","Nationeel Golden Raisins",43906388878,2.5200,19.2,16.2,false,false,9,5,4.08,19.0,20.7
+109,873,"Nationeel","Nationeel Dried Apricots",69628826975,2.3500,13.4,12.3,false,false,17,6,18.8,18.9,21.9
+84,874,"Nationeel","Nationeel Frosted Donuts",42347810864,1.5900,11.4,10.3,false,false,28,8,20.9,20.1,14.4
+36,875,"Thresher","Thresher Tasty Candy Bar",61210145354,3.4400,17.5,16.5,true,true,26,10,6.35,6.51,11.8
+36,876,"Thresher","Thresher Mint Chocolate Bar",69264765381,1.7100,20.9,17.8,false,true,23,12,15.9,12.5,17.6
+36,877,"Thresher","Thresher Malted Milk Balls",57364866137,1.5800,10.3,8.3,true,false,7,7,22.8,19.8,5.32
+36,878,"Thresher","Thresher Semi-Sweet Chocolate Bar",34657252430,1.8700,18.8,17.7,true,false,4,5,16.5,11.8,9.55
+37,879,"Thresher","Thresher Bubble Gum",58092989325,1.1100,11.7,9.69,true,true,9,11,3.56,8.31,11.1
+38,880,"Thresher","Thresher Spicy Mints",83406100869,3.6500,11.1,8.1,false,false,34,11,10.8,8.53,13.2
+38,881,"Thresher","Thresher Mints",99981734156,1.8100,7.2,5.19,false,false,7,7,10.9,17.1,14.2
+36,882,"Thresher","Thresher White Chocolate Bar",15749652981,2.4900,11.5,9.5,true,true,26,9,5.17,5.5,14.7
+5,883,"Monarch","Monarch Ravioli",67660922408,2.9000,8.2,5.19,true,false,18,10,8.85,22.2,5.2
+5,884,"Monarch","Monarch Manicotti",42666607499,2.6000,13.0,10.0,false,false,22,12,5.3,7.26,15.5
+5,885,"Monarch","Monarch Spaghetti",63815643191,1.3800,13.3,11.3,true,true,35,10,7.64,21.9,19.8
+57,886,"Monarch","Monarch Thai Rice",98059094548,3.1100,8.44,6.43,false,false,7,6,17.1,18.6,13.2
+57,887,"Monarch","Monarch Rice Medly",88445896506,1.8000,13.2,11.1,false,false,24,5,3.7,18.1,21.1
+5,888,"Discover","Discover Ravioli",68024984002,0.8800,8.06,6.06,false,true,5,6,8.42,13.5,14.6
+5,889,"Discover","Discover Manicotti",58628250956,1.6100,16.0,14.0,true,false,7,5,22.4,17.8,16.4
+5,890,"Discover","Discover Spaghetti",31347234845,2.6100,21.7,20.7,true,true,6,10,3.54,5.15,21.5
+57,891,"Discover","Discover Thai Rice",26307439208,2.4700,19.3,17.2,false,false,9,13,12.0,13.0,21.6
+57,892,"Discover","Discover Rice Medly",58264189362,2.7300,14.5,13.5,true,false,27,9,20.6,5.19,20.0
+43,893,"Pearl","Pearl Imported Beer",22462159991,0.9100,11.6,8.6,false,false,33,7,6.52,18.5,20.3
+44,894,"Pearl","Pearl Light Wine",23656676411,0.5700,9.87,6.86,true,false,11,5,15.9,11.7,5.89
+44,895,"Pearl","Pearl Chardonnay Wine",47092413306,0.6500,16.2,15.2,false,false,2,6,7.95,10.0,18.8
+44,896,"Pearl","Pearl Chablis Wine",83622565865,2.6800,10.7,8.69,false,false,31,12,12.0,15.2,20.5
+44,897,"Pearl","Pearl Merlot Wine",10198199152,0.5400,9.01,7.01,false,false,8,11,21.5,8.46,6.07
+44,898,"Pearl","Pearl Chardonnay",94485405087,1.7400,15.4,12.3,false,false,34,12,13.4,6.68,19.0
+44,899,"Pearl","Pearl White Zinfandel Wine",56396674513,1.9200,19.9,17.8,false,false,20,13,17.3,13.6,12.6
+43,900,"Pearl","Pearl Light Beer",31402359604,1.8600,10.3,8.3,false,false,11,5,9.28,11.8,5.64
+27,901,"Fantastic","Fantastic Pumpernickel Bread",52551395297,2.9900,13.5,11.5,true,false,23,13,4.06,13.2,14.6
+27,902,"Fantastic","Fantastic White Bread",86794846653,0.9700,9.8,8.8,true,false,18,8,15.4,18.7,17.7
+27,903,"Fantastic","Fantastic Rye Bread",77181648612,2.5200,21.4,18.3,true,true,4,14,16.1,13.1,8.45
+26,904,"Fantastic","Fantastic English Muffins",56760736107,1.5000,7.94,4.94,true,false,28,6,12.9,15.9,9.44
+26,905,"Fantastic","Fantastic Cranberry Muffins",16385304331,2.3300,20.5,18.5,false,false,25,8,17.2,19.3,4.88
+26,906,"Fantastic","Fantastic Muffins",79104288220,0.6300,11.6,9.6,false,false,26,9,5.1,5.63,14.5
+25,907,"Fantastic","Fantastic Bagels",15043191313,3.4200,6.04,4.03,true,true,27,5,17.1,12.1,10.6
+26,908,"Fantastic","Fantastic Blueberry Muffins",46999941468,0.6900,18.6,16.6,true,true,19,10,12.5,3.32,13.6
+27,909,"Fantastic","Fantastic Wheat Bread",11197912096,1.5500,10.6,8.6,false,true,13,7,13.9,4.15,10.5
+49,910,"BBB Best","BBB Best Sesame Oil",12392428517,1.8400,15.4,14.3,false,true,13,7,6.97,20.0,16.3
+53,911,"BBB Best","BBB Best Chunky Peanut Butter",35828165411,1.9700,6.97,3.96,false,true,10,14,7.18,17.5,13.3
+51,912,"BBB Best","BBB Best Hot Chocolate",72358317971,2.6300,14.5,11.5,true,true,19,13,16.2,7.19,22.8
+50,913,"BBB Best","BBB Best Brown Sugar",88933951258,1.7800,14.3,12.3,true,false,24,11,18.3,3.01,22.3
+50,914,"BBB Best","BBB Best White Sugar",94701870083,2.4600,6.76,3.76,true,true,3,6,13.0,8.32,16.5
+90,915,"BBB Best","BBB Best French Roast Coffee",45396098494,2.8700,17.1,15.1,false,false,34,6,5.87,10.4,12.6
+90,916,"BBB Best","BBB Best Decaf Coffee",20401783585,2.5700,15.2,13.1,true,false,6,6,16.8,14.7,18.2
+90,917,"BBB Best","BBB Best Regular Coffee",41550819277,1.1200,17.2,15.2,false,false,16,11,4.02,21.5,22.6
+49,918,"BBB Best","BBB Best Vegetable Oil",75794270634,2.9700,13.5,11.5,false,true,15,13,17.7,9.12,3.72
+49,919,"BBB Best","BBB Best Corn Oil",66181072592,1.5400,15.5,13.5,true,true,4,7,20.5,16.2,4.95
+48,920,"BBB Best","BBB Best Tomato Sauce",45760160088,0.7300,8.09,6.09,true,false,30,11,3.86,4.84,16.6
+49,921,"BBB Best","BBB Best Canola Oil",95384728312,1.3500,16.1,14.1,false,false,30,13,14.7,13.4,6.04
+33,922,"BBB Best","BBB Best Grape Preserves",68103712201,2.5900,13.2,10.1,false,true,30,13,22.2,6.85,21.3
+90,923,"BBB Best","BBB Best Columbian Coffee",63063916563,1.4400,16.2,14.2,false,false,18,8,8.02,16.2,22.2
+31,924,"BBB Best","BBB Best Strawberry Jelly",35999365448,2.7000,21.2,18.2,false,false,30,5,13.1,15.4,10.7
+4,925,"BBB Best","BBB Best Pepper",90197336077,0.7600,11.4,9.39,false,true,4,5,18.3,12.9,13.0
+33,926,"BBB Best","BBB Best Low Fat Apple Butter",67489722371,0.5600,8.86,6.85,true,true,25,11,19.1,21.9,10.7
+4,927,"BBB Best","BBB Best Salt",24827589392,0.6300,7.72,5.71,false,true,36,9,15.9,19.8,15.4
+33,928,"BBB Best","BBB Best Apple Butter",61357741951,1.6500,9.38,7.38,true,true,33,12,15.1,8.04,21.8
+4,929,"BBB Best","BBB Best Oregano",54031245112,0.5300,12.8,11.8,true,false,28,8,14.7,19.6,10.1
+31,930,"BBB Best","BBB Best Apple Jelly",59799163937,1.4800,7.65,4.65,true,false,5,14,19.2,6.24,8.64
+32,931,"BBB Best","BBB Best Grape Jam",45612563490,1.9000,20.2,17.2,false,false,9,10,3.29,20.7,9.08
+32,932,"BBB Best","BBB Best Apple Jam",20618248581,1.5900,12.2,10.1,false,false,3,14,15.8,9.33,13.4
+32,933,"BBB Best","BBB Best Strawberry Jam",31341258883,3.3800,10.2,9.19,true,true,28,5,19.2,17.3,8.37
+53,934,"BBB Best","BBB Best Creamy Peanut Butter",41682580113,1.1000,12.8,11.8,false,false,20,11,3.14,7.76,9.45
+33,935,"BBB Best","BBB Best Strawberry Preserves",32069382071,2.8000,7.54,4.53,false,true,6,11,19.4,8.78,20.4
+53,936,"BBB Best","BBB Best Extra Chunky Peanut Butter",35550599694,2.7800,6.49,5.48,false,false,23,8,4.29,3.42,17.6
+33,937,"BBB Best","BBB Best Apple Preserves",85175167918,3.6100,21.8,18.7,true,true,25,10,3.3,18.0,12.2
+31,938,"BBB Best","BBB Best Grape Jelly",33992021679,1.6100,17.0,14.0,true,false,32,13,10.6,8.03,5.65
+30,939,"Fabulous","Fabulous Berry Juice",52854356169,0.7000,10.8,8.8,false,false,19,13,3.2,11.2,16.9
+52,940,"Fabulous","Fabulous Mango Drink",84811106324,2.8400,14.5,12.5,false,false,23,11,21.4,11.4,20.8
+52,941,"Fabulous","Fabulous Strawberry Drink",49009076952,3.9500,18.3,16.2,false,false,35,10,10.6,20.6,11.9
+19,942,"Fabulous","Fabulous Cream Soda",79714244008,2.3400,17.7,14.7,false,false,13,13,7.84,6.4,16.4
+19,943,"Fabulous","Fabulous Diet Soda",37052111029,2.4700,18.6,16.6,true,false,1,12,12.4,8.69,11.2
+19,944,"Fabulous","Fabulous Cola",73582263588,0.8800,16.4,15.3,true,false,17,13,19.9,14.0,21.9
+19,945,"Fabulous","Fabulous Diet Cola",66255766749,2.2800,12.3,9.3,false,false,5,12,19.2,8.24,13.2
+30,946,"Fabulous","Fabulous Orange Juice",72023685574,2.8500,6.0,4.0,true,false,2,11,5.4,21.1,10.2
+30,947,"Fabulous","Fabulous Cranberry Juice",57837085127,0.6500,16.0,15.0,true,false,11,8,7.47,18.5,16.9
+30,948,"Fabulous","Fabulous Apple Juice",98940640091,2.9600,16.9,13.8,false,false,34,7,12.0,20.8,11.6
+52,949,"Fabulous","Fabulous Apple Drink",53991805911,2.5100,10.6,8.6,true,false,32,5,18.2,13.7,8.66
+35,950,"Special","Special Oatmeal",64333127140,3.4700,9.56,6.56,false,false,25,8,3.69,15.0,10.8
+35,951,"Special","Special Corn Puffs",43502888083,1.9300,16.1,15.1,true,false,17,14,19.4,19.1,8.19
+35,952,"Special","Special Wheat Puffs",46984105706,2.9100,21.8,19.7,true,false,10,13,21.4,10.8,8.28
+35,953,"Special","Special Grits",96608673930,2.7400,17.0,16.0,true,true,17,13,19.9,8.62,9.15
+62,954,"Just Right","Just Right Canned Beets",45425527691,1.7400,8.66,6.65,true,false,32,6,8.79,9.41,3.67
+62,955,"Just Right","Just Right Creamed Corn",64287862181,3.8300,15.2,13.1,false,false,3,12,15.8,5.78,5.86
+62,956,"Just Right","Just Right Canned String Beans",72342482209,1.2000,10.0,9.0,true,true,13,6,22.0,12.3,19.3
+58,957,"Just Right","Just Right Chicken Soup",60442582964,2.9700,13.5,12.5,true,true,10,11,20.4,10.6,17.6
+62,958,"Just Right","Just Right Canned Yams",37734969258,1.3600,19.7,18.7,true,false,34,6,22.0,14.6,17.6
+58,959,"Just Right","Just Right Vegetable Soup",26051535010,1.5000,17.2,15.2,false,false,2,13,12.0,13.6,17.7
+62,960,"Just Right","Just Right Canned Tomatos",62581687569,2.1500,18.0,16.0,false,true,23,6,6.49,10.6,14.4
+58,961,"Just Right","Just Right Noodle Soup",55255190730,1.3100,9.1,7.1,false,true,35,12,4.49,11.4,21.6
+58,962,"Just Right","Just Right Regular Ramen Soup",61023109555,1.8700,9.31,6.31,true,true,10,7,9.47,15.1,13.2
+58,963,"Just Right","Just Right Chicken Noodle Soup",22934378981,2.4000,20.5,18.5,true,true,6,13,6.68,10.6,9.16
+58,964,"Just Right","Just Right Turkey Noodle Soup",87940064072,1.9900,16.7,14.7,false,false,24,6,19.7,16.1,7.25
+58,965,"Just Right","Just Right Beef Soup",19089099764,1.5300,17.3,16.2,false,true,10,10,6.67,3.18,16.4
+62,966,"Just Right","Just Right Canned Peas",53332551121,2.4900,8.02,5.02,true,false,20,11,11.0,10.5,11.2
+58,967,"Just Right","Just Right Chicken Ramen Soup",43719353079,0.6100,12.3,11.3,true,true,34,11,15.2,4.49,14.2
+93,968,"Just Right","Just Right Canned Tuna in Water",35983529686,1.2800,9.48,8.47,false,true,16,14,11.1,12.3,12.0
+93,969,"Just Right","Just Right Canned Tuna in Oil",85608097910,1.7600,7.43,5.42,false,false,4,13,3.37,8.02,22.0
+94,970,"Just Right","Just Right Large Canned Shrimp",34424951672,3.1100,13.9,12.8,false,true,3,14,6.05,6.26,7.29
+95,971,"Just Right","Just Right Fancy Canned Anchovies",53287286162,2.8500,10.1,7.1,true,true,9,12,8.07,12.9,12.8
+96,972,"Just Right","Just Right Fancy Canned Clams",61341906189,2.2300,7.65,5.65,false,false,6,8,7.93,17.4,15.5
+97,973,"Just Right","Just Right Fancy Canned Oysters",49442006945,1.3400,14.8,12.8,false,true,36,11,4.08,9.35,12.6
+98,974,"Just Right","Just Right Fancy Canned Sardines",26734393239,0.7900,6.89,4.88,true,true,24,6,15.3,15.7,12.0
+58,975,"Just Right","Just Right Rice Soup",74072260260,3.7600,7.12,6.11,false,true,14,7,18.9,12.6,21.3
+3,976,"Big City","Big City Canned Mixed Fruit",20602412819,1.1700,17.8,16.7,true,false,33,6,16.4,11.5,19.7
+3,977,"Big City","Big City Canned Peaches",67893072962,0.7600,11.6,8.6,true,false,26,12,8.07,10.3,16.0
+89,978,"Symphony","Symphony Rosy Sunglasses",73660991787,1.6000,17.4,15.3,true,false,36,7,8.03,4.31,11.1
+103,979,"James Bay","James Bay Eyeglass Screwdriver",35572261214,3.7800,18.3,16.2,false,false,29,8,13.3,22.1,5.88
+102,980,"James Bay","James Bay City Map",10577946305,1.7200,10.1,7.1,true,false,28,9,12.1,19.3,3.45
+15,981,"Even Better","Even Better Low Fat Cottage Cheese",31726981997,1.2700,19.7,17.7,false,false,20,11,19.1,7.8,20.4
+14,982,"Even Better","Even Better Low Fat Sour Cream",65970433354,2.8800,12.3,9.3,false,false,5,14,21.9,9.76,7.17
+14,983,"Even Better","Even Better Sour Cream",56357235312,0.8200,20.3,18.2,false,false,34,9,14.4,18.3,11.5
+11,984,"Even Better","Even Better Jack Cheese",59838452935,0.8100,6.33,4.32,true,true,20,10,19.1,18.8,20.1
+11,985,"Even Better","Even Better Muenster Cheese",85560891032,0.7200,12.0,9.0,true,true,12,11,20.1,6.21,5.26
+11,986,"Even Better","Even Better String Cheese",23160703778,3.5000,14.6,12.6,false,true,21,8,13.9,22.2,8.84
+11,987,"Even Better","Even Better Low Fat String Cheese",42023038268,2.5900,18.6,16.6,false,false,15,13,4.16,4.98,9.5
+11,988,"Even Better","Even Better Havarti Cheese",50077658295,3.6100,6.94,3.94,true,false,11,11,8.48,7.78,7.51
+11,989,"Even Better","Even Better Head Cheese",38177759051,0.8400,13.1,10.1,true,false,18,13,10.4,9.59,17.4
+11,990,"Even Better","Even Better Cheese Spread",15470145344,3.1200,7.91,6.9,true,false,13,9,18.0,22.9,13.3
+11,991,"Even Better","Even Better Sharp Cheddar Cheese",38905882239,3.2500,17.2,16.2,true,false,15,12,17.3,10.5,22.3
+11,992,"Even Better","Even Better Mild Cheddar Cheese",99338164925,1.7900,8.89,6.89,false,false,7,11,16.3,5.74,14.3
+15,993,"Even Better","Even Better Large Curd Cottage Cheese",92011668086,3.9500,15.9,13.8,true,true,7,12,4.21,12.0,3.99
+76,994,"Even Better","Even Better 2% Milk",62660415768,0.7900,15.7,12.6,false,false,6,7,6.54,16.7,18.4
+76,995,"Even Better","Even Better Buttermilk",24571685194,1.1500,21.7,19.7,false,false,35,5,15.0,16.0,16.5
+76,996,"Even Better","Even Better Chocolate Milk",89577370285,0.8500,14.8,12.8,true,false,6,5,20.6,12.2,18.7
+76,997,"Even Better","Even Better 1% Milk",20726405978,3.2900,21.8,18.7,true,false,23,14,13.1,7.18,6.57
+76,998,"Even Better","Even Better Whole Milk",54969857335,1.2500,8.02,6.02,false,false,20,11,21.7,5.95,6.29
+6,999,"Even Better","Even Better Strawberry Yogurt",45356659293,2.7100,17.1,15.1,true,true,26,11,7.42,22.1,8.43
+6,1000,"Even Better","Even Better Blueberry Yogurt",48837876915,2.6900,7.42,5.42,true,false,33,13,9.23,15.0,3.37
+81,1001,"American","American Chicken Hot Dogs",74560315012,2.5200,19.9,18.8,false,true,13,13,14.5,11.7,8.82
+91,1002,"American","American Pimento Loaf",47279298901,2.7600,7.49,6.48,true,true,33,12,22.8,15.6,9.61
+91,1003,"American","American Beef Bologna",31022462248,0.7800,14.2,11.1,true,false,19,13,16.8,10.7,16.9
+91,1004,"American","American Low Fat Bologna",39077082276,2.8700,15.8,13.8,true,false,5,8,17.2,12.2,13.2
+81,1005,"American","American Turkey Hot Dogs",27177183032,2.7400,21.9,18.8,true,false,9,13,22.3,9.73,15.6
+81,1006,"American","American Foot-Long Hot Dogs",94469569325,2.1400,8.4,5.39,false,false,29,9,8.49,6.85,16.7
+16,1007,"American","American Low Fat Cole Slaw",27905306220,2.2700,7.26,5.26,false,true,5,7,5.29,4.83,21.4
+16,1008,"American","American Cole Slaw",64435458779,0.8900,19.9,17.8,false,false,3,11,19.2,4.86,4.39
+77,1009,"American","American Roasted Chicken",81011092066,2.9700,12.3,10.3,true,false,33,7,4.08,4.62,16.1
+8,1010,"American","American Corned Beef",86779010891,2.6500,7.19,6.19,true,true,10,12,8.61,11.1,14.6
+8,1011,"American","American Sliced Turkey",48690280318,3.1700,14.8,13.8,false,true,13,8,7.35,17.5,11.6
+8,1012,"American","American Sliced Ham",11010876297,2.7600,6.81,3.8,false,true,7,12,19.8,6.15,16.0
+16,1013,"American","American Potato Salad",32159911990,1.5500,20.7,18.7,true,true,4,7,3.31,14.1,10.9
+8,1014,"American","American Sliced Chicken",66403363347,0.5900,7.32,5.32,true,false,24,10,7.19,4.58,12.0
+66,1015,"National","National Small Brown Eggs",56790165305,2.1900,18.0,17.0,true,true,11,9,3.48,5.61,3.04
+66,1016,"National","National Large Brown Eggs",36369252800,1.1700,17.0,15.0,false,true,34,10,8.34,20.2,20.2
+66,1017,"National","National Small Eggs",85993821024,2.8900,21.3,19.2,false,true,23,10,12.6,3.04,18.2
+66,1018,"National","National Large Eggs",58712804913,0.9300,16.6,14.6,false,true,8,6,19.9,12.9,11.6
+66,1019,"National","National Egg Substitute",53673009276,3.7400,21.3,19.2,false,true,24,11,7.25,8.04,19.5
+34,1020,"PigTail","PigTail Low Fat Waffles",50246916413,0.5100,14.7,12.6,false,false,26,6,6.61,15.6,8.48
+110,1021,"PigTail","PigTail Orange Popsicles",14444887042,1.2200,12.6,10.6,false,true,23,8,10.7,19.1,3.39
+100,1022,"PigTail","PigTail Frozen Chicken Breast",15639403462,1.5100,12.5,10.5,true,true,27,13,20.2,16.1,15.3
+29,1023,"PigTail","PigTail Frozen Pancakes",39075140357,1.6400,14.1,13.1,false,true,25,5,10.7,12.0,9.2
+63,1024,"PigTail","PigTail Low Fat French Fries",75605292916,3.9500,7.54,6.53,true,false,9,11,8.98,6.3,8.15
+64,1025,"PigTail","PigTail Frozen Sausage Pizza",92180926203,1.4500,18.7,16.7,false,false,14,12,7.48,4.02,9.02
+34,1026,"PigTail","PigTail Blueberry Waffles",97948845028,2.1300,11.2,9.19,true,false,7,7,20.3,20.4,13.2
+63,1027,"PigTail","PigTail Fajita French Fries",59860114455,2.3100,6.88,4.88,true,false,29,11,18.2,12.3,4.41
+34,1028,"PigTail","PigTail Waffles",34865799546,2.2400,17.6,16.6,true,false,11,9,4.47,18.9,17.9
+64,1029,"PigTail","PigTail Frozen Pepperoni Pizza",20895664095,1.6800,6.06,3.05,false,true,30,7,6.95,12.8,5.94
+64,1030,"PigTail","PigTail Frozen Cheese Pizza",55139115452,2.6400,12.6,9.6,true,true,10,6,13.5,6.91,20.7
+64,1031,"PigTail","PigTail Frozen Mushroom Pizza",45525917410,1.2100,10.1,8.1,true,true,13,13,3.52,5.91,20.9
+34,1032,"PigTail","PigTail Apple Cinnamon Waffles",25105004906,0.5500,15.9,14.8,false,false,29,12,3.3,11.0,20.9
+60,1033,"PigTail","PigTail Frozen Carrots",74729573130,1.9100,6.99,4.98,false,false,12,13,21.2,11.7,8.15
+10,1034,"PigTail","PigTail Turkey TV Dinner",47448557019,2.9100,21.9,19.8,true,false,23,7,6.33,15.3,20.3
+10,1035,"PigTail","PigTail Chicken TV Dinner",42408761382,1.1100,18.4,16.3,true,false,17,13,3.49,10.9,15.7
+10,1036,"PigTail","PigTail Beef TV Dinner",74365511536,2.1400,14.5,13.5,true,true,35,6,16.5,16.5,13.8
+28,1037,"PigTail","PigTail Pancake Mix",38563482165,0.5800,13.9,11.8,true,false,14,7,14.4,17.8,18.3
+110,1038,"PigTail","PigTail Grape Popsicles",94638827443,0.7400,16.5,14.5,false,true,5,7,17.5,12.7,19.4
+63,1039,"PigTail","PigTail Home Style French Fries",28074564337,0.8100,9.94,7.93,false,false,13,12,7.03,14.8,5.92
+110,1040,"PigTail","PigTail Lime Popsicles",64604716897,1.3200,17.0,15.0,false,true,14,8,13.6,18.9,10.5
+9,1041,"PigTail","PigTail Ice Cream",81180350184,0.7100,20.0,18.0,false,true,2,7,11.1,22.7,4.03
+9,1042,"PigTail","PigTail Ice Cream Sandwich",86948269009,1.1500,16.6,14.6,true,false,14,6,17.6,17.2,16.8
+60,1043,"PigTail","PigTail Frozen Cauliflower",48859538435,1.5700,7.77,5.76,false,true,26,8,14.3,15.8,19.0
+60,1044,"PigTail","PigTail Frozen Broccoli",23865223526,1.2700,10.2,8.19,true,true,17,10,19.5,8.5,5.11
+60,1045,"PigTail","PigTail Frozen Corn",45014259219,3.7000,12.7,11.6,true,false,9,11,15.3,22.2,13.7
+60,1046,"PigTail","PigTail Frozen Peas",79257710576,1.6600,9.84,7.84,true,true,32,7,11.8,16.8,16.5
+9,1047,"PigTail","PigTail Popsicles",34525341391,3.2300,10.0,8.0,true,false,16,13,15.5,13.7,5.81
+100,1048,"PigTail","PigTail Frozen Chicken Thighs",14104428887,2.2100,19.5,17.5,true,true,35,12,13.0,12.4,4.74
+100,1049,"PigTail","PigTail Frozen Chicken Wings",63728997111,3.9300,8.35,5.35,false,false,27,14,19.3,3.07,17.6
+110,1050,"PigTail","PigTail Lemon Popsicles",36447980999,1.2800,15.3,13.3,true,false,8,8,19.2,17.2,12.1
+78,1051,"Bird Call","Bird Call Silky Smooth Hair Conditioner",31408185362,0.5200,13.4,11.3,false,false,20,13,10.1,10.7,17.1
+39,1052,"Bird Call","Bird Call Tartar Control Toothpaste",63364935517,1.4000,17.0,16.0,false,false,29,6,8.47,10.9,21.0
+39,1053,"Bird Call","Bird Call Whitening Toothpast",27562906146,1.8500,18.5,15.5,false,false,8,12,13.6,9.94,10.6
+39,1054,"Bird Call","Bird Call Toothpaste",94855292439,1.4800,14.0,11.0,false,false,34,8,9.44,5.17,7.03
+39,1055,"Bird Call","Bird Call Deodorant",40712446570,1.6200,17.6,15.6,false,false,9,10,7.73,5.43,10.8
+79,1056,"Bird Call","Bird Call Conditioning Shampoo",77242599129,2.9300,15.3,14.3,true,false,25,8,13.0,3.88,22.0
+79,1057,"Bird Call","Bird Call Extra Moisture Shampoo",69916102290,1.4300,18.9,16.8,true,false,35,10,11.3,4.13,5.89
+88,1058,"Bird Call","Bird Call Angled Toothbrush",75684021115,2.7600,14.4,11.3,true,false,26,6,7.17,19.3,22.3
+79,1059,"Bird Call","Bird Call Apricot Shampoo",61497420668,2.2800,16.2,15.2,true,false,1,12,17.3,8.38,6.75
+70,1060,"Bird Call","Bird Call Childrens Aspirin",36503105759,2.8700,19.9,17.8,false,false,5,10,15.6,8.64,10.6
+70,1061,"Bird Call","Bird Call Buffered Aspirin",57652141451,1.6600,15.4,13.3,false,false,2,9,11.4,3.87,7.03
+71,1062,"Bird Call","Bird Call 200 MG Ibuprofen",67993462681,2.3800,19.0,17.0,true,false,16,7,9.71,4.12,10.8
+72,1063,"Bird Call","Bird Call 200 MG Acetominifen",58380264639,3.1800,20.5,17.5,true,false,25,9,14.8,3.1,20.4
+73,1064,"Bird Call","Bird Call HCL Nasal Spray",92840180993,0.5400,17.3,16.2,true,false,15,5,10.6,18.5,16.3
+73,1065,"Bird Call","Bird Call Dishwasher Detergent",52464749217,1.8800,20.9,18.8,true,false,25,7,8.92,18.7,20.2
+75,1066,"Bird Call","Bird Call Multi-Symptom Cold Remedy",91281602978,2.8900,17.3,16.2,false,false,4,14,8.78,9.61,6.34
+75,1067,"Bird Call","Bird Call Childrens Cold Remedy",20143937468,1.7400,12.8,10.8,true,false,35,14,4.58,4.84,22.7
+74,1068,"Bird Call","Bird Call Laundry Detergent",52100687623,2.1100,16.5,13.5,false,false,4,12,22.8,5.1,6.62
+74,1069,"Bird Call","Bird Call Mint Mouthwash",16298658251,0.5700,18.0,15.0,false,false,24,13,8.04,4.07,16.1
+80,1070,"High Quality","High Quality 60 Watt Lightbulb",83591044545,3.5100,21.6,20.6,false,false,28,12,6.34,4.33,20.0
+56,1071,"High Quality","High Quality Plastic Forks",40928911566,2.6400,18.4,16.3,false,false,18,8,22.0,19.7,15.9
+56,1072,"High Quality","High Quality Plastic Spoons",77459064126,1.9500,20.2,18.2,true,false,28,14,12.2,8.75,20.3
+56,1073,"High Quality","High Quality Plastic Knives",58915526270,3.4500,7.86,5.86,true,false,32,12,10.5,9.01,4.23
+101,1074,"High Quality","High Quality C-Size Batteries",64683445096,3.1300,19.3,18.2,true,false,29,11,6.33,4.24,20.6
+80,1075,"High Quality","High Quality 100 Watt Lightbulb",50496844649,1.5400,20.8,18.7,false,false,8,9,11.5,3.22,10.2
+101,1076,"High Quality","High Quality AAA-Size Batteries",91600399613,3.2400,8.48,6.47,false,false,17,11,9.79,3.47,14.0
+55,1077,"High Quality","High Quality Paper Plates",46651565432,3.6800,19.9,17.8,false,false,8,7,5.59,18.7,10.5
+55,1078,"High Quality","High Quality Paper Cups",56992886662,1.6400,7.63,4.63,false,false,18,9,3.88,18.9,14.3
+80,1079,"High Quality","High Quality 75 Watt Lightbulb",47379688620,2.2100,21.3,19.2,false,false,25,12,3.69,9.98,19.9
+22,1080,"High Quality","High Quality Toilet Bowl Cleaner",50860906243,2.1900,21.8,20.7,true,false,27,7,4.8,13.3,19.8
+22,1081,"High Quality","High Quality Counter Cleaner",63898255228,2.9100,9.51,7.51,false,false,31,14,3.09,13.5,3.67
+22,1082,"High Quality","High Quality Glass Cleaner",12715108990,1.9100,21.9,18.8,true,false,10,12,22.9,4.44,9.81
+80,1083,"High Quality","High Quality 25 Watt Lightbulb",31577443480,0.5000,9.61,8.6,true,false,14,10,21.2,4.7,13.6
+101,1084,"High Quality","High Quality AA-Size Batteries",39632063508,1.3700,10.1,7.1,true,false,16,13,22.3,8.06,13.5
+101,1085,"High Quality","High Quality D-Size Batteries",27732164263,2.2400,6.88,4.88,false,false,15,12,7.2,8.95,14.5
+18,1086,"High Quality","High Quality Paper Towels",95024550557,2.5300,10.5,7.5,false,false,19,10,5.49,9.2,18.3
+18,1087,"High Quality","High Quality Soft Napkins",52362417578,1.6600,7.26,5.26,false,false,24,13,6.78,12.0,19.8
+18,1088,"High Quality","High Quality Scented Tissue",88892570137,3.3200,19.7,16.7,false,false,32,7,6.64,22.8,5.95
+18,1089,"High Quality","High Quality Toilet Paper",81566073298,2.4700,7.36,5.36,true,false,7,9,4.93,3.14,9.8
+18,1090,"High Quality","High Quality Tissues",76116951107,2.1500,7.88,4.88,true,false,4,9,6.04,6.5,9.66
+18,1091,"High Quality","High Quality Scented Toilet Tissue",38028220534,3.5600,11.5,9.5,true,false,13,11,4.33,6.75,13.5
+20,1092,"High Quality","High Quality Room Freshener",13033905625,2.3800,7.97,5.96,true,false,21,14,4.2,17.6,19.6
+40,1093,"High Quality","High Quality Frying Pan",34182941317,2.8100,20.7,19.7,true,false,17,14,19.9,13.0,15.5
+87,1094,"High Quality","High Quality Copper Cleaner",68426392674,3.7700,8.39,6.39,true,false,21,12,18.2,13.2,19.4
+47,1095,"High Quality","High Quality Bees Wax Candles",58813194632,1.5800,9.85,7.85,false,false,5,13,3.4,12.2,8.97
+87,1096,"High Quality","High Quality Silver Cleaner",62294412255,2.5600,13.5,11.5,true,false,9,12,21.6,12.4,12.8
+86,1097,"High Quality","High Quality Copper Pot Scrubber",21918980479,2.1500,9.01,8.01,false,false,6,11,17.4,7.73,9.25
+85,1098,"High Quality","High Quality Economy Toilet Brush",60735834240,1.3900,21.7,18.7,true,false,11,13,22.3,8.62,10.2
+41,1099,"High Quality","High Quality Scissors",94492883086,3.2400,9.42,7.42,true,false,20,6,20.6,8.87,14.1
+42,1100,"High Quality","High Quality Large Sponge",12547503113,0.7200,20.9,18.8,true,false,11,11,16.4,4.1,10.5
+41,1101,"High Quality","High Quality Screw Driver",90647603869,2.6200,7.64,5.63,true,false,30,13,21.5,3.26,19.5
+65,1102,"Genteel","Genteel Extra Lean Hamburger",67939990162,1.9000,11.3,8.3,true,false,34,11,19.8,3.51,3.42
+65,1103,"Genteel","Genteel Seasoned Hamburger",25277857184,1.1500,11.1,9.1,true,false,15,13,9.87,7.1,20.3
+104,1104,"Mighty Good","Mighty Good Monthly Sports Magazine",61808009743,2.4500,15.0,14.0,false,false,8,12,11.7,4.31,13.5
+108,1105,"Mighty Good","Mighty Good Monthly Auto Magazine",54481512904,1.8500,13.7,10.6,false,false,6,11,3.29,5.32,13.9
+107,1106,"Mighty Good","Mighty Good Monthly Computer Magazine",60249431729,1.5200,6.5,4.5,false,false,16,8,5.42,22.5,21.2
+105,1107,"Mighty Good","Mighty Good Monthly Home Magazine",10943660140,2.7000,18.3,17.2,false,false,4,7,4.73,16.7,12.5
+106,1108,"Mighty Good","Mighty Good Monthly Fashion Magazine",75949345231,1.6400,18.3,17.2,true,false,6,9,16.1,17.9,12.4
+61,1109,"Tri-State","Tri-State Summer Squash",97098380923,0.5500,19.2,17.2,false,false,16,6,20.7,20.2,7.12
+61,1110,"Tri-State","Tri-State Corn on the Cob",41341832280,2.8000,12.7,10.6,false,false,19,9,18.8,5.58,11.0
+61,1111,"Tri-State","Tri-State Asparagus",31728634238,0.7800,17.9,14.8,true,false,15,11,8.54,6.23,3.8
+61,1112,"Tri-State","Tri-State Sweet Peas",35209851861,3.5800,19.9,18.8,false,true,4,5,11.3,13.3,5.03
+61,1113,"Tri-State","Tri-State New Potatos",60932289958,0.6700,17.5,14.5,false,false,30,10,19.9,10.0,20.1
+61,1114,"Tri-State","Tri-State Beets",33651273846,3.4200,20.6,19.6,true,true,36,6,5.53,10.5,6.13
+61,1115,"Tri-State","Tri-State Prepared Salad",52513608336,2.5000,6.66,4.65,true,false,1,6,18.4,12.0,4.86
+61,1116,"Tri-State","Tri-State Onions",91546927094,2.5300,15.9,13.8,true,false,33,13,14.9,17.1,14.2
+61,1117,"Tri-State","Tri-State Green Pepper",79647027850,3.6400,12.0,10.0,true,true,11,14,17.8,8.3,14.8
+61,1118,"Tri-State","Tri-State Shitake Mushrooms",56939414143,2.9300,11.9,9.89,true,false,15,8,8.09,20.7,6.77
+61,1119,"Tri-State","Tri-State Lettuce",80375151038,3.1700,7.66,5.65,true,false,25,13,6.97,6.3,7.49
+61,1120,"Tri-State","Tri-State Elephant Garlic",50807433724,1.7100,16.1,15.1,false,false,21,7,21.8,20.5,16.7
+61,1121,"Tri-State","Tri-State Red Pepper",43480936884,3.8700,9.55,6.55,true,true,29,7,10.0,20.3,18.1
+61,1122,"Tri-State","Tri-State Garlic",49248855710,0.7400,15.2,14.1,true,false,30,5,22.3,19.9,8.15
+61,1123,"Tri-State","Tri-State Potatos",11160125136,1.9600,8.17,6.17,false,true,7,6,9.43,16.4,9.74
+61,1124,"Tri-State","Tri-State Cauliflower",64948769211,0.8100,6.63,5.63,true,false,21,12,12.6,21.0,22.1
+61,1125,"Tri-State","Tri-State Tomatos",86097804903,2.2100,19.6,18.6,true,true,33,10,20.3,3.3,12.4
+61,1126,"Tri-State","Tri-State Mushrooms",30341256260,1.1600,17.1,15.1,true,false,18,12,21.1,12.3,10.0
+61,1127,"Tri-State","Tri-State Baby Onion",20728058218,2.6200,12.8,11.8,false,true,22,11,20.7,13.3,10.8
+61,1128,"Tri-State","Tri-State Dried Mushrooms",24209275841,2.6100,17.6,15.6,true,false,32,8,17.2,18.4,21.1
+61,1129,"Tri-State","Tri-State Fresh Lima Beans",49931713938,2.4300,18.8,17.7,true,false,21,9,3.62,8.78,15.1
+61,1130,"Tri-State","Tri-State Squash",22650697827,1.5500,14.0,11.0,true,false,25,7,4.04,19.9,3.46
+99,1131,"Tri-State","Tri-State Limes",41513032317,2.4000,13.7,12.6,false,false,6,6,5.27,11.2,7.91
+67,1132,"Tri-State","Tri-State Firm Tofu",49567652344,1.6600,13.6,11.6,false,false,23,7,15.3,14.8,4.85
+1,1133,"Tri-State","Tri-State Almonds",68382779955,1.5400,17.5,15.5,true,true,26,6,17.2,12.0,18.0
+99,1134,"Tri-State","Tri-State Macintosh Apples",45675166249,1.8200,21.0,20.0,true,false,19,7,5.17,18.1,8.81
+99,1135,"Tri-State","Tri-State Golden Delcious Apples",69110903143,1.9600,7.61,4.61,false,true,27,13,18.9,14.1,12.3
+99,1136,"Tri-State","Tri-State Red Delcious Apples",15641055703,3.6100,13.7,11.6,true,true,11,9,22.2,18.2,7.34
+99,1137,"Tri-State","Tri-State Lemons",32216688990,1.7700,17.1,16.1,false,false,16,7,13.4,19.9,10.5
+99,1138,"Tri-State","Tri-State Fancy Plums",37984607815,2.4400,13.7,10.6,true,true,2,7,9.76,15.5,8.48
+99,1139,"Tri-State","Tri-State Plums",89895877242,2.8600,9.37,7.36,true,true,23,12,10.4,9.92,19.2
+99,1140,"Tri-State","Tri-State Peaches",64901562333,2.5600,10.5,8.5,false,true,12,13,7.34,12.4,20.7
+61,1141,"Tri-State","Tri-State Broccoli",86050598025,1.3400,10.3,8.3,false,false,27,13,8.76,12.7,20.1
+99,1142,"Tri-State","Tri-State Mandarin Oranges",19077008366,2.9500,15.2,13.1,false,true,27,5,3.55,17.8,15.5
+1,1143,"Tri-State","Tri-State Mixed Nuts",99463810324,1.7600,8.69,7.68,false,false,12,13,11.5,8.72,21.9
+1,1144,"Tri-State","Tri-State Canned Peanuts",79042897820,0.8500,21.2,18.2,true,false,4,8,6.96,19.8,4.93
+61,1145,"Tri-State","Tri-State Sweet Onion",38667466044,1.5700,21.4,20.3,false,false,12,9,7.21,7.66,9.67
+99,1146,"Tri-State","Tri-State Cantelope",11386449933,2.5700,18.0,16.0,true,false,32,6,21.3,16.5,7.61
+99,1147,"Tri-State","Tri-State Honey Dew",96346654295,1.4200,9.62,7.61,false,false,30,12,21.5,14.0,4.63
+99,1148,"Tri-State","Tri-State Fuji Apples",38303404450,2.6900,13.1,11.1,false,false,15,5,9.33,11.2,20.4
+1,1149,"Tri-State","Tri-State Walnuts",92501375079,0.8800,19.7,16.7,false,true,17,5,4.93,6.41,22.7
+99,1150,"Tri-State","Tri-State Oranges",93695891499,3.1900,9.1,7.1,true,false,32,9,22.4,14.8,12.9
+99,1151,"Tri-State","Tri-State Tangerines",80544409155,0.6200,15.6,14.6,true,true,30,8,19.0,14.4,10.2
+1,1152,"Tri-State","Tri-State Party Nuts",27074561715,2.6300,13.6,12.6,true,false,23,9,21.2,4.59,17.7
+24,1153,"Dual City","Dual City Lox",43650195002,0.5200,18.8,16.7,true,false,33,11,22.0,8.64,20.4
+2,1154,"Dual City","Dual City Scallops",49418113827,1.7000,12.7,10.6,true,false,3,11,21.7,4.04,9.2
+45,1155,"Horatio","Horatio Low Fat Cookies",11329383254,1.8800,16.1,15.1,false,false,12,10,21.4,4.56,12.5
+12,1156,"Horatio","Horatio BBQ Potato Chips",76335068345,1.8200,9.16,8.15,true,true,23,13,17.3,13.2,6.59
+12,1157,"Horatio","Horatio Corn Chips",97484104037,3.3600,20.4,18.3,true,false,12,9,13.9,22.0,17.4
+12,1158,"Horatio","Horatio Low Fat BBQ Chips",41727555394,1.3200,14.2,12.1,false,true,35,13,15.5,6.34,16.2
+45,1159,"Horatio","Horatio Sugar Cookies",32114357352,3.7800,16.7,14.7,true,true,28,7,22.4,3.54,14.7
+45,1160,"Horatio","Horatio Chocolate Chip Cookies",90476403832,2.7600,11.0,8.0,true,true,1,10,6.24,4.53,3.41
+45,1161,"Horatio","Horatio Fudge Cookies",50100972056,3.5900,11.8,9.8,false,false,34,9,10.6,7.07,22.5
+45,1162,"Horatio","Horatio Fudge Brownies",22819955945,1.5900,6.18,4.17,true,true,30,10,13.1,5.83,6.22
+12,1163,"Horatio","Horatio Potato Chips",17780160307,0.8200,16.4,15.3,true,false,14,10,7.0,21.2,12.3
+45,1164,"Horatio","Horatio Lemon Cookies",49736910462,1.7100,17.1,14.1,true,true,6,7,4.05,22.7,19.0
+45,1165,"Horatio","Horatio Graham Crackers",13934881091,2.8200,18.3,15.2,true,false,25,6,10.8,10.8,3.05
+82,1166,"Horatio","Horatio Cheese Crackers",15129397511,2.2100,18.5,17.5,false,false,20,9,4.55,22.2,9.86
+54,1167,"Horatio","Horatio Buttered Popcorn",38565134406,2.3500,17.8,15.7,true,false,13,6,15.0,18.1,4.34
+54,1168,"Horatio","Horatio No Salt Popcorn",75095286965,3.8200,18.5,16.5,true,false,29,9,10.9,6.21,21.0
+54,1169,"Horatio","Horatio Low Fat Popcorn",32649618983,2.9800,15.1,13.1,false,false,15,7,14.8,11.7,6.44
+83,1170,"Horatio","Horatio Salsa Dip",38417537808,2.6500,21.8,20.7,true,false,7,10,18.8,21.4,11.2
+83,1171,"Horatio","Horatio Avocado Dip",90328807234,3.1800,12.0,9.0,false,true,31,8,12.2,19.9,3.69
+46,1172,"Horatio","Horatio Salted Pretzels",65334492325,2.7700,18.7,16.7,false,false,23,10,16.4,18.4,3.48
+83,1173,"Horatio","Horatio Cheese Dip",86483528017,2.3100,7.04,5.03,false,false,3,9,17.5,20.9,11.9
+83,1174,"Horatio","Horatio Fondue Mix",30726979374,2.2700,19.6,17.6,false,false,6,11,12.8,3.19,19.8
+84,1175,"Horatio","Horatio Mini Donuts",21113781332,1.7300,7.57,6.57,true,false,23,8,13.4,18.1,8.04
+17,1176,"Horatio","Horatio Beef Jerky",90692868828,1.7100,9.63,7.63,true,true,11,11,16.2,5.26,9.27
+84,1177,"Horatio","Horatio Chocolate Donuts",50317437052,1.5400,8.44,5.43,false,true,16,13,13.9,7.69,9.0
+12,1178,"Horatio","Horatio Low Fat Chips",11555708050,3.7800,10.5,8.5,false,false,28,13,15.4,12.5,5.23
+82,1179,"Horatio","Horatio Sesame Crackers",96515912413,2.6300,12.6,9.6,false,false,29,12,8.29,14.0,3.96
+45,1180,"Horatio","Horatio Frosted Cookies",38472662568,3.9000,10.6,8.6,true,false,17,7,8.71,15.3,21.4
+109,1181,"Horatio","Horatio Dried Apples",92670633196,1.7700,20.9,19.8,true,false,15,5,14.4,9.72,17.5
+109,1182,"Horatio","Horatio Apple Fruit Roll",69963019490,1.4000,7.87,6.86,false,false,27,8,21.8,19.0,13.4
+109,1183,"Horatio","Horatio Strawberry Fruit Roll",27300886511,1.5400,7.71,6.71,true,true,25,9,21.9,17.1,7.92
+109,1184,"Horatio","Horatio Raspberry Fruit Roll",63831039071,2.8400,11.1,8.1,false,true,22,12,11.5,3.2,13.7
+109,1185,"Horatio","Horatio Grape Fruit Roll",56504542231,1.3500,16.4,14.3,true,false,6,7,18.4,10.5,21.4
+109,1186,"Horatio","Horatio Dried Dates",62272461056,1.6800,9.01,6.01,true,false,32,10,12.0,22.4,5.67
+109,1187,"Horatio","Horatio Raisins",12966689467,2.2000,17.9,15.8,true,false,8,11,19.1,18.9,7.26
+109,1188,"Horatio","Horatio Golden Raisins",77972374558,1.7900,18.6,16.6,true,true,27,7,6.34,19.3,8.82
+109,1189,"Horatio","Horatio Dried Apricots",99121410250,0.7600,12.4,10.3,false,false,8,10,16.9,4.72,15.1
+84,1190,"Horatio","Horatio Frosted Donuts",19462731480,1.3000,11.8,8.8,false,true,27,12,5.82,4.95,12.2
+36,1191,"Musial","Musial Tasty Candy Bar",99849533438,2.1000,19.7,16.7,true,false,33,10,9.17,3.56,14.0
+36,1192,"Musial","Musial Mint Chocolate Bar",13330751061,0.9800,13.5,12.5,false,true,9,7,10.9,16.7,7.89
+36,1193,"Musial","Musial Malted Milk Balls",62955319285,0.8900,13.8,10.8,false,true,22,5,13.2,11.4,12.1
+36,1194,"Musial","Musial Semi-Sweet Chocolate Bar",11772173047,2.8100,19.6,17.6,false,false,3,6,12.5,9.92,7.27
+37,1195,"Musial","Musial Bubble Gum",30634507536,1.6600,8.49,6.48,true,false,19,14,19.0,9.42,15.1
+38,1196,"Musial","Musial Spicy Mints",27472086548,2.9200,14.6,12.6,false,false,5,10,14.3,21.3,14.9
+38,1197,"Musial","Musial Mints",81670057177,3.1400,10.3,7.3,false,false,15,12,13.7,13.5,20.7
+36,1198,"Musial","Musial White Chocolate Bar",58962443470,3.4300,16.0,14.0,false,false,13,8,14.8,20.8,5.8
+5,1199,"Colossal","Colossal Ravioli",16300310492,2.5600,8.6,6.6,false,true,10,7,17.9,20.6,22.5
+5,1200,"Colossal","Colossal Manicotti",52830463051,1.8700,14.7,13.6,true,false,23,9,21.2,4.63,17.4
+5,1201,"Colossal","Colossal Spaghetti",45503966212,3.3700,21.9,19.8,true,false,12,8,17.8,14.2,4.63
+57,1202,"Colossal","Colossal Thai Rice",51271885037,3.9400,14.3,11.3,true,false,3,9,9.34,19.3,9.29
+57,1203,"Colossal","Colossal Rice Medly",37085284590,1.4600,15.0,12.0,true,true,31,9,15.3,21.8,3.45
+43,1204,"Portsmouth","Portsmouth Imported Beer",78188839554,2.1600,16.2,13.2,true,false,20,10,12.2,4.44,4.97
+44,1205,"Portsmouth","Portsmouth Light Wine",88120834231,2.6000,19.3,17.2,false,false,4,6,9.24,12.4,13.9
+44,1206,"Portsmouth","Portsmouth Chardonnay Wine",98462155461,3.4300,8.41,7.4,false,false,15,13,14.3,11.6,22.4
+44,1207,"Portsmouth","Portsmouth Chablis Wine",88848957419,1.8900,21.2,18.2,true,false,20,12,17.0,5.9,3.39
+44,1208,"Portsmouth","Portsmouth Merlot Wine",92330175042,2.8700,10.3,8.3,true,false,32,10,22.1,5.13,11.8
+44,1209,"Portsmouth","Portsmouth Chardonnay",51954743266,2.7000,13.1,11.1,true,false,25,11,14.1,3.09,5.96
+44,1210,"Portsmouth","Portsmouth White Zinfandel Wine",90771597027,1.7000,11.2,9.19,true,false,28,10,16.7,17.4,6.42
+43,1211,"Portsmouth","Portsmouth Light Beer",19633931517,3.7900,16.3,15.2,true,false,5,8,21.8,16.7,14.8
+27,1212,"Sphinx","Sphinx Pumpernickel Bread",27688551545,0.5300,8.16,6.15,true,true,33,9,19.1,22.8,12.4
+27,1213,"Sphinx","Sphinx White Bread",15788652300,2.9300,18.9,16.8,true,false,31,6,15.2,14.9,8.44
+27,1214,"Sphinx","Sphinx Rye Bread",47698195576,1.3200,17.8,15.7,false,false,25,8,20.6,16.2,10.6
+26,1215,"Sphinx","Sphinx English Muffins",95036062598,1.4600,6.26,4.26,true,true,27,14,3.34,19.0,13.6
+26,1216,"Sphinx","Sphinx Cranberry Muffins",41566215157,2.1100,13.8,11.8,false,true,18,9,13.4,22.0,13.1
+26,1217,"Sphinx","Sphinx Muffins",34239718317,1.2700,18.1,16.1,false,false,11,7,9.42,14.9,6.1
+25,1218,"Sphinx","Sphinx Bagels",40007637143,1.8300,16.0,14.0,true,false,5,6,12.6,9.53,8.63
+26,1219,"Sphinx","Sphinx Blueberry Muffins",91918906569,2.3600,7.55,5.55,true,true,3,13,12.8,7.0,5.64
+27,1220,"Sphinx","Sphinx Wheat Bread",66924591660,1.9500,10.1,7.1,true,true,35,13,16.5,8.55,11.7
+49,1221,"Plato","Plato Sesame Oil",88073627352,1.4900,21.7,19.7,false,true,19,11,17.4,11.8,17.4
+53,1222,"Plato","Plato Chunky Peanut Butter",32317078709,2.4500,12.0,9.0,true,true,34,6,19.0,15.9,17.4
+51,1223,"Plato","Plato Hot Chocolate",77584709525,0.5900,17.3,16.2,false,true,23,11,6.52,9.87,10.1
+50,1224,"Plato","Plato Brown Sugar",81065927147,1.2400,10.2,8.19,false,false,23,7,3.48,11.8,14.2
+50,1225,"Plato","Plato White Sugar",40690495371,1.7200,11.4,9.39,false,false,3,9,22.9,3.41,3.13
+90,1226,"Plato","Plato French Roast Coffee",79507349133,2.9600,9.43,7.43,true,false,32,14,3.97,11.3,5.64
+90,1227,"Plato","Plato Decaf Coffee",98369683623,2.8100,6.23,5.23,true,false,31,6,8.08,16.6,6.64
+90,1228,"Plato","Plato Regular Coffee",16424303650,2.1900,6.78,4.78,false,false,33,11,8.45,4.46,6.49
+49,1229,"Plato","Plato Vegetable Oil",94524404406,1.3000,14.5,12.5,true,false,32,11,7.25,21.6,4.06
+49,1230,"Plato","Plato Corn Oil",71816790699,0.7700,13.4,10.3,true,true,26,12,22.9,6.3,18.7
+48,1231,"Plato","Plato Tomato Sauce",29154657721,3.7100,11.8,10.8,false,false,28,14,8.35,17.5,11.1
+49,1232,"Plato","Plato Canola Oil",52999721169,1.1300,7.95,6.94,false,false,5,14,11.2,8.7,11.7
+33,1233,"Plato","Plato Grape Preserves",45673224329,0.7300,20.9,17.8,false,true,23,13,17.9,11.9,11.5
+90,1234,"Plato","Plato Columbian Coffee",51441143155,0.5600,16.7,13.7,false,false,33,9,16.8,17.4,12.2
+31,1235,"Plato","Plato Strawberry Jelly",13352412581,1.3800,14.9,11.8,true,false,5,9,7.75,21.7,17.8
+4,1236,"Plato","Plato Pepper",78358097672,3.3200,16.5,13.5,true,true,2,13,7.02,9.9,4.2
+33,1237,"Plato","Plato Low Fat Apple Butter",99507133364,2.7500,9.02,6.02,false,true,32,9,11.8,9.66,15.9
+4,1238,"Plato","Plato Salt",43750584721,1.4700,14.8,13.8,true,true,3,11,11.0,8.1,11.0
+33,1239,"Plato","Plato Apple Butter",34137386679,2.2800,12.7,10.6,true,false,6,7,15.0,22.7,10.9
+4,1240,"Plato","Plato Oregano",92499433159,2.2600,15.7,14.6,true,false,35,11,22.2,3.24,11.8
+31,1241,"Plato","Plato Apple Jelly",28221871256,2.9800,6.42,3.42,false,false,3,10,16.3,7.3,14.1
+32,1242,"Plato","Plato Grape Jam",90940855145,1.9800,19.9,17.8,false,false,24,12,14.9,9.62,11.8
+32,1243,"Plato","Plato Apple Jam",19803189635,1.1800,9.7,8.69,true,true,5,8,5.94,22.5,19.4
+32,1244,"Plato","Plato Strawberry Jam",27857809662,1.2100,19.0,17.0,true,false,24,8,6.41,3.45,18.3
+53,1245,"Plato","Plato Creamy Peanut Butter",15957910418,2.3200,18.3,17.2,false,true,30,6,5.42,18.1,12.9
+33,1246,"Plato","Plato Strawberry Preserves",83250296711,1.5400,14.5,13.5,true,false,15,11,16.7,3.68,16.0
+53,1247,"Plato","Plato Extra Chunky Peanut Butter",16686033606,1.6800,19.3,16.2,true,false,23,14,14.9,13.2,18.8
+33,1248,"Plato","Plato Apple Preserves",77118316292,3.3300,12.6,11.6,true,false,25,8,14.3,20.8,7.75
+31,1249,"Plato","Plato Grape Jelly",34672648310,1.4800,9.3,7.3,true,true,22,10,18.5,4.22,3.19
+30,1250,"Skinner","Skinner Berry Juice",40440567135,2.1600,9.17,8.17,false,false,33,10,8.03,21.1,15.1
+52,1251,"Skinner","Skinner Mango Drink",92351836562,3.5800,11.4,8.39,true,false,28,9,19.4,22.4,14.4
+52,1252,"Skinner","Skinner Strawberry Drink",67357521653,2.2800,21.8,19.7,false,false,24,9,12.2,4.51,10.5
+19,1253,"Skinner","Skinner Cream Soda",88506557345,1.7100,8.77,5.77,true,false,27,9,10.7,17.2,16.4
+19,1254,"Skinner","Skinner Diet Soda",32750008702,3.6700,8.31,7.31,true,false,7,9,8.52,20.5,6.56
+19,1255,"Skinner","Skinner Cola",23136810660,1.2400,20.7,18.7,true,false,14,10,9.12,7.0,12.6
+19,1256,"Skinner","Skinner Diet Cola",26618028283,1.2200,15.2,13.1,true,false,29,9,21.5,22.1,19.4
+30,1257,"Skinner","Skinner Orange Juice",52340466380,1.9400,7.87,5.86,true,false,4,9,5.93,6.11,6.7
+30,1258,"Skinner","Skinner Cranberry Juice",80731294751,0.6100,15.2,13.1,false,false,12,10,21.2,4.39,9.41
+30,1259,"Skinner","Skinner Apple Juice",99593629240,2.1400,14.7,11.6,true,false,26,10,19.0,7.69,19.5
+52,1260,"Skinner","Skinner Apple Drink",17648249268,0.6700,7.11,5.11,false,true,16,9,18.3,21.5,11.9
+35,1261,"Johnson","Johnson Oatmeal",95748350024,0.6000,18.3,16.2,true,true,17,5,16.8,19.3,12.8
+35,1262,"Johnson","Johnson Corn Puffs",73040736317,0.7600,11.1,10.1,false,true,6,11,11.1,7.71,12.3
+35,1263,"Johnson","Johnson Wheat Puffs",96476473212,0.8300,10.5,7.5,false,true,25,6,8.9,20.1,21.9
+35,1264,"Johnson","Johnson Grits",43006625771,2.3500,21.2,19.2,false,true,6,12,15.1,6.73,15.4
+62,1265,"Pleasant","Pleasant Canned Beets",59582259058,0.7200,9.71,7.71,true,false,26,10,17.5,20.6,3.48
+62,1266,"Pleasant","Pleasant Creamed Corn",65350177884,1.1800,10.0,8.0,false,false,27,12,9.83,20.9,10.2
+62,1267,"Pleasant","Pleasant Canned String Beans",16044406294,1.6000,7.5,6.5,true,false,30,10,19.7,19.9,10.4
+58,1268,"Pleasant","Pleasant Chicken Soup",81050091385,1.3000,20.5,18.5,false,true,33,11,8.88,8.95,3.14
+62,1269,"Pleasant","Pleasant Canned Yams",12199127078,3.9700,11.5,8.5,false,false,16,12,6.88,9.72,10.3
+58,1270,"Pleasant","Pleasant Vegetable Soup",46442578434,2.6900,20.5,18.5,true,false,4,13,22.5,9.5,9.38
+62,1271,"Pleasant","Pleasant Canned Tomatos",36829380393,3.5000,6.12,3.11,true,true,13,7,14.1,18.7,13.2
+58,1272,"Pleasant","Pleasant Noodle Soup",16408467888,2.4800,18.2,16.2,false,true,31,9,7.15,4.35,11.3
+58,1273,"Pleasant","Pleasant Regular Ramen Soup",66033036112,3.3100,12.5,9.5,true,true,4,7,19.7,17.5,12.5
+58,1274,"Pleasant","Pleasant Chicken Noodle Soup",38752020001,1.3100,20.2,19.2,true,false,36,10,8.2,20.5,17.0
+58,1275,"Pleasant","Pleasant Turkey Noodle Soup",33712224364,1.1700,13.5,12.5,true,false,9,6,17.6,22.6,3.46
+58,1276,"Pleasant","Pleasant Beef Soup",96647673249,1.4300,16.9,14.8,true,false,2,8,18.9,18.7,4.16
+62,1277,"Pleasant","Pleasant Canned Peas",60845643877,2.5400,19.9,17.8,true,false,25,7,16.3,22.5,17.6
+58,1278,"Pleasant","Pleasant Chicken Ramen Soup",62040160298,2.8200,20.2,19.2,true,true,9,9,8.26,5.08,14.4
+93,1279,"Pleasant","Pleasant Canned Tuna in Water",85475897192,2.9600,6.41,3.4,true,false,16,8,19.6,15.5,13.1
+93,1280,"Pleasant","Pleasant Canned Tuna in Oil",32006049752,1.3700,8.91,5.9,true,false,7,9,4.84,8.17,19.2
+94,1281,"Pleasant","Pleasant Large Canned Shrimp",48581683039,2.7700,16.0,14.0,false,true,13,10,20.9,20.0,16.3
+95,1282,"Pleasant","Pleasant Fancy Canned Anchovies",54349601864,3.4400,9.42,7.42,true,true,30,11,12.1,6.6,15.2
+96,1283,"Pleasant","Pleasant Fancy Canned Clams",16260871291,0.7900,9.65,7.64,true,false,14,8,15.7,3.56,4.52
+97,1284,"Pleasant","Pleasant Fancy Canned Oysters",81266556382,2.4300,8.46,7.46,false,false,30,7,3.6,20.4,21.7
+98,1285,"Pleasant","Pleasant Fancy Canned Sardines",91198551058,1.8700,13.2,11.1,true,true,29,7,9.96,11.0,14.6
+58,1286,"Pleasant","Pleasant Rice Soup",35442002415,0.9000,14.0,12.0,true,true,33,8,4.61,16.9,6.29
+3,1287,"Toucan","Toucan Canned Mixed Fruit",25828804373,1.4000,17.9,15.8,true,true,32,5,4.87,14.1,4.44
+3,1288,"Toucan","Toucan Canned Peaches",95407891869,1.3800,16.8,15.7,false,false,3,10,11.5,17.6,11.6
+89,1289,"Toretti","Toretti Rosy Sunglasses",55032460093,1.2100,18.9,15.8,false,false,26,7,3.15,16.9,5.4
+103,1290,"Framton","Framton Eyeglass Screwdriver",27751443982,3.2100,19.8,17.7,true,false,21,11,4.21,21.1,20.5
+102,1291,"Framton","Framton City Map",22711648344,2.3000,20.7,19.7,true,false,8,10,8.82,3.47,15.2
+15,1292,"Booker","Booker Low Fat Cottage Cheese",54668398499,3.3300,18.5,15.5,false,false,24,10,16.2,8.86,5.97
+14,1293,"Booker","Booker Low Fat Sour Cream",49581395983,1.4400,8.25,5.25,false,true,22,6,17.3,16.2,11.0
+14,1294,"Booker","Booker Sour Cream",50775912404,1.7200,6.75,4.75,true,true,13,10,9.88,19.7,20.9
+11,1295,"Booker","Booker Jack Cheese",74211649298,1.8500,14.8,13.8,true,false,19,13,21.3,14.9,15.3
+11,1296,"Booker","Booker Muenster Cheese",20741801857,2.5100,14.1,12.1,true,false,15,12,20.3,9.64,9.89
+11,1297,"Booker","Booker String Cheese",37317435145,1.6600,21.6,18.6,true,false,30,8,11.3,17.1,4.41
+11,1298,"Booker","Booker Low Fat String Cheese",43085353970,1.3400,6.3,5.3,true,false,22,8,17.3,19.6,18.5
+11,1299,"Booker","Booker Havarti Cheese",94996623396,2.7600,13.8,11.8,true,true,16,12,19.5,10.5,22.9
+11,1300,"Booker","Booker Head Cheese",70002308487,1.4500,17.3,15.2,true,false,19,5,17.1,13.2,21.2
+11,1301,"Booker","Booker Cheese Spread",91151344180,0.9400,8.42,5.42,true,false,25,10,5.08,19.6,10.9
+11,1302,"Booker","Booker Sharp Cheddar Cheese",24177754521,1.8500,11.9,9.89,true,true,10,8,3.68,6.77,4.24
+11,1303,"Booker","Booker Mild Cheddar Cheese",14564556479,0.6800,12.2,10.1,false,false,6,9,15.3,20.3,6.03
+15,1304,"Booker","Booker Large Curd Cottage Cheese",84143643975,0.6700,7.43,4.42,false,true,13,8,13.8,18.1,6.91
+76,1305,"Booker","Booker 2% Milk",43768212199,0.5700,16.3,15.2,false,false,27,10,22.6,19.0,20.8
+76,1306,"Booker","Booker Buttermilk",16487196087,2.4700,13.1,11.1,false,false,29,7,6.76,4.42,21.8
+76,1307,"Booker","Booker Chocolate Milk",11447400450,1.3200,18.6,16.6,true,false,28,7,12.4,20.3,5.17
+76,1308,"Booker","Booker 1% Milk",43404150605,2.5800,18.3,16.2,false,false,14,6,8.75,12.5,15.3
+76,1309,"Booker","Booker Whole Milk",97602121233,3.4600,15.1,13.1,true,false,13,6,12.8,17.8,16.3
+6,1310,"Booker","Booker Strawberry Yogurt",74894507527,3.9800,20.9,18.8,false,false,12,11,3.53,3.84,14.4
+6,1311,"Booker","Booker Blueberry Yogurt",85645155310,3.2200,21.7,19.7,false,true,5,6,8.09,15.2,8.61
+81,1312,"Lake","Lake Chicken Hot Dogs",32175307869,1.5300,12.3,11.3,false,true,26,10,13.7,4.9,8.42
+91,1313,"Lake","Lake Pimento Loaf",24848811030,3.9200,19.4,16.3,true,true,17,7,3.03,17.9,20.4
+91,1314,"Lake","Lake Beef Bologna",30616729855,0.6400,7.79,5.78,true,true,8,13,17.2,6.32,20.9
+91,1315,"Lake","Lake Low Fat Bologna",16430129408,1.7800,14.4,13.3,false,true,6,8,11.5,19.2,18.2
+81,1316,"Lake","Lake Turkey Hot Dogs",81435814499,0.7100,17.0,15.0,true,true,20,10,14.9,3.05,14.3
+81,1317,"Lake","Lake Foot-Long Hot Dogs",12584850192,2.2600,9.54,8.53,true,true,11,10,19.7,22.8,6.1
+16,1318,"Lake","Lake Low Fat Cole Slaw",22926171422,0.9300,14.4,12.3,true,false,4,10,14.8,5.63,11.4
+16,1319,"Lake","Lake Cole Slaw",92095932364,1.6800,13.2,10.1,false,true,33,7,8.49,3.33,6.64
+77,1320,"Lake","Lake Roasted Chicken",95577149987,2.6600,21.2,19.2,false,true,27,11,21.0,11.9,11.0
+8,1321,"Lake","Lake Corned Beef",55201718211,2.4900,16.9,15.8,true,false,8,8,20.4,4.13,16.7
+8,1322,"Lake","Lake Sliced Turkey",94018571972,3.2000,6.66,5.65,false,true,6,13,21.5,11.4,21.8
+8,1323,"Lake","Lake Sliced Ham",22880906462,2.9400,10.5,8.5,true,true,29,7,4.36,13.1,9.99
+16,1324,"Lake","Lake Potato Salad",54837656617,3.3100,13.5,11.5,false,false,29,7,10.4,20.2,20.9
+8,1325,"Lake","Lake Sliced Chicken",19035627245,1.4300,12.8,9.8,false,true,25,5,9.48,14.9,15.5
+66,1326,"Giant","Giant Small Brown Eggs",86328013539,1.7100,9.05,7.05,false,true,20,9,20.8,20.5,18.6
+66,1327,"Giant","Giant Large Brown Eggs",43665880560,3.8400,18.8,16.7,false,false,33,7,4.33,18.2,4.8
+66,1328,"Giant","Giant Small Eggs",21174731850,2.2600,12.2,10.1,false,true,35,10,3.69,5.81,13.7
+66,1329,"Giant","Giant Large Eggs",13848235011,1.6500,19.8,16.7,true,true,27,9,22.6,21.0,5.76
+66,1330,"Giant","Giant Egg Substitute",19616153836,1.3300,10.9,9.89,true,true,33,13,10.5,7.37,15.4
+34,1331,"Carrington","Carrington Low Fat Waffles",95429553389,2.7400,10.3,8.3,true,false,29,6,7.86,22.0,15.0
+110,1332,"Carrington","Carrington Orange Popsicles",46533108353,0.6900,14.7,12.6,true,false,14,12,20.8,8.17,10.5
+100,1333,"Carrington","Carrington Frozen Chicken Breast",91584274172,0.9300,9.92,8.92,true,true,21,12,19.3,5.89,11.3
+29,1334,"Carrington","Carrington Frozen Pancakes",11925595402,1.8400,19.7,17.7,true,false,17,12,12.1,22.4,15.0
+63,1335,"Carrington","Carrington Low Fat French Fries",92312397360,2.4100,8.15,6.14,false,false,7,11,15.1,3.05,8.1
+64,1336,"Carrington","Carrington Frozen Sausage Pizza",95793614983,3.3900,18.8,17.7,true,false,17,14,21.3,9.63,21.6
+34,1337,"Carrington","Carrington Blueberry Waffles",20035340189,0.5700,7.64,5.63,false,true,22,12,8.84,13.5,4.5
+63,1338,"Carrington","Carrington Fajita French Fries",58852193951,2.2200,16.1,14.1,true,false,29,9,3.58,18.8,18.7
+34,1339,"Carrington","Carrington Waffles",77714528441,1.3100,10.4,8.39,true,true,32,7,16.3,20.9,14.8
+64,1340,"Carrington","Carrington Frozen Pepperoni Pizza",85769148468,2.5700,12.1,11.1,true,true,35,7,14.8,13.5,21.2
+64,1341,"Carrington","Carrington Frozen Cheese Pizza",73869249224,3.4500,19.2,18.2,true,true,12,14,12.8,14.3,8.42
+64,1342,"Carrington","Carrington Frozen Mushroom Pizza",51161635518,3.7300,18.5,15.5,false,false,5,10,13.8,22.4,10.4
+34,1343,"Carrington","Carrington Apple Cinnamon Waffles",98499502539,2.8700,13.7,11.6,true,true,36,7,11.0,17.9,6.27
+60,1344,"Carrington","Carrington Frozen Carrots",45029655098,1.5200,9.89,7.89,true,false,19,9,4.05,3.5,4.36
+10,1345,"Carrington","Carrington Turkey TV Dinner",37703158259,3.6800,10.2,9.19,false,true,14,8,6.02,20.4,18.6
+10,1346,"Carrington","Carrington Chicken TV Dinner",98351905941,2.3500,9.06,6.06,true,false,2,12,12.9,12.8,20.8
+10,1347,"Carrington","Carrington Beef TV Dinner",60263175368,1.7700,21.2,20.2,true,true,2,9,14.5,21.7,16.4
+28,1348,"Carrington","Carrington Pancake Mix",35268860459,2.4700,14.5,13.5,false,true,23,13,10.7,9.08,15.8
+110,1349,"Carrington","Carrington Grape Popsicles",56417896151,2.9000,12.5,10.5,false,true,11,11,22.8,4.77,5.87
+63,1350,"Carrington","Carrington Home Style French Fries",90661347508,0.9200,6.87,5.86,false,false,7,12,5.39,3.53,9.52
+110,1351,"Carrington","Carrington Lime Popsicles",81048149466,1.6700,20.2,18.2,false,false,21,13,16.4,15.8,19.6
+9,1352,"Carrington","Carrington Ice Cream",84529367089,2.6500,17.7,14.7,true,true,18,10,16.3,20.4,22.3
+9,1353,"Carrington","Carrington Ice Cream Sandwich",44153935313,2.2400,13.9,12.8,true,false,19,7,17.7,20.4,22.9
+60,1354,"Carrington","Carrington Frozen Cauliflower",47851617932,1.4800,9.18,8.18,false,false,1,7,6.2,3.69,6.31
+60,1355,"Carrington","Carrington Frozen Broccoli",66713952422,0.6300,17.2,15.2,true,false,26,9,7.34,15.6,8.18
+60,1356,"Carrington","Carrington Frozen Corn",74768572449,1.6000,11.9,9.89,false,false,10,8,4.8,14.5,6.59
+60,1357,"Carrington","Carrington Frozen Peas",62868673205,2.7100,21.8,19.7,true,true,3,13,16.4,13.2,22.8
+9,1358,"Carrington","Carrington Popsicles",40161059498,2.1000,11.5,8.5,false,false,13,8,16.4,7.24,17.9
+100,1359,"Carrington","Carrington Frozen Chicken Thighs",87498926520,1.2400,21.5,19.5,true,true,12,6,6.07,8.19,9.27
+100,1360,"Carrington","Carrington Frozen Chicken Wings",34029079079,2.4200,9.4,8.39,false,true,11,7,18.0,19.8,19.9
+110,1361,"Carrington","Carrington Lemon Popsicles",26702582240,1.8100,11.5,9.5,true,false,6,8,9.66,19.1,13.6
+78,1362,"Hilltop","Hilltop Silky Smooth Hair Conditioner",87351329922,1.4900,13.1,10.1,false,false,9,10,10.2,9.54,5.04
+39,1363,"Hilltop","Hilltop Tartar Control Toothpaste",49262599349,2.6600,8.5,6.5,false,false,6,13,8.23,11.4,21.4
+39,1364,"Hilltop","Hilltop Whitening Toothpast",24268284440,1.6000,19.8,17.7,true,false,29,13,17.1,7.88,12.7
+39,1365,"Hilltop","Hilltop Toothpaste",45417320132,0.5300,6.18,4.17,true,false,24,12,8.59,9.15,12.0
+39,1366,"Hilltop","Hilltop Deodorant",79660771489,2.7600,17.2,15.2,false,false,30,10,21.6,21.0,13.6
+79,1367,"Hilltop","Hilltop Conditioning Shampoo",70047573447,3.5700,16.3,13.2,false,false,19,10,15.8,5.39,8.92
+79,1368,"Hilltop","Hilltop Extra Moisture Shampoo",73528791069,3.5500,18.6,16.6,true,false,14,9,7.35,6.66,8.21
+88,1369,"Hilltop","Hilltop Angled Toothbrush",99251229166,3.3800,13.7,10.6,true,false,20,7,20.3,18.5,9.77
+79,1370,"Hilltop","Hilltop Apricot Shampoo",71970213055,2.3800,16.0,13.0,true,false,16,6,11.8,19.7,9.06
+70,1371,"Hilltop","Hilltop Childrens Aspirin",78147458434,2.4700,6.4,4.4,true,false,33,12,15.4,8.09,16.9
+70,1372,"Hilltop","Hilltop Buffered Aspirin",86202078461,2.4900,6.49,4.48,true,false,10,13,13.7,8.08,21.9
+71,1373,"Hilltop","Hilltop 200 MG Ibuprofen",74302179217,3.6000,8.77,7.77,true,false,5,12,5.21,9.35,21.2
+72,1374,"Hilltop","Hilltop 200 MG Acetominifen",51594565510,2.8900,18.9,17.8,true,false,23,9,14.1,5.6,13.0
+73,1375,"Hilltop","Hilltop HCL Nasal Spray",75030302405,2.1300,21.1,19.1,true,false,25,11,5.63,6.87,12.3
+73,1376,"Hilltop","Hilltop Dishwasher Detergent",45462585091,1.6800,21.5,18.5,true,false,22,14,8.96,16.9,12.2
+75,1377,"Hilltop","Hilltop Multi-Symptom Cold Remedy",38136088252,2.8300,10.6,8.6,true,false,4,10,12.6,5.03,20.6
+75,1378,"Hilltop","Hilltop Childrens Cold Remedy",43904007077,0.7300,12.9,9.89,true,false,6,13,4.06,6.3,19.9
+74,1379,"Hilltop","Hilltop Laundry Detergent",95815276503,1.9200,9.26,8.26,false,false,15,11,22.5,5.76,6.52
+74,1380,"Hilltop","Hilltop Mint Mouthwash",35438118577,3.6200,19.3,16.2,false,false,32,7,11.5,22.0,18.3
+80,1381,"Sunset","Sunset 60 Watt Lightbulb",56587154269,2.1700,21.6,20.6,false,false,34,9,22.9,3.28,17.6
+56,1382,"Sunset","Sunset Plastic Forks",90830605626,1.1300,21.7,19.7,true,false,5,8,21.3,3.27,22.6
+56,1383,"Sunset","Sunset Plastic Spoons",81217407584,2.5900,19.0,17.0,false,false,7,10,7.48,16.4,18.5
+56,1384,"Sunset","Sunset Plastic Knives",84698625206,2.5700,13.1,11.1,false,false,24,7,16.4,12.6,10.3
+101,1385,"Sunset","Sunset C-Size Batteries",20421063303,2.4000,14.5,12.5,true,false,29,14,14.7,12.8,14.8
+80,1386,"Sunset","Sunset 100 Watt Lightbulb",83140047192,1.6400,16.7,13.7,true,false,31,7,6.17,14.1,14.1
+101,1387,"Sunset","Sunset AAA-Size Batteries",12002381682,3.4900,10.9,8.89,true,false,14,13,15.1,10.3,5.96
+55,1388,"Sunset","Sunset Paper Plates",20057001709,1.7500,13.2,11.1,true,false,9,11,6.59,11.6,5.24
+55,1389,"Sunset","Sunset Paper Cups",63037931323,2.6300,13.6,11.6,true,false,12,9,9.92,21.6,5.11
+80,1390,"Sunset","Sunset 75 Watt Lightbulb",40330317616,1.9100,18.7,16.7,true,false,30,5,13.5,9.77,13.5
+22,1391,"Sunset","Sunset Toilet Bowl Cleaner",63766054511,1.1600,20.9,19.8,true,false,26,13,5.02,11.0,12.8
+22,1392,"Sunset","Sunset Counter Cleaner",10296207070,0.8300,21.0,18.0,false,false,2,6,3.36,11.0,17.8
+22,1393,"Sunset","Sunset Glass Cleaner",26871840357,1.8500,16.4,14.3,true,false,19,11,12.2,7.46,9.13
+80,1394,"Sunset","Sunset 25 Watt Lightbulb",32639759182,2.5300,18.7,16.7,true,false,15,10,3.72,8.73,8.42
+101,1395,"Sunset","Sunset AA-Size Batteries",84551028609,2.9500,17.9,14.8,true,false,10,14,17.9,13.1,3.7
+101,1396,"Sunset","Sunset D-Size Batteries",59556713700,2.6500,15.1,12.1,false,false,5,13,4.14,6.25,19.5
+18,1397,"Sunset","Sunset Paper Towels",45586578249,1.4300,10.2,7.19,false,false,5,7,17.1,18.1,21.1
+18,1398,"Sunset","Sunset Soft Napkins",79830029606,3.1500,9.38,8.38,true,false,35,11,11.4,22.4,16.4
+18,1399,"Sunset","Sunset Scented Tissue",70216831564,1.7800,11.6,10.6,true,false,31,10,22.8,3.76,15.6
+18,1400,"Sunset","Sunset Toilet Paper",49795919060,0.8600,8.0,7.0,false,false,29,13,15.8,15.8,16.7
+18,1401,"Sunset","Sunset Tissues",99420487284,1.5900,10.2,8.19,false,false,31,7,7.32,17.0,16.0
+18,1402,"Sunset","Sunset Scented Toilet Tissue",72139471173,2.5900,9.43,7.43,false,false,20,7,21.5,21.4,11.2
+20,1403,"Sunset","Sunset Room Freshener",67099675536,2.4400,15.7,13.6,true,false,11,6,14.2,15.2,4.29
+40,1404,"Sunset","Sunset Frying Pan",99056425690,2.7100,18.0,15.0,false,false,12,8,5.75,16.5,3.58
+87,1405,"Sunset","Sunset Copper Cleaner",63254396319,0.8900,17.2,14.2,false,false,1,8,20.0,20.8,18.8
+47,1406,"Sunset","Sunset Bees Wax Candles",29329741597,0.5600,12.2,9.19,true,false,36,12,13.0,12.7,20.4
+87,1407,"Sunset","Sunset Silver Cleaner",52765478491,0.6300,14.5,13.5,true,false,3,5,4.5,14.0,19.7
+86,1408,"Sunset","Sunset Copper Pot Scrubber",89295631051,2.6500,9.92,7.92,false,false,29,5,18.9,17.8,16.5
+85,1409,"Sunset","Sunset Economy Toilet Brush",15871264338,0.5300,7.18,6.17,false,false,25,13,5.1,11.0,12.4
+41,1410,"Sunset","Sunset Scissors",21639183163,1.7200,17.3,15.2,false,false,14,13,14.0,7.24,4.28
+42,1411,"Sunset","Sunset Large Sponge",73550452589,1.9000,17.4,15.3,true,false,19,11,12.4,7.24,9.27
+41,1412,"Sunset","Sunset Screw Driver",48556137681,1.8300,19.6,17.6,true,false,15,10,3.85,8.51,8.56
+65,1413,"Gerolli","Gerolli Extra Lean Hamburger",69705173373,3.3800,13.8,11.8,true,true,4,10,12.8,4.76,20.4
+65,1414,"Gerolli","Gerolli Seasoned Hamburger",13948624730,1.3400,19.5,17.5,true,false,26,9,3.79,17.6,8.0
+104,1415,"Gauss","Gauss Monthly Sports Magazine",83909401297,3.8000,13.7,10.6,true,false,12,11,19.2,8.72,11.5
+108,1416,"Gauss","Gauss Monthly Auto Magazine",63488488793,2.7800,16.1,15.1,true,false,14,8,9.19,18.8,10.8
+107,1417,"Gauss","Gauss Monthly Computer Magazine",23113057017,3.6100,15.6,13.6,false,false,29,8,6.97,22.1,20.9
+105,1418,"Gauss","Gauss Monthly Home Magazine",85832040905,1.6100,13.3,12.3,false,false,10,11,16.6,14.2,11.7
+106,1419,"Gauss","Gauss Monthly Fashion Magazine",80792245268,0.8300,15.7,13.6,true,false,17,12,6.6,4.39,10.9
+61,1420,"Hermanos","Hermanos Summer Squash",22748995423,1.7300,15.2,12.1,false,true,32,12,4.39,7.69,21.1
+61,1421,"Hermanos","Hermanos Corn on the Cob",76946966052,2.8400,13.7,10.6,false,true,11,9,17.1,20.0,5.99
+61,1422,"Hermanos","Hermanos Asparagus",78141482472,2.2300,8.02,6.02,true,false,1,12,21.1,9.96,9.65
+61,1423,"Hermanos","Hermanos Sweet Peas",42555918097,2.3700,14.1,13.1,false,true,22,9,6.11,18.5,16.9
+61,1424,"Hermanos","Hermanos New Potatos",79086070656,3.9100,17.2,15.2,true,false,11,13,11.8,7.88,17.9
+61,1425,"Hermanos","Hermanos Beets",95661703944,2.1800,18.3,17.2,false,false,17,10,20.0,7.13,21.9
+61,1426,"Hermanos","Hermanos Prepared Salad",11429622769,3.7400,13.1,12.1,false,true,21,13,4.99,11.4,10.4
+61,1427,"Hermanos","Hermanos Onions",63340892195,3.2700,16.1,14.1,true,false,31,9,22.3,6.41,8.91
+61,1428,"Hermanos","Hermanos Green Pepper",38346577286,3.8600,17.3,16.2,false,false,34,6,18.8,11.2,20.4
+61,1429,"Hermanos","Hermanos Shitake Mushrooms",59495612978,2.4000,7.06,5.05,true,false,29,9,21.5,3.06,17.9
+61,1430,"Hermanos","Hermanos Lettuce",93739064335,3.3600,18.7,15.7,true,true,33,5,12.4,11.9,6.13
+61,1431,"Hermanos","Hermanos Elephant Garlic",84125866293,2.8200,9.75,7.75,true,true,4,6,11.3,17.1,8.3
+61,1432,"Hermanos","Hermanos Red Pepper",52487912774,1.8000,8.22,7.22,false,false,12,8,14.5,21.7,20.6
+61,1433,"Hermanos","Hermanos Garlic",12112480998,2.6300,16.2,14.2,false,true,30,6,16.9,15.9,7.54
+61,1434,"Hermanos","Hermanos Potatos",74831464886,0.9300,18.3,16.2,true,true,30,11,18.0,22.9,13.7
+61,1435,"Hermanos","Hermanos Cauliflower",69791669249,2.7200,17.2,16.2,false,true,28,7,14.8,20.9,18.5
+61,1436,"Hermanos","Hermanos Tomatos",11748419404,0.9200,13.8,12.8,true,true,33,9,8.81,21.0,21.4
+61,1437,"Hermanos","Hermanos Mushrooms",65946390032,1.7400,11.3,8.3,false,true,30,14,15.3,10.8,17.0
+61,1438,"Hermanos","Hermanos Baby Onion",43238776326,1.3700,8.33,6.32,false,false,1,6,13.0,18.6,9.84
+61,1439,"Hermanos","Hermanos Dried Mushrooms",90576643347,1.5000,9.99,7.98,false,false,11,6,22.4,21.2,13.7
+61,1440,"Hermanos","Hermanos Fresh Lima Beans",37106795907,2.8100,10.7,8.69,false,false,9,6,16.5,20.4,20.3
+61,1441,"Hermanos","Hermanos Squash",83193079829,1.3100,14.6,13.6,true,false,2,5,18.4,17.7,13.5
+99,1442,"Hermanos","Hermanos Limes",88960998654,1.6400,17.2,16.2,false,false,29,12,22.3,8.15,14.6
+67,1443,"Hermanos","Hermanos Firm Tofu",74774398207,2.1700,6.96,3.96,true,true,15,11,13.2,21.0,22.2
+1,1444,"Hermanos","Hermanos Almonds",49780083298,1.7600,11.2,9.19,true,true,23,13,8.44,13.8,17.7
+99,1445,"Hermanos","Hermanos Macintosh Apples",70929118990,0.7400,8.69,7.68,false,false,11,13,10.2,11.8,7.77
+99,1446,"Hermanos","Hermanos Golden Delcious Apples",81270440220,1.2600,7.09,6.09,false,false,31,8,14.7,18.6,5.15
+99,1447,"Hermanos","Hermanos Red Delcious Apples",71657242178,2.9600,16.5,14.5,false,true,27,13,22.3,11.7,21.5
+99,1448,"Hermanos","Hermanos Lemons",75138459801,3.9400,6.79,4.78,false,true,23,9,4.48,22.4,6.53
+99,1449,"Hermanos","Hermanos Fancy Plums",34763028025,0.8700,17.5,14.5,true,true,21,6,20.5,14.6,22.5
+99,1450,"Hermanos","Hermanos Plums",62362840771,2.7700,17.4,16.3,true,false,31,6,10.0,11.5,14.4
+99,1451,"Hermanos","Hermanos Peaches",81225175261,1.6200,17.1,15.1,true,true,9,10,3.29,10.7,3.83
+61,1452,"Hermanos","Hermanos Broccoli",23181925415,2.8900,8.68,6.68,false,false,36,6,13.4,13.7,3.35
+99,1453,"Hermanos","Hermanos Mandarin Oranges",77379896044,3.1100,17.6,16.6,true,true,18,14,18.8,10.2,9.93
+1,1454,"Hermanos","Hermanos Mixed Nuts",54672282338,3.3900,17.4,15.3,true,true,11,9,10.1,16.0,11.8
+1,1455,"Hermanos","Hermanos Canned Peanuts",12010149359,2.5300,16.8,15.7,true,false,30,13,7.84,8.5,21.4
+61,1456,"Hermanos","Hermanos Sweet Onion",48540301918,1.8300,9.71,8.71,true,false,6,11,5.91,3.84,15.5
+99,1457,"Hermanos","Hermanos Cantelope",41213805079,3.3400,21.3,19.2,false,true,16,10,6.81,7.15,21.2
+99,1458,"Hermanos","Hermanos Honey Dew",77696750760,2.9000,21.6,18.6,true,true,17,11,19.0,7.44,8.08
+99,1459,"Hermanos","Hermanos Fuji Apples",63510150313,1.4300,19.1,17.1,true,false,29,9,9.02,6.43,8.24
+1,1460,"Hermanos","Hermanos Walnuts",14613705277,2.1300,11.1,8.1,true,false,29,14,12.8,7.34,17.5
+99,1461,"Hermanos","Hermanos Oranges",59664871096,2.5600,15.0,14.0,true,true,34,12,13.6,11.2,20.6
+99,1462,"Hermanos","Hermanos Tangerines",70006192326,0.7300,16.2,13.2,false,false,35,7,11.7,16.0,7.19
+1,1463,"Hermanos","Hermanos Party Nuts",60392994284,1.9800,12.4,9.39,true,false,12,11,13.0,7.12,12.7
+24,1464,"Amigo","Amigo Lox",63874211907,2.9600,21.4,18.3,true,false,23,6,8.91,15.7,6.85
+2,1465,"Amigo","Amigo Scallops",23498780131,2.7900,7.92,6.92,false,true,9,6,3.99,14.0,15.4
+45,1466,"Fort West","Fort West Low Fat Cookies",62315633893,1.8000,11.7,8.69,true,false,3,14,12.6,16.5,21.5
+12,1467,"Fort West","Fort West BBQ Potato Chips",81177968382,3.8800,16.1,14.1,true,true,10,6,16.7,10.4,4.55
+12,1468,"Fort West","Fort West Corn Chips",78015547394,1.2600,12.2,11.1,true,true,17,10,8.69,22.6,12.6
+12,1469,"Fort West","Fort West Low Fat BBQ Chips",66115648150,2.1300,19.3,17.2,false,false,35,9,7.43,18.9,19.8
+45,1470,"Fort West","Fort West Sugar Cookies",43408034443,2.4100,21.8,19.7,true,false,9,12,12.4,22.7,10.8
+45,1471,"Fort West","Fort West Chocolate Chip Cookies",90745901465,1.5500,18.0,17.0,false,false,15,10,14.4,9.43,16.4
+45,1472,"Fort West","Fort West Fudge Cookies",37276054024,2.2000,8.28,6.27,true,false,17,11,15.8,4.58,21.4
+45,1473,"Fort West","Fort West Fudge Brownies",29949557185,2.3600,6.68,4.67,false,true,7,9,10.4,5.85,16.2
+12,1474,"Fort West","Fort West Potato Chips",35717476010,2.1500,16.0,15.0,true,false,30,14,21.6,12.4,15.1
+45,1475,"Fort West","Fort West Lemon Cookies",87628745436,3.5600,16.2,14.2,false,false,19,6,5.26,9.37,4.43
+45,1476,"Fort West","Fort West Graham Crackers",93613129258,2.2600,8.77,7.77,false,true,22,7,18.7,12.4,13.6
+82,1477,"Fort West","Fort West Cheese Crackers",24762164950,2.7000,16.3,14.2,true,true,25,12,17.2,9.92,15.6
+54,1478,"Fort West","Fort West Buttered Popcorn",59005616307,2.6600,9.31,7.31,false,true,7,6,14.4,20.8,14.7
+54,1479,"Fort West","Fort West No Salt Popcorn",49392418265,1.4600,18.3,16.2,true,true,24,5,19.9,6.15,16.3
+54,1480,"Fort West","Fort West Low Fat Popcorn",52873635888,1.4400,21.2,19.2,false,true,32,6,18.8,16.7,12.1
+83,1481,"Fort West","Fort West Salsa Dip",12498204112,1.9300,10.5,9.5,true,true,34,5,7.58,12.9,9.92
+83,1482,"Fort West","Fort West Avocado Dip",51315057873,0.6000,19.9,17.8,true,false,24,5,5.64,18.2,13.8
+46,1483,"Fort West","Fort West Salted Pretzels",70177392363,2.1300,11.0,10.0,true,true,20,8,3.46,10.1,6.02
+83,1484,"Fort West","Fort West Cheese Dip",78232012391,0.6600,11.2,9.19,true,false,9,11,18.1,6.0,7.83
+83,1485,"Fort West","Fort West Fondue Mix",55115072131,1.5000,8.76,6.76,true,false,6,10,6.77,22.7,22.9
+84,1486,"Fort West","Fort West Mini Donuts",32407458424,1.7800,19.0,18.0,true,false,31,13,10.7,12.6,6.64
+17,1487,"Fort West","Fort West Beef Jerky",79745325446,0.9500,13.8,12.8,true,false,6,12,5.19,4.78,7.65
+84,1488,"Fort West","Fort West Chocolate Donuts",26275478005,2.3400,12.2,9.19,false,true,34,10,21.4,10.5,14.9
+12,1489,"Fort West","Fort West Low Fat Chips",18948981165,1.7300,13.3,11.3,true,false,12,11,9.74,9.82,18.9
+82,1490,"Fort West","Fort West Sesame Crackers",24716899991,1.4000,9.14,6.14,false,true,33,12,18.7,9.79,17.1
+45,1491,"Fort West","Fort West Frosted Cookies",76628169417,2.5800,17.1,14.1,false,true,26,10,21.3,12.8,19.0
+109,1492,"Fort West","Fort West Dried Apples",51633854508,1.5200,12.4,10.3,true,true,23,13,8.44,13.8,17.4
+109,1493,"Fort West","Fort West Apple Fruit Roll",72782890200,3.9600,6.78,4.78,false,true,13,11,20.6,9.32,8.57
+109,1494,"Fort West","Fort West Strawberry Fruit Roll",47741368412,1.6800,18.4,15.3,false,true,17,8,11.4,18.1,16.8
+109,1495,"Fort West","Fort West Raspberry Fruit Roll",38128170371,3.4800,15.3,12.3,true,true,12,12,16.2,9.09,12.5
+109,1496,"Fort West","Fort West Grape Fruit Roll",41609387993,2.4700,20.1,19.1,false,false,34,11,13.7,7.48,12.9
+109,1497,"Fort West","Fort West Dried Dates",67331826090,3.2900,12.1,10.1,false,false,16,9,16.2,21.6,19.7
+109,1498,"Fort West","Fort West Raisins",40050809979,2.3000,8.32,6.31,false,false,23,8,7.94,4.99,12.8
+109,1499,"Fort West","Fort West Golden Raisins",58913144469,1.3900,7.18,6.17,false,false,14,9,4.74,22.9,17.6
+109,1500,"Fort West","Fort West Dried Apricots",66967764496,2.4100,9.79,8.78,true,true,19,11,8.07,6.74,13.6
+84,1501,"Fort West","Fort West Frosted Donuts",55067865252,2.5200,10.0,8.0,true,false,32,10,10.4,21.4,17.9
+36,1502,"Gulf Coast","Gulf Coast Tasty Candy Bar",21143210530,2.8100,7.11,6.11,true,true,3,11,8.06,9.32,10.7
+36,1503,"Gulf Coast","Gulf Coast Mint Chocolate Bar",44578947424,2.9400,21.9,19.8,true,false,22,6,16.1,19.5,20.4
+36,1504,"Gulf Coast","Gulf Coast Malted Milk Balls",15011230111,1.5900,21.8,19.7,true,false,10,11,6.15,3.18,17.3
+36,1505,"Gulf Coast","Gulf Coast Semi-Sweet Chocolate Bar",97684733271,2.7500,14.7,11.6,false,false,3,10,13.3,8.52,13.9
+37,1506,"Gulf Coast","Gulf Coast Bubble Gum",13452652096,3.4300,13.2,10.1,false,false,5,11,16.0,6.46,21.3
+38,1507,"Gulf Coast","Gulf Coast Spicy Mints",65363921523,1.8400,18.9,16.8,true,false,14,8,7.0,19.3,8.9
+38,1508,"Gulf Coast","Gulf Coast Mints",40369606614,3.5400,10.9,7.89,true,false,33,13,18.4,14.6,3.27
+36,1509,"Gulf Coast","Gulf Coast White Chocolate Bar",61518642306,2.9800,19.3,17.2,true,false,24,12,3.98,9.94,15.0
+5,1510,"Jardon","Jardon Ravioli",95762093663,0.9600,17.7,15.7,true,true,9,7,8.47,16.7,12.3
+5,1511,"Jardon","Jardon Manicotti",49561676383,1.2000,11.5,9.5,true,true,22,5,11.9,14.4,18.5
+5,1512,"Jardon","Jardon Spaghetti",53042894005,0.5400,13.7,10.6,true,false,28,13,12.8,12.6,9.81
+57,1513,"Jardon","Jardon Thai Rice",78765332102,1.9000,13.5,11.5,true,false,33,5,14.3,12.9,9.26
+57,1514,"Jardon","Jardon Rice Medly",51484315991,0.5800,17.4,14.3,false,false,32,11,5.02,22.3,14.9
+43,1515,"Top Measure","Top Measure Imported Beer",70346650481,1.1000,11.8,9.8,true,false,28,13,17.0,8.9,11.0
+44,1516,"Top Measure","Top Measure Light Wine",78401270508,3.3600,10.0,9.0,false,false,35,13,8.01,13.2,16.6
+44,1517,"Top Measure","Top Measure Chardonnay Wine",66501371264,0.5800,12.2,11.1,true,false,28,11,11.0,4.56,10.8
+44,1518,"Top Measure","Top Measure Chablis Wine",43793757557,3.5200,10.4,7.39,true,false,34,11,22.0,8.88,16.3
+44,1519,"Top Measure","Top Measure Merlot Wine",67229494452,0.8100,17.3,16.2,true,false,16,10,14.5,3.79,4.24
+44,1520,"Top Measure","Top Measure Chardonnay",92542605996,2.3100,7.38,4.38,false,false,10,8,3.01,3.09,22.3
+44,1521,"Top Measure","Top Measure White Zinfandel Wine",19118239283,0.7000,16.5,13.5,true,false,17,8,8.65,19.2,4.52
+43,1522,"Top Measure","Top Measure Light Beer",24886158108,1.1400,12.8,10.8,false,false,24,12,11.4,12.3,10.6
+27,1523,"Modell","Modell Pumpernickel Bread",76797427535,1.5600,21.9,19.8,true,true,31,13,17.1,8.55,12.8
+27,1524,"Modell","Modell White Bread",51803112626,1.2600,10.3,9.3,true,true,10,6,10.0,14.6,8.32
+27,1525,"Modell","Modell Rye Bread",72952148318,3.9300,15.5,13.5,true,true,23,10,15.6,10.6,16.4
+26,1526,"Modell","Modell English Muffins",17195599675,1.6500,15.3,14.3,false,true,16,5,6.93,16.4,18.4
+26,1527,"Modell","Modell Cranberry Muffins",97582401633,3.4600,14.7,12.6,false,false,36,10,4.65,8.86,8.02
+26,1528,"Modell","Modell Muffins",77161489129,2.4400,7.28,4.28,true,false,27,7,17.7,14.1,7.24
+25,1529,"Modell","Modell Bagels",67764756083,3.2700,13.9,12.8,true,false,1,5,13.3,9.35,9.54
+26,1530,"Modell","Modell Blueberry Muffins",40483739972,1.2700,14.2,12.1,false,false,3,7,5.57,9.63,16.3
+27,1531,"Modell","Modell Wheat Bread",35443944334,0.5100,11.7,8.69,true,false,6,5,15.5,8.63,16.5
+49,1532,"CDR","CDR Sesame Oil",67400694489,1.3900,8.7,7.69,false,false,8,6,4.62,17.6,9.2
+53,1533,"CDR","CDR Chunky Peanut Butter",31598665118,2.5000,7.63,5.63,true,true,13,13,20.1,13.4,8.93
+51,1534,"CDR","CDR Hot Chocolate",32793181538,2.7800,8.77,7.77,false,true,14,8,18.2,18.2,15.4
+50,1535,"CDR","CDR Brown Sugar",56228918433,2.9200,10.3,8.3,true,false,23,11,9.86,7.49,19.3
+50,1536,"CDR","CDR White Sugar",92759070992,1.3300,6.43,4.42,false,true,29,11,22.8,13.0,17.4
+90,1537,"CDR","CDR French Roast Coffee",19334704279,2.7300,16.7,14.7,true,false,14,11,15.4,6.26,18.5
+90,1538,"CDR","CDR Decaf Coffee",13621910214,3.4000,10.4,8.39,false,false,12,10,21.6,19.1,15.5
+90,1539,"CDR","CDR Regular Coffee",65533179640,3.5800,11.3,10.3,true,false,35,9,6.3,21.4,10.2
+49,1540,"CDR","CDR Vegetable Oil",40538864731,3.5200,21.4,19.3,true,false,8,6,8.36,18.8,17.0
+49,1541,"CDR","CDR Corn Oil",61687900424,2.9500,21.2,18.2,true,true,19,13,18.5,11.3,8.97
+48,1542,"CDR","CDR Tomato Sauce",95931351780,0.9500,8.22,6.22,true,true,19,10,15.8,6.28,7.42
+49,1543,"CDR","CDR Canola Oil",86318153738,2.4800,20.4,18.3,true,true,25,12,7.07,22.9,15.5
+33,1544,"CDR","CDR Grape Preserves",65897241234,1.4600,17.0,16.0,true,true,34,7,12.4,19.6,20.9
+90,1545,"CDR","CDR Columbian Coffee",25521809458,2.2900,9.52,7.52,false,false,31,5,6.04,11.6,5.17
+31,1546,"CDR","CDR Strawberry Jelly",88240793347,0.6100,11.3,10.3,false,true,33,11,6.36,19.6,4.5
+4,1547,"CDR","CDR Pepper",48081826567,2.3800,16.1,14.1,true,false,14,9,12.9,19.1,12.3
+33,1548,"CDR","CDR Low Fat Apple Butter",80038576722,0.6700,21.0,19.0,true,false,1,5,8.24,10.8,12.7
+4,1549,"CDR","CDR Salt",44236547350,1.5200,17.9,16.8,false,false,19,10,16.7,8.67,3.05
+33,1550,"CDR","CDR Apple Butter",45431063771,1.8100,7.7,4.69,false,true,17,6,17.7,16.0,8.14
+4,1551,"CDR","CDR Oregano",68866800665,1.1600,15.3,13.3,false,false,32,7,16.8,20.1,15.1
+31,1552,"CDR","CDR Apple Jelly",15396953225,2.7000,21.4,20.3,true,false,10,8,20.1,4.18,10.1
+32,1553,"CDR","CDR Grape Jam",31972586512,1.8600,13.5,10.5,true,false,16,6,20.7,9.45,6.96
+32,1554,"CDR","CDR Apple Jam",37740505337,2.5400,21.0,19.0,true,true,25,8,8.25,18.8,21.9
+32,1555,"CDR","CDR Strawberry Jam",89651774764,2.9500,21.7,18.7,true,true,18,8,14.2,21.4,16.0
+53,1556,"CDR","CDR Creamy Peanut Butter",29538288712,2.6500,6.94,3.94,true,true,7,9,11.1,3.98,17.5
+33,1557,"CDR","CDR Strawberry Preserves",50687324404,1.2000,15.4,13.3,true,false,15,6,14.1,14.8,19.3
+53,1558,"CDR","CDR Extra Chunky Peanut Butter",84930775761,2.1600,11.5,9.5,false,true,22,10,7.35,9.29,12.4
+33,1559,"CDR","CDR Apple Preserves",75317577719,1.6200,21.0,20.0,false,false,7,9,15.3,20.2,18.8
+31,1560,"CDR","CDR Grape Jelly",54896665215,1.6000,12.5,10.5,false,true,1,9,5.44,3.24,18.3
