@@ -45,8 +45,8 @@ if test ! -e ${HOME}/.schemaWorkbench/mondrian.properties; then
     cp mondrian.properties ${HOME}/.schemaWorkbench/mondrian.properties
 fi
 
-if test ! -e ${HOME}/.schemaWorkbench/log4j.xml; then
-    cp log4j.xml ${HOME}/.schemaWorkbench/log4j.xml
+if test ! -e ${HOME}/.schemaWorkbench/log4j2.xml; then
+    cp log4j2.xml ${HOME}/.schemaWorkbench/log4j2.xml
 fi
 
 CP="${CP}${PS}${HOME}/.schemaWorkbench"
@@ -71,6 +71,14 @@ else
 fi
 setPentahoEnv
 
-exec "$_PENTAHO_JAVA" $JAVA_FLAGS -cp "$CP" mondrian.gui.Workbench
+JAVA_LOCALE_COMPAT=""
+JAVA_ADD_OPENS=""
+if $($_PENTAHO_JAVA -version 2>&1 | grep "version \"11\..*" > /dev/null )
+then
+  JAVA_LOCALE_COMPAT="-Djava.locale.providers=COMPAT,SPI"
+  JAVA_ADD_OPENS="--add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/sun.net.www.protocol.jar=ALL-UNNAMED"
+fi
+
+exec "$_PENTAHO_JAVA" $JAVA_ADD_OPENS $JAVA_FLAGS $JAVA_LOCALE_COMPAT -cp "$CP" mondrian.gui.Workbench
 
 # End workbench.sh

@@ -62,10 +62,10 @@ and level/measure mapping.
             </Doc>
         </Array>
         <Code><![CDATA[
-            private static final org.apache.log4j.Logger LOGGER =
-                org.apache.log4j.Logger.getLogger(DefaultDef.class);
+            private static final org.apache.logging.log4j.Logger LOGGER =
+                org.apache.logging.log4j.LogManager.getLogger(DefaultDef.class);
 
-            protected static org.apache.log4j.Logger getLogger() {
+            protected static org.apache.logging.log4j.Logger getLogger() {
                 return LOGGER;
             }
 

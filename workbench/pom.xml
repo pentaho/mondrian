@@ -5,22 +5,22 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-mondrian-parent-pom</artifactId>
-    <version>9.3.0.0-SNAPSHOT</version>
+    <version>9.4.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>workbench</artifactId>
-  <version>9.3.0.0-SNAPSHOT</version>
+  <version>9.4.0.0-SNAPSHOT</version>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>Mondrian Schema Workbench</description>
   <url>http://mondrian.pentaho.com</url>
   <properties>
     <jlfgr.version>1.0</jlfgr.version>
-    <pentaho-launcher.version>9.3.0.0-SNAPSHOT</pentaho-launcher.version>
+    <pentaho-launcher.version>9.4.0.0-SNAPSHOT</pentaho-launcher.version>
     <dependency.groovy-all.revision>2.4.8</dependency.groovy-all.revision>
-    <pdi-dataservice-client-plugin.version>9.3.0.0-SNAPSHOT</pdi-dataservice-client-plugin.version>
-    <oss-licenses.version>9.3.0.0-SNAPSHOT</oss-licenses.version>
+    <pdi-dataservice-client-plugin.version>9.4.0.0-SNAPSHOT</pdi-dataservice-client-plugin.version>
+    <oss-licenses.version>9.4.0.0-SNAPSHOT</oss-licenses.version>
     <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
-    <pdi.version>9.3.0.0-SNAPSHOT</pdi.version>
-    <commons-xul.version>9.3.0.0-SNAPSHOT</commons-xul.version>
+    <pdi.version>9.4.0.0-SNAPSHOT</pdi.version>
+    <commons-xul.version>9.4.0.0-SNAPSHOT</commons-xul.version>
   </properties>
   <dependencies>
     <dependency>
@@ -112,14 +112,8 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <exclusions>
-        <exclusion>
-          <artifactId>*</artifactId>
-          <groupId>*</groupId>
-        </exclusion>
-      </exclusions>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
     </dependency>
   </dependencies>
   <build>
@@ -146,7 +140,6 @@
       </plugin>
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.7</version>
         <executions>
           <execution>
             <phase>generate-sources</phase>
@@ -155,6 +148,7 @@
             </goals>
             <configuration>
               <target>
+                <property name="build.compiler" value="extJavac"/>
                 <property name="classpath" refid="maven.compile.classpath" />
                 <property name="relative.java.dir" value="src/main/java" />
                 <property name="relative.generated.java.dir" value="src/generated/java" />
@@ -166,15 +160,6 @@
             </configuration>
           </execution>
         </executions>
-        <dependencies>
-          <dependency>
-            <groupId>com.sun</groupId>
-            <artifactId>tools</artifactId>
-            <version>1.8.0</version>
-            <scope>system</scope>
-            <systemPath>${java.home}/../lib/tools.jar</systemPath>
-          </dependency>
-        </dependencies>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

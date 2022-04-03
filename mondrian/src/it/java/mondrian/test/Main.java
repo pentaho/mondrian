@@ -19,7 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -77,6 +78,7 @@ import mondrian.rolap.RolapConnectionTest;
 import mondrian.rolap.RolapCubeDimensionTest;
 import mondrian.rolap.RolapCubeHierarchyTest;
 import mondrian.rolap.RolapCubeTest;
+import mondrian.rolap.RolapEvaluatorTest;
 import mondrian.rolap.RolapMemberBaseTest;
 import mondrian.rolap.RolapNativeSqlInjectionTest;
 import mondrian.rolap.RolapNativeTopCountTest;
@@ -196,7 +198,7 @@ import mondrian.xmla.test.XmlaTest;
  * @author jhyde
  */
 public class Main extends TestSuite {
-  private static final Logger logger = Logger.getLogger( Main.class );
+  private static final Logger logger = LogManager.getLogger( Main.class );
   /**
    * Scratch area to store information on the emerging test suite.
    */
@@ -401,6 +403,7 @@ public class Main extends TestSuite {
       addTest( suite, RolapSchemaReaderTest.class );
       addTest( suite, RolapCubeTest.class );
       addTest( suite, NumberSqlCompilerTest.class );
+      addTest( suite, RolapEvaluatorTest.class );
       addTest( suite, RolapNativeSqlInjectionTest.class );
       addTest( suite, RolapNativeTopCountTest.class );
       addTest( suite, RolapNativeTopCountVersusNonNativeTest.class );

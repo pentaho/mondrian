@@ -15,7 +15,8 @@ import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.IdentityCatalogLocator;
 import mondrian.util.LockBox;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Registry of all servers within this JVM, and also serves as a factory for
@@ -28,7 +29,7 @@ import org.apache.log4j.Logger;
  */
 public class MondrianServerRegistry {
     public static final Logger logger =
-        Logger.getLogger(MondrianServerRegistry.class);
+        LogManager.getLogger(MondrianServerRegistry.class);
     public static final MondrianServerRegistry INSTANCE =
         new MondrianServerRegistry();
 

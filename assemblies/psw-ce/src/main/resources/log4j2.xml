@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ===================================================================== -->
+<!--                                                                       -->
+<!--  Log4j2 Configuration                                                  -->
+<!--                                                                       -->
+<!-- ===================================================================== -->
+
+<!--
+   | For more configuration information and examples see the Apache Log4j
+   | website: https://logging.apache.org/log4j/2.x/manual/configuration.html
+ -->
+
+<Configuration name="SchemaWorkbench" status="WARN">
+
+    <Appenders>
+
+        <!-- ================================= -->
+        <!-- Preserve messages in a local file -->
+        <!-- ================================= -->
+
+        <!-- A size based rolling appender -->
+        <RollingFile name="FILE" fileName="${sys:user.home}/.schemaWorkbench/workbench.log" filePattern="${sys:user.home}/.schemaWorkbench/workbench.log.%i">
+            <PatternLayout>
+                <Pattern>%d %-5p [%c] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="500KB" />
+            </Policies>
+            <DefaultRolloverStrategy max="1" />
+        </RollingFile>
+
+
+        <!-- ============================== -->
+        <!-- Append messages to the console -->
+        <!-- ============================== -->
+        <Console name="CONSOLE">
+            <ThresholdFilter level="INFO" />
+            <PatternLayout>
+                <Pattern>%d{ABSOLUTE} %-5p [%c{1}] %m%n</Pattern>
+            </PatternLayout>
+        </Console>
+    </Appenders>
+
+    <!-- ================ -->
+    <!-- Limit categories -->
+    <!-- ================ -->
+    <Loggers>
+
+        <Logger name="org.apache" level="INFO"/>
+
+        <Logger name="mondrian.gui" level="DEBUG"/>
+
+        <Logger name="mondrian" level="INFO"/>
+
+        <!-- ================ -->
+        <!-- Setup the Root category -->
+        <!-- ======================= -->
+
+        <Root level="ERROR">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </Root>
+    </Loggers>
+</Configuration>

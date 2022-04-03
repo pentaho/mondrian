@@ -13,7 +13,8 @@ import mondrian.recorder.ListRecorder;
 
 import junit.framework.TestCase;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.eigenbase.xom.*;
 
@@ -28,7 +29,7 @@ import java.util.Iterator;
  */
 public class DefaultRuleTest extends TestCase {
     private static final Logger LOGGER =
-        Logger.getLogger(DefaultRuleTest.class);
+        LogManager.getLogger(DefaultRuleTest.class);
     private static final String DIRECTORY =
         "testsrc/main/mondrian/rolap/aggmatcher";
     private static final String TEST_RULE_XML = "TestRule.xml";

@@ -11,7 +11,8 @@ package mondrian.util;
 import mondrian.olap.MondrianProperties;
 import mondrian.spi.Dialect;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Holder for constants which indicate whether particular issues have been
@@ -294,7 +295,7 @@ public class Bug {
         return
             !BugMondrian759Fixed
             && dialect.getDatabaseProduct() == Dialect.DatabaseProduct.LUCIDDB
-            && !Logger.getLogger("mondrian.test.PerformanceTest")
+            && !LogManager.getLogger("mondrian.test.PerformanceTest")
                 .isDebugEnabled();
     }
 }

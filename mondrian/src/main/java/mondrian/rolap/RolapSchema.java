@@ -22,7 +22,9 @@ import mondrian.util.ByteString;
 import mondrian.util.ClassResolver;
 
 import org.apache.commons.vfs2.FileSystemException;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
@@ -47,7 +49,7 @@ import javax.sql.DataSource;
  * @since 26 July, 2001
  */
 public class RolapSchema implements Schema {
-    static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
+    static final Logger LOGGER = LogManager.getLogger(RolapSchema.class);
 
     private static final Set<Access> schemaAllowed =
         Olap4jUtil.enumSetOf(
@@ -963,7 +965,7 @@ public class RolapSchema implements Schema {
         return null;
     }
 
-    private String calcMemberFqName(MondrianDef.CalculatedMember xmlCalcMember)
+    public static String calcMemberFqName(MondrianDef.CalculatedMember xmlCalcMember)
     {
         if (xmlCalcMember.dimension != null) {
             return Util.makeFqName(

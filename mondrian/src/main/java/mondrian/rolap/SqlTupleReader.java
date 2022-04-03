@@ -39,7 +39,9 @@ import mondrian.server.Locus;
 import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.util.CancellationChecker;
 import mondrian.util.Pair;
-import org.apache.log4j.Logger;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -96,7 +98,7 @@ import static mondrian.olap.fun.sort.Sorter.hierarchizeTupleList;
  */
 public class SqlTupleReader implements TupleReader {
   private static final Logger LOGGER =
-    Logger.getLogger( SqlTupleReader.class );
+    LogManager.getLogger( SqlTupleReader.class );
   protected final TupleConstraint constraint;
   List<TargetBase> targets = new ArrayList<TargetBase>();
   int maxRows = 0;

@@ -13,7 +13,8 @@ package mondrian.gui;
 
 import mondrian.gui.JdbcMetaData.DbColumn;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.Enumeration;
 import java.util.List;
@@ -28,7 +29,7 @@ public class JdbcExplorer
     extends javax.swing.JPanel
     implements TreeWillExpandListener
 {
-    private static final Logger LOGGER = Logger.getLogger(JdbcExplorer.class);
+    private static final Logger LOGGER = LogManager.getLogger(JdbcExplorer.class);
 
     JdbcMetaData jdbcMetaData;
     JdbcTreeModel model;
@@ -122,7 +123,7 @@ public class JdbcExplorer
                 : (Node) parentNode.getUserObject();
 
         @SuppressWarnings({"unchecked"})
-        Enumeration<DefaultMutableTreeNode> children = theTreeNode.children();
+        Enumeration<TreeNode> children = theTreeNode.children();
 
         LOGGER.debug(
             message + ": " + theNode + ", " + theNode.type
@@ -131,7 +132,7 @@ public class JdbcExplorer
                 ? ""
                 : ", " + theParentNode.type));
         while (children.hasMoreElements()) {
-            DefaultMutableTreeNode treeNode = children.nextElement();
+            DefaultMutableTreeNode treeNode = ( DefaultMutableTreeNode ) children.nextElement();
             Node child = (Node) treeNode.getUserObject();
             LOGGER.debug("\t" + child.toString() + ", " + child.type);
         }

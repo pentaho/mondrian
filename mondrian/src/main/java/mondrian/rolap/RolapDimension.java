@@ -15,7 +15,8 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.Collections;
 import java.util.Map;
@@ -54,7 +55,7 @@ import java.util.Map;
  */
 class RolapDimension extends DimensionBase {
 
-    private static final Logger LOGGER = Logger.getLogger(RolapDimension.class);
+    private static final Logger LOGGER = LogManager.getLogger(RolapDimension.class);
 
     private final Schema schema;
     private final Map<String, Annotation> annotationMap;

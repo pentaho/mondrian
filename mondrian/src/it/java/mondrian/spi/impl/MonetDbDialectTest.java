@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2015-2017 Hitachi Vantara.
+// Copyright (c) 2015-2021 Hitachi Vantara.
 // All rights reserved.
  */
 package mondrian.spi.impl;
@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 
-import com.mysql.jdbc.Statement;
+import java.sql.Statement;
 
 import junit.framework.TestCase;
 import mondrian.spi.Dialect;
@@ -23,7 +23,7 @@ import mondrian.spi.Dialect;
 public class MonetDbDialectTest extends TestCase {
   private Connection connection = mock( Connection.class );
   private DatabaseMetaData metaData = mock( DatabaseMetaData.class );
-  Statement statmentMock = mock( Statement.class );
+
   private MonetDbDialect dialect;
   private static final String JUL_2017_SP1_DB_VERSION = "11.27.5";
   private static final String AUG_2011_SP2_DB_VERSION = "11.5.7";

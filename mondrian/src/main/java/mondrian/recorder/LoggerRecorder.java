@@ -11,7 +11,7 @@
 
 package mondrian.recorder;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Implementation of {@link MessageRecorder} that writes to a

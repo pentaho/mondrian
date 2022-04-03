@@ -4,13 +4,14 @@ Mondrian is an Online Analytical Processing (OLAP) server that enables business 
 #### Requirements
 * JDK 1.8 or higher
 * Maven 3.3 or higher
+* Docker (for running integration tests without a dedicated MySQL DB)
 
 #### Quick Start
-The following command will build the Mondrian jar, run the full integration test suite using an embedded MySQL server and install the jar file into your local Maven repository.
+The following command will build the Mondrian jar, run the full integration test suite using a MySQL server running on Docker and install the jar file into your local Maven repository.
 ```
-mvn -DrunITs install
+mvn -DrunITs -P embedded-mysql,load-foodmart install
 ```
-Skip the integration tests by omitting `-DrunITs`
+Skip the integration tests by omitting `-DrunITs -P embedded-mysql,load-foodmart`
 
 #### Run Isolate Integration Test
 ```
@@ -18,7 +19,7 @@ mvn verify -DrunITs -Dit.test=NonEmptyTest.java -DfailIfNoTests=false
 ```
 
 #### Alternate Foodmart
-Mondrian's integration test suite runs queries against the Foodmart database.  By default, maven will start an embedded MySql database where the foodmart data will be loaded.  It is often needed to run the test suite against a different database.  You may choose different connection properties by creating a file `mondrian.properties` and specifying jdbc connection properties as follows:
+Mondrian's integration test suite runs queries against the Foodmart database.  It is often needed to run the test suite against a different database, for example, a local DB instance.  You may choose different connection properties by creating a file `mondrian.properties` and specifying jdbc connection properties as follows:
 ```
 mondrian.foodmart.jdbcURL=jdbc:mysql://yourServerName/yourDatabaseName
 mondrian.foodmart.jdbcUser=yourUser
@@ -42,7 +43,7 @@ The Maven build has a test dependency on the MySql jdbc driver.  If you want to 
 ```
     
 ###### Loading Foodmart
-When using the embedded MySQL databse, Foodmart will be populated automatically during the integration-test phase of the build.  When you're using an alternate Foodmart you can populate your database before the test suite runs by activating the Maven profile `load-foodmart`.  The following command will compile Mondrian, build a jar file, load foodmart into the configured database and run the integration test suite.
+When using the Docker MySQL databse, Foodmart will be populated automatically during the integration-test phase of the build.  When you're using an alternate Foodmart you can populate your database before the test suite runs by activating the Maven profile `load-foodmart`.  The following command will compile Mondrian, build a jar file, load foodmart into the configured database and run the integration test suite.
 ```
 mvn -DrunITs -Pload-foodmart verify 
 ```

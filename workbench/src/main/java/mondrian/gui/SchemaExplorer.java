@@ -5,14 +5,15 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2019 Hitachi Vantara and others
+// Copyright (C) 2005-2021 Hitachi Vantara and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 */
 
 package mondrian.gui;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.eigenbase.xom.*;
 
@@ -39,7 +40,7 @@ public class SchemaExplorer
     extends javax.swing.JPanel
     implements TreeSelectionListener, CellEditorListener
 {
-    private static final Logger LOGGER = Logger.getLogger(SchemaExplorer.class);
+    private static final Logger LOGGER = LogManager.getLogger(SchemaExplorer.class);
 
     private final Workbench workbench;
     private MondrianGuiDef.Schema schema;
@@ -4821,20 +4822,18 @@ public class SchemaExplorer
                         }
                         jPopupMenu.add(jSeparator2);
                         jPopupMenu.add(delete);
-                        // Disable Add Level if the relation has not been set
+                        // PSW-274
+                        addLevel.setEnabled(true);
                         // Enable Add <Relation>
                         if (((MondrianGuiDef.Hierarchy) pathSelected).relation
                             == null)
                         {
-                            addLevel.setEnabled(false);
                             addTable.setEnabled(true);
                             addJoin.setEnabled(true);
                             addView.setEnabled(true);
                             addInlineTable.setEnabled(true);
                         } else {
-                            // Enable Add Level if the relation has been set,
                             // disable Add <Relation>
-                            addLevel.setEnabled(true);
                             addTable.setEnabled(false);
                             addJoin.setEnabled(false);
                             addView.setEnabled(false);

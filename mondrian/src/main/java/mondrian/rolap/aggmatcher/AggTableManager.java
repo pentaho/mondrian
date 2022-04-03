@@ -23,7 +23,8 @@ import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapSchema;
 import mondrian.rolap.RolapStar;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import javax.sql.DataSource;
 
@@ -48,7 +49,7 @@ import java.util.List;
  */
 public class AggTableManager {
     private static final Logger LOGGER =
-        Logger.getLogger(AggTableManager.class);
+        LogManager.getLogger(AggTableManager.class);
 
     private final RolapSchema schema;
 

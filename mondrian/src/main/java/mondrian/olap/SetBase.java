@@ -13,7 +13,8 @@ package mondrian.olap;
 
 import mondrian.olap.type.*;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.Map;
 
@@ -25,7 +26,7 @@ import java.util.Map;
  */
 public class SetBase extends OlapElementBase implements NamedSet {
 
-    private static final Logger LOGGER = Logger.getLogger(SetBase.class);
+    private static final Logger LOGGER = LogManager.getLogger(SetBase.class);
 
     private String name;
     private Map<String, Annotation> annotationMap;

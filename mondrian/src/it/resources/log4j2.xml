@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Configuration status="Warn">
+
+    <Appenders>
+
+        <RollingFile name="FILE"
+          fileName="target/test-logs/mondrian.log"
+          filePattern="target/test-logs/mondrian.log.%i">
+            <PatternLayout>
+                <Pattern>%d %-5p [%c] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+              <SizeBasedTriggeringPolicy size="10 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="1" />
+        </RollingFile>
+
+        <RollingFile name="MDXLOG"
+          fileName="target/test-logs/mondrian_mdx.log"
+          filePattern="target/test-logs/mondrian_mdx.log.%i">
+            <PatternLayout>
+                <Pattern>%d %-5p [%c] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+              <SizeBasedTriggeringPolicy size="10 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="1" />
+        </RollingFile>
+
+        <RollingFile name="SQLLOG"
+          fileName="target/test-logs/mondrian_sql.log"
+          filePattern="target/test-logs/mondrian_sql.log.%i">
+            <PatternLayout>
+                <Pattern>%d %-5p [%c] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+              <SizeBasedTriggeringPolicy size="10 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="1" />
+        </RollingFile>
+
+        <Console name="CONSOLE">
+            <PatternLayout>
+                <Pattern>%d{ABSOLUTE} %-5p [%c{1}] %m%n</Pattern>
+            </PatternLayout>
+        </Console>
+
+    </Appenders>
+
+    <Loggers>
+        <Logger name="org.apache" level="info" />
+        <Logger name="mondrian" level="info" />
+        <Logger name="mondrian.mdx" level="debug">
+            <appender-ref ref="MDXLOG"/>
+        </Logger>
+        <Logger name="mondrian.sql" level="debug">
+            <appender-ref ref="SQLLOG"/>
+        </Logger>
+        <Root level="info">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

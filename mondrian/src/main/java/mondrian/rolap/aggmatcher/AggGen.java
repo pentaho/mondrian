@@ -16,7 +16,8 @@ import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.sql.SqlQuery;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -32,7 +33,7 @@ import java.util.*;
  * @author Richard M. Emberson
  */
 public class AggGen {
-    private static final Logger LOGGER = Logger.getLogger(AggGen.class);
+    private static final Logger LOGGER = LogManager.getLogger(AggGen.class);
 
     private final String cubeName;
     private final RolapStar star;

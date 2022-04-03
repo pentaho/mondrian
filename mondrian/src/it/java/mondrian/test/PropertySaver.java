@@ -13,16 +13,20 @@
 
 package mondrian.test;
 
-import mondrian.olap.MondrianProperties;
-import mondrian.rolap.RolapUtil;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
-import org.eigenbase.util.property.*;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.eigenbase.util.property.BooleanProperty;
+import org.eigenbase.util.property.DoubleProperty;
+import org.eigenbase.util.property.IntegerProperty;
+import org.eigenbase.util.property.Property;
+import org.eigenbase.util.property.StringProperty;
+
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
+import mondrian.rolap.RolapUtil;
 
 /**
  * Sets properties and logging levels, and remembers the original values so they
@@ -142,7 +146,7 @@ public class PropertySaver {
             }
         }
         for (Map.Entry<Logger, Level> entry : originalLoggerLevels.entrySet()) {
-            entry.getKey().setLevel(entry.getValue());
+            Util.setLevel( entry.getKey() , entry.getValue() );
         }
     }
 
@@ -157,7 +161,7 @@ public class PropertySaver {
         if (!originalLoggerLevels.containsKey(logger)) {
             originalLoggerLevels.put(logger, prevLevel);
         }
-        logger.setLevel(level);
+        Util.setLevel( logger, level );
     }
 
     /**
@@ -169,7 +173,7 @@ public class PropertySaver {
     public void setAtLeast(Logger logger, Level level) {
         final Level prevLevel = logger.getLevel();
         if (prevLevel == null
-            || !prevLevel.isGreaterOrEqual(level))
+            || !(prevLevel.compareTo(level) <= 0))
         {
             set(logger, level);
         }
