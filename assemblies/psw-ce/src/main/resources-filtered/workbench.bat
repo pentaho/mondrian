@@ -56,11 +56,13 @@ popd
 :VERSIONCHECKDONE
 
 SET JAVA_LOCALE_COMPAT=
+SET JAVA_ADD_OPENS=
 IF NOT %ISJAVA11% == 1 GOTO :SKIPLOCALE
 set JAVA_LOCALE_COMPAT=-Djava.locale.providers=COMPAT,SPI
+set JAVA_ADD_OPENS=--add-opens java.base/java.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/sun.net.www.protocol.jar=ALL-UNNAMED
 :SKIPLOCALE
 
 echo %JAVA_LOCALE_COMPAT%
-"%_PENTAHO_JAVA%" -Xms1024m -Xmx2048m %JAVA_LOCALE_COMPAT% -cp "%CP%" -Dlog4j.configurationFile=file:///%ROOT%\.schemaWorkbench\log4j2.xml mondrian.gui.Workbench
+"%_PENTAHO_JAVA%" -Xms1024m -Xmx2048m %JAVA_ADD_OPENS% %JAVA_LOCALE_COMPAT% -cp "%CP%" -Dlog4j.configurationFile=file:///%ROOT%\.schemaWorkbench\log4j2.xml mondrian.gui.Workbench
 
 rem End workbench.bat
