@@ -1198,8 +1198,15 @@ public class SqlTupleReader implements TupleReader {
     AggStar aggStar = chooseAggStar( constraint, evaluator, baseCube );
 
     // PATCH: Add constraints at first to ensure that level tables are added last
-    // (which optimizes join performance on ClickHouse)
-    constraint.addConstraint( sqlQuery, baseCube, aggStar );
+    if (constraint instanceof RolapNativeCrossJoin.NonEmptyCrossJoinConstraint) {
+      if(aggStar != null) {
+        aggStar.getFactTable().addToFrom(sqlQuery, false, false);
+      }
+      else {
+        baseCube.getStar().getFactTable().addToFrom(sqlQuery, false, false);
+      }
+      constraint.addConstraint( sqlQuery, baseCube, aggStar );
+    }
 
     // add the selects for all levels to fetch
     for ( TargetBase target : targetGroup ) {
@@ -1216,7 +1223,9 @@ public class SqlTupleReader implements TupleReader {
     }
 
     // PATCH: Already added before
-    // constraint.addConstraint( sqlQuery, baseCube, aggStar );
+    if (!(constraint instanceof RolapNativeCrossJoin.NonEmptyCrossJoinConstraint)) {
+      constraint.addConstraint( sqlQuery, baseCube, aggStar );
+    }
 
     return sqlQuery.toSqlAndTypes();
   }
