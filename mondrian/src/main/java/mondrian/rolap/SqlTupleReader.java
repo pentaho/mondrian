@@ -1198,14 +1198,19 @@ public class SqlTupleReader implements TupleReader {
     AggStar aggStar = chooseAggStar( constraint, evaluator, baseCube );
 
     // PATCH: Add constraints at first to ensure that level tables are added last
-    if (constraint instanceof RolapNativeCrossJoin.NonEmptyCrossJoinConstraint) {
+    boolean prependConstraint = false;
+    if (constraint instanceof SqlContextConstraint && ((SqlContextConstraint) constraint).isJoinRequired()) {
       if(aggStar != null) {
         aggStar.getFactTable().addToFrom(sqlQuery, false, false);
+        prependConstraint = true;
       }
-      else {
+      else if (baseCube != null && !baseCube.isVirtual()) {
         baseCube.getStar().getFactTable().addToFrom(sqlQuery, false, false);
+        prependConstraint = true;
       }
-      constraint.addConstraint( sqlQuery, baseCube, aggStar );
+      if (prependConstraint) {
+        constraint.addConstraint( sqlQuery, baseCube, aggStar );
+      }
     }
 
     // add the selects for all levels to fetch
@@ -1223,7 +1228,7 @@ public class SqlTupleReader implements TupleReader {
     }
 
     // PATCH: Already added before
-    if (!(constraint instanceof RolapNativeCrossJoin.NonEmptyCrossJoinConstraint)) {
+    if (!prependConstraint) {
       constraint.addConstraint( sqlQuery, baseCube, aggStar );
     }
 
