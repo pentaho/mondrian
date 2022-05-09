@@ -1125,6 +1125,11 @@ public class RolapEvaluator implements Evaluator {
     return cellReader.getMissCount();
   }
 
+  // PATCH: Add the possibility to call this cell reader method.
+  public final boolean isDirty() {
+    return cellReader.isDirty();
+  }
+
   public final Object getParameterValue( ParameterSlot slot ) {
     return root.getParameterValue( slot );
   }

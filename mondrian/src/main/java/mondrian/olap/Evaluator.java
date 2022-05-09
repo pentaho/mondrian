@@ -377,6 +377,9 @@ public interface Evaluator {
      */
     int getMissCount();
 
+    // PATCH: Add the possibility to call this cell reader method.
+    boolean isDirty();
+
     /**
      * Returns the value of a parameter, evaluating its default value if it is
      * not set.
