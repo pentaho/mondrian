@@ -64,10 +64,14 @@ public class MondrianOlap4jDriver implements Driver {
     protected final Factory factory;
 
     static {
-        try {
-            register();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        // PATCH: Skip registration as it is not needed in JRuby mondrian-olap
+        // and this was causing a global reference to the JRuby runtime which prevented its garbage collection.
+        if (! "false".equals(System.getProperty("mondrian.olap4j.registerDriver"))) {
+            try {
+                register();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
