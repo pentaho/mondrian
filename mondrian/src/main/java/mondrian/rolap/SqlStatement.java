@@ -384,6 +384,9 @@ public class SqlStatement {
             Object val = resultSet.getObject( columnPlusOne );
             if (val instanceof java.time.LocalDateTime) {
               val = java.sql.Timestamp.valueOf((java.time.LocalDateTime) val);
+            // ClickHouse JDBC driver returns java.time.LocalDate values for date columns.
+            } else if (val instanceof java.time.LocalDate) {
+              val = java.sql.Date.valueOf((java.time.LocalDate) val);
             }
             return val;
           }
@@ -558,6 +561,9 @@ public class SqlStatement {
           Object val = resultSet.getObject( column + 1 );
           if (val instanceof java.time.LocalDateTime) {
             val = java.sql.Timestamp.valueOf((java.time.LocalDateTime) val);
+          // ClickHouse JDBC driver returns java.time.LocalDate values for date columns.
+          } else if (val instanceof java.time.LocalDate) {
+            val = java.sql.Date.valueOf((java.time.LocalDate) val);
           }
           return val;
         case STRING:
