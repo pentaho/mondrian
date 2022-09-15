@@ -1135,6 +1135,8 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.PDI;
         } else if (upperProductName.startsWith("GOOGLE BIGQUERY")) {
             return DatabaseProduct.GOOGLEBIGQUERY;
+        } else if (upperProductName.indexOf("CLICKHOUSE") >= 0) {
+            return DatabaseProduct.CLICKHOUSE;
         } else {
             return DatabaseProduct.getDatabaseProduct(upperProductName);
         }
