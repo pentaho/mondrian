@@ -77,6 +77,12 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
         return DatabaseProduct.POSTGRESQL;
     }
 
+    // PATCH: PostgreSQL supports row expressions for IN conditions.
+    @Override
+    public boolean supportsMultiValueInExpr() {
+        return true;
+    }
+
     @Override
     public boolean allowsRegularExpressionInWhereClause() {
         return true;

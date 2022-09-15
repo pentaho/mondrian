@@ -75,6 +75,12 @@ public class OracleDialect extends JdbcDialectImpl {
         return false;
     }
 
+    // PATCH: Oracle supports multiple columns for IN conditions.
+    @Override
+    public boolean supportsMultiValueInExpr() {
+        return true;
+    }
+
     @Override
     public boolean allowsRegularExpressionInWhereClause() {
         return true;
