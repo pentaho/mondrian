@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.lang.ref.*;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+// PATCH: Use ConcurrentHashMap instead of HashMap for mapKeyToSchema and mapMd5ToSchema
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
 
@@ -44,7 +46,9 @@ class RolapSchemaPool {
 
     private final Map<SchemaKey, ExpiringReference<RolapSchema>>
         mapKeyToSchema =
-            new HashMap<SchemaKey, ExpiringReference<RolapSchema>>();
+            // PATCH: Use ConcurrentHashMap instead of HashMap
+            // new HashMap<SchemaKey, ExpiringReference<RolapSchema>>();
+            new ConcurrentHashMap<SchemaKey, ExpiringReference<RolapSchema>>();
 
     // REVIEW: This map is now considered unsafe. If two schemas have identical
     // metadata but a different underlying database connection, we should not
@@ -52,9 +56,15 @@ class RolapSchemaPool {
     // definition, this field can probably be removed.
     private final Map<ByteString, ExpiringReference<RolapSchema>>
         mapMd5ToSchema =
-            new HashMap<ByteString, ExpiringReference<RolapSchema>>();
+            // PATCH: Use ConcurrentHashMap instead of HashMap
+            // new HashMap<ByteString, ExpiringReference<RolapSchema>>();
+            new ConcurrentHashMap<ByteString, ExpiringReference<RolapSchema>>();
 
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    // PATCH: Use many locks per key hashCode to improve concurrent creation of new schemas
+    // private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final int LOCKS_COUNT = 100;
+    private final Map<Integer, ReentrantReadWriteLock> locks =
+        new ConcurrentHashMap<Integer, ReentrantReadWriteLock>(LOCKS_COUNT);
 
     private RolapSchemaPool() {
     }
@@ -169,11 +179,19 @@ class RolapSchemaPool {
             catalogStr, key);
     }
 
+    // PATCH: Get one of LOCKS_COUNT lock based on key hashCode.
+    private ReentrantReadWriteLock getLock(Object key) {
+        int index = (key.toString().hashCode() & 0x7fffffff) % LOCKS_COUNT;
+        return locks.computeIfAbsent(new Integer(index), i -> new ReentrantReadWriteLock());
+    }
+
     private <T> RolapSchema lookUp(
         Map<T, ExpiringReference<RolapSchema>> map,
         T key,
         String pinSchemaTimeout)
     {
+        // PATCH: Use getLock
+        ReentrantReadWriteLock lock = getLock(key);
         lock.readLock().lock();
         try {
             ExpiringReference<RolapSchema> ref = map.get(key);
@@ -207,6 +225,8 @@ class RolapSchemaPool {
             return schema;
         }
 
+        // PATCH: Use getLock
+        ReentrantReadWriteLock lock = getLock(key);
         lock.writeLock().lock();
         try {
             // We need to check once again, now under
@@ -251,6 +271,8 @@ class RolapSchemaPool {
             return schema;
         }
 
+        // PATCH: Use getLock
+        ReentrantReadWriteLock lock = getLock(md5Bytes);
         lock.writeLock().lock();
         try {
             // The motivation for repeating lookup attempt is the same
@@ -475,7 +497,8 @@ class RolapSchemaPool {
     }
 
     private void remove(SchemaKey key) {
-        lock.writeLock().lock();
+        // PATCH: No need to lock for remove as ConcurrentHashMap is used.
+        // lock.writeLock().lock();
         RolapSchema schema = null;
         try {
             Reference<RolapSchema> ref = mapKeyToSchema.get(key);
@@ -487,7 +510,7 @@ class RolapSchemaPool {
             }
             mapKeyToSchema.remove(key);
         } finally {
-            lock.writeLock().unlock();
+            // lock.writeLock().unlock();
         }
 
         if (schema != null) {
@@ -496,7 +519,8 @@ class RolapSchemaPool {
     }
 
     void clear() {
-        lock.writeLock().lock();
+        // PATCH: No need to lock for clear as ConcurrentHashMap is used.
+        // lock.writeLock().lock();
         List<RolapSchema> schemas = new ArrayList<RolapSchema>();
         try {
             if (RolapSchema.LOGGER.isDebugEnabled()) {
@@ -515,7 +539,7 @@ class RolapSchemaPool {
             mapKeyToSchema.clear();
             mapMd5ToSchema.clear();
         } finally {
-            lock.writeLock().unlock();
+            // lock.writeLock().unlock();
         }
 
         for (RolapSchema schema : schemas) {
@@ -530,7 +554,8 @@ class RolapSchemaPool {
      * @return List of schemas in this pool
      */
     List<RolapSchema> getRolapSchemas() {
-        lock.readLock().lock();
+        // PATCH: No need to lock for clear as ConcurrentHashMap is used.
+        // lock.readLock().lock();
         try {
             List<RolapSchema> list = new ArrayList<RolapSchema>();
             for (RolapSchema schema : Util.GcIterator
@@ -540,16 +565,17 @@ class RolapSchemaPool {
             }
             return list;
         } finally {
-            lock.readLock().unlock();
+            // lock.readLock().unlock();
         }
     }
 
     boolean contains(RolapSchema rolapSchema) {
-        lock.readLock().lock();
+        // PATCH: No need to lock for clear as ConcurrentHashMap is used.
+        // lock.readLock().lock();
         try {
             return mapKeyToSchema.containsKey(rolapSchema.key);
         } finally {
-            lock.readLock().unlock();
+            // lock.readLock().unlock();
         }
     }
 
