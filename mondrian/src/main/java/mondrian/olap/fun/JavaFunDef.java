@@ -339,10 +339,18 @@ public class JavaFunDef extends FunDefBase {
 
         public Object evaluate(Evaluator evaluator) {
             final Calc[] calcs = getCalcs();
+            // PATCH: Will be used for method parameter types
+            Class<?>[] parameterTypes = null;
             for (int i = 0; i < args.length; i++) {
                 args[i] = calcs[i].evaluate(evaluator);
                 if (args[i] == null) {
                     return nullValue;
+                // PATCH: Cast BigDecimal to double if method has double parameter
+                } else if (args[i] instanceof java.math.BigDecimal) {
+                    if (parameterTypes == null) parameterTypes = method.getParameterTypes();
+                    if (parameterTypes.length > i && parameterTypes[i] == double.class) {
+                        args[i] = Double.valueOf(((java.math.BigDecimal) args[i]).doubleValue());
+                    }
                 }
             }
             try {
