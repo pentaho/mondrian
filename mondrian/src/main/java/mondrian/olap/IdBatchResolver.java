@@ -17,8 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import java.util.*;
-
-import static org.apache.commons.collections.CollectionUtils.filter;
+import java.util.stream.Collectors;
 
 /**
  * Used to collect and resolve identifiers in groups of children
@@ -257,29 +256,12 @@ public final class IdBatchResolver {
     private List<Id.NameSegment> collectChildrenNameSegments(
         final Member parentMember, List<Id> children)
     {
-        filter(
-            children, new Predicate() {
-            // remove children we can't support
-                public boolean evaluate(Object theId)
-                {
-                    Id id = (Id)theId;
-                    return !Util.matches(parentMember, id.getSegments())
-                        && supportedIdentifier(id);
-                }
-            });
-        return new ArrayList(
-            CollectionUtils.collect(
-                children, new Transformer()
-            {
-                // convert the collection to a list of NameSegments
-            public Object transform(Object theId) {
-                Id id = (Id)theId;
-                return getLastSegment(id);
-            }
-        }));
+	return children.stream().filter(id -> !Util.matches(parentMember, id.getSegments()) && supportedIdentifier(id))
+		//supportedIdentifier(i) checks instanceof NameSegment
+		.map(id -> (Id.NameSegment)getLastSegment(id)).collect(Collectors.toList());
     }
 
-    private Id.Segment getLastSegment(Id id) {
+    private static Id.Segment getLastSegment(Id id) {
         int segSize = id.getSegments().size();
         return id.getSegments().get(segSize - 1);
     }
@@ -299,7 +281,7 @@ public final class IdBatchResolver {
             && !id.getSegments().get(0).matches("Measures");
     }
 
-    private boolean supportedMember(Member member) {
+    private static boolean supportedMember(Member member) {
         return !(member == null
             || member.equals(
                 member.getHierarchy().getNullMember())

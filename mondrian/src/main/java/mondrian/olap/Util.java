@@ -73,7 +73,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections.keyvalue.AbstractMapEntry;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileObject;
@@ -4497,8 +4496,8 @@ public class Util extends XOMUtil {
                         }
                         @SuppressWarnings("unchecked")
                         public Entry<K, V> next() {
-                            return new AbstractMapEntry(
-                                list.get(++pt), null) {};
+                            return new AbstractMap.SimpleEntry<K,V>(
+                                list.get(++pt), null);
                         }
                         public boolean hasNext() {
                             return pt < list.size();
