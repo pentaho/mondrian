@@ -164,16 +164,9 @@ public class MemberCacheHelper implements MemberCache {
         {
             return null;
         }
-        filter(
-            children, new Predicate()
-            {
-                public boolean evaluate(Object member) {
-                    return childNames.contains(
-                        ((RolapMember) member).getName());
-                }
-            });
-        boolean foundAll = children.size() == childNames.size();
-        return !foundAll ? null : children;
+
+        boolean foundAll = children.parallelStream().allMatch( member -> childNames.contains( member.getName() ));
+        return foundAll ? children : null;
     }
 
     private List<RolapMember> checkDefaultAndNamedChildrenCache(
