@@ -33,6 +33,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -144,6 +145,7 @@ public class SqlStatement {
 
       this.jdbcConnection = dataSource.getConnection();
       querySemaphore.acquire();
+
       haveSemaphore = true;
       // Trace start of execution.
       if ( RolapUtil.SQL_LOGGER.isDebugEnabled() ) {
@@ -203,7 +205,10 @@ public class SqlStatement {
           getPurpose(),
           getCellRequestCount() ) );
 
+      long start = System.currentTimeMillis();
+      RolapUtil.SQL_LOGGER.debug( "Executing query " + sql);
       this.resultSet = statement.executeQuery( sql );
+      RolapUtil.SQL_LOGGER.debug( "Executing query took " + (System.currentTimeMillis() - start) + " millis");
 
       // skip to first row specified in request
       this.state = State.ACTIVE;
