@@ -569,7 +569,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             if (childrenCountFromCache != -1) {
                 return childrenCountFromCache;
             }
-            return reader.getMemberChildren(parentMember).size();
+            return reader.getLevelCardinality(parentMember.getLevel(), false, true);
         }
     }
 }
