@@ -49,6 +49,10 @@ class DelegatingMemberReader implements MemberReader {
         return memberReader.getMemberByKey(level, keyValues);
     }
 
+    public int countMemberChildren( Member member, List<RolapMember> children, MemberChildrenConstraint constraint ) {
+        return getMemberChildren( (RolapMember) member, children, constraint ).size();
+    }
+
     public RolapMember getLeadMember(RolapMember member, int n) {
         return memberReader.getLeadMember(member, n);
     }
