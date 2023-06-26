@@ -205,10 +205,7 @@ public class SqlStatement {
           getPurpose(),
           getCellRequestCount() ) );
 
-      long start = System.currentTimeMillis();
-      RolapUtil.SQL_LOGGER.debug( "Executing query " + sql);
       this.resultSet = statement.executeQuery( sql );
-      RolapUtil.SQL_LOGGER.debug( "Executing query took " + (System.currentTimeMillis() - start) + " millis");
 
       // skip to first row specified in request
       this.state = State.ACTIVE;

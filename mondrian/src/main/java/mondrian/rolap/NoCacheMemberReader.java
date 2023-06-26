@@ -141,6 +141,10 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         return source.getMemberByKey(level, keyValues);
     }
 
+    public int countMemberChildren( Member member, List<RolapMember> children, MemberChildrenConstraint constraint ) {
+        return getMemberChildren( (RolapMember) member, children, constraint).size();
+    }
+
     public void getMemberChildren(
         final RolapMember parentMember,
         final List<RolapMember> children)
