@@ -20,7 +20,6 @@
     <driver.name>Mondrian olap4j driver</driver.name>
     <driver.version.minor>${project.version.minor}</driver.version.minor>
     <vendor>Pentaho</vendor>
-    <guava.version>17.0</guava.version>
     <driver.version.major>${project.version.major}</driver.version.major>
     <maven-failsafe-plugin.argLine>-Duser.language=en -Duser.country=US -Djava.locale.providers=COMPAT,SPI</maven-failsafe-plugin.argLine>
   </properties>
