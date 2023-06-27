@@ -17,7 +17,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.apache.commons.collections.CollectionUtils.filter;
 
@@ -258,13 +257,16 @@ public final class IdBatchResolver {
     private List<Id.NameSegment> collectChildrenNameSegments(
         final Member parentMember, List<Id> children)
     {
-        children.parallelStream()
-          .filter(theId -> {
-              Id id = (Id) theId;
-              return !Util.matches(parentMember, id.getSegments()) && supportedIdentifier(id);
-          })
-          .collect( Collectors.toList());
-
+        filter(
+            children, new Predicate() {
+            // remove children we can't support
+                public boolean evaluate(Object theId)
+                {
+                    Id id = (Id)theId;
+                    return !Util.matches(parentMember, id.getSegments())
+                        && supportedIdentifier(id);
+                }
+            });
         return new ArrayList(
             CollectionUtils.collect(
                 children, new Transformer()
