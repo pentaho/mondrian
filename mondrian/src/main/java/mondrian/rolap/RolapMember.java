@@ -26,8 +26,6 @@ public interface RolapMember extends Member, RolapCalculation {
     RolapHierarchy getHierarchy();
     RolapLevel getLevel();
 
-    String getName();
-
     /** @deprecated will be removed in mondrian-4.0 */
     boolean isAllMember();
 }
