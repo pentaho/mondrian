@@ -74,6 +74,10 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return mapKeyToMember.get(keyValues.get(0));
     }
 
+    public int countMemberChildren( Member member, List<RolapMember> children, MemberChildrenConstraint constraint ) {
+        return getMemberChildren( (RolapMember) member, children, constraint ).size();
+    }
+
     // implement MemberReader
     public List<RolapMember> getMembers() {
         return members;

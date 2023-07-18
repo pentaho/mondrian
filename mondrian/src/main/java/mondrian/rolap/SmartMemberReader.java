@@ -101,6 +101,10 @@ public class SmartMemberReader implements MemberReader {
         return source.getMemberByKey(level, keyValues);
     }
 
+    public int countMemberChildren(Member member, List<RolapMember> children, MemberChildrenConstraint constraint) {
+        return source.countMemberChildren((RolapMember) member, children, constraint);
+    }
+
     // implement MemberReader
     public List<RolapMember> getMembers() {
         List<RolapMember> v = new ConcatenableList<RolapMember>();
