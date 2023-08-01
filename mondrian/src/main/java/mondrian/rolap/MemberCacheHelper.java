@@ -23,6 +23,7 @@ import org.apache.commons.collections.Predicate;
 
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.collections.CollectionUtils.filter;
 
@@ -164,16 +165,11 @@ public class MemberCacheHelper implements MemberCache {
         {
             return null;
         }
-        filter(
-            children, new Predicate()
-            {
-                public boolean evaluate(Object member) {
-                    return childNames.contains(
-                        ((RolapMember) member).getName());
-                }
-            });
-        boolean foundAll = children.size() == childNames.size();
-        return !foundAll ? null : children;
+
+        List<RolapMember> foundElements =
+          children.parallelStream().filter( member -> childNames.contains( ( (RolapMember) member ).getName() ) )
+            .collect( Collectors.toList() );
+        return childNames.size() == foundElements.size() ? foundElements : null;
     }
 
     private List<RolapMember> checkDefaultAndNamedChildrenCache(
