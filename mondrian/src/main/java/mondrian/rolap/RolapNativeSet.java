@@ -555,6 +555,10 @@ public abstract class RolapNativeSet extends RolapNative {
       }
       return memberReader;
     }
+
+    public int countMemberChildren( Member parentMember ) {
+        return getMemberChildren( parentMember ).size();
+    }
   }
 
   public void flushCache() {

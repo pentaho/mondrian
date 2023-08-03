@@ -171,6 +171,12 @@ public class RolapSchemaReader
         return Util.cast(memberList);
     }
 
+    public int countMemberChildren(Member member, Evaluator context) {
+        MemberChildrenConstraint constraint =
+          sqlConstraintFactory.getMemberChildrenConstraint(context);
+        return countMemberChildren(member, constraint);
+    }
+
     /**
      * Helper for getMemberChildren.
      *
@@ -187,6 +193,15 @@ public class RolapSchemaReader
         memberReader.getMemberChildren(
             (RolapMember) member, children, constraint);
         return children;
+    }
+
+    private int countMemberChildren(
+      Member member, MemberChildrenConstraint constraint)
+    {
+        List<RolapMember> children = new ArrayList<RolapMember>();
+        final Hierarchy hierarchy = member.getHierarchy();
+        final MemberReader memberReader = getMemberReader(hierarchy);
+        return memberReader.countMemberChildren( member, children, constraint );
     }
 
     public void getParentChildContributingChildren(
@@ -747,6 +762,10 @@ public class RolapSchemaReader
             (RolapMember) member,
             memberChildren,
             constraint);
+    }
+
+    @Override public int countMemberChildren( Member parentMember ) {
+        return countMemberChildren( parentMember, (Evaluator) null);
     }
 
     /**

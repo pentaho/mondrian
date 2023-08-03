@@ -1125,6 +1125,11 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         public int getMemberCount() {
             return rolapHierarchy.getMemberReader().getMemberCount();
         }
+
+        public int countMemberChildren( Member member, List<RolapMember> children, MemberChildrenConstraint constraint ) {
+            return getMemberChildren( (RolapMember) member, children, constraint).size();
+        }
+
     }
 
     public static class RolapCubeSqlMemberSource extends SqlMemberSource {
