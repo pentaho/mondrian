@@ -542,6 +542,8 @@ public interface SchemaReader {
      */
     Map<? extends Member, Access>
         getMemberChildrenWithDetails(Member member, Evaluator evaluator);
+
+    int countMemberChildren( Member parentMember );
 }
 
 // End SchemaReader.java
