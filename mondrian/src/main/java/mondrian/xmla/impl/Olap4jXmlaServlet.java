@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2023 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.xmla.impl;
@@ -12,8 +12,8 @@ package mondrian.xmla.impl;
 import mondrian.olap.Util;
 import mondrian.xmla.XmlaHandler;
 
-import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.dbcp.DelegatingConnection;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.dbcp2.DelegatingConnection;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +25,7 @@ import java.lang.reflect.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
@@ -268,11 +269,8 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
             synchronized (datasourcesPool) {
                 bds = datasourcesPool.get(dataSourceKey);
                 if (bds == null) {
-                    bds = new BasicDataSource() {
-                        {
-                            connectionProperties.putAll(connProperties);
-                        }
-                    };
+                    bds = new BasicDataSource();
+                    bds.setConnectionProperties( convertPropertiesToString( connProperties ) );
                     bds.setDefaultReadOnly(true);
                     bds.setDriverClassName(olap4jDriverClassName);
                     bds.setPassword(pwd);
@@ -280,7 +278,7 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
                     bds.setUrl(olap4jDriverConnectionString);
                     bds.setPoolPreparedStatements(false);
                     bds.setMaxIdle(maxPerUserConnectionCount);
-                    bds.setMaxActive(maxPerUserConnectionCount);
+                    bds.setMaxTotal(maxPerUserConnectionCount);
                     bds.setMinEvictableIdleTimeMillis(
                         idleConnectionsCleanupTimeoutMs);
                     bds.setAccessToUnderlyingConnectionAllowed(true);
@@ -316,6 +314,14 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
             }
 
             return createDelegatingOlapConnection(connection, olapConnection);
+        }
+
+        private String convertPropertiesToString( Properties props ) {
+            String propertiesString = props.entrySet()
+              .stream()
+              .map(e -> e.getKey() + "=" + e.getValue() )
+              .collect( Collectors.joining("; " ) );
+              return propertiesString;
         }
 
         public Map<String, Object> getPreConfiguredDiscoverDatasourcesResponse()

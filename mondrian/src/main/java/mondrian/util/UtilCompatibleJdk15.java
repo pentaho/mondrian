@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2023 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.util;
@@ -150,7 +150,7 @@ public class UtilCompatibleJdk15 implements UtilCompatible {
             // We can't protect ourselves against this. That's a bug on their
             // side.
             if (t.getMessage().equals(
-                    "org.apache.commons.dbcp.DelegatingStatement is closed."))
+                    "org.apache.commons.dbcp2.DelegatingStatement is closed."))
             {
                 return;
             }
