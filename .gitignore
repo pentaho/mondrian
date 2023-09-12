@@ -8,3 +8,7 @@ mondrian.*properties
 .settings
 .classpath
 .idea
+bin/
+build/
+classes/
+lib/

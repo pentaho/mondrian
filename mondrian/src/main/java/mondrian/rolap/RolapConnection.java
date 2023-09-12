@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2020 Hitachi Vantara and others
+// Copyright (C) 2005-2023 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -830,7 +830,7 @@ public class RolapConnection extends ConnectionBase {
     }
 
     public Connection getConnection() throws SQLException {
-      return new org.apache.commons.dbcp.DelegatingConnection(
+      return new org.apache.commons.dbcp2.DelegatingConnection(
         java.sql.DriverManager.getConnection(
           jdbcConnectString, jdbcProperties ) );
     }

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2019 Hitachi Vantara and others
+// Copyright (C) 2005-2023 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -112,7 +112,7 @@ public class RolapConnectionTest extends TestCase {
             fail("Expected exception");
         } catch (SQLException e) {
             if (e.getClass().getName().equals(
-                    "org.apache.commons.dbcp.DbcpException"))
+                    "org.apache.commons.dbcp2.DbcpException"))
             {
                 // This is expected. (We use string-comparison so that the
                 // compiler doesn't warn about using a deprecated class.)

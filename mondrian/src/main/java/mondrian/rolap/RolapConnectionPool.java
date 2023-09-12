@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2003-2006 Robin Bagot and others
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara
+// Copyright (C) 2005-2023 Hitachi Vantara
 // All Rights Reserved.
 */
 
@@ -14,10 +14,17 @@ package mondrian.rolap;
 
 import mondrian.olap.Util;
 
-import org.apache.commons.dbcp.*;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
+import org.apache.commons.dbcp2.ConnectionFactory;
+import org.apache.commons.dbcp2.PoolableConnectionFactory;
+import org.apache.commons.dbcp2.PoolingDataSource;
+import org.apache.commons.dbcp2.DataSourceConnectionFactory;
+import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.apache.commons.pool2.impl.AbandonedConfig;
 
+import java.time.Duration;
 import java.util.*;
 import javax.sql.DataSource;
 
@@ -181,53 +188,36 @@ class RolapConnectionPool {
         ConnectionFactory connectionFactory)
     {
         ObjectPool connectionPool = mapConnectKeyToPool.get(key);
-        if (connectionPool == null) {
-            // use GenericObjectPool, which provides for resource limits
-            connectionPool = new GenericObjectPool(
-                null, // PoolableObjectFactory, can be null
-                50, // max active
-                GenericObjectPool.WHEN_EXHAUSTED_BLOCK, // action when exhausted
-                3000, // max wait (milli seconds)
-                10, // max idle
-                false, // test on borrow
-                false, // test on return
-                60000, // time between eviction runs (millis)
-                5, // number to test on eviction run
-                30000, // min evictable idle time (millis)
-                true); // test while idle
-
+        if ( connectionPool == null ) {
             // create a PoolableConnectionFactory
+            PoolableConnectionFactory poolableConnectionFactory =
+              new PoolableConnectionFactory( connectionFactory, null );
+            poolableConnectionFactory.setDefaultAutoCommit( true );
+
+            // use GenericObjectPool, which provides for resource limits
+            GenericObjectPoolConfig config = new GenericObjectPoolConfig( );
+            config.setMaxTotal( 50 );
+            config.setBlockWhenExhausted( true );
+            config.setMaxIdle( 10 );
+            config.setTestOnBorrow( false );
+            config.setTestOnReturn( false );
+            config.setTimeBetweenEvictionRuns( Duration.ofMillis( 60000 ) );
+            config.setNumTestsPerEvictionRun( 5 );
+            config.setMinEvictableIdleTime( Duration.ofMillis( 30000 ) );
+            config.setTestWhileIdle( true );
+
             AbandonedConfig abandonedConfig = new AbandonedConfig();
             // flag to remove abandoned connections from pool
-            abandonedConfig.setRemoveAbandoned(true);
+            abandonedConfig.setRemoveAbandonedOnBorrow( true );
+            abandonedConfig.setRemoveAbandonedOnMaintenance( true );
             // timeout (seconds) before removing abandoned connections
-            abandonedConfig.setRemoveAbandonedTimeout(300);
+            abandonedConfig.setRemoveAbandonedTimeout( Duration.ofSeconds( 300 ) );
             // Flag to log stack traces for application code which abandoned a
             // Statement or Connection
-            abandonedConfig.setLogAbandoned(true);
-            PoolableConnectionFactory poolableConnectionFactory =
-                new PoolableConnectionFactory(
-                    // the connection factory
-                    connectionFactory,
-                    // the object pool
-                    connectionPool,
-                    // statement pool factory for pooling prepared statements,
-                    // or null for no pooling
-                    null,
-                    // validation query (must return at least 1 row e.g. Oracle:
-                    // select count(*) from dual) to test connection, can be
-                    // null
-                    null,
-                    // default "read only" setting for borrowed connections
-                    false,
-                    // default "auto commit" setting for returned connections
-                    true,
-                    // AbandonedConfig object configures how to handle abandoned
-                    // connections
-                    abandonedConfig);
+            abandonedConfig.setLogAbandoned( true );
 
-            // "poolableConnectionFactory" has registered itself with
-            // "connectionPool", somehow, so we don't need the value any more.
+            connectionPool = new GenericObjectPool( poolableConnectionFactory, config, abandonedConfig );
+
             Util.discard(poolableConnectionFactory);
             mapConnectKeyToPool.put(key, connectionPool);
         }
