@@ -306,9 +306,12 @@ public class SqlContextConstraint
         RolapCube baseCube,
         AggStar aggStar)
     {
-        SqlConstraintUtils.addContextConstraint(
+        this.addedConstraint = SqlConstraintUtils.addContextConstraint(
             sqlQuery, aggStar, evaluator, baseCube, strict);
     }
+
+    // PATCH: Store if last constraint was added.
+    public boolean addedConstraint;
 
     /**
      * Returns whether a join with the fact table is required. A join is

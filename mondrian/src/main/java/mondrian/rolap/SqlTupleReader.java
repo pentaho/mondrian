@@ -1009,7 +1009,8 @@ public class SqlTupleReader implements TupleReader {
           getEvaluator( constraint )
             .setContext( measureInCurrentbaseCube );
 
-          selectString.append( prependString );
+          // PATCH: Move appending prependString after generateSelectForLevels.
+          // selectString.append( prependString );
 
           // Generate the select statement for the current base cube.
           // Make sure to pass WhichSelect.NOT_LAST if there are more
@@ -1023,6 +1024,12 @@ public class SqlTupleReader implements TupleReader {
                 ? WhichSelect.ONLY
                 : WhichSelect.NOT_LAST,
               targetGroup );
+          // PATCH: Skip not generated selects.
+          if (pair == null) {
+            continue;
+          }
+          // PATCH: Append prependString only if new SELECT is returned.
+          selectString.append( prependString );
           selectString.append( pair.left );
           types = pair.right;
           prependString =
@@ -1199,7 +1206,9 @@ public class SqlTupleReader implements TupleReader {
 
     // PATCH: Add constraints at first to ensure that level tables are added last
     boolean prependConstraint = false;
-    if (constraint instanceof SqlContextConstraint && ((SqlContextConstraint) constraint).isJoinRequired()) {
+    SqlContextConstraint sqlContextConstraint = constraint instanceof SqlContextConstraint ?
+      (SqlContextConstraint) constraint : null;
+    if (sqlContextConstraint != null && sqlContextConstraint.isJoinRequired()) {
       if(aggStar != null) {
         aggStar.getFactTable().addToFrom(sqlQuery, false, false);
         prependConstraint = true;
@@ -1209,7 +1218,14 @@ public class SqlTupleReader implements TupleReader {
         prependConstraint = true;
       }
       if (prependConstraint) {
-        constraint.addConstraint( sqlQuery, baseCube, aggStar );
+        // PATCH: Skip SELECTs if constraint was not added for a sub-cube in a virtual cube
+        // when current context member is part of an ignored unrelated dimension.
+        sqlContextConstraint.addConstraint( sqlQuery, baseCube, aggStar );
+        if (!sqlContextConstraint.addedConstraint) {
+          if (whichSelect == WhichSelect.NOT_LAST) {
+            return null;
+          }
+        }
       }
     }
 

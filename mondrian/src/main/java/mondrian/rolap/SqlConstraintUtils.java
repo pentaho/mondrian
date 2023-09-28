@@ -93,7 +93,8 @@ public class SqlConstraintUtils {
    * @param evaluator
    *          Evaluator
    */
-  public static void addContextConstraint( SqlQuery sqlQuery, AggStar aggStar, Evaluator evaluator, RolapCube baseCube,
+  // PATCH: Add boolean return value.
+  public static boolean addContextConstraint( SqlQuery sqlQuery, AggStar aggStar, Evaluator evaluator, RolapCube baseCube,
       boolean restrictMemberTypes ) {
     if ( baseCube == null && evaluator instanceof RolapEvaluator ) {
       baseCube = ( (RolapEvaluator) evaluator ).getCube();
@@ -119,7 +120,8 @@ public class SqlConstraintUtils {
       }
       // One or more of the members was null or calculated, so the
       // request is impossible to satisfy.
-      return;
+      // PATCH: Return false if no constraints are added.
+      return false;
     }
 
     List<TupleList> slicerTupleList = expandedSet.getDisjoinedTupleLists();
@@ -134,7 +136,8 @@ public class SqlConstraintUtils {
       for ( TupleList tuple : slicerTupleList ) {
         addContextConstraintTuples( sqlQuery, aggStar, rEvaluator, baseCube, restrictMemberTypes, request, tuple );
       }
-      return;
+      // PATCH: Return true if constraints are added.
+      return true;
     }
 
     RolapStar.Column[] columns = request.getConstrainedColumns();
@@ -204,6 +207,8 @@ public class SqlConstraintUtils {
 
     // force Role based Access filtering
     addRoleAccessConstraints( sqlQuery, aggStar, restrictMemberTypes, baseCube, evaluator );
+    // PATCH: Return true if constraints are added.
+    return true;
   }
 
   private static TupleConstraintStruct makeContextConstraintSet( Evaluator evaluator, boolean restrictMemberTypes,
