@@ -16,7 +16,6 @@
   <properties>
     <jlfgr.version>1.0</jlfgr.version>
     <pentaho-launcher.version>10.1.0.0-SNAPSHOT</pentaho-launcher.version>
-    <guava.version>17.0</guava.version>
     <dependency.groovy-all.revision>2.4.8</dependency.groovy-all.revision>
     <pdi-dataservice-client-plugin.version>10.1.0.0-SNAPSHOT</pdi-dataservice-client-plugin.version>
     <oss-licenses.version>10.1.0.0-SNAPSHOT</oss-licenses.version>
