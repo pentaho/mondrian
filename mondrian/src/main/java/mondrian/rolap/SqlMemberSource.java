@@ -11,27 +11,46 @@
 package mondrian.rolap;
 
 import mondrian.calc.TupleList;
-import mondrian.olap.*;
+import mondrian.olap.Access;
+import mondrian.olap.Dimension;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Exp;
+import mondrian.olap.Id;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianDef;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Property;
+import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
-import mondrian.rolap.sql.*;
+import mondrian.rolap.sql.MemberChildrenConstraint;
+import mondrian.rolap.sql.MemberKeyConstraint;
+import mondrian.rolap.sql.SqlQuery;
+import mondrian.rolap.sql.TupleConstraint;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.Dialect;
-import mondrian.util.*;
-
-import org.apache.logging.log4j.Logger;
+import mondrian.util.CancellationChecker;
+import mondrian.util.CreationException;
+import mondrian.util.ObjectFactory;
+import mondrian.util.Pair;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.eigenbase.util.property.StringProperty;
 
-import java.sql.*;
-import java.util.*;
-
 import javax.sql.DataSource;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A <code>SqlMemberSource</code> reads members from a SQL database.
@@ -432,7 +451,7 @@ RME is this right
         final RolapLevel parentLevel = parentMember.getLevel();
         RolapLevel childLevel;
         if ( parentLevel.isParentChild() ) {
-            query = makeChildMemberSqlPCQuery( parentMember );
+            query = makeChildMemberSqlPCQuery( parentMember, false );
             childLevel = parentLevel;
         } else {
             childLevel = (RolapLevel) parentLevel.getChildLevel();
@@ -441,9 +460,9 @@ RME is this right
                 return 0;
             }
             if ( childLevel.isParentChild() ) {
-                query = makeChildMemberSqlPCRootQuery( parentMember );
+                query = makeChildMemberSqlPCRootQuery( parentMember);
             } else {
-                query = makeChildMemberSqlQuery( parentMember, dataSource, constraint );
+                query = makeChildMemberSqlQuery( parentMember, dataSource, constraint, false );
             }
         }
 
@@ -453,8 +472,10 @@ RME is this right
             "while generating query to retrieve children of "
               + "parent/child hierarchy member " + parentMember);
 
+
         newQuery.addSelect("count(*)", null);
         newQuery.addFrom( query, "X", false );
+
 
 
         pair = newQuery.toSqlAndTypes();
@@ -656,6 +677,14 @@ RME is this right
       DataSource dataSource,
       MemberChildrenConstraint constraint)
     {
+       return makeChildMemberSqlQuery( member, dataSource, constraint, true);
+    }
+    SqlQuery makeChildMemberSqlQuery(
+      RolapMember member,
+      DataSource dataSource,
+      MemberChildrenConstraint constraint,
+      boolean applyOrderBy)
+    {
         SqlQuery sqlQuery =
           SqlQuery.newQuery(
             dataSource,
@@ -747,14 +776,14 @@ RME is this right
             hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         }
 
-        final String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
-        if (!orderBy.equals(q)) {
-            String orderAlias = sqlQuery.addSelectGroupBy(orderBy, null);
-            sqlQuery.addOrderBy(
-              orderBy, orderAlias, true, false, true, true);
-        } else {
-            sqlQuery.addOrderBy(
-              q, idAlias, true, false, true, true);
+        if (applyOrderBy) {
+            final String orderBy = level.getOrdinalExp().getExpression( sqlQuery );
+            if ( !orderBy.equals( q ) ) {
+                String orderAlias = sqlQuery.addSelectGroupBy( orderBy, null );
+                sqlQuery.addOrderBy(orderBy, orderAlias, true, false, true, true );
+            } else {
+                sqlQuery.addOrderBy(q, idAlias, true, false, true, true );
+            }
         }
 
         RolapProperty[] properties = level.getProperties();
@@ -1362,12 +1391,10 @@ RME is this right
     private Pair<String, List<SqlStatement.Type>> makeChildMemberSqlPC(
         RolapMember member)
     {
-        return makeChildMemberSqlPCQuery(member).toSqlAndTypes();
+        return makeChildMemberSqlPCQuery(member, true).toSqlAndTypes();
     }
 
-    private SqlQuery makeChildMemberSqlPCQuery(
-      RolapMember member)
-    {
+    private SqlQuery makeChildMemberSqlPCQuery(RolapMember member, boolean applyOrderBy) {
         SqlQuery sqlQuery =
           SqlQuery.newQuery(
             dataSource,
@@ -1392,14 +1419,14 @@ RME is this right
         String idAlias =
           sqlQuery.addSelectGroupBy(childId, level.getInternalType());
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
-        final String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
-        if (!orderBy.equals(childId)) {
-            String orderAlias = sqlQuery.addSelectGroupBy(orderBy, null);
-            sqlQuery.addOrderBy(
-              orderBy, orderAlias, true, false, true, true);
-        } else {
-            sqlQuery.addOrderBy(
-              childId, idAlias, true, false, true, true);
+        if (applyOrderBy) {
+            final String orderBy = level.getOrdinalExp().getExpression( sqlQuery );
+            if ( !orderBy.equals( childId ) ) {
+                String orderAlias = sqlQuery.addSelectGroupBy( orderBy, null );
+                sqlQuery.addOrderBy(orderBy, orderAlias, true, false, true, true );
+            } else {
+                sqlQuery.addOrderBy(childId, idAlias, true, false, true, true );
+            }
         }
 
         RolapProperty[] properties = level.getProperties();
