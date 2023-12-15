@@ -354,6 +354,11 @@ public abstract class RolapAggregationManager {
                     continue;
                 }
                 RolapCubeMember member = (RolapCubeMember) members[i];
+                // PATCH: Return null cell request for #null member
+                // as such member level does not have a reader, which is used later.
+                if (member.isNull()) {
+                    return null;
+                }
                 final RolapCubeLevel level = member.getLevel();
                 final boolean needToReturnNull =
                     level.getLevelReader().constrainRequest(

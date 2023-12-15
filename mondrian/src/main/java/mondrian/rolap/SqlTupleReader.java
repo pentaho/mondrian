@@ -1042,6 +1042,11 @@ public class SqlTupleReader implements TupleReader {
         getEvaluator( constraint ).restore( savepoint );
       }
 
+      // PATCH: Return empty tuple SQL when SELECTs are not generated.
+      if ( types == null ) {
+        return sqlForEmptyTuple( dataSource, baseCubes );
+      }
+
       if ( fullyJoiningBaseCubes.size() == 1 ) {
         // Because there is only one virtual cube to
         // join on, we can swap the union query by
