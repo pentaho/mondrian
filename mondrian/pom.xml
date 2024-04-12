@@ -13,14 +13,14 @@
   <description>Mondrian OLAP Engine</description>
   <url>http://mondrian.pentaho.com</url>
   <properties>
-    <project.version.minor>000</project.version.minor>
-    <driver.version>${project.version}</driver.version>
-    <project.version.major>8</project.version.major>
     <schema.version>3</schema.version>
+    <project.version.major>8</project.version.major>
+    <project.version.minor>000</project.version.minor>
     <driver.name>Mondrian olap4j driver</driver.name>
+    <driver.version>${project.version}</driver.version>
+    <driver.version.major>${project.version.major}</driver.version.major>
     <driver.version.minor>${project.version.minor}</driver.version.minor>
     <vendor>Pentaho</vendor>
-    <driver.version.major>${project.version.major}</driver.version.major>
     <maven-failsafe-plugin.argLine>-Duser.language=en -Duser.country=US -Djava.locale.providers=COMPAT,SPI</maven-failsafe-plugin.argLine>
   </properties>
   <dependencies>
