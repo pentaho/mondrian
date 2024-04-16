@@ -14,8 +14,14 @@
   <url>http://mondrian.pentaho.com</url>
   <properties>
     <schema.version>3</schema.version>
-    <project.version.major>8</project.version.major>
-    <project.version.minor>000</project.version.minor>
+    <!--
+    In order to support connections from PowerBI the version must match a SQL Server version.
+    Check the version list here https://sqlserverbuilds.blogspot.com/ for more information about the different versions.
+    The minimal compatible version is the SQL Server 2008 R2 (10.50.1600.1).
+    The version bellow is the SQL Server 2022 (16.0.1000.6). Only the major and the minor are represented here.
+    -->
+    <project.version.major>16</project.version.major>
+    <project.version.minor>0</project.version.minor>
     <driver.name>Mondrian olap4j driver</driver.name>
     <driver.version>${project.version}</driver.version>
     <driver.version.major>${project.version.major}</driver.version.major>
