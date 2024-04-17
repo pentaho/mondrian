@@ -74,6 +74,12 @@
       <version>${commons-math.version}</version>
     </dependency>
     <dependency>
+      <groupId>commons-dbcp</groupId>
+      <artifactId>commons-dbcp</artifactId>
+      <version>${commons-dbcp.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-pool2</artifactId>
       <version>${commons-pool2.version}</version>
@@ -361,7 +367,7 @@
           <plugin>
             <groupId>io.fabric8</groupId>
             <artifactId>docker-maven-plugin</artifactId>
-            <version>0.26.0</version>
+            <version>0.44.0</version>
             <executions>
               <execution>
                 <id>start</id>
@@ -383,7 +389,7 @@
             <configuration>
               <images>
                 <image>
-                  <name>${pentaho.docker.pull.host}mysql:8.0.27</name>
+                  <name>${pentaho.docker.pull.host}mysql:${mysql-connector-java.version}</name>
                   <alias>mondrian-mysql8027-db</alias>
                   <run>
                     <!-- prevents spam of mbind: Operation not permitted log messages -->
@@ -493,9 +499,10 @@
         <mondrian.foodmart.jdbcUser>mondrian</mondrian.foodmart.jdbcUser>
         <mondrian.jdbcDrivers>${mysql.driver}</mondrian.jdbcDrivers>
         <mysql.driver>com.mysql.cj.jdbc.Driver</mysql.driver>
-        <mondrian.foodmart.jdbcURL>jdbc:mysql://${docker.container.mondrian-mysql8027-db.ip}:3306/foodmart</mondrian.foodmart.jdbcURL>
         <dependency.sql-maven-plugin.version>1.5</dependency.sql-maven-plugin.version>
-        <mysql.url.default>jdbc:mysql://${docker.container.mondrian-mysql8027-db.ip}:3306/mysql</mysql.url.default>
+        <mysql.url.base>jdbc:mysql://${docker.container.mondrian-mysql8027-db.ip}:3306</mysql.url.base>
+        <mysql.url.default>${mysql.url.base}/mysql</mysql.url.default>
+        <mondrian.foodmart.jdbcURL>${mysql.url.base}/foodmart</mondrian.foodmart.jdbcURL>
       </properties>
     </profile>
     <profile>
