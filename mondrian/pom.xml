@@ -389,7 +389,7 @@
             <configuration>
               <images>
                 <image>
-                  <name>${pentaho.docker.pull.host}mysql:${mysql-connector-java.version}</name>
+                  <name>${pentaho.docker.pull.host}/mysql:${mysql-connector-java.version}</name>
                   <alias>mondrian-mysql8027-db</alias>
                   <run>
                     <!-- prevents spam of mbind: Operation not permitted log messages -->
