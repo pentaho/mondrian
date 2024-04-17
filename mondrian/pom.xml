@@ -171,9 +171,9 @@
       <version>5.0</version>
     </dependency>
     <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>${mysql-connector-java.version}</version>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <version>${mysql-connector-j.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -389,7 +389,7 @@
             <configuration>
               <images>
                 <image>
-                  <name>${pentaho.docker.pull.host}/mysql:${mysql-connector-java.version}</name>
+                  <name>${pentaho.docker.pull.host}/mysql:${mysql-connector-j.version}</name>
                   <alias>mondrian-mysql8027-db</alias>
                   <run>
                     <!-- prevents spam of mbind: Operation not permitted log messages -->
@@ -479,9 +479,9 @@
             </executions>
             <dependencies>
               <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <version>${mysql-connector-java.version}</version>
+                <groupId>com.mysql</groupId>
+                <artifactId>mysql-connector-j</artifactId>
+                <version>${mysql-connector-j.version}</version>
               </dependency>
             </dependencies>
             <configuration>

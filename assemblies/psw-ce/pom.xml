@@ -227,9 +227,9 @@
     
     <!-- change bellow scope to runtime to include database drivers -->
     <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>${mysql-connector-java.version}</version>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <version>${mysql-connector-j.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -252,7 +252,7 @@
             <configuration>
               <outputDirectory>${project.build.directory}/lib</outputDirectory>
               <includeScope>runtime</includeScope>
-              <excludeArtifactIds>oss-licenses,pdi-dataservice-client-plugin,mysql-connector-java,postgresql</excludeArtifactIds>
+              <excludeArtifactIds>oss-licenses,pdi-dataservice-client-plugin,mysql-connector-j,postgresql</excludeArtifactIds>
             </configuration>
           </execution>
           <execution>
@@ -277,7 +277,7 @@
             <configuration>
               <outputDirectory>${project.build.directory}/drivers</outputDirectory>
               <includeScope>runtime</includeScope>
-              <includeArtifactIds>mysql-connector-java,postgresql</includeArtifactIds>
+              <includeArtifactIds>mysql-connector-j,postgresql</includeArtifactIds>
             </configuration>
           </execution>
 
