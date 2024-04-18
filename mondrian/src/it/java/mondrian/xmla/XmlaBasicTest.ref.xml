@@ -13065,7 +13065,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <PropertyName>LocaleIdentifier</PropertyName>
-                        <PropertyDescription>Use this to read or set the numeric locale identifier for this request. The default is provider-specific. For the complete hexadecimal list of language identifiers, search on "Language Identifiers" in the MSDN Library at http://www.msdn.microsoft.com. As an extension to the XMLA standard, Mondrian also allows locale codes as specified by ISO-639 and ISO-3166 and as used by Java; for example 'en-US'. </PropertyDescription>
+                        <PropertyDescription>Use this to read or set the numeric locale identifier for this request. The default is provider-specific. For the complete hexadecimal list of language identifiers, search on "Language Identifiers" in the MSDN Library at https://www.msdn.microsoft.com. As an extension to the XMLA standard, Mondrian also allows locale codes as specified by ISO-639 and ISO-3166 and as used by Java; for example 'en-US'. </PropertyDescription>
                         <PropertyType>UnsignedInteger</PropertyType>
                         <PropertyAccessType>ReadWrite</PropertyAccessType>
                         <IsRequired>false</IsRequired>
@@ -13145,7 +13145,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <PropertyName>TableFields</PropertyName>
-                        <PropertyDescription>List of fields to return for drill-through. The default value of this property is the empty string,in which case, all fields are returned.</PropertyDescription>
+                        <PropertyDescription>List of fields to return for drill-through. The default value of this property is the empty string, in which case, all fields are returned.</PropertyDescription>
                         <PropertyType>string</PropertyType>
                         <PropertyAccessType>Read</PropertyAccessType>
                         <IsRequired>false</IsRequired>
