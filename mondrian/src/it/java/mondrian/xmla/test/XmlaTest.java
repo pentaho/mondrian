@@ -47,238 +47,237 @@ import javax.xml.transform.stream.StreamResult;
  */
 public class XmlaTest extends TestCase {
 
-    private static final Logger LOGGER =
-            LogManager.getLogger(XmlaTest.class);
+  private static final Logger LOGGER =
+    LogManager.getLogger( XmlaTest.class );
+  private static final XmlaTestContext context = new XmlaTestContext();
+  private static final String DATA_SOURCE_INFO_RESPONSE_PROP =
+    "data.source.info.response";
 
-    static {
-        XMLUnit.setControlParser(
-            "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
-        XMLUnit.setTestParser(
-            "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl");
-        XMLUnit.setIgnoreWhitespace(true);
-    }
+  static {
+    XMLUnit.setControlParser(
+      "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl" );
+    XMLUnit.setTestParser(
+      "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl" );
+    XMLUnit.setIgnoreWhitespace( true );
+  }
 
-    private static final XmlaTestContext context = new XmlaTestContext();
+  private XmlaHandler handler;
+  private MondrianServer server;
 
-    private static final String DATA_SOURCE_INFO_RESPONSE_PROP =
-        "data.source.info.response";
+  public XmlaTest( String name ) {
+    super( name );
+  }
 
-    private XmlaHandler handler;
-    private MondrianServer server;
+  private static DiffRepository getDiffRepos() {
+    return DiffRepository.lookup( XmlaTest.class );
+  }
 
-    public XmlaTest(String name) {
-        super(name);
-    }
+  public static TestSuite suite() {
+    TestSuite suite = new TestSuite();
 
-    // implement TestCase
-    protected void setUp() throws Exception {
-        super.setUp();
-        DiffRepository diffRepos = getDiffRepos();
-        diffRepos.setCurrentTestCaseName(getName());
-        server = MondrianServer.createWithRepository(
-            new StringRepositoryContentFinder(
-                context.getDataSourcesString()),
-            XmlaTestContext.CATALOG_LOCATOR);
-        handler = new XmlaHandler(
-            (XmlaHandler.ConnectionFactory) server,
-            "xmla");
-        XMLUnit.setIgnoreWhitespace(false);
-    }
+    DiffRepository diffRepos = getDiffRepos();
 
-    // implement TestCase
-    protected void tearDown() throws Exception {
-        DiffRepository diffRepos = getDiffRepos();
-        diffRepos.setCurrentTestCaseName(null);
-        server.shutdown();
-        server = null;
-        handler = null;
-        super.tearDown();
-    }
+    MondrianProperties properties = MondrianProperties.instance();
+    String filePattern = properties.QueryFilePattern.get();
 
-    private static DiffRepository getDiffRepos() {
-        return DiffRepository.lookup(XmlaTest.class);
-    }
+    final Pattern pattern =
+      filePattern == null
+        ? null
+        : Pattern.compile( filePattern );
 
-    protected void runTest() throws Exception {
-        if (!MondrianProperties.instance().SsasCompatibleNaming.get()
-            && getName().equals("mdschemaLevelsCubeDimRestrictions"))
-        {
-            // Changes in unique names of hierarchies and levels mean that the
-            // output is a different order in the old behavior, and cannot be
-            // fixed by a few sed-like comparisons.
-            return;
+    List<String> testCaseNames = diffRepos.getTestCaseNames();
+
+    if ( pattern != null ) {
+      Iterator<String> iter = testCaseNames.iterator();
+      while ( iter.hasNext() ) {
+        String name = iter.next();
+        if ( !pattern.matcher( name ).matches() ) {
+          iter.remove();
         }
-        DiffRepository diffRepos = getDiffRepos();
-        String request = diffRepos.expand(null, "${request}");
-        String expectedResponse = diffRepos.expand(null, "${response}");
-
-        Properties props = new Properties();
-        XmlaTestContext s = new XmlaTestContext();
-        String con = s.getConnectString().replaceAll("&amp;","&");
-        PropertyList pl = Util.parseConnectString(con);
-        pl.remove(RolapConnectionProperties.Jdbc.name());
-        pl.remove(RolapConnectionProperties.JdbcUser.name());
-        pl.remove(RolapConnectionProperties.JdbcPassword.name());
-        props.setProperty(DATA_SOURCE_INFO_RESPONSE_PROP, pl.toString());
-        expectedResponse =
-            Util.replaceProperties(
-                expectedResponse, Util.toMap(props));
-
-        Element requestElem = XmlaUtil.text2Element(
-            XmlaTestContext.xmlFromTemplate(
-                request, XmlaTestContext.ENV));
-        Element responseElem =
-            ignoreLastUpdateDate(executeRequest(requestElem));
-
-        TransformerFactory factory = TransformerFactory.newInstance();
-        Transformer transformer = factory.newTransformer();
-        StringWriter bufWriter = new StringWriter();
-        transformer.transform(
-            new DOMSource(responseElem), new StreamResult(bufWriter));
-        bufWriter.write(Util.nl);
-        String actualResponse =
-            TestContext.instance().upgradeActual(
-                bufWriter.getBuffer().toString());
-        try {
-            // Start with a purely logical XML diff to avoid test noise
-            // from non-determinism in XML generation.
-            XMLAssert.assertXMLEqual(expectedResponse, actualResponse);
-        } catch (AssertionFailedError e) {
-            // In case of failure, re-diff using DiffRepository's comparison
-            // method. It may have noise due to physical vs logical structure,
-            // but it will maintain the expected/actual, and some IDEs can even
-            // display visual diffs.
-            diffRepos.assertEquals("response", "${response}", actualResponse);
-        }
+      }
     }
 
-    private Element ignoreLastUpdateDate(Element element) {
-        NodeList elements = element.getElementsByTagName("LAST_SCHEMA_UPDATE");
-        for (int i = elements.getLength(); i > 0; i--) {
-            blankNode(elements.item(i - 1));
-        }
-        return element;
+    LOGGER.debug( "Found " + testCaseNames.size() + " XML/A test cases" );
+
+    for ( String name : testCaseNames ) {
+      suite.addTest( new XmlaTest( name ) );
     }
 
-    private void blankNode(Node node) {
-        node.setTextContent("");
+    suite.addTestSuite( OtherTest.class );
+
+    return suite;
+  }
+
+  // implement TestCase
+  protected void setUp() throws Exception {
+    super.setUp();
+    DiffRepository diffRepos = getDiffRepos();
+    diffRepos.setCurrentTestCaseName( getName() );
+    server = MondrianServer.createWithRepository(
+      new StringRepositoryContentFinder(
+        context.getDataSourcesString() ),
+      XmlaTestContext.CATALOG_LOCATOR );
+    handler = new XmlaHandler(
+      (XmlaHandler.ConnectionFactory) server,
+      "xmla" );
+    XMLUnit.setIgnoreWhitespace( false );
+  }
+
+  // implement TestCase
+  protected void tearDown() throws Exception {
+    DiffRepository diffRepos = getDiffRepos();
+    diffRepos.setCurrentTestCaseName( null );
+    server.shutdown();
+    server = null;
+    handler = null;
+    super.tearDown();
+  }
+
+  protected void runTest() throws Exception {
+    if ( !MondrianProperties.instance().SsasCompatibleNaming.get()
+      && getName().equals( "mdschemaLevelsCubeDimRestrictions" ) ) {
+      // Changes in unique names of hierarchies and levels mean that the
+      // output is a different order in the old behavior, and cannot be
+      // fixed by a few sed-like comparisons.
+      return;
     }
+    DiffRepository diffRepos = getDiffRepos();
+    String request = diffRepos.expand( null, "${request}" );
+    String expectedResponse = diffRepos.expand( null, "${response}" );
 
-    private Element executeRequest(Element requestElem) {
-        ByteArrayOutputStream resBuf = new ByteArrayOutputStream();
-        XmlaRequest request =
-            new DefaultXmlaRequest(requestElem, null, null, null, null);
-        XmlaResponse response =
-            new DefaultXmlaResponse(
-                resBuf, "UTF-8", Enumeration.ResponseMimeType.SOAP);
-        handler.process(request, response);
+    Properties props = new Properties();
+    XmlaTestContext s = new XmlaTestContext();
+    String con = s.getConnectString().replaceAll( "&amp;", "&" );
+    PropertyList pl = Util.parseConnectString( con );
+    pl.remove( RolapConnectionProperties.Jdbc.name() );
+    pl.remove( RolapConnectionProperties.JdbcUser.name() );
+    pl.remove( RolapConnectionProperties.JdbcPassword.name() );
+    props.setProperty( DATA_SOURCE_INFO_RESPONSE_PROP, pl.toString() );
+    expectedResponse =
+      Util.replaceProperties(
+        expectedResponse, Util.toMap( props ) );
 
-        return XmlaUtil.stream2Element(
-            new ByteArrayInputStream(resBuf.toByteArray()));
+    Element requestElem = XmlaUtil.text2Element(
+      XmlaTestContext.xmlFromTemplate(
+        request, XmlaTestContext.ENV ) );
+    Element responseElem =
+      ignoreLastUpdateDate( executeRequest( requestElem ) );
+
+    TransformerFactory factory = TransformerFactory.newInstance();
+    Transformer transformer = factory.newTransformer();
+    StringWriter bufWriter = new StringWriter();
+    transformer.transform(
+      new DOMSource( responseElem ), new StreamResult( bufWriter ) );
+    bufWriter.write( Util.nl );
+    String actualResponse =
+      TestContext.instance().upgradeActual(
+        bufWriter.getBuffer().toString() );
+    try {
+      // Start with a purely logical XML diff to avoid test noise
+      // from non-determinism in XML generation.
+      XMLAssert.assertXMLEqual( expectedResponse, actualResponse );
+    } catch ( AssertionFailedError e ) {
+      // In case of failure, re-diff using DiffRepository's comparison
+      // method. It may have noise due to physical vs logical structure,
+      // but it will maintain the expected/actual, and some IDEs can even
+      // display visual diffs.
+      diffRepos.assertEquals( "response", "${response}", actualResponse );
     }
+  }
 
-    public static TestSuite suite() {
-        TestSuite suite = new TestSuite();
+  private Element ignoreLastUpdateDate( Element element ) {
+    NodeList elements = element.getElementsByTagName( "LAST_SCHEMA_UPDATE" );
+    for ( int i = elements.getLength(); i > 0; i-- ) {
+      blankNode( elements.item( i - 1 ) );
+    }
+    return element;
+  }
 
-        DiffRepository diffRepos = getDiffRepos();
+  private void blankNode( Node node ) {
+    node.setTextContent( "" );
+  }
 
-        MondrianProperties properties = MondrianProperties.instance();
-        String filePattern = properties.QueryFilePattern.get();
+  private Element executeRequest( Element requestElem ) {
+    ByteArrayOutputStream resBuf = new ByteArrayOutputStream();
+    XmlaRequest request =
+      new DefaultXmlaRequest( requestElem, null, null, null, null );
+    XmlaResponse response =
+      new DefaultXmlaResponse(
+        resBuf, "UTF-8", Enumeration.ResponseMimeType.SOAP );
+    handler.process( request, response );
 
-        final Pattern pattern =
-            filePattern == null
-            ? null
-            : Pattern.compile(filePattern);
+    return XmlaUtil.stream2Element(
+      new ByteArrayInputStream( resBuf.toByteArray() ) );
+  }
 
-        List<String> testCaseNames = diffRepos.getTestCaseNames();
+  /**
+   * Non diff-based unit tests for XML/A support.
+   */
+  public static class OtherTest extends TestCase {
+    public void testEncodeElementName() {
+      final XmlaUtil.ElementNameEncoder encoder =
+        XmlaUtil.ElementNameEncoder.INSTANCE;
 
-        if (pattern != null) {
-            Iterator<String> iter = testCaseNames.iterator();
-            while (iter.hasNext()) {
-                String name = iter.next();
-                if (!pattern.matcher(name).matches()) {
-                    iter.remove();
-                }
-            }
-        }
+      assertEquals( "Foo", encoder.encode( "Foo" ) );
+      assertEquals( "Foo_x0020_Bar", encoder.encode( "Foo Bar" ) );
 
-        LOGGER.debug("Found " + testCaseNames.size() + " XML/A test cases");
+      if ( false ) // FIXME:
+      {
+        assertEquals(
+          "Foo_x00xx_Bar", encoder.encode( "Foo_Bar" ) );
+      }
 
-        for (String name : testCaseNames) {
-            suite.addTest(new XmlaTest(name));
-        }
-
-        suite.addTestSuite(OtherTest.class);
-
-        return suite;
+      // Caching: decode same string, get same string back
+      final String s1 = encoder.encode( "Abc def" );
+      final String s2 = encoder.encode( "Abc def" );
+      assertSame( s1, s2 );
     }
 
     /**
-     * Non diff-based unit tests for XML/A support.
+     * Unit test for {@link XmlaUtil#chooseResponseMimeType(String)}.
      */
-    public static class OtherTest extends TestCase {
-        public void testEncodeElementName() {
-            final XmlaUtil.ElementNameEncoder encoder =
-                XmlaUtil.ElementNameEncoder.INSTANCE;
+    public void testAccept() {
+      // simple
+      assertEquals(
+        Enumeration.ResponseMimeType.SOAP,
+        XmlaUtil.chooseResponseMimeType( "application/xml" ) );
 
-            assertEquals("Foo", encoder.encode("Foo"));
-            assertEquals("Foo_x0020_Bar", encoder.encode("Foo Bar"));
+      // deal with ",q=<n>" quality codes by ignoring them
+      assertEquals(
+        Enumeration.ResponseMimeType.SOAP,
+        XmlaUtil.chooseResponseMimeType(
+          "text/html,application/xhtml+xml,"
+            + "application/xml;q=0.9,*/*;q=0.8" ) );
 
-            if (false) // FIXME:
-            assertEquals(
-                "Foo_x00xx_Bar", encoder.encode("Foo_Bar"));
+      // return null if nothing matches
+      assertNull(
+        XmlaUtil.chooseResponseMimeType(
+          "text/html,application/xhtml+xml" ) );
 
-            // Caching: decode same string, get same string back
-            final String s1 = encoder.encode("Abc def");
-            final String s2 = encoder.encode("Abc def");
-            assertSame(s1, s2);
-        }
+      // quality codes all over the place; return JSON because we see
+      // it before application/xml
+      assertEquals(
+        Enumeration.ResponseMimeType.JSON,
+        XmlaUtil.chooseResponseMimeType(
+          "text/html;q=0.9,"
+            + "application/xhtml+xml;q=0.9,"
+            + "application/json;q=0.9,"
+            + "application/xml;q=0.9,"
+            + "*/*;q=0.8" ) );
 
-        /**
-         * Unit test for {@link XmlaUtil#chooseResponseMimeType(String)}.
-         */
-        public void testAccept() {
-            // simple
-            assertEquals(
-                Enumeration.ResponseMimeType.SOAP,
-                XmlaUtil.chooseResponseMimeType("application/xml"));
+      // allow application/soap+xml as synonym for application/xml
+      assertEquals(
+        Enumeration.ResponseMimeType.SOAP,
+        XmlaUtil.chooseResponseMimeType(
+          "text/html,application/soap+xml" ) );
 
-            // deal with ",q=<n>" quality codes by ignoring them
-            assertEquals(
-                Enumeration.ResponseMimeType.SOAP,
-                XmlaUtil.chooseResponseMimeType(
-                    "text/html,application/xhtml+xml,"
-                    + "application/xml;q=0.9,*/*;q=0.8"));
-
-            // return null if nothing matches
-            assertNull(
-                XmlaUtil.chooseResponseMimeType(
-                    "text/html,application/xhtml+xml"));
-
-            // quality codes all over the place; return JSON because we see
-            // it before application/xml
-            assertEquals(
-                Enumeration.ResponseMimeType.JSON,
-                XmlaUtil.chooseResponseMimeType(
-                    "text/html;q=0.9,"
-                    + "application/xhtml+xml;q=0.9,"
-                    + "application/json;q=0.9,"
-                    + "application/xml;q=0.9,"
-                    + "*/*;q=0.8"));
-
-            // allow application/soap+xml as synonym for application/xml
-            assertEquals(
-                Enumeration.ResponseMimeType.SOAP,
-                XmlaUtil.chooseResponseMimeType(
-                    "text/html,application/soap+xml"));
-
-            // allow text/xml as synonym for application/xml
-            assertEquals(
-                Enumeration.ResponseMimeType.SOAP,
-                XmlaUtil.chooseResponseMimeType(
-                    "text/html,application/soap+xml"));
-        }
+      // allow text/xml as synonym for application/xml
+      assertEquals(
+        Enumeration.ResponseMimeType.SOAP,
+        XmlaUtil.chooseResponseMimeType(
+          "text/html,application/soap+xml" ) );
     }
+  }
 }
 
 // End XmlaTest.java
