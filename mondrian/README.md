@@ -32,6 +32,11 @@ or
 ```
 It must not have the "/" at the end, because in wingman this variable is being overridden, and it does not have the "/" at the end https://github.com/pentaho/jenkins-pipelines/blob/master/resources/config/maven/wingman-settings.xml#L91.
 
+Also, the `mysql.url.base` property must be changed to
+```
+<mysql.url.base>jdbc:mysql://127.0.0.1:3306</mysql.url.base>
+```
+
 Then, run the command bellow:
 
 ```

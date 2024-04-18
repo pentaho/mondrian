@@ -28,7 +28,7 @@
   </scm>
   <properties>
     <license.licenseName>epl_only_v1</license.licenseName>
-
+    <maven-failsafe-plugin.version>3.2.5</maven-failsafe-plugin.version>
     <olap4j.version>1.2.0</olap4j.version>
     <eigenbase-properties.version>1.1.2</eigenbase-properties.version>
     <mysql-connector-j.version>8.3.0</mysql-connector-j.version>
@@ -39,7 +39,6 @@
     <validation-api.version>1.0.0.GA</validation-api.version>
     <commons-collections.version>3.2.2</commons-collections.version>
     <commons-math.version>1.1</commons-math.version>
-    <commons-dbcp.version>1.4</commons-dbcp.version>
     <olap4j-xmla.version>1.2.0</olap4j-xmla.version>
     <jsp-api.version>2.0</jsp-api.version>
     <mockito-all.version>1.9.5</mockito-all.version>
