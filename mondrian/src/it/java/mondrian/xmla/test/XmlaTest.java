@@ -117,9 +117,7 @@ public class XmlaTest extends TestCase {
       new StringRepositoryContentFinder(
         context.getDataSourcesString() ),
       XmlaTestContext.CATALOG_LOCATOR );
-    handler = new XmlaHandler(
-      (XmlaHandler.ConnectionFactory) server,
-      "xmla" );
+    handler = new XmlaHandler( (XmlaHandler.ConnectionFactory) server );
     XMLUnit.setIgnoreWhitespace( false );
   }
 

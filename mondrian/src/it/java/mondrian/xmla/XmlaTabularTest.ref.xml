@@ -32,8 +32,8 @@
 <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -72,8 +72,8 @@
                         <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">40784</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -114,8 +114,8 @@ from [Sales]
 <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -158,8 +158,8 @@ from [Sales]
                         <_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_ xsi:type="xsd:double">263793.22</_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -200,8 +200,8 @@ from [Sales]
 <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -280,8 +280,8 @@ from [Sales]
                         <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">7677</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -322,8 +322,8 @@ from [Sales]
 <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -412,8 +412,8 @@ from [Sales]
                         <_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_ xsi:type="xsd:double">50019.79</_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -453,8 +453,8 @@ where([Measures].[Sales Count])
 <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -475,8 +475,8 @@ where([Measures].[Sales Count])
                     </xsd:schema>
                     <row/>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -517,8 +517,8 @@ from [Sales]
 <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -540,8 +540,8 @@ from [Sales]
                         </xsd:complexType>
                     </xsd:schema>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -579,8 +579,8 @@ from [Sales]
 <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -676,8 +676,8 @@ from [Sales]
                         <_x005b_Product_x005d_._x005b_Non-Consumable_x005d_ xsi:type="xsd:double">23230</_x005b_Product_x005d_._x005b_Non-Consumable_x005d_>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>

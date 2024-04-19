@@ -48,8 +48,8 @@ where [Measures].[Unit Sales]
 <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <OlapInfo>
                         <CubeInfo>
@@ -165,8 +165,8 @@ where [Measures].[Unit Sales]
                         </Cell>
                     </CellData>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -209,8 +209,8 @@ where [Measures].[Unit Sales]
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:complexType name="MemberType">
@@ -610,8 +610,8 @@ where [Measures].[Unit Sales]
                         </Cell>
                     </CellData>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -655,8 +655,8 @@ where [Measures].[Unit Sales]
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -1614,8 +1614,8 @@ where [Measures].[Unit Sales]
                         <DESCRIPTION>Warehouse and Sales Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -1653,8 +1653,8 @@ where [Measures].[Unit Sales]
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -1784,8 +1784,8 @@ where [Measures].[Unit Sales]
                         <DATA_TYPE>19</DATA_TYPE>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -1828,8 +1828,8 @@ where [Measures].[Unit Sales]
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:complexType name="MemberType">
@@ -2044,8 +2044,8 @@ where [Measures].[Unit Sales]
                         </Cell>
                     </CellData>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -2084,8 +2084,8 @@ WITH  SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize(
 <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <OlapInfo>
                         <CubeInfo>
@@ -2314,8 +2314,8 @@ WITH  SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize(
                         </Cell>
                     </CellData>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>

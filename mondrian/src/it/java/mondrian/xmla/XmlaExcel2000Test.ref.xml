@@ -26,8 +26,8 @@
 <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -64,8 +64,8 @@
                         <AuthenticationMode>Unauthenticated</AuthenticationMode>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -109,8 +109,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -598,8 +598,8 @@
                         <Description/>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -640,8 +640,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -671,8 +671,8 @@
                         <ROLES>Administrator,California manager,No HR Cube</ROLES>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -717,8 +717,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -753,8 +753,8 @@
                         <Value>${mondrianVersion}</Value>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -799,8 +799,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -835,8 +835,8 @@
                         <Value/>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -876,15 +876,15 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:empty" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root"/>
                     </xsd:schema>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -924,15 +924,15 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:empty" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root"/>
                     </xsd:schema>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -978,8 +978,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -1019,8 +1019,8 @@
                         </xsd:complexType>
                     </xsd:schema>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -1066,8 +1066,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -1120,8 +1120,8 @@
                         <DESCRIPTION>FoodMart Schema - Sales Cube</DESCRIPTION>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -1166,8 +1166,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -1211,8 +1211,8 @@
                         </xsd:complexType>
                     </xsd:schema>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -1258,8 +1258,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -1623,8 +1623,8 @@
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -1670,8 +1670,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -1705,8 +1705,8 @@
                         </xsd:complexType>
                     </xsd:schema>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -1753,8 +1753,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -1911,8 +1911,8 @@
                         <DEFAULT_FORMAT_STRING>Standard</DEFAULT_FORMAT_STRING>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -1958,8 +1958,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -2103,8 +2103,8 @@
                         <DEFAULT_FORMAT_STRING>Standard</DEFAULT_FORMAT_STRING>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -2150,8 +2150,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -2188,8 +2188,8 @@
                         </xsd:complexType>
                     </xsd:schema>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -2236,8 +2236,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -2325,8 +2325,8 @@
                         <DESCRIPTION>Sales Cube - Time Hierarchy - Month Level</DESCRIPTION>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -2373,8 +2373,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -2496,8 +2496,8 @@
                         <DESCRIPTION>Sales Cube - Customers Hierarchy - Name Level</DESCRIPTION>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -2540,8 +2540,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -2615,8 +2615,8 @@
                         <_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>[Time].[1998]</_x005b_Time_x005d_._x005b_Year_x005d_._x005b_MEMBER_UNIQUE_NAME_x005d_>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -2657,15 +2657,15 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:empty" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root"/>
                     </xsd:schema>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -2697,8 +2697,8 @@
 <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
     <SOAP-ENV:Header/>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -2735,8 +2735,8 @@
                         <AuthenticationMode>Unauthenticated</AuthenticationMode>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -2780,8 +2780,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -3269,8 +3269,8 @@
                         <Description/>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -3311,8 +3311,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -3342,8 +3342,8 @@
                         <ROLES>Administrator,California manager,No HR Cube</ROLES>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -3388,8 +3388,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -3424,8 +3424,8 @@
                         <Value>${mondrianVersion}</Value>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -3470,8 +3470,8 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root">
@@ -3506,8 +3506,8 @@
                         <Value/>
                     </row>
                 </root>
-            </cxmla:return>
-        </cxmla:DiscoverResponse>
+            </return>
+        </DiscoverResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
@@ -3547,15 +3547,15 @@
         <Session SessionId="${session.id}" xmlns="urn:schemas-microsoft-com:xml-analysis"/>
     </SOAP-ENV:Header>
     <SOAP-ENV:Body>
-        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
-            <cxmla:return>
+        <ExecuteResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+            <return>
                 <root xmlns="urn:schemas-microsoft-com:xml-analysis:empty" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                         <xsd:element name="root"/>
                     </xsd:schema>
                 </root>
-            </cxmla:return>
-        </cxmla:ExecuteResponse>
+            </return>
+        </ExecuteResponse>
     </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ]]>
