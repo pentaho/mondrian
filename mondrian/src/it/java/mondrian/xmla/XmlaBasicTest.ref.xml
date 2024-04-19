@@ -13104,6 +13104,62 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <Value>${mondrianVersion}</Value>
                     </row>
                     <row>
+                        <PropertyName>SafetyOptions</PropertyName>
+                        <PropertyDescription>Determines whether unsafe libraries can be registered and loaded by client applications.</PropertyDescription>
+                        <PropertyType>Integer</PropertyType>
+                        <PropertyAccessType>ReadWrite</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value>0</Value>
+                    </row>
+                    <row>
+                        <PropertyName>MdxMissingMemberMode</PropertyName>
+                        <PropertyDescription>Indicates whether missing members are ignored in MDX statements.</PropertyDescription>
+                        <PropertyType>string</PropertyType>
+                        <PropertyAccessType>Write</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value/>
+                    </row>
+                    <row>
+                        <PropertyName>DbpropMsmdMDXCompatibility</PropertyName>
+                        <PropertyDescription>An enumeration value that determines how placeholder members in a ragged or unbalanced hierarchy are treated.</PropertyDescription>
+                        <PropertyType>Integer</PropertyType>
+                        <PropertyAccessType>ReadWrite</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value>0</Value>
+                    </row>
+                    <row>
+                        <PropertyName>MdpropMdxSubqueries</PropertyName>
+                        <PropertyDescription>A bitmask that indicates the level of support for subqueries in MDX.</PropertyDescription>
+                        <PropertyType>Integer</PropertyType>
+                        <PropertyAccessType>Read</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value/>
+                    </row>
+                    <row>
+                        <PropertyName>ClientProcessID</PropertyName>
+                        <PropertyDescription>The ID of the client process.</PropertyDescription>
+                        <PropertyType>Integer</PropertyType>
+                        <PropertyAccessType>ReadWrite</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value>0</Value>
+                    </row>
+                    <row>
+                        <PropertyName>SspropInitAppName</PropertyName>
+                        <PropertyDescription>The name of the client application.</PropertyDescription>
+                        <PropertyType>string</PropertyType>
+                        <PropertyAccessType>ReadWrite</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value/>
+                    </row>
+                    <row>
+                        <PropertyName>DbpropMsmdSubqueries</PropertyName>
+                        <PropertyDescription>An enumeration value that determines the behavior of subqueries.</PropertyDescription>
+                        <PropertyType>Integer</PropertyType>
+                        <PropertyAccessType>ReadWrite</PropertyAccessType>
+                        <IsRequired>false</IsRequired>
+                        <Value>1</Value>
+                    </row>
+                    <row>
                         <PropertyName>ResponseMimeType</PropertyName>
                         <PropertyDescription>Accepted mime type for RPC response; accepted are 'text/xml' (default), 'application/xml' (equivalent to 'text/xml'), or 'application/json'. If not specified, value in the 'Accept' header of the HTTP request is used.</PropertyDescription>
                         <PropertyType>string</PropertyType>

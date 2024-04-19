@@ -185,6 +185,62 @@ public enum PropertyDefinition {
     XmlaConstants.Method.DISCOVER,
     "The version of the Mondrian XMLA Provider" ),
 
+  SafetyOptions(
+    RowsetDefinition.Type.Integer,
+    null,
+    XmlaConstants.Access.ReadWrite,
+    "0",
+    XmlaConstants.Method.DISCOVER_AND_EXECUTE,
+    "Determines whether unsafe libraries can be registered and loaded by client applications." ),
+
+  MdxMissingMemberMode(
+    RowsetDefinition.Type.String,
+    null,
+    XmlaConstants.Access.Write,
+    "",
+    XmlaConstants.Method.DISCOVER_AND_EXECUTE,
+    "Indicates whether missing members are ignored in MDX statements." ),
+
+  DbpropMsmdMDXCompatibility(
+    RowsetDefinition.Type.Integer,
+    null,
+    XmlaConstants.Access.ReadWrite,
+    "0",
+    XmlaConstants.Method.DISCOVER_AND_EXECUTE,
+    "An enumeration value that determines how placeholder members in a ragged or unbalanced hierarchy are treated." ),
+
+  MdpropMdxSubqueries(
+    RowsetDefinition.Type.Integer,
+    null,
+    XmlaConstants.Access.Read,
+    "",
+    XmlaConstants.Method.DISCOVER,
+    "A bitmask that indicates the level of support for subqueries in MDX." ),
+
+  ClientProcessID(
+    RowsetDefinition.Type.Integer,
+    null,
+    XmlaConstants.Access.ReadWrite,
+    "0",
+    XmlaConstants.Method.DISCOVER_AND_EXECUTE,
+    "The ID of the client process." ),
+
+  SspropInitAppName(
+    RowsetDefinition.Type.String,
+    null,
+    XmlaConstants.Access.ReadWrite,
+    "",
+    XmlaConstants.Method.DISCOVER_AND_EXECUTE,
+    "The name of the client application." ),
+
+  DbpropMsmdSubqueries(
+    RowsetDefinition.Type.Integer,
+    null,
+    XmlaConstants.Access.ReadWrite,
+    "1",
+    XmlaConstants.Method.DISCOVER_AND_EXECUTE,
+    "An enumeration value that determines the behavior of subqueries." ),
+
   /**
    * Mondrian-specific extension to XMLA.
    *
