@@ -157,7 +157,6 @@ public class XmlaHandler {
   private static final String EMPTY_MD_DATA_SET_XML_SCHEMA =
     computeEmptyXsd( SetType.MD_DATA_SET );
   final ConnectionFactory connectionFactory;
-  private final String prefix;
 
   /**
    * Creates an <code>XmlaHandler</code>.
@@ -166,13 +165,9 @@ public class XmlaHandler {
    * {@link #getConnection(String, String, String, Properties)}.
    *
    * @param connectionFactory Connection factory
-   * @param prefix            XML Namespace. Typical value is "xmla", but a value of
-   *                          "cxmla" works around an Internet Explorer 7 bug
    */
-  public XmlaHandler( ConnectionFactory connectionFactory, String prefix ) {
-    assert prefix != null;
+  public XmlaHandler( ConnectionFactory connectionFactory ) {
     this.connectionFactory = connectionFactory;
-    this.prefix = prefix;
   }
 
   public static XmlaExtra getExtra( OlapConnection connection ) {
@@ -1029,10 +1024,8 @@ public class XmlaHandler {
       SaxWriter writer = response.getWriter();
       writer.startDocument();
 
-      writer.startElement(
-        prefix + ":ExecuteResponse",
-        "xmlns:" + prefix, NS_XMLA );
-      writer.startElement( prefix + ":return" );
+      writer.startElement( "ExecuteResponse", "xmlns", NS_XMLA );
+      writer.startElement( "return" );
       boolean rowset =
         request.isDrillThrough()
           || Format.Tabular.name().equals(
@@ -1283,10 +1276,8 @@ public class XmlaHandler {
     SaxWriter writer = response.getWriter();
     writer.startDocument();
 
-    writer.startElement(
-      prefix + ":DiscoverResponse",
-      "xmlns:" + prefix, NS_XMLA );
-    writer.startElement( prefix + ":return" );
+    writer.startElement( "DiscoverResponse", "xmlns", NS_XMLA );
+    writer.startElement( "return" );
     writer.startElement(
       "root",
       "xmlns", NS_XMLA_ROWSET,

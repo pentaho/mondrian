@@ -96,10 +96,7 @@ public abstract class XmlaServlet
    */
   protected XmlaHandler getXmlaHandler() {
     if ( this.xmlaHandler == null ) {
-      this.xmlaHandler =
-        new XmlaHandler(
-          connectionFactory,
-          "cxmla" );
+      this.xmlaHandler = new XmlaHandler( connectionFactory );
     }
     return this.xmlaHandler;
   }

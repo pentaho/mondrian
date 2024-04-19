@@ -93,8 +93,8 @@ public class XmlUtilTest extends TestCase {
         + "<SOAP-ENV:Header>\n"
         + "</SOAP-ENV:Header>\n"
         + "<SOAP-ENV:Body>\n"
-        + "<cxmla:DiscoverResponse xmlns:cxmla=\"urn:schemas-microsoft-com:xml-analysis\">\n"
-        + "  <cxmla:return>\n"
+        + "<DiscoverResponse xmlns=\"urn:schemas-microsoft-com:xml-analysis\">\n"
+        + "  <return>\n"
         + "    <root xmlns=\"urn:schemas-microsoft-com:xml-analysis:rowset\" xmlns:xsi=\"http://www.w3"
         + ".org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" "
         + "xmlns:EX=\"urn:schemas-microsoft-com:xml-analysis:exception\">\n"
@@ -143,8 +143,8 @@ public class XmlUtilTest extends TestCase {
         + "        <AuthenticationMode>Unauthenticated</AuthenticationMode>\n"
         + "      </row>\n"
         + "    </root>\n"
-        + "  </cxmla:return>\n"
-        + "</cxmla:DiscoverResponse>\n"
+        + "  </return>\n"
+        + "</DiscoverResponse>\n"
         + "</SOAP-ENV:Body>\n"
         + "</SOAP-ENV:Envelope>\n";
 

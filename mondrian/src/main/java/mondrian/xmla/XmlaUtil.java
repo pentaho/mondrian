@@ -376,9 +376,7 @@ way too noisy
     final Rowset rowset =
       rowsetDefinition.getRowset(
         request,
-        new XmlaHandler(
-          connectionFactory,
-          "xmla" ) {
+        new XmlaHandler( connectionFactory ) {
           @Override
           public OlapConnection getConnection(
             XmlaRequest request,

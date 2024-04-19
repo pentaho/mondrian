@@ -529,10 +529,9 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
 
     // Test 'schemadata' first, so that if it fails, we will be able to
     // amend the ref file with the fullest XML response.
-    final String ns = "cxmla";
     expectedDoc = ( responseDoc != null )
       ? XmlaSupport.transformSoapXmla(
-      responseDoc, new String[][] { { "content", "schemadata" } }, ns )
+      responseDoc, new String[][] { { "content", "schemadata" } } )
       : null;
     doTests(
       requestText, props,
@@ -545,7 +544,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
 
     expectedDoc = ( responseDoc != null )
       ? XmlaSupport.transformSoapXmla(
-      responseDoc, new String[][] { { "content", "none" } }, ns )
+      responseDoc, new String[][] { { "content", "none" } } )
       : null;
     doTests(
       requestText, props,
@@ -554,7 +553,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
 
     expectedDoc = ( responseDoc != null )
       ? XmlaSupport.transformSoapXmla(
-      responseDoc, new String[][] { { "content", "data" } }, ns )
+      responseDoc, new String[][] { { "content", "data" } } )
       : null;
     doTests(
       requestText, props,
@@ -563,7 +562,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
 
     expectedDoc = ( responseDoc != null )
       ? XmlaSupport.transformSoapXmla(
-      responseDoc, new String[][] { { "content", "schema" } }, ns )
+      responseDoc, new String[][] { { "content", "schema" } } )
       : null;
     doTests(
       requestText, props,

@@ -1028,11 +1028,10 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     Document expectedDoc;
 
-    final String ns = "cxmla";
     expectedDoc = ( responseDoc != null )
       ? XmlaSupport.transformSoapXmla(
       responseDoc,
-      new String[][] { { "content", content.name() } }, ns )
+      new String[][] { { "content", content.name() } } )
       : null;
     doTests(
       requestText, props,
