@@ -123,6 +123,16 @@ public class FileRepository implements Repository {
     } else {
       datasourceInfo = localServerInfo.datasourceMap.get( databaseName );
 
+      // In some cases (e.g. PowerBI connecting) the database name is actually the catalog name, search for a match
+      if ( datasourceInfo == null && databaseName.equals( catalogName ) ) {
+        for ( Map.Entry<String, DatabaseInfo> dbInfo : serverInfo.datasourceMap.entrySet() ) {
+          if ( dbInfo.getValue().catalogMap.containsKey( catalogName ) ) {
+            datasourceInfo = dbInfo.getValue();
+            break;
+          }
+        }
+      }
+
       // For legacy, we have to check if the DataSourceInfo matches.
       // We used to mix up DS Info and DS names. The behavior above is the right one. The one below is not.
       // Note also that the DSInfos we sent to the client had the JDBC properties removed for security.
