@@ -784,7 +784,7 @@ public abstract class MondrianOlap4jConnection implements OlapConnection {
     }
   }
 
-  RolapConnection getMondrianConnection() throws OlapException {
+  public RolapConnection getMondrianConnection() throws OlapException {
     final RolapConnection connection1 = mondrianConnection;
     if ( connection1 == null ) {
       throw helper.createException( "Connection is closed." );
