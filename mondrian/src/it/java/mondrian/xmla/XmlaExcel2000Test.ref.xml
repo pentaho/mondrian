@@ -302,6 +302,18 @@
                         <Description>Returns the names, values, and other information of all supported RequestType enumeration values.</Description>
                     </row>
                     <row>
+                        <SchemaName>DISCOVER_XML_METADATA</SchemaName>
+                        <Restrictions>
+                            <Name>DatabaseID</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>ObjectExpansion</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Description>Returns an XML document describing a requested object. The rowset that is returned always consists of one row and one column.</Description>
+                    </row>
+                    <row>
                         <SchemaName>MDSCHEMA_ACTIONS</SchemaName>
                         <Restrictions>
                             <Name>CATALOG_NAME</Name>
@@ -2971,6 +2983,18 @@
                             <Type>xsd:string</Type>
                         </Restrictions>
                         <Description>Returns the names, values, and other information of all supported RequestType enumeration values.</Description>
+                    </row>
+                    <row>
+                        <SchemaName>DISCOVER_XML_METADATA</SchemaName>
+                        <Restrictions>
+                            <Name>DatabaseID</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>ObjectExpansion</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Description>Returns an XML document describing a requested object. The rowset that is returned always consists of one row and one column.</Description>
                     </row>
                     <row>
                         <SchemaName>MDSCHEMA_ACTIONS</SchemaName>
