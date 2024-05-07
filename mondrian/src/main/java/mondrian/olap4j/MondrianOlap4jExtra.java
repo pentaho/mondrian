@@ -1,381 +1,357 @@
 /*
-// This software is subject to the terms of the Eclipse Public License v1.0
-// Agreement, available at the following URL:
-// http://www.eclipse.org/legal/epl-v10.html.
-// You must accept the terms of that agreement to use this software.
-//
-// Copyright (C) 2002-2018 Hitachi Vantara and others
-// All Rights Reserved.
-*/
+ * This software is subject to the terms of the Eclipse Public License v1.0
+ * Agreement, available at the following URL:
+ * http://www.eclipse.org/legal/epl-v10.html.
+ * You must accept the terms of that agreement to use this software.
+ *
+ * Copyright (C) 2002-2024 Hitachi Vantara and others
+ * All Rights Reserved.
+ */
+
 package mondrian.olap4j;
 
-import mondrian.olap.*;
+import mondrian.olap.Annotated;
+import mondrian.olap.Annotation;
+import mondrian.olap.Category;
+import mondrian.olap.FunTable;
+import mondrian.olap.HierarchyBase;
+import mondrian.olap.MondrianServer;
 import mondrian.olap.Property;
+import mondrian.olap.Query;
+import mondrian.olap.Util;
 import mondrian.olap.Util.PropertyList;
 import mondrian.olap.fun.FunInfo;
-import mondrian.rolap.*;
+import mondrian.rolap.RolapAggregator;
+import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapConnectionProperties;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapLevel;
+import mondrian.rolap.RolapMemberBase;
+import mondrian.rolap.RolapSchema;
 import mondrian.xmla.RowsetDefinition;
 import mondrian.xmla.XmlaHandler;
-
-import org.olap4j.*;
 import org.olap4j.Cell;
-import org.olap4j.metadata.*;
+import org.olap4j.CellSet;
+import org.olap4j.OlapConnection;
+import org.olap4j.OlapException;
+import org.olap4j.OlapStatement;
+import org.olap4j.OlapWrapper;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Hierarchy;
 import org.olap4j.metadata.Level;
 import org.olap4j.metadata.Member;
+import org.olap4j.metadata.MetadataElement;
 import org.olap4j.metadata.Schema;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Provides access to internals of mondrian's olap4j driver that are not part
- * of the olap4j API.
+ * Provides access to internals of mondrian's olap4j driver that are not part of the olap4j API.
  *
  * @author jhyde
  * @since Nov 12, 2010
  */
 class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
-    static final MondrianOlap4jExtra INSTANCE = new MondrianOlap4jExtra();
+  static final MondrianOlap4jExtra INSTANCE = new MondrianOlap4jExtra();
 
-    public ResultSet executeDrillthrough(
-        OlapStatement olapStatement,
-        String mdx,
-        boolean advanced,
-        String tabFields,
-        int[] rowCountSlot) throws SQLException
-    {
-        return ((MondrianOlap4jStatement) olapStatement).executeQuery2(
-            mdx,
-            advanced,
-            tabFields,
-            rowCountSlot);
+  public ResultSet executeDrillthrough( OlapStatement olapStatement, String mdx, boolean advanced, String tabFields,
+                                        int[] rowCountSlot ) throws SQLException {
+    return ( (MondrianOlap4jStatement) olapStatement ).executeQuery2( mdx, advanced, tabFields, rowCountSlot );
+  }
+
+  public void setPreferList( OlapConnection connection ) {
+    ( (MondrianOlap4jConnection) connection ).setPreferList( true );
+  }
+
+  public Date getSchemaLoadDate( Schema schema ) {
+    return ( (MondrianOlap4jSchema) schema ).schema.getSchemaLoadDate();
+  }
+
+  public int getLevelCardinality( Level level ) throws OlapException {
+    if ( level instanceof MondrianOlap4jLevel ) {
+      // Improved implementation if the provider is mondrian.
+      final MondrianOlap4jLevel olap4jLevel = (MondrianOlap4jLevel) level;
+      final mondrian.olap.SchemaReader schemaReader =
+        olap4jLevel.olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection.getMondrianConnection()
+          .getSchemaReader().withLocus();
+      return schemaReader.getLevelCardinality( olap4jLevel.level, true, true );
+    } else {
+      return level.getCardinality();
     }
+  }
 
-    public void setPreferList(OlapConnection connection) {
-        ((MondrianOlap4jConnection) connection).setPreferList(true);
-    }
+  public void getSchemaFunctionList( List<FunctionDefinition> funDefs, Schema schema,
+                                     Util.Functor1<Boolean, String> functionFilter ) {
+    final FunTable funTable = ( (MondrianOlap4jSchema) schema ).schema.getFunTable();
+    StringBuilder buf = new StringBuilder( 50 );
 
-    public Date getSchemaLoadDate(Schema schema) {
-        return ((MondrianOlap4jSchema) schema).schema.getSchemaLoadDate();
-    }
+    for ( FunInfo fi : funTable.getFunInfoList() ) {
+      switch ( fi.getSyntax() ) {
+        case Empty:
+        case Internal:
+        case Parentheses:
+          continue;
+      }
 
-    public int getLevelCardinality(Level level) throws OlapException {
-        if (level instanceof MondrianOlap4jLevel) {
-            // Improved implementation if the provider is mondrian.
-            final MondrianOlap4jLevel olap4jLevel = (MondrianOlap4jLevel) level;
-            final mondrian.olap.SchemaReader schemaReader =
-                olap4jLevel.olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-                    .olap4jConnection.getMondrianConnection().getSchemaReader()
-                    .withLocus();
-            return schemaReader.getLevelCardinality(
-                olap4jLevel.level, true, true);
-        } else {
-            return level.getCardinality();
-        }
-    }
+      final Boolean passes = functionFilter.apply( fi.getName() );
 
-    public void getSchemaFunctionList(
-        List<FunctionDefinition> funDefs,
-        Schema schema,
-        Util.Functor1<Boolean, String> functionFilter)
-    {
-        final FunTable funTable =
-            ((MondrianOlap4jSchema) schema).schema.getFunTable();
-        StringBuilder buf = new StringBuilder(50);
-        for (FunInfo fi : funTable.getFunInfoList()) {
-            switch (fi.getSyntax()) {
-            case Empty:
-            case Internal:
-            case Parentheses:
-                continue;
-            }
-            final Boolean passes = functionFilter.apply(fi.getName());
-            if (passes == null || !passes) {
-                continue;
-            }
+      if ( passes == null || !passes ) {
+        continue;
+      }
 
-            int[][] paramCategories = fi.getParameterCategories();
-            int[] returnCategories = fi.getReturnCategories();
+      int[][] paramCategories = fi.getParameterCategories();
+      int[] returnCategories = fi.getReturnCategories();
 
-            // Convert Windows newlines in 'description' to UNIX format.
-            String description = fi.getDescription();
-            if (description != null) {
-                description = Util.replace(
-                    fi.getDescription(),
-                    "\r",
-                    "");
-            }
-            if ((paramCategories == null)
-                || (paramCategories.length == 0))
-            {
-                funDefs.add(
-                    new FunctionDefinition(
-                        fi.getName(),
-                        description,
-                        "(none)",
-                        1,
-                        1,
-                        // TODO WHAT VALUE should this have
-                        "",
-                        fi.getName()));
-            } else {
-                for (int i = 0; i < paramCategories.length; i++) {
-                    int[] pc = paramCategories[i];
-                    int returnCategory = returnCategories[i];
+      // Convert Windows newlines in 'description' to UNIX format.
+      String description = fi.getDescription();
+      if ( description != null ) {
+        description = Util.replace( fi.getDescription(), "\r", "" );
+      }
 
-                    buf.setLength(0);
-                    for (int j = 0; j < pc.length; j++) {
-                        int v = pc[j];
-                        if (j > 0) {
-                            buf.append(", ");
-                        }
-                        buf.append(
-                            Category.instance.getDescription(
-                                v & Category.Mask));
-                    }
+      if ( ( paramCategories == null ) || ( paramCategories.length == 0 ) ) {
+        funDefs.add( new FunctionDefinition(
+          fi.getName(),
+          description,
+          "(none)",
+          1,
+          1,
+          // TODO WHAT VALUE should this have
+          "",
+          fi.getName() ) );
+      } else {
+        for ( int i = 0; i < paramCategories.length; i++ ) {
+          int[] pc = paramCategories[ i ];
+          int returnCategory = returnCategories[ i ];
+          buf.setLength( 0 );
 
-                    RowsetDefinition.MdschemaFunctionsRowset.VarType varType =
-                        RowsetDefinition.MdschemaFunctionsRowset.VarType
-                            .forCategory(returnCategory);
-                    funDefs.add(
-                        new FunctionDefinition(
-                            fi.getName(),
-                            description,
-                            buf.toString(),
-                            // TODO: currently FunInfo can not tell us which
-                            // functions are MDX and which are UDFs.
-                            varType.ordinal(),
-                            1,
-                            // TODO: Name of the interface for UDF and Group
-                            // name for the MDX functions.
-                            // TODO WHAT VALUE should this have
-                            "",
-                            fi.getName()));
-                }
-            }
-        }
-    }
+          for ( int j = 0; j < pc.length; j++ ) {
+            int v = pc[ j ];
 
-    public int getHierarchyCardinality(Hierarchy hierarchy)
-        throws OlapException
-    {
-        final MondrianOlap4jHierarchy olap4jHierarchy =
-            (MondrianOlap4jHierarchy) hierarchy;
-        final mondrian.olap.SchemaReader schemaReader =
-            olap4jHierarchy.olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-                .olap4jConnection.getMondrianConnection().getSchemaReader()
-                .withLocus();
-        return RolapMemberBase.getHierarchyCardinality(
-            schemaReader, olap4jHierarchy.hierarchy);
-    }
-
-    public int getHierarchyStructure(Hierarchy hierarchy) {
-        final MondrianOlap4jHierarchy olap4jHierarchy =
-            (MondrianOlap4jHierarchy) hierarchy;
-        return ((HierarchyBase) olap4jHierarchy.hierarchy).isRagged() ? 1 : 0;
-    }
-
-    public boolean isHierarchyParentChild(Hierarchy hierarchy) {
-        Level nonAllFirstLevel = hierarchy.getLevels().get(0);
-        if (nonAllFirstLevel.getLevelType() == Level.Type.ALL) {
-            nonAllFirstLevel = hierarchy.getLevels().get(1);
-        }
-        MondrianOlap4jLevel olap4jLevel =
-            (MondrianOlap4jLevel) nonAllFirstLevel;
-        return ((RolapLevel) olap4jLevel.level).isParentChild();
-    }
-
-    public int getMeasureAggregator(Member member) {
-        MondrianOlap4jMeasure olap4jMeasure =
-            (MondrianOlap4jMeasure) member;
-        Object aggProp =
-            olap4jMeasure.member.getPropertyValue(
-                Property.AGGREGATION_TYPE.name);
-        if (aggProp == null) {
-            return
-                RowsetDefinition.MdschemaMeasuresRowset
-                    .MDMEASURE_AGGR_CALCULATED;
-        }
-        RolapAggregator agg = (RolapAggregator) aggProp;
-        if (agg == RolapAggregator.Sum) {
-            return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_SUM;
-        } else if (agg == RolapAggregator.Count) {
-            return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_COUNT;
-        } else if (agg == RolapAggregator.Min) {
-            return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_MIN;
-        } else if (agg == RolapAggregator.Max) {
-            return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_MAX;
-        } else if (agg == RolapAggregator.Avg) {
-            return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_AVG;
-        } else {
-            // TODO: what are VAR and STD
-            return RowsetDefinition.MdschemaMeasuresRowset
-                .MDMEASURE_AGGR_UNKNOWN;
-        }
-    }
-
-    public void checkMemberOrdinal(Member member) throws OlapException {
-        if (member.getOrdinal() == -1) {
-            MondrianOlap4jMember olap4jMember =
-                (MondrianOlap4jMember) member;
-            final mondrian.olap.SchemaReader schemaReader =
-                olap4jMember.olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-                    .olap4jConnection.getMondrianConnection().getSchemaReader()
-                    .withLocus();
-            RolapMemberBase.setOrdinals(schemaReader, olap4jMember.member);
-        }
-    }
-
-    public boolean shouldReturnCellProperty(
-        CellSet cellSet,
-        org.olap4j.metadata.Property cellProperty,
-        boolean evenEmpty)
-    {
-        MondrianOlap4jCellSet olap4jCellSet = (MondrianOlap4jCellSet) cellSet;
-        Query query = olap4jCellSet.query;
-        return
-            (evenEmpty
-             && query.isCellPropertyEmpty())
-            || query.hasCellProperty(cellProperty.getName());
-    }
-
-    public List<String> getSchemaRoleNames(Schema schema) {
-        MondrianOlap4jSchema olap4jSchema = (MondrianOlap4jSchema) schema;
-        // TODO: this returns ALL roles, no the current user's roles
-        return new ArrayList<String>(
-            ((RolapSchema) olap4jSchema.schema).roleNames());
-    }
-
-    public String getSchemaId(Schema schema) {
-        return ((MondrianOlap4jSchema)schema).schema.getId();
-    }
-
-    public String getCubeType(Cube cube) {
-        return
-            (cube instanceof MondrianOlap4jCube)
-            && ((RolapCube) ((MondrianOlap4jCube) cube).cube).isVirtual()
-                ? RowsetDefinition.MdschemaCubesRowset.MD_CUBTYPE_VIRTUAL_CUBE
-                : RowsetDefinition.MdschemaCubesRowset.MD_CUBTYPE_CUBE;
-    }
-
-    public boolean isLevelUnique(Level level) {
-        MondrianOlap4jLevel olap4jLevel = (MondrianOlap4jLevel) level;
-        return (olap4jLevel.level instanceof RolapLevel)
-            && ((RolapLevel) olap4jLevel.level).isUnique();
-    }
-
-    public List<org.olap4j.metadata.Property> getLevelProperties(Level level) {
-        MondrianOlap4jLevel olap4jLevel = (MondrianOlap4jLevel) level;
-        return olap4jLevel.getProperties(false);
-    }
-
-    public boolean isPropertyInternal(org.olap4j.metadata.Property property) {
-        MondrianOlap4jProperty olap4jProperty =
-            (MondrianOlap4jProperty) property;
-        return olap4jProperty.property.isInternal();
-    }
-
-    public List<Map<String, Object>> getDataSources(OlapConnection connection)
-        throws OlapException
-    {
-        MondrianOlap4jConnection olap4jConnection =
-            (MondrianOlap4jConnection) connection;
-        MondrianServer server =
-            MondrianServer.forConnection(
-                olap4jConnection.getMondrianConnection());
-        final List<Map<String, Object>> databases =
-            server.getDatabases(olap4jConnection.getMondrianConnection());
-
-        // We can't let JdbcPassword leak out of the public API, so we remove
-        // it here. This is only called by the XMLA servlets.
-        for (Map<String, Object> db : databases) {
-            String dsi = (String) db.get("DataSourceInfo");
-
-            if (dsi == null) {
-                break;
+            if ( j > 0 ) {
+              buf.append( ", " );
             }
 
-            PropertyList pl = Util.parseConnectString(dsi);
+            buf.append( Category.instance.getDescription( v & Category.Mask ) );
+          }
 
-            boolean removed =
-                pl.remove(RolapConnectionProperties.Jdbc.name());
-            removed |= pl.remove(RolapConnectionProperties.JdbcUser.name());
-            removed |= pl.remove(RolapConnectionProperties.JdbcPassword.name());
-
-            if (removed) {
-                db.put("DataSourceInfo", pl.toString());
-            }
+          RowsetDefinition.MdschemaFunctionsRowset.VarType varType =
+            RowsetDefinition.MdschemaFunctionsRowset.VarType.forCategory( returnCategory );
+          funDefs.add( new FunctionDefinition(
+            fi.getName(),
+            description,
+            buf.toString(),
+            // TODO: currently FunInfo can not tell us which
+            // functions are MDX and which are UDFs.
+            varType.ordinal(),
+            1,
+            // TODO: Name of the interface for UDF and Group
+            // name for the MDX functions.
+            // TODO WHAT VALUE should this have
+            "",
+            fi.getName() ) );
         }
-        return databases;
+      }
+    }
+  }
+
+  public int getHierarchyCardinality( Hierarchy hierarchy ) throws OlapException {
+    final MondrianOlap4jHierarchy olap4jHierarchy = (MondrianOlap4jHierarchy) hierarchy;
+    final mondrian.olap.SchemaReader schemaReader =
+      olap4jHierarchy.olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection.getMondrianConnection()
+        .getSchemaReader().withLocus();
+    return RolapMemberBase.getHierarchyCardinality( schemaReader, olap4jHierarchy.hierarchy );
+  }
+
+  public int getHierarchyStructure( Hierarchy hierarchy ) {
+    final MondrianOlap4jHierarchy olap4jHierarchy = (MondrianOlap4jHierarchy) hierarchy;
+    return ( (HierarchyBase) olap4jHierarchy.hierarchy ).isRagged() ? 1 : 0;
+  }
+
+  public boolean isHierarchyParentChild( Hierarchy hierarchy ) {
+    Level nonAllFirstLevel = hierarchy.getLevels().get( 0 );
+
+    if ( nonAllFirstLevel.getLevelType() == Level.Type.ALL ) {
+      nonAllFirstLevel = hierarchy.getLevels().get( 1 );
     }
 
-    public Map<String, Object> getAnnotationMap(MetadataElement element)
-        throws SQLException
-    {
-        if (element instanceof OlapWrapper) {
-            OlapWrapper wrapper = (OlapWrapper) element;
-            if (wrapper.isWrapperFor(Annotated.class)) {
-                final Annotated annotated = wrapper.unwrap(Annotated.class);
-                final Map<String, Object> map = new HashMap<String, Object>();
-                for (Map.Entry<String, Annotation> entry
-                    : annotated.getAnnotationMap().entrySet())
-                {
-                    map.put(entry.getKey(), entry.getValue().getValue());
-                }
-                return map;
-            }
+    MondrianOlap4jLevel olap4jLevel = (MondrianOlap4jLevel) nonAllFirstLevel;
+    return ( (RolapLevel) olap4jLevel.level ).isParentChild();
+  }
+
+
+  public int getMeasureAggregator( Member member ) {
+    MondrianOlap4jMeasure olap4jMeasure = (MondrianOlap4jMeasure) member;
+    Object aggProp = olap4jMeasure.member.getPropertyValue( Property.AGGREGATION_TYPE.name );
+
+    if ( aggProp == null ) {
+      return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_CALCULATED;
+    }
+
+    RolapAggregator agg = (RolapAggregator) aggProp;
+
+    if ( agg == RolapAggregator.Sum ) {
+      return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_SUM;
+    } else if ( agg == RolapAggregator.Count ) {
+      return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_COUNT;
+    } else if ( agg == RolapAggregator.Min ) {
+      return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_MIN;
+    } else if ( agg == RolapAggregator.Max ) {
+      return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_MAX;
+    } else if ( agg == RolapAggregator.Avg ) {
+      return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_AVG;
+    } else {
+      // TODO: what are VAR and STD
+      return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_UNKNOWN;
+    }
+  }
+
+  public void checkMemberOrdinal( Member member ) throws OlapException {
+    if ( member.getOrdinal() == -1 ) {
+      MondrianOlap4jMember olap4jMember = (MondrianOlap4jMember) member;
+      final mondrian.olap.SchemaReader schemaReader =
+        olap4jMember.olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection.getMondrianConnection()
+          .getSchemaReader().withLocus();
+      RolapMemberBase.setOrdinals( schemaReader, olap4jMember.member );
+    }
+  }
+
+  public boolean shouldReturnCellProperty( CellSet cellSet, org.olap4j.metadata.Property cellProperty,
+                                           boolean evenEmpty ) {
+    MondrianOlap4jCellSet olap4jCellSet = (MondrianOlap4jCellSet) cellSet;
+    Query query = olap4jCellSet.query;
+
+    return ( evenEmpty && query.isCellPropertyEmpty() ) || query.hasCellProperty( cellProperty.getName() );
+  }
+
+  public List<String> getSchemaRoleNames( Schema schema ) {
+    MondrianOlap4jSchema olap4jSchema = (MondrianOlap4jSchema) schema;
+    // TODO: this returns ALL roles, no the current user's roles
+
+    return new ArrayList<>( ( (RolapSchema) olap4jSchema.schema ).roleNames() );
+  }
+
+  public String getSchemaId( Schema schema ) {
+    return ( (MondrianOlap4jSchema) schema ).schema.getId();
+  }
+
+  public String getCubeType( Cube cube ) {
+    return ( cube instanceof MondrianOlap4jCube )
+      && ( (RolapCube) ( (MondrianOlap4jCube) cube ).cube ).isVirtual()
+      ? RowsetDefinition.MdschemaCubesRowset.MD_CUBTYPE_VIRTUAL_CUBE
+      : RowsetDefinition.MdschemaCubesRowset.MD_CUBTYPE_CUBE;
+  }
+
+  public boolean isLevelUnique( Level level ) {
+    MondrianOlap4jLevel olap4jLevel = (MondrianOlap4jLevel) level;
+
+    return ( olap4jLevel.level instanceof RolapLevel ) && ( (RolapLevel) olap4jLevel.level ).isUnique();
+  }
+
+  public List<org.olap4j.metadata.Property> getLevelProperties( Level level ) {
+    MondrianOlap4jLevel olap4jLevel = (MondrianOlap4jLevel) level;
+    return olap4jLevel.getProperties( false );
+  }
+
+  public boolean isPropertyInternal( org.olap4j.metadata.Property property ) {
+    MondrianOlap4jProperty olap4jProperty = (MondrianOlap4jProperty) property;
+    return olap4jProperty.property.isInternal();
+  }
+
+  public List<Map<String, Object>> getDataSources( OlapConnection connection ) throws OlapException {
+    MondrianOlap4jConnection olap4jConnection = (MondrianOlap4jConnection) connection;
+    MondrianServer server = MondrianServer.forConnection( olap4jConnection.getMondrianConnection() );
+    final List<Map<String, Object>> databases = server.getDatabases( olap4jConnection.getMondrianConnection() );
+
+    // We can't let JdbcPassword leak out of the public API, so we remove it here. This is only called by the XMLA
+    // servlets.
+    for ( Map<String, Object> db : databases ) {
+      String dsi = (String) db.get( "DataSourceInfo" );
+
+      if ( dsi == null ) {
+        break;
+      }
+
+      PropertyList pl = Util.parseConnectString( dsi );
+
+      boolean removed = pl.remove( RolapConnectionProperties.Jdbc.name() );
+      removed |= pl.remove( RolapConnectionProperties.JdbcUser.name() );
+      removed |= pl.remove( RolapConnectionProperties.JdbcPassword.name() );
+
+      if ( removed ) {
+        db.put( "DataSourceInfo", pl.toString() );
+      }
+    }
+
+    return databases;
+  }
+
+  public Map<String, Object> getAnnotationMap( MetadataElement element ) throws SQLException {
+    if ( element instanceof OlapWrapper ) {
+      OlapWrapper wrapper = (OlapWrapper) element;
+
+      if ( wrapper.isWrapperFor( Annotated.class ) ) {
+        final Annotated annotated = wrapper.unwrap( Annotated.class );
+        final Map<String, Object> map = new HashMap<>();
+
+        for ( Map.Entry<String, Annotation> entry : annotated.getAnnotationMap().entrySet() ) {
+          map.put( entry.getKey(), entry.getValue().getValue() );
         }
-        return Collections.emptyMap();
+
+        return map;
+      }
     }
 
-    public boolean canDrillThrough(Cell cell) {
-        return ((MondrianOlap4jCell)cell).cell.canDrillThrough();
+    return Collections.emptyMap();
+  }
+
+  public boolean canDrillThrough( Cell cell ) {
+    return ( (MondrianOlap4jCell) cell ).cell.canDrillThrough();
+  }
+
+  public int getDrillThroughCount( Cell cell ) {
+    return ( (MondrianOlap4jCell) cell ).cell.getDrillThroughCount();
+  }
+
+  public void flushSchemaCache( OlapConnection conn ) throws OlapException {
+    try {
+      RolapConnection rConn = conn.unwrap( RolapConnection.class );
+      rConn.getCacheControl( null ).flushSchema( rConn.getSchema() );
+    } catch ( SQLException e ) {
+      throw new OlapException( e );
+    }
+  }
+
+  public Object getMemberKey( Member m ) throws OlapException {
+    try {
+      return ( (MondrianOlap4jMember) m ).unwrap( RolapMemberBase.class ).getKey();
+    } catch ( SQLException e ) {
+      throw new OlapException( e );
+    }
+  }
+
+  public Object getOrderKey( Member m ) throws OlapException {
+    try {
+      return ( (MondrianOlap4jMember) m ).unwrap( RolapMemberBase.class ).getOrderKey();
+    } catch ( SQLException e ) {
+      throw new OlapException( e );
+    }
+  }
+
+  @Override
+  public String getLevelDataType( Level level ) {
+    MondrianOlap4jLevel olap4jLevel = (MondrianOlap4jLevel) level;
+
+    if ( olap4jLevel.level instanceof RolapLevel ) {
+      return ( (RolapLevel) olap4jLevel.level ).getDatatype().name();
     }
 
-    public int getDrillThroughCount(Cell cell) {
-        return ((MondrianOlap4jCell)cell).cell.getDrillThroughCount();
-    }
-
-    public void flushSchemaCache(OlapConnection conn) throws OlapException {
-        try {
-            RolapConnection rConn = conn.unwrap(RolapConnection.class);
-            rConn.getCacheControl(null).flushSchema(
-                rConn.getSchema());
-        } catch (SQLException e) {
-            throw new OlapException(e);
-        }
-    }
-
-    public Object getMemberKey(Member m) throws OlapException {
-        try {
-            return ((MondrianOlap4jMember)m)
-                .unwrap(RolapMemberBase.class).getKey();
-        } catch (SQLException e) {
-            throw new OlapException(e);
-        }
-    }
-
-    public Object getOrderKey(Member m) throws OlapException {
-        try {
-            return ((MondrianOlap4jMember)m)
-                .unwrap(RolapMemberBase.class).getOrderKey();
-        } catch (SQLException e) {
-            throw new OlapException(e);
-        }
-    }
-    
-    public String getLevelDataType( Level level ) {
-        MondrianOlap4jLevel olap4jLevel = (MondrianOlap4jLevel) level;
-        if ( olap4jLevel.level instanceof RolapLevel ) {
-            return ( (RolapLevel) olap4jLevel.level ).getDatatype().name();
-    
-        }
-        return null;
-    }
+    return null;
+  }
 }
-
-// End MondrianOlap4jExtra.java
