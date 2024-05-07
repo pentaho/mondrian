@@ -3,6 +3,7 @@
  * Agreement, available at the following URL:
  * http://www.eclipse.org/legal/epl-v10.html.
  * You must accept the terms of that agreement to use this software.
+ *
  * Copyright (C) 2005-2024 Hitachi Vantara and others
  * All Rights Reserved.
  */
@@ -45,8 +46,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Implementation of {@link mondrian.server.Repository} that reads
- * from a {@code datasources.xml} file.
+ * Implementation of {@link mondrian.server.Repository} that reads from a {@code datasources.xml} file.
  *
  * <p>Note that for legacy reasons, the datasources.xml file's root element is called DataSource whereas the olap4j
  * standard calls them Databases. This is why those two concepts are linked, as in
@@ -71,8 +71,7 @@ public class FileRepository implements Repository {
       Util.parseInterval( String.valueOf( MondrianProperties.instance().XmlaSchemaRefreshInterval.get() ),
         TimeUnit.MILLISECONDS );
 
-    executorService.scheduleWithFixedDelay(
-      () -> {
+    executorService.scheduleWithFixedDelay( () -> {
         for ( FileRepository next : instances ) {
           next.clearServerInfo();
         }
