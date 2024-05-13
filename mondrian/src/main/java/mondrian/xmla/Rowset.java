@@ -440,6 +440,25 @@ abstract class Rowset implements XmlaConstants {
     }
   }
 
+  public List<String> getRestriction( RowsetDefinition.Column column ) {
+    final Object restriction = this.restrictions.get( column.name );
+    List<String> restrictionList;
+
+    if ( restriction == null ) {
+      return null;
+    } else if ( restriction instanceof List ) {
+      restrictionList = new ArrayList<>();
+
+      for ( Object o : (List<?>) restriction ) {
+        restrictionList.add( o.toString() );
+      }
+    } else {
+      restrictionList = new ArrayList<>();
+      restrictionList.add( restriction.toString() );
+    }
+
+    return restrictionList;
+  }
 
   /**
    * A set of name/value pairs, which can be output using {@link Rowset#addRow}. This uses less memory than simply

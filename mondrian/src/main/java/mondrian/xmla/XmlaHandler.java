@@ -5,16 +5,29 @@
  * You must accept the terms of that agreement to use this software.
  *
  * Copyright (C) 2003-2005 Julian Hyde
+ * Copyright (C) 2019 Topsoft
+ * Copyright (C) 2020-2022 Sergei Semenkov
  * Copyright (C) 2005-2024 Hitachi Vantara
  * All Rights Reserved.
  */
 package mondrian.xmla;
 
+import mondrian.olap.DrillThrough;
+import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.MondrianServer;
+import mondrian.olap.QueryPart;
 import mondrian.olap.Util;
 import mondrian.olap4j.IMondrianOlap4jProperty;
+import mondrian.olap4j.MondrianOlap4jConnection;
+import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapSchema;
+import mondrian.server.Execution;
+import mondrian.server.Statement;
 import mondrian.util.CompositeList;
 import mondrian.xmla.impl.DefaultSaxWriter;
+import mondrian.xmla.impl.DefaultXmlaRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eigenbase.xom.XOMUtil;
@@ -97,6 +110,8 @@ import static mondrian.xmla.XmlaConstants.NS_XMLA_ROWSET;
 import static mondrian.xmla.XmlaConstants.NS_XSD;
 import static mondrian.xmla.XmlaConstants.NS_XSI;
 import static mondrian.xmla.XmlaConstants.SERVER_FAULT_FC;
+import static mondrian.xmla.XmlaConstants.USM_DOM_PARSE_CODE;
+import static mondrian.xmla.XmlaConstants.USM_DOM_PARSE_FAULT_FS;
 import static org.olap4j.metadata.XmlaConstants.AxisFormat;
 import static org.olap4j.metadata.XmlaConstants.Content;
 import static org.olap4j.metadata.XmlaConstants.Format;
@@ -561,7 +576,7 @@ public class XmlaHandler {
    * @param request Request
    * @param propMap Extra properties
    */
-  public OlapConnection getConnection( XmlaRequest request, Map<String, String> propMap ) {
+  public OlapConnection getConnection( XmlaRequest request, Map<String, String> propMap ) throws OlapException {
     String sessionId = request.getSessionId();
 
     if ( sessionId == null ) {
@@ -585,9 +600,10 @@ public class XmlaHandler {
       props.put( JDBC_PASSWORD, request.getPassword() );
     }
 
-    final String databaseName = request.getProperties().get( PropertyDefinition.DataSourceInfo.name() );
+    final String databaseName =
+      StringUtils.normalizeSpace( request.getProperties().get( PropertyDefinition.DataSourceInfo.name() ) );
 
-    String catalogName = request.getProperties().get( PropertyDefinition.Catalog.name() );
+    String catalogName = StringUtils.normalizeSpace( request.getProperties().get( PropertyDefinition.Catalog.name() ) );
 
     if ( catalogName == null && request.getMethod() == Method.DISCOVER && request.getRestrictions()
       .containsKey( Property.StandardMemberProperty.CATALOG_NAME.name() ) ) {
@@ -602,6 +618,48 @@ public class XmlaHandler {
     }
 
     OlapConnection connection = getConnection( databaseName, catalogName, request.getRoleName(), props );
+
+    List<String> authenticatedUserAndGroups = new ArrayList<>();
+
+    if ( request.getAuthenticatedUser() != null ) {
+      authenticatedUserAndGroups.add( request.getAuthenticatedUser() );
+    }
+
+    if ( request.getAuthenticatedUserGroups() != null ) {
+      authenticatedUserAndGroups.addAll( Arrays.asList( request.getAuthenticatedUserGroups() ) );
+    }
+
+    if ( !authenticatedUserAndGroups.isEmpty() ) {
+      List<String> roles = new ArrayList<>();
+      RolapSchema rolapSchema = ( (MondrianOlap4jConnection) connection ).getMondrianConnection().getSchema();
+
+      for ( MondrianDef.Role role : rolapSchema.getXMLSchema().roles ) {
+        for ( MondrianDef.RoleMember roleMember : role.members ) {
+          boolean inRole = false;
+
+          if ( roleMember.name != null ) {
+            String roleMemberName = roleMember.name.trim().toLowerCase( Locale.ROOT );
+
+            for ( String aRole : authenticatedUserAndGroups ) {
+              if ( roleMemberName.equals( aRole.toLowerCase( Locale.ROOT ) ) ) {
+                roles.add( role.name );
+                inRole = true;
+                break;
+              }
+            }
+          }
+
+          if ( inRole ) {
+            break;
+          }
+        }
+      }
+
+      if ( !roles.isEmpty() ) {
+        ( (MondrianOlap4jConnection) connection ).setRoleNames( roles );
+      }
+    }
+
     String localeIdentifier = request.getProperties().get( "LocaleIdentifier" );
     Locale locale = XmlaUtil.convertToLocale( localeIdentifier );
 
@@ -676,7 +734,20 @@ public class XmlaHandler {
     }
   }
 
+  private final List<XmlaRequest> currentRequests = new ArrayList<>();
+
+  private void checkedCanceled( XmlaRequest request ) {
+    String canceled = request.getProperties().get( Execution.State.CANCELED.name() );
+
+    if ( canceled != null && canceled.equals( "true" ) ) {
+      throw new XmlaException( CLIENT_FAULT_FC, "3238658121", "", new Exception( "The query was canceled by user." )
+      );
+    }
+  }
+
   private void execute( XmlaRequest request, XmlaResponse response ) throws XmlaException {
+    DefaultXmlaRequest defaultXmlaRequest = (DefaultXmlaRequest) request;
+    currentRequests.add( request );
     final Map<String, String> properties = request.getProperties();
 
     // Default responseMimeType is SOAP.
@@ -690,12 +761,47 @@ public class XmlaHandler {
     QueryResult result = null;
 
     try {
-      if ( request.isDrillThrough() ) {
-        result = executeDrillThroughQuery( request );
-      } else {
-        result = executeQuery( request );
+      if ( "CANCEL".equalsIgnoreCase( defaultXmlaRequest.getCommand() ) ) {
+        try {
+          final OlapConnection connection1 = getConnection( request, Collections.emptyMap() );
+          final RolapConnection rolapConnection1 = ( (MondrianOlap4jConnection) connection1 ).getMondrianConnection();
+          final String sessionId = rolapConnection1.getConnectInfo().get( "sessionId" );
+
+          for ( XmlaRequest xmlaRequest : currentRequests ) {
+            if ( xmlaRequest.getSessionId().equals( sessionId ) ) {
+              ( (DefaultXmlaRequest) xmlaRequest ).setProperty( Execution.State.CANCELED.name(), "true" );
+            }
+          }
+
+          MondrianServer mondrianServer = MondrianServer.forConnection( rolapConnection1 );
+
+          for ( Statement statement : mondrianServer.getStatements( sessionId ) ) {
+            if ( statement.getMondrianConnection().getConnectInfo().get( "sessionId" ).equals( sessionId ) ) {
+              statement.cancel();
+            }
+          }
+        } catch ( SQLException oe ) {
+          throw new XmlaException( CLIENT_FAULT_FC, USM_DOM_PARSE_CODE, USM_DOM_PARSE_FAULT_FS, oe );
+        }
+      } else if ( "STATEMENT".equalsIgnoreCase( defaultXmlaRequest.getCommand() ) ) {
+        final OlapConnection connection = getConnection( request, Collections.emptyMap() );
+        final RolapConnection rolapConnection = ( (MondrianOlap4jConnection) connection ).getMondrianConnection();
+        final String mdx = request.getStatement();
+        QueryPart queryPart = null;
+
+        if ( mdx != null && !mdx.isEmpty() ) {
+          queryPart = rolapConnection.parseStatement( mdx );
+        }
+
+        if ( queryPart instanceof DrillThrough ) {
+          result = executeDrillThroughQuery( request );
+        } else {
+          checkedCanceled( request );
+          result = executeQuery( request );
+        }
       }
 
+      checkedCanceled( request );
       SaxWriter writer = response.getWriter();
       writer.startDocument();
       writer.startElement( "ExecuteResponse", "xmlns", NS_XMLA );
@@ -744,8 +850,14 @@ public class XmlaHandler {
         writer.endElement(); // return
         writer.endElement(); // ExecuteResponse
       }
+
+      checkedCanceled( request );
       writer.endDocument();
+    } catch ( OlapException oe ) {
+      throw new XmlaException( CLIENT_FAULT_FC, HSB_EXECUTE_QUERY_CODE, HSB_EXECUTE_QUERY_FAULT_FS, oe );
     } finally {
+      currentRequests.remove( request );
+
       if ( result != null ) {
         try {
           result.close();
@@ -842,6 +954,8 @@ public class XmlaHandler {
       } catch ( Exception ex ) {
         throw new XmlaException( SERVER_FAULT_FC, HSB_EXECUTE_QUERY_CODE, HSB_EXECUTE_QUERY_FAULT_FS, ex );
       }
+    } catch ( OlapException e ) {
+      throw new XmlaException( SERVER_FAULT_FC, HSB_EXECUTE_QUERY_CODE, HSB_EXECUTE_QUERY_FAULT_FS, e );
     } finally {
       if ( !success ) {
         if ( cellSet != null ) {
@@ -1001,6 +1115,8 @@ public class XmlaHandler {
     boolean isHierarchyParentChild( Hierarchy hierarchy );
 
     int getMeasureAggregator( Member member );
+
+    String getMeasureDisplayFolder( Member member );
 
     void checkMemberOrdinal( Member member ) throws OlapException;
 
@@ -2649,6 +2765,10 @@ public class XmlaHandler {
 
     public int getMeasureAggregator( Member member ) {
       return RowsetDefinition.MdschemaMeasuresRowset.MDMEASURE_AGGR_UNKNOWN;
+    }
+
+    public String getMeasureDisplayFolder( Member member ) {
+      return "";
     }
 
     public void checkMemberOrdinal( Member member ) {

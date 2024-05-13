@@ -334,6 +334,14 @@ public class XmlaUtil implements XmlaConstants {
       public String getSessionId() {
         return null;
       }
+
+      public String getAuthenticatedUser() {
+        return null;
+      }
+
+      public String[] getAuthenticatedUserGroups() {
+        return null;
+      }
     };
     final Rowset rowset = rowsetDefinition.getRowset( request,
       new XmlaHandler( connectionFactory ) {

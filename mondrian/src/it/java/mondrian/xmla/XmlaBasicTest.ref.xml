@@ -95,6 +95,7 @@
                                 <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
                                 <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
                                 <xsd:element name="CUBE_TYPE" sql:field="CUBE_TYPE" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="BASE_CUBE_NAME" sql:field="BASE_CUBE_NAME" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="CUBE_GUID" sql:field="CUBE_GUID" type="uuid"/>
                                 <xsd:element minOccurs="0" name="CREATED_ON" sql:field="CREATED_ON" type="xsd:dateTime"/>
                                 <xsd:element minOccurs="0" name="LAST_SCHEMA_UPDATE" sql:field="LAST_SCHEMA_UPDATE" type="xsd:dateTime"/>
@@ -110,6 +111,7 @@
                                 <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
                                 <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
                                 <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
+                                <xsd:element minOccurs="0" name="CUBE_SOURCE" sql:field="CUBE_SOURCE" type="xsd:int"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -119,12 +121,14 @@
                         <CUBE_NAME>HR</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>HR</CUBE_CAPTION>
                         <DESCRIPTION>FoodMart Schema - HR Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -132,12 +136,14 @@
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales</CUBE_CAPTION>
                         <DESCRIPTION>FoodMart Schema - Sales Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -145,12 +151,14 @@
                         <CUBE_NAME>Sales 2</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales 2</CUBE_CAPTION>
                         <DESCRIPTION>FoodMart Schema - Sales 2 Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -158,12 +166,14 @@
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales Ragged</CUBE_CAPTION>
                         <DESCRIPTION>FoodMart Schema - Sales Ragged Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -171,12 +181,14 @@
                         <CUBE_NAME>Store</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Store</CUBE_CAPTION>
                         <DESCRIPTION>FoodMart Schema - Store Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -184,12 +196,14 @@
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Warehouse</CUBE_CAPTION>
                         <DESCRIPTION>FoodMart Schema - Warehouse Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -197,12 +211,14 @@
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Warehouse and Sales</CUBE_CAPTION>
                         <DESCRIPTION>FoodMart Schema - Warehouse and Sales Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                 </root>
             </return>
@@ -266,6 +282,7 @@
                                 <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
                                 <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
                                 <xsd:element name="CUBE_TYPE" sql:field="CUBE_TYPE" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="BASE_CUBE_NAME" sql:field="BASE_CUBE_NAME" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="CUBE_GUID" sql:field="CUBE_GUID" type="uuid"/>
                                 <xsd:element minOccurs="0" name="CREATED_ON" sql:field="CREATED_ON" type="xsd:dateTime"/>
                                 <xsd:element minOccurs="0" name="LAST_SCHEMA_UPDATE" sql:field="LAST_SCHEMA_UPDATE" type="xsd:dateTime"/>
@@ -281,6 +298,7 @@
                                 <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
                                 <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
                                 <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
+                                <xsd:element minOccurs="0" name="CUBE_SOURCE" sql:field="CUBE_SOURCE" type="xsd:int"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -290,12 +308,14 @@
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Verkaufen</CUBE_CAPTION>
                         <DESCRIPTION>Cube Verkaufen</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                 </root>
             </return>
@@ -361,6 +381,7 @@
                                 <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
                                 <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
                                 <xsd:element name="CUBE_TYPE" sql:field="CUBE_TYPE" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="BASE_CUBE_NAME" sql:field="BASE_CUBE_NAME" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="CUBE_GUID" sql:field="CUBE_GUID" type="uuid"/>
                                 <xsd:element minOccurs="0" name="CREATED_ON" sql:field="CREATED_ON" type="xsd:dateTime"/>
                                 <xsd:element minOccurs="0" name="LAST_SCHEMA_UPDATE" sql:field="LAST_SCHEMA_UPDATE" type="xsd:dateTime"/>
@@ -376,6 +397,7 @@
                                 <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
                                 <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
                                 <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
+                                <xsd:element minOccurs="0" name="CUBE_SOURCE" sql:field="CUBE_SOURCE" type="xsd:int"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -385,12 +407,14 @@
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Ventes</CUBE_CAPTION>
                         <DESCRIPTION>Cube des ventes</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                 </root>
             </return>
@@ -456,6 +480,7 @@
                                 <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
                                 <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
                                 <xsd:element name="CUBE_TYPE" sql:field="CUBE_TYPE" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="BASE_CUBE_NAME" sql:field="BASE_CUBE_NAME" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="CUBE_GUID" sql:field="CUBE_GUID" type="uuid"/>
                                 <xsd:element minOccurs="0" name="CREATED_ON" sql:field="CREATED_ON" type="xsd:dateTime"/>
                                 <xsd:element minOccurs="0" name="LAST_SCHEMA_UPDATE" sql:field="LAST_SCHEMA_UPDATE" type="xsd:dateTime"/>
@@ -471,6 +496,7 @@
                                 <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
                                 <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
                                 <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
+                                <xsd:element minOccurs="0" name="CUBE_SOURCE" sql:field="CUBE_SOURCE" type="xsd:int"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -480,6 +506,7 @@
                         <CUBE_NAME>HR</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
@@ -524,6 +551,9 @@
                                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>0</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                                        <HIERARCHY_ORIGIN>6</HIERARCHY_ORIGIN>
+                                        <HIERARCHY_DISPLAY_FOLDER/>
+                                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                                         <PARENT_CHILD>false</PARENT_CHILD>
                                         <LEVELS>
                                             <row>
@@ -584,6 +614,9 @@
                                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>1</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                                        <HIERARCHY_DISPLAY_FOLDER/>
+                                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                                         <PARENT_CHILD>false</PARENT_CHILD>
                                         <LEVELS>
                                             <row>
@@ -679,6 +712,9 @@
                                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>2</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                                        <HIERARCHY_DISPLAY_FOLDER/>
+                                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                                         <PARENT_CHILD>false</PARENT_CHILD>
                                         <LEVELS>
                                             <row>
@@ -808,6 +844,9 @@
                                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>3</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                                        <HIERARCHY_DISPLAY_FOLDER/>
+                                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                                         <PARENT_CHILD>false</PARENT_CHILD>
                                         <LEVELS>
                                             <row>
@@ -886,6 +925,9 @@
                                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>4</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                                        <HIERARCHY_DISPLAY_FOLDER/>
+                                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                                         <PARENT_CHILD>false</PARENT_CHILD>
                                         <LEVELS>
                                             <row>
@@ -964,6 +1006,9 @@
                                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>5</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                                        <HIERARCHY_DISPLAY_FOLDER/>
+                                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                                         <PARENT_CHILD>false</PARENT_CHILD>
                                         <LEVELS>
                                             <row>
@@ -1059,6 +1104,9 @@
                                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>6</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                                        <HIERARCHY_DISPLAY_FOLDER/>
+                                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                                         <PARENT_CHILD>false</PARENT_CHILD>
                                         <LEVELS>
                                             <row>
@@ -1137,6 +1185,9 @@
                                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>7</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                                        <HIERARCHY_DISPLAY_FOLDER/>
+                                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                                         <PARENT_CHILD>true</PARENT_CHILD>
                                         <LEVELS>
                                             <row>
@@ -1192,7 +1243,10 @@
                                 <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                                 <LEVELS_LIST>[Time].[Month],[Store].[Store Name],[Pay Type].[Pay Type],[Store Type].[Store Type],[Position].[Position Title],[Department].[Department Description],[Employees].[Employee Id]</LEVELS_LIST>
                                 <DESCRIPTION>HR Cube - Org Salary Member</DESCRIPTION>
+                                <MEASUREGROUP_NAME>HR</MEASUREGROUP_NAME>
+                                <MEASURE_DISPLAY_FOLDER/>
                                 <DEFAULT_FORMAT_STRING>Currency</DEFAULT_FORMAT_STRING>
+                                <MEASURE_VISIBILITY>1</MEASURE_VISIBILITY>
                             </row>
                             <row>
                                 <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1206,7 +1260,10 @@
                                 <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                                 <LEVELS_LIST>[Time].[Month],[Store].[Store Name],[Pay Type].[Pay Type],[Store Type].[Store Type],[Position].[Position Title],[Department].[Department Description],[Employees].[Employee Id]</LEVELS_LIST>
                                 <DESCRIPTION>HR Cube - Count Member</DESCRIPTION>
+                                <MEASUREGROUP_NAME>HR</MEASUREGROUP_NAME>
+                                <MEASURE_DISPLAY_FOLDER/>
                                 <DEFAULT_FORMAT_STRING>#,#</DEFAULT_FORMAT_STRING>
+                                <MEASURE_VISIBILITY>1</MEASURE_VISIBILITY>
                             </row>
                             <row>
                                 <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1220,7 +1277,10 @@
                                 <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                                 <LEVELS_LIST>[Time].[Month],[Store].[Store Name],[Pay Type].[Pay Type],[Store Type].[Store Type],[Position].[Position Title],[Department].[Department Description],[Employees].[Employee Id]</LEVELS_LIST>
                                 <DESCRIPTION>HR Cube - Number of Employees Member</DESCRIPTION>
+                                <MEASUREGROUP_NAME>HR</MEASUREGROUP_NAME>
+                                <MEASURE_DISPLAY_FOLDER/>
                                 <DEFAULT_FORMAT_STRING>#,#</DEFAULT_FORMAT_STRING>
+                                <MEASURE_VISIBILITY>1</MEASURE_VISIBILITY>
                             </row>
                             <row>
                                 <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1233,7 +1293,10 @@
                                 <DATA_TYPE>130</DATA_TYPE>
                                 <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                                 <DESCRIPTION>HR Cube - Employee Salary Member</DESCRIPTION>
+                                <MEASUREGROUP_NAME>HR</MEASUREGROUP_NAME>
+                                <MEASURE_DISPLAY_FOLDER/>
                                 <DEFAULT_FORMAT_STRING>Currency</DEFAULT_FORMAT_STRING>
+                                <MEASURE_VISIBILITY>1</MEASURE_VISIBILITY>
                             </row>
                             <row>
                                 <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -1246,9 +1309,13 @@
                                 <DATA_TYPE>130</DATA_TYPE>
                                 <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                                 <DESCRIPTION>HR Cube - Avg Salary Member</DESCRIPTION>
+                                <MEASUREGROUP_NAME>HR</MEASUREGROUP_NAME>
+                                <MEASURE_DISPLAY_FOLDER/>
                                 <DEFAULT_FORMAT_STRING>Currency</DEFAULT_FORMAT_STRING>
+                                <MEASURE_VISIBILITY>1</MEASURE_VISIBILITY>
                             </row>
                         </MEASURES>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                 </root>
             </return>
@@ -1305,6 +1372,7 @@
           "CUBE_NAME": "HR",
           "CUBE_TYPE": "CUBE",
           "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "LAST_DATA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
           "IS_DRILLTHROUGH_ENABLED": true,
           "IS_WRITE_ENABLED": false,
           "IS_LINKABLE": false,
@@ -1349,6 +1417,9 @@
                   "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 0,
                   "DIMENSION_IS_SHARED": true,
+                  "HIERARCHY_ORIGIN": 6,
+                  "HIERARCHY_DISPLAY_FOLDER": "",
+                  "HIERARCHY_VISIBILITY": 1,
                   "PARENT_CHILD": false,
                   "LEVELS": [
                     {
@@ -1409,6 +1480,9 @@
                   "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 1,
                   "DIMENSION_IS_SHARED": true,
+                  "HIERARCHY_ORIGIN": 1,
+                  "HIERARCHY_DISPLAY_FOLDER": "",
+                  "HIERARCHY_VISIBILITY": 1,
                   "PARENT_CHILD": false,
                   "LEVELS": [
                     {
@@ -1504,6 +1578,9 @@
                   "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 2,
                   "DIMENSION_IS_SHARED": true,
+                  "HIERARCHY_ORIGIN": 1,
+                  "HIERARCHY_DISPLAY_FOLDER": "",
+                  "HIERARCHY_VISIBILITY": 1,
                   "PARENT_CHILD": false,
                   "LEVELS": [
                     {
@@ -1633,6 +1710,9 @@
                   "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 3,
                   "DIMENSION_IS_SHARED": true,
+                  "HIERARCHY_ORIGIN": 1,
+                  "HIERARCHY_DISPLAY_FOLDER": "",
+                  "HIERARCHY_VISIBILITY": 1,
                   "PARENT_CHILD": false,
                   "LEVELS": [
                     {
@@ -1711,6 +1791,9 @@
                   "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 4,
                   "DIMENSION_IS_SHARED": true,
+                  "HIERARCHY_ORIGIN": 1,
+                  "HIERARCHY_DISPLAY_FOLDER": "",
+                  "HIERARCHY_VISIBILITY": 1,
                   "PARENT_CHILD": false,
                   "LEVELS": [
                     {
@@ -1789,6 +1872,9 @@
                   "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 5,
                   "DIMENSION_IS_SHARED": true,
+                  "HIERARCHY_ORIGIN": 1,
+                  "HIERARCHY_DISPLAY_FOLDER": "",
+                  "HIERARCHY_VISIBILITY": 1,
                   "PARENT_CHILD": false,
                   "LEVELS": [
                     {
@@ -1884,6 +1970,9 @@
                   "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 6,
                   "DIMENSION_IS_SHARED": true,
+                  "HIERARCHY_ORIGIN": 1,
+                  "HIERARCHY_DISPLAY_FOLDER": "",
+                  "HIERARCHY_VISIBILITY": 1,
                   "PARENT_CHILD": false,
                   "LEVELS": [
                     {
@@ -1962,6 +2051,9 @@
                   "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 7,
                   "DIMENSION_IS_SHARED": true,
+                  "HIERARCHY_ORIGIN": 1,
+                  "HIERARCHY_DISPLAY_FOLDER": "",
+                  "HIERARCHY_VISIBILITY": 1,
                   "PARENT_CHILD": true,
                   "LEVELS": [
                     {
@@ -2018,7 +2110,10 @@
               "MEASURE_IS_VISIBLE": true,
               "LEVELS_LIST": "[Time].[Month],[Store].[Store Name],[Pay Type].[Pay Type],[Store Type].[Store Type],[Position].[Position Title],[Department].[Department Description],[Employees].[Employee Id]",
               "DESCRIPTION": "HR Cube - Org Salary Member",
-              "DEFAULT_FORMAT_STRING": "Currency"
+              "MEASUREGROUP_NAME": "HR",
+              "MEASURE_DISPLAY_FOLDER": "",
+              "DEFAULT_FORMAT_STRING": "Currency",
+              "MEASURE_VISIBILITY": 1
             },
             {
               "CATALOG_NAME": "FoodMart",
@@ -2032,7 +2127,10 @@
               "MEASURE_IS_VISIBLE": true,
               "LEVELS_LIST": "[Time].[Month],[Store].[Store Name],[Pay Type].[Pay Type],[Store Type].[Store Type],[Position].[Position Title],[Department].[Department Description],[Employees].[Employee Id]",
               "DESCRIPTION": "HR Cube - Count Member",
-              "DEFAULT_FORMAT_STRING": "#,#"
+              "MEASUREGROUP_NAME": "HR",
+              "MEASURE_DISPLAY_FOLDER": "",
+              "DEFAULT_FORMAT_STRING": "#,#",
+              "MEASURE_VISIBILITY": 1
             },
             {
               "CATALOG_NAME": "FoodMart",
@@ -2046,7 +2144,10 @@
               "MEASURE_IS_VISIBLE": true,
               "LEVELS_LIST": "[Time].[Month],[Store].[Store Name],[Pay Type].[Pay Type],[Store Type].[Store Type],[Position].[Position Title],[Department].[Department Description],[Employees].[Employee Id]",
               "DESCRIPTION": "HR Cube - Number of Employees Member",
-              "DEFAULT_FORMAT_STRING": "#,#"
+              "MEASUREGROUP_NAME": "HR",
+              "MEASURE_DISPLAY_FOLDER": "",
+              "DEFAULT_FORMAT_STRING": "#,#",
+              "MEASURE_VISIBILITY": 1
             },
             {
               "CATALOG_NAME": "FoodMart",
@@ -2059,7 +2160,10 @@
               "DATA_TYPE": 130,
               "MEASURE_IS_VISIBLE": true,
               "DESCRIPTION": "HR Cube - Employee Salary Member",
-              "DEFAULT_FORMAT_STRING": "Currency"
+              "MEASUREGROUP_NAME": "HR",
+              "MEASURE_DISPLAY_FOLDER": "",
+              "DEFAULT_FORMAT_STRING": "Currency",
+              "MEASURE_VISIBILITY": 1
             },
             {
               "CATALOG_NAME": "FoodMart",
@@ -2072,9 +2176,13 @@
               "DATA_TYPE": 130,
               "MEASURE_IS_VISIBLE": true,
               "DESCRIPTION": "HR Cube - Avg Salary Member",
-              "DEFAULT_FORMAT_STRING": "Currency"
+              "MEASUREGROUP_NAME": "HR",
+              "MEASURE_DISPLAY_FOLDER": "",
+              "DEFAULT_FORMAT_STRING": "Currency",
+              "MEASURE_VISIBILITY": 1
             }
-          ]
+          ],
+          "CUBE_SOURCE": 1
         }
       ]
     }
@@ -2141,6 +2249,11 @@
                                 <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
                                 <xsd:element name="SET_NAME" sql:field="SET_NAME" type="xsd:string"/>
                                 <xsd:element name="SCOPE" sql:field="SCOPE" type="xsd:int"/>
+                                <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="EXPRESSION" sql:field="EXPRESSION" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="SET_CAPTION" sql:field="SET_CAPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="SET_DISPLAY_FOLDER" sql:field="SET_DISPLAY_FOLDER" type="xsd:string"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -2148,8 +2261,11 @@
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse</CUBE_NAME>
-                        <SET_NAME>[Top Sellers]</SET_NAME>
+                        <SET_NAME>Top Sellers</SET_NAME>
                         <SCOPE>1</SCOPE>
+                        <EXPRESSION>TopCount([Warehouse].[Warehouse Name].Members, 5, [Measures].[Warehouse Sales])</EXPRESSION>
+                        <DIMENSIONS>[Warehouse],</DIMENSIONS>
+                        <SET_CAPTION>Top Sellers</SET_CAPTION>
                     </row>
                 </root>
             </return>
@@ -9452,6 +9568,10 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                 <xsd:element name="HIERARCHY_IS_VISIBLE" sql:field="HIERARCHY_IS_VISIBLE" type="xsd:boolean"/>
                                 <xsd:element name="HIERARCHY_ORDINAL" sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
                                 <xsd:element name="DIMENSION_IS_SHARED" sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0" name="HIERARCHY_ORIGIN" sql:field="HIERARCHY_ORIGIN" type="xsd:unsignedShort"/>
+                                <xsd:element minOccurs="0" name="HIERARCHY_DISPLAY_FOLDER" sql:field="HIERARCHY_DISPLAY_FOLDER" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="CUBE_SOURCE" sql:field="CUBE_SOURCE" type="xsd:unsignedShort"/>
+                                <xsd:element minOccurs="0" name="HIERARCHY_VISIBILITY" sql:field="HIERARCHY_VISIBILITY" type="xsd:unsignedShort"/>
                                 <xsd:element minOccurs="0" name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>
                                 <xsd:element minOccurs="0" name="LEVELS" sql:field="LEVELS"/>
                             </xsd:sequence>
@@ -9478,6 +9598,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>9</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                     <row>
@@ -9501,6 +9624,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>10</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                     <row>
@@ -9524,6 +9650,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>11</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                     <row>
@@ -9547,6 +9676,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>12</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                     <row>
@@ -9569,6 +9701,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>0</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>6</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                     <row>
@@ -9592,6 +9727,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>6</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                     <row>
@@ -9615,6 +9753,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>7</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                     <row>
@@ -9638,6 +9779,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>8</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                     <row>
@@ -9661,6 +9805,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>2</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                     <row>
@@ -9684,6 +9831,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>3</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                     <row>
@@ -9707,6 +9857,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>1</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                     <row>
@@ -9729,6 +9882,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>4</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                     <row>
@@ -9752,6 +9908,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>5</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                     <row>
@@ -9775,6 +9934,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>13</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                 </root>
@@ -10126,7 +10288,11 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                 <xsd:element name="MEASURE_IS_VISIBLE" sql:field="MEASURE_IS_VISIBLE" type="xsd:boolean"/>
                                 <xsd:element minOccurs="0" name="LEVELS_LIST" sql:field="LEVELS_LIST" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="MEASUREGROUP_NAME" sql:field="MEASUREGROUP_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="MEASURE_DISPLAY_FOLDER" sql:field="MEASURE_DISPLAY_FOLDER" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="DEFAULT_FORMAT_STRING" sql:field="DEFAULT_FORMAT_STRING" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="CUBE_SOURCE" sql:field="CUBE_SOURCE" type="xsd:unsignedShort"/>
+                                <xsd:element minOccurs="0" name="MEASURE_VISIBILITY" sql:field="MEASURE_VISIBILITY" type="xsd:unsignedShort"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -10142,7 +10308,10 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Customer Count Member</DESCRIPTION>
+                        <MEASUREGROUP_NAME>Sales</MEASUREGROUP_NAME>
+                        <MEASURE_DISPLAY_FOLDER/>
                         <DEFAULT_FORMAT_STRING>#,###</DEFAULT_FORMAT_STRING>
+                        <MEASURE_VISIBILITY>1</MEASURE_VISIBILITY>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10155,7 +10324,10 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <DATA_TYPE>130</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <DESCRIPTION>Sales Cube - Profit Member</DESCRIPTION>
+                        <MEASUREGROUP_NAME>Sales</MEASUREGROUP_NAME>
+                        <MEASURE_DISPLAY_FOLDER/>
                         <DEFAULT_FORMAT_STRING>$#,##0.00</DEFAULT_FORMAT_STRING>
+                        <MEASURE_VISIBILITY>1</MEASURE_VISIBILITY>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10168,7 +10340,10 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <DATA_TYPE>130</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <DESCRIPTION>Sales Cube - Profit Growth Member</DESCRIPTION>
+                        <MEASUREGROUP_NAME>Sales</MEASUREGROUP_NAME>
+                        <MEASURE_DISPLAY_FOLDER/>
                         <DEFAULT_FORMAT_STRING>0.0%</DEFAULT_FORMAT_STRING>
+                        <MEASURE_VISIBILITY>1</MEASURE_VISIBILITY>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10181,7 +10356,10 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <DATA_TYPE>130</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>false</MEASURE_IS_VISIBLE>
                         <DESCRIPTION>Sales Cube - Profit last Period Member</DESCRIPTION>
+                        <MEASUREGROUP_NAME>Sales</MEASUREGROUP_NAME>
+                        <MEASURE_DISPLAY_FOLDER/>
                         <DEFAULT_FORMAT_STRING>$#,##0.00</DEFAULT_FORMAT_STRING>
+                        <MEASURE_VISIBILITY>2</MEASURE_VISIBILITY>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10195,7 +10373,10 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Promotion Sales Member</DESCRIPTION>
+                        <MEASUREGROUP_NAME>Sales</MEASUREGROUP_NAME>
+                        <MEASURE_DISPLAY_FOLDER/>
                         <DEFAULT_FORMAT_STRING>#,###.00</DEFAULT_FORMAT_STRING>
+                        <MEASURE_VISIBILITY>1</MEASURE_VISIBILITY>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10209,7 +10390,10 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Sales Count Member</DESCRIPTION>
+                        <MEASUREGROUP_NAME>Sales</MEASUREGROUP_NAME>
+                        <MEASURE_DISPLAY_FOLDER/>
                         <DEFAULT_FORMAT_STRING>#,###</DEFAULT_FORMAT_STRING>
+                        <MEASURE_VISIBILITY>1</MEASURE_VISIBILITY>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10223,7 +10407,10 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Store Cost Member</DESCRIPTION>
+                        <MEASUREGROUP_NAME>Sales</MEASUREGROUP_NAME>
+                        <MEASURE_DISPLAY_FOLDER/>
                         <DEFAULT_FORMAT_STRING>#,###.00</DEFAULT_FORMAT_STRING>
+                        <MEASURE_VISIBILITY>1</MEASURE_VISIBILITY>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10237,7 +10424,10 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Store Sales Member</DESCRIPTION>
+                        <MEASUREGROUP_NAME>Sales</MEASUREGROUP_NAME>
+                        <MEASURE_DISPLAY_FOLDER/>
                         <DEFAULT_FORMAT_STRING>#,###.00</DEFAULT_FORMAT_STRING>
+                        <MEASURE_VISIBILITY>1</MEASURE_VISIBILITY>
                     </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
@@ -10251,7 +10441,10 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
                         <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Unit Sales Member</DESCRIPTION>
+                        <MEASUREGROUP_NAME>Sales</MEASUREGROUP_NAME>
+                        <MEASURE_DISPLAY_FOLDER/>
                         <DEFAULT_FORMAT_STRING>Standard</DEFAULT_FORMAT_STRING>
+                        <MEASURE_VISIBILITY>1</MEASURE_VISIBILITY>
                     </row>
                 </root>
             </return>
@@ -10747,6 +10940,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                 <xsd:element name="DATA_TYPE" sql:field="DATA_TYPE" type="xsd:unsignedShort"/>
                                 <xsd:element minOccurs="0" name="PROPERTY_CONTENT_TYPE" sql:field="PROPERTY_CONTENT_TYPE" type="xsd:short"/>
                                 <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="PROPERTY_ORIGIN" sql:field="PROPERTY_ORIGIN" type="xsd:unsignedShort"/>
+                                <xsd:element minOccurs="0" name="CUBE_SOURCE" sql:field="CUBE_SOURCE" type="xsd:unsignedShort"/>
+                                <xsd:element minOccurs="0" name="PROPERTY_VISIBILITY" sql:field="PROPERTY_VISIBILITY" type="xsd:unsignedShort"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -13287,6 +13483,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </xsd:schema>
                     <row>
                         <SchemaName>DBSCHEMA_CATALOGS</SchemaName>
+                        <SchemaGuid>C8B52211-5CF3-11CE-ADE5-00AA0044773D</SchemaGuid>
                         <Restrictions>
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
@@ -13295,6 +13492,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>DBSCHEMA_COLUMNS</SchemaName>
+                        <SchemaGuid>C8B52214-5CF3-11CE-ADE5-00AA0044773D</SchemaGuid>
                         <Restrictions>
                             <Name>TABLE_CATALOG</Name>
                             <Type>xsd:string</Type>
@@ -13315,6 +13513,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>DBSCHEMA_PROVIDER_TYPES</SchemaName>
+                        <SchemaGuid>C8B5222C-5CF3-11CE-ADE5-00AA0044773D</SchemaGuid>
                         <Restrictions>
                             <Name>DATA_TYPE</Name>
                             <Type>xsd:unsignedShort</Type>
@@ -13327,6 +13526,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>DBSCHEMA_SCHEMATA</SchemaName>
+                        <SchemaGuid>c8b52225-5cf3-11ce-ade5-00aa0044773d</SchemaGuid>
                         <Restrictions>
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
@@ -13342,7 +13542,29 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <Description/>
                     </row>
                     <row>
+                        <SchemaName>DBSCHEMA_SOURCE_TABLES</SchemaName>
+                        <SchemaGuid>8c3f5858-2742-4976-9d65-eb4d493c693e</SchemaGuid>
+                        <Restrictions>
+                            <Name>TABLE_CATALOG</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>TABLE_SCHEMA</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>TABLE_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>TABLE_TYPE</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Description/>
+                    </row>
+                    <row>
                         <SchemaName>DBSCHEMA_TABLES</SchemaName>
+                        <SchemaGuid>C8B52229-5CF3-11CE-ADE5-00AA0044773D</SchemaGuid>
                         <Restrictions>
                             <Name>TABLE_CATALOG</Name>
                             <Type>xsd:string</Type>
@@ -13363,6 +13585,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>DBSCHEMA_TABLES_INFO</SchemaName>
+                        <SchemaGuid>c8b522e0-5cf3-11ce-ade5-00aa0044773d</SchemaGuid>
                         <Restrictions>
                             <Name>TABLE_CATALOG</Name>
                             <Type>xsd:string</Type>
@@ -13383,6 +13606,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>DISCOVER_DATASOURCES</SchemaName>
+                        <SchemaGuid>06C03D41-F66D-49F3-B1B8-987F7AF4CF18</SchemaGuid>
                         <Restrictions>
                             <Name>DataSourceName</Name>
                             <Type>xsd:string</Type>
@@ -13407,6 +13631,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>DISCOVER_ENUMERATORS</SchemaName>
+                        <SchemaGuid>55A9E78B-ACCB-45B4-95A6-94C5065617A7</SchemaGuid>
                         <Restrictions>
                             <Name>EnumName</Name>
                             <Type>xsd:string</Type>
@@ -13415,6 +13640,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>DISCOVER_KEYWORDS</SchemaName>
+                        <SchemaGuid>1426C443-4CDD-4A40-8F45-572FAB9BBAA1</SchemaGuid>
                         <Restrictions>
                             <Name>Keyword</Name>
                             <Type>xsd:string</Type>
@@ -13423,6 +13649,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>DISCOVER_LITERALS</SchemaName>
+                        <SchemaGuid>C3EF5ECB-0A07-4665-A140-B075722DBDC2</SchemaGuid>
                         <Restrictions>
                             <Name>LiteralName</Name>
                             <Type>xsd:string</Type>
@@ -13431,6 +13658,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>DISCOVER_PROPERTIES</SchemaName>
+                        <SchemaGuid>4B40ADFB-8B09-4758-97BB-636E8AE97BCF</SchemaGuid>
                         <Restrictions>
                             <Name>PropertyName</Name>
                             <Type>xsd:string</Type>
@@ -13439,6 +13667,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>DISCOVER_SCHEMA_ROWSETS</SchemaName>
+                        <SchemaGuid>EEA0302B-7922-4992-8991-0E605D0E5593</SchemaGuid>
                         <Restrictions>
                             <Name>SchemaName</Name>
                             <Type>xsd:string</Type>
@@ -13447,6 +13676,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>DISCOVER_XML_METADATA</SchemaName>
+                        <SchemaGuid>3444B255-171E-4CB9-AD98-19E57888A75F</SchemaGuid>
                         <Restrictions>
                             <Name>DatabaseID</Name>
                             <Type>xsd:string</Type>
@@ -13459,6 +13689,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>MDSCHEMA_ACTIONS</SchemaName>
+                        <SchemaGuid>A07CCD08-8148-11D0-87BB-00C04FC33942</SchemaGuid>
                         <Restrictions>
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
@@ -13487,6 +13718,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>MDSCHEMA_CUBES</SchemaName>
+                        <SchemaGuid>C8B522D8-5CF3-11CE-ADE5-00AA0044773D</SchemaGuid>
                         <Restrictions>
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
@@ -13503,10 +13735,19 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                             <Name>CUBE_TYPE</Name>
                             <Type>xsd:string</Type>
                         </Restrictions>
+                        <Restrictions>
+                            <Name>BASE_CUBE_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>CUBE_SOURCE</Name>
+                            <Type>xsd:int</Type>
+                        </Restrictions>
                         <Description/>
                     </row>
                     <row>
                         <SchemaName>MDSCHEMA_DIMENSIONS</SchemaName>
+                        <SchemaGuid>C8B522D9-5CF3-11CE-ADE5-00AA0044773D</SchemaGuid>
                         <Restrictions>
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
@@ -13531,6 +13772,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>MDSCHEMA_FUNCTIONS</SchemaName>
+                        <SchemaGuid>A07CCD07-8148-11D0-87BB-00C04FC33942</SchemaGuid>
                         <Restrictions>
                             <Name>FUNCTION_NAME</Name>
                             <Type>xsd:string</Type>
@@ -13551,6 +13793,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>MDSCHEMA_HIERARCHIES</SchemaName>
+                        <SchemaGuid>C8B522DA-5CF3-11CE-ADE5-00AA0044773D</SchemaGuid>
                         <Restrictions>
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
@@ -13575,10 +13818,44 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                             <Name>HIERARCHY_UNIQUE_NAME</Name>
                             <Type>xsd:string</Type>
                         </Restrictions>
+                        <Restrictions>
+                            <Name>HIERARCHY_ORIGIN</Name>
+                            <Type>xsd:unsignedShort</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>CUBE_SOURCE</Name>
+                            <Type>xsd:unsignedShort</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>HIERARCHY_VISIBILITY</Name>
+                            <Type>xsd:unsignedShort</Type>
+                        </Restrictions>
+                        <Description/>
+                    </row>
+                    <row>
+                        <SchemaName>MDSCHEMA_KPIS</SchemaName>
+                        <SchemaGuid>2AE44109-ED3D-4842-B16F-B694D1CB0E3F</SchemaGuid>
+                        <Restrictions>
+                            <Name>CATALOG_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>SCHEMA_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>CUBE_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>KPI_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
                         <Description/>
                     </row>
                     <row>
                         <SchemaName>MDSCHEMA_LEVELS</SchemaName>
+                        <SchemaGuid>C8B522DB-5CF3-11CE-ADE5-00AA0044773D</SchemaGuid>
                         <Restrictions>
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
@@ -13610,7 +13887,54 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <Description/>
                     </row>
                     <row>
+                        <SchemaName>MDSCHEMA_MEASUREGROUPS</SchemaName>
+                        <SchemaGuid>E1625EBF-FA96-42FD-BEA6-DB90ADAFD96B</SchemaGuid>
+                        <Restrictions>
+                            <Name>CATALOG_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>SCHEMA_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>CUBE_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>MEASUREGROUP_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Description/>
+                    </row>
+                    <row>
+                        <SchemaName>MDSCHEMA_MEASUREGROUP_DIMENSIONS</SchemaName>
+                        <SchemaGuid>a07ccd33-8148-11d0-87bb-00c04fc33942</SchemaGuid>
+                        <Restrictions>
+                            <Name>CATALOG_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>SCHEMA_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>CUBE_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>MEASUREGROUP_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>DIMENSION_UNIQUE_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Description/>
+                    </row>
+                    <row>
                         <SchemaName>MDSCHEMA_MEASURES</SchemaName>
+                        <SchemaGuid>C8B522DC-5CF3-11CE-ADE5-00AA0044773D</SchemaGuid>
                         <Restrictions>
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
@@ -13631,10 +13955,23 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                             <Name>MEASURE_UNIQUE_NAME</Name>
                             <Type>xsd:string</Type>
                         </Restrictions>
+                        <Restrictions>
+                            <Name>MEASUREGROUP_NAME</Name>
+                            <Type>xsd:string</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>CUBE_SOURCE</Name>
+                            <Type>xsd:unsignedShort</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>MEASURE_VISIBILITY</Name>
+                            <Type>xsd:unsignedShort</Type>
+                        </Restrictions>
                         <Description/>
                     </row>
                     <row>
                         <SchemaName>MDSCHEMA_MEMBERS</SchemaName>
+                        <SchemaGuid>C8B522DE-5CF3-11CE-ADE5-00AA0044773D</SchemaGuid>
                         <Restrictions>
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
@@ -13687,6 +14024,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <SchemaName>MDSCHEMA_PROPERTIES</SchemaName>
+                        <SchemaGuid>C8B522DD-5CF3-11CE-ADE5-00AA0044773D</SchemaGuid>
                         <Restrictions>
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
@@ -13727,10 +14065,23 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                             <Name>PROPERTY_CONTENT_TYPE</Name>
                             <Type>xsd:short</Type>
                         </Restrictions>
+                        <Restrictions>
+                            <Name>PROPERTY_ORIGIN</Name>
+                            <Type>xsd:unsignedShort</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>CUBE_SOURCE</Name>
+                            <Type>xsd:unsignedShort</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>PROPERTY_VISIBILITY</Name>
+                            <Type>xsd:unsignedShort</Type>
+                        </Restrictions>
                         <Description/>
                     </row>
                     <row>
                         <SchemaName>MDSCHEMA_SETS</SchemaName>
+                        <SchemaGuid>A07CCD0B-8148-11D0-87BB-00C04FC33942</SchemaGuid>
                         <Restrictions>
                             <Name>CATALOG_NAME</Name>
                             <Type>xsd:string</Type>
@@ -13750,6 +14101,10 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <Restrictions>
                             <Name>SCOPE</Name>
                             <Type>xsd:int</Type>
+                        </Restrictions>
+                        <Restrictions>
+                            <Name>SET_CAPTION</Name>
+                            <Type>xsd:string</Type>
                         </Restrictions>
                         <Description/>
                     </row>
@@ -14079,6 +14434,10 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                 <xsd:element name="HIERARCHY_IS_VISIBLE" sql:field="HIERARCHY_IS_VISIBLE" type="xsd:boolean"/>
                                 <xsd:element name="HIERARCHY_ORDINAL" sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
                                 <xsd:element name="DIMENSION_IS_SHARED" sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0" name="HIERARCHY_ORIGIN" sql:field="HIERARCHY_ORIGIN" type="xsd:unsignedShort"/>
+                                <xsd:element minOccurs="0" name="HIERARCHY_DISPLAY_FOLDER" sql:field="HIERARCHY_DISPLAY_FOLDER" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="CUBE_SOURCE" sql:field="CUBE_SOURCE" type="xsd:unsignedShort"/>
+                                <xsd:element minOccurs="0" name="HIERARCHY_VISIBILITY" sql:field="HIERARCHY_VISIBILITY" type="xsd:unsignedShort"/>
                                 <xsd:element minOccurs="0" name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>
                                 <xsd:element minOccurs="0" name="LEVELS" sql:field="LEVELS"/>
                             </xsd:sequence>
@@ -14105,6 +14464,9 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>12</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+                        <HIERARCHY_ORIGIN>1</HIERARCHY_ORIGIN>
+                        <HIERARCHY_DISPLAY_FOLDER/>
+                        <HIERARCHY_VISIBILITY>1</HIERARCHY_VISIBILITY>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
                 </root>
@@ -23999,12 +24361,14 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
           "CUBE_NAME": "HR",
           "CUBE_TYPE": "CUBE",
           "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "LAST_DATA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
           "IS_DRILLTHROUGH_ENABLED": true,
           "IS_WRITE_ENABLED": false,
           "IS_LINKABLE": false,
           "IS_SQL_ENABLED": false,
           "CUBE_CAPTION": "HR",
-          "DESCRIPTION": "FoodMart Schema - HR Cube"
+          "DESCRIPTION": "FoodMart Schema - HR Cube",
+          "CUBE_SOURCE": 1
         },
         {
           "CATALOG_NAME": "FoodMart",
@@ -24012,12 +24376,14 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
           "CUBE_NAME": "Sales",
           "CUBE_TYPE": "CUBE",
           "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "LAST_DATA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
           "IS_DRILLTHROUGH_ENABLED": true,
           "IS_WRITE_ENABLED": false,
           "IS_LINKABLE": false,
           "IS_SQL_ENABLED": false,
           "CUBE_CAPTION": "Sales",
-          "DESCRIPTION": "FoodMart Schema - Sales Cube"
+          "DESCRIPTION": "FoodMart Schema - Sales Cube",
+          "CUBE_SOURCE": 1
         },
         {
           "CATALOG_NAME": "FoodMart",
@@ -24025,12 +24391,14 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
           "CUBE_NAME": "Sales 2",
           "CUBE_TYPE": "CUBE",
           "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "LAST_DATA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
           "IS_DRILLTHROUGH_ENABLED": true,
           "IS_WRITE_ENABLED": false,
           "IS_LINKABLE": false,
           "IS_SQL_ENABLED": false,
           "CUBE_CAPTION": "Sales 2",
-          "DESCRIPTION": "FoodMart Schema - Sales 2 Cube"
+          "DESCRIPTION": "FoodMart Schema - Sales 2 Cube",
+          "CUBE_SOURCE": 1
         },
         {
           "CATALOG_NAME": "FoodMart",
@@ -24038,12 +24406,14 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
           "CUBE_NAME": "Sales Ragged",
           "CUBE_TYPE": "CUBE",
           "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "LAST_DATA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
           "IS_DRILLTHROUGH_ENABLED": true,
           "IS_WRITE_ENABLED": false,
           "IS_LINKABLE": false,
           "IS_SQL_ENABLED": false,
           "CUBE_CAPTION": "Sales Ragged",
-          "DESCRIPTION": "FoodMart Schema - Sales Ragged Cube"
+          "DESCRIPTION": "FoodMart Schema - Sales Ragged Cube",
+          "CUBE_SOURCE": 1
         },
         {
           "CATALOG_NAME": "FoodMart",
@@ -24051,12 +24421,14 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
           "CUBE_NAME": "Store",
           "CUBE_TYPE": "CUBE",
           "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "LAST_DATA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
           "IS_DRILLTHROUGH_ENABLED": true,
           "IS_WRITE_ENABLED": false,
           "IS_LINKABLE": false,
           "IS_SQL_ENABLED": false,
           "CUBE_CAPTION": "Store",
-          "DESCRIPTION": "FoodMart Schema - Store Cube"
+          "DESCRIPTION": "FoodMart Schema - Store Cube",
+          "CUBE_SOURCE": 1
         },
         {
           "CATALOG_NAME": "FoodMart",
@@ -24064,12 +24436,14 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
           "CUBE_NAME": "Warehouse",
           "CUBE_TYPE": "CUBE",
           "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "LAST_DATA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
           "IS_DRILLTHROUGH_ENABLED": true,
           "IS_WRITE_ENABLED": false,
           "IS_LINKABLE": false,
           "IS_SQL_ENABLED": false,
           "CUBE_CAPTION": "Warehouse",
-          "DESCRIPTION": "FoodMart Schema - Warehouse Cube"
+          "DESCRIPTION": "FoodMart Schema - Warehouse Cube",
+          "CUBE_SOURCE": 1
         },
         {
           "CATALOG_NAME": "FoodMart",
@@ -24077,12 +24451,14 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
           "CUBE_NAME": "Warehouse and Sales",
           "CUBE_TYPE": "VIRTUAL CUBE",
           "LAST_SCHEMA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
+          "LAST_DATA_UPDATE": "xxxx-xx-xxTxx:xx:xx",
           "IS_DRILLTHROUGH_ENABLED": true,
           "IS_WRITE_ENABLED": false,
           "IS_LINKABLE": false,
           "IS_SQL_ENABLED": false,
           "CUBE_CAPTION": "Warehouse and Sales",
-          "DESCRIPTION": "FoodMart Schema - Warehouse and Sales Cube"
+          "DESCRIPTION": "FoodMart Schema - Warehouse and Sales Cube",
+          "CUBE_SOURCE": 1
         }
       ]
     }

@@ -5,6 +5,7 @@
  * You must accept the terms of that agreement to use this software.
  *
  * Copyright (C) 2001-2005 Julian Hyde
+ * Copyright (C) 2022 Sergei Semenkov
  * Copyright (C) 2005-2024 Hitachi Vantara and others
  * All Rights Reserved.
  */
@@ -37,6 +38,7 @@ public class SetBase extends OlapElementBase implements NamedSet {
   private final String uniqueName;
   private Exp exp;
   private boolean validated;
+  private String displayFolder;
 
   /**
    * Creates a SetBase.
@@ -96,6 +98,14 @@ public class SetBase extends OlapElementBase implements NamedSet {
     return description;
   }
 
+  public String getDisplayFolder() {
+    return displayFolder;
+  }
+
+  public List<Hierarchy> getHierarchies() {
+    return ( (SetType) this.exp.getType() ).getHierarchies();
+  }
+
   public Hierarchy getHierarchy() {
     return exp.getType().getHierarchy();
   }
@@ -114,6 +124,10 @@ public class SetBase extends OlapElementBase implements NamedSet {
 
   public void setDescription( String description ) {
     this.description = description;
+  }
+
+  public void setDisplayFolder( String displayFolder ) {
+    this.displayFolder = displayFolder;
   }
 
   public void setAnnotationMap( Map<String, Annotation> annotationMap ) {

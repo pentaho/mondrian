@@ -78,5 +78,7 @@ public interface XmlaRequest {
    */
   String getSessionId();
 
+  String getAuthenticatedUser();
 
+  String[] getAuthenticatedUserGroups();
 }

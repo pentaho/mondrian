@@ -158,8 +158,9 @@ public class XmlaTest extends TestCase {
     Element requestElem = XmlaUtil.text2Element(
       XmlaTestContext.xmlFromTemplate(
         request, XmlaTestContext.ENV ) );
-    Element responseElem =
-      ignoreLastUpdateDate( executeRequest( requestElem ) );
+    Element responseElem = executeRequest( requestElem );
+    responseElem = ignoreLastUpdateDate( responseElem, "LAST_SCHEMA_UPDATE" );
+    responseElem = ignoreLastUpdateDate( responseElem, "LAST_DATA_UPDATE" );
 
     TransformerFactory factory = TransformerFactory.newInstance();
     Transformer transformer = factory.newTransformer();
@@ -183,11 +184,13 @@ public class XmlaTest extends TestCase {
     }
   }
 
-  private Element ignoreLastUpdateDate( Element element ) {
-    NodeList elements = element.getElementsByTagName( "LAST_SCHEMA_UPDATE" );
+  private Element ignoreLastUpdateDate( Element element, String nodeName ) {
+    NodeList elements = element.getElementsByTagName( nodeName );
+
     for ( int i = elements.getLength(); i > 0; i-- ) {
       blankNode( elements.item( i - 1 ) );
     }
+
     return element;
   }
 

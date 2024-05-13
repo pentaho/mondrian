@@ -873,12 +873,12 @@ System.out.println("DO IT AGAIN");
         Fault expectedFault =
             new Fault(
                 XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC,
-                    HSB_BAD_STATEMENT_CODE),
-                    HSB_BAD_STATEMENT_FAULT_FS,
+                  CLIENT_FAULT_FC,
+                  HSB_BAD_COMMAND_CODE),
+                    HSB_BAD_COMMAND_FAULT_FS,
                     FAULT_ACTOR,
                     MONDRIAN_NAMESPACE,
-                    HSB_BAD_STATEMENT_CODE, null);
+                    HSB_BAD_COMMAND_CODE, null);
 
         doTest(expectedFault);
     }
@@ -887,12 +887,12 @@ System.out.println("DO IT AGAIN");
         Fault expectedFault =
             new Fault(
                 XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC,
-                    HSB_DRILL_THROUGH_FORMAT_CODE),
-                HSB_DRILL_THROUGH_FORMAT_FAULT_FS,
+                  SERVER_FAULT_FC,
+                  HSB_PROCESS_CODE),
+                HSB_PROCESS_FAULT_FS,
                 FAULT_ACTOR,
                 MONDRIAN_NAMESPACE,
-                HSB_DRILL_THROUGH_FORMAT_CODE,
+                HSB_PROCESS_CODE,
                 null);
 
         doTest(expectedFault);
@@ -902,12 +902,12 @@ System.out.println("DO IT AGAIN");
         Fault expectedFault =
             new Fault(
                 XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC,
-                    HSB_DRILL_THROUGH_FORMAT_CODE),
-                HSB_DRILL_THROUGH_FORMAT_FAULT_FS,
+                  SERVER_FAULT_FC,
+                  HSB_PROCESS_CODE),
+                HSB_PROCESS_FAULT_FS,
                 FAULT_ACTOR,
                 MONDRIAN_NAMESPACE,
-                HSB_DRILL_THROUGH_FORMAT_CODE,
+                HSB_PROCESS_CODE,
                 null);
 
         doTest(expectedFault);
@@ -917,12 +917,12 @@ System.out.println("DO IT AGAIN");
         Fault expectedFault =
             new Fault(
                 XmlaException.formatFaultCode(
-                    CLIENT_FAULT_FC,
-                    HSB_DRILL_THROUGH_FORMAT_CODE),
-                HSB_DRILL_THROUGH_FORMAT_FAULT_FS,
+                  SERVER_FAULT_FC,
+                  HSB_PROCESS_CODE),
+                HSB_PROCESS_FAULT_FS,
                 FAULT_ACTOR,
                 MONDRIAN_NAMESPACE,
-                HSB_DRILL_THROUGH_FORMAT_CODE,
+                HSB_PROCESS_CODE,
                 null);
 
         doTest(expectedFault);

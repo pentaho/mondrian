@@ -302,6 +302,7 @@
                                 <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
                                 <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
                                 <xsd:element name="CUBE_TYPE" sql:field="CUBE_TYPE" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="BASE_CUBE_NAME" sql:field="BASE_CUBE_NAME" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="CUBE_GUID" sql:field="CUBE_GUID" type="uuid"/>
                                 <xsd:element minOccurs="0" name="CREATED_ON" sql:field="CREATED_ON" type="xsd:dateTime"/>
                                 <xsd:element minOccurs="0" name="LAST_SCHEMA_UPDATE" sql:field="LAST_SCHEMA_UPDATE" type="xsd:dateTime"/>
@@ -317,6 +318,7 @@
                                 <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
                                 <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
                                 <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
+                                <xsd:element minOccurs="0" name="CUBE_SOURCE" sql:field="CUBE_SOURCE" type="xsd:int"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -326,12 +328,14 @@
                         <CUBE_NAME>HR</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>HR</CUBE_CAPTION>
                         <DESCRIPTION>${catalog.name} Schema - HR Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
@@ -339,12 +343,14 @@
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales</CUBE_CAPTION>
                         <DESCRIPTION>${catalog.name} Schema - Sales Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
@@ -352,12 +358,14 @@
                         <CUBE_NAME>Sales 2</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales 2</CUBE_CAPTION>
                         <DESCRIPTION>${catalog.name} Schema - Sales 2 Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
@@ -365,12 +373,14 @@
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales Ragged</CUBE_CAPTION>
                         <DESCRIPTION>${catalog.name} Schema - Sales Ragged Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
@@ -378,12 +388,14 @@
                         <CUBE_NAME>Store</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Store</CUBE_CAPTION>
                         <DESCRIPTION>${catalog.name} Schema - Store Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
@@ -391,12 +403,14 @@
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Warehouse</CUBE_CAPTION>
                         <DESCRIPTION>${catalog.name} Schema - Warehouse Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
@@ -404,12 +418,14 @@
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Warehouse and Sales</CUBE_CAPTION>
                         <DESCRIPTION>${catalog.name} Schema - Warehouse and Sales Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                 </root>
             </return>
@@ -472,6 +488,7 @@
                                 <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
                                 <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
                                 <xsd:element name="CUBE_TYPE" sql:field="CUBE_TYPE" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="BASE_CUBE_NAME" sql:field="BASE_CUBE_NAME" type="xsd:string"/>
                                 <xsd:element minOccurs="0" name="CUBE_GUID" sql:field="CUBE_GUID" type="uuid"/>
                                 <xsd:element minOccurs="0" name="CREATED_ON" sql:field="CREATED_ON" type="xsd:dateTime"/>
                                 <xsd:element minOccurs="0" name="LAST_SCHEMA_UPDATE" sql:field="LAST_SCHEMA_UPDATE" type="xsd:dateTime"/>
@@ -487,6 +504,7 @@
                                 <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
                                 <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
                                 <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
+                                <xsd:element minOccurs="0" name="CUBE_SOURCE" sql:field="CUBE_SOURCE" type="xsd:int"/>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
@@ -496,12 +514,14 @@
                         <CUBE_NAME>HR</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>HR</CUBE_CAPTION>
                         <DESCRIPTION>${catalog.name} Schema - HR Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
@@ -509,12 +529,14 @@
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales</CUBE_CAPTION>
                         <DESCRIPTION>${catalog.name} Schema - Sales Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
@@ -522,12 +544,14 @@
                         <CUBE_NAME>Sales 2</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales 2</CUBE_CAPTION>
                         <DESCRIPTION>${catalog.name} Schema - Sales 2 Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
@@ -535,12 +559,14 @@
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales Ragged</CUBE_CAPTION>
                         <DESCRIPTION>${catalog.name} Schema - Sales Ragged Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
@@ -548,12 +574,14 @@
                         <CUBE_NAME>Store</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Store</CUBE_CAPTION>
                         <DESCRIPTION>${catalog.name} Schema - Store Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
@@ -561,12 +589,14 @@
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Warehouse</CUBE_CAPTION>
                         <DESCRIPTION>${catalog.name} Schema - Warehouse Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                     <row>
                         <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
@@ -574,12 +604,14 @@
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <LAST_DATA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_DATA_UPDATE>
                         <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
                         <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Warehouse and Sales</CUBE_CAPTION>
                         <DESCRIPTION>${catalog.name} Schema - Warehouse and Sales Cube</DESCRIPTION>
+                        <CUBE_SOURCE>1</CUBE_SOURCE>
                     </row>
                 </root>
             </return>

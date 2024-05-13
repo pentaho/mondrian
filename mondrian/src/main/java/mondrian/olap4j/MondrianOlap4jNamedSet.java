@@ -4,7 +4,8 @@
  * http://www.eclipse.org/legal/epl-v10.html.
  * You must accept the terms of that agreement to use this software.
  *
- * Copyright (c) 2002-2024 Hitachi Vantara
+ * Copyright (C) 2022 Sergei Semenkov
+ * Copyright (C) 2002-2024 Hitachi Vantara
  * All rights reserved.
  */
 
@@ -42,6 +43,9 @@ public class MondrianOlap4jNamedSet extends MondrianOlap4jMetadataElement implem
     return olap4jConnection.toOlap4j( namedSet.getExp() );
   }
 
+  public mondrian.olap.NamedSet getNamedSet() {
+    return namedSet;
+  }
 
   public String getName() {
     return namedSet.getName();

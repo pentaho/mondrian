@@ -158,8 +158,8 @@ class RolapDimension extends DimensionBase {
    */
   RolapHierarchy newHierarchy( String subName, boolean hasAll, RolapHierarchy closureFor ) {
     RolapHierarchy hierarchy =
-      new RolapHierarchy( this, subName, caption, visible, description, hasAll, closureFor,
-        Collections.<String, Annotation>emptyMap() );
+      new RolapHierarchy( this, subName, caption, visible, description, null, hasAll, closureFor,
+        Collections.emptyMap() );
     this.hierarchies = Util.append( this.hierarchies, hierarchy );
     return hierarchy;
   }

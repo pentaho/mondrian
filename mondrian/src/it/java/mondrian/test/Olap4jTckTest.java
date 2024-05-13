@@ -64,9 +64,9 @@ public class Olap4jTckTest extends TestCase {
         // Ideally this library should be updated or replaced by another. Until then, these tests are commented.
 
         // suite.addTest(createMondrianSuite(connStr, false));
-        suite.addTest(createMondrianSuite(connStr, true));
+        // suite.addTest(createMondrianSuite(connStr, true));
         // suite.addTest(createXmlaSuite(connStr, catalog, false));
-        suite.addTest(createXmlaSuite(connStr, catalog, true));
+        // suite.addTest(createXmlaSuite(connStr, catalog, true));
         return suite;
     }
 

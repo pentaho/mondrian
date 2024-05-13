@@ -72,4 +72,6 @@ public interface Hierarchy extends OlapElement, Annotated {
    * @Deprecated Will be removed in mondrian-4.0, when {@link #getUniqueName()} will have this behavior.
    */
   String getUniqueNameSsas();
+
+  String getDisplayFolder();
 }
