@@ -175,6 +175,10 @@ parser code {:
                 strictValidation);
         }
 
+        public DmvQuery makeDmvQuery( String tableName, List<String> columns, Exp whereExpression) {
+          return new DmvQuery( tableName, columns, whereExpression );
+        }
+
         public DrillThrough makeDrillThrough(
             Query query,
             int maxRowCount,

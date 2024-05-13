@@ -13,7 +13,12 @@
 
 package mondrian.xmla;
 
+import mondrian.mdx.UnresolvedFunCall;
+import mondrian.olap.DmvQuery;
 import mondrian.olap.DrillThrough;
+import mondrian.olap.Exp;
+import mondrian.olap.Id;
+import mondrian.olap.Literal;
 import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianServer;
@@ -28,6 +33,7 @@ import mondrian.server.Statement;
 import mondrian.util.CompositeList;
 import mondrian.xmla.impl.DefaultSaxWriter;
 import mondrian.xmla.impl.DefaultXmlaRequest;
+import mondrian.xmla.impl.DmvXmlaRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -70,6 +76,7 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -797,6 +804,43 @@ public class XmlaHandler {
 
         if ( queryPart instanceof DrillThrough ) {
           result = executeDrillThroughQuery( request );
+        } else if ( queryPart instanceof DmvQuery ) {
+          DmvQuery dmvQuery = (DmvQuery) queryPart;
+
+          HashMap<String, String> upperCaseProperties = new HashMap<>();
+          for ( String key : request.getProperties().keySet() ) {
+            String newKey = null;
+            if ( key != null ) {
+              newKey = key.toUpperCase();
+            }
+            upperCaseProperties.put( newKey, request.getProperties().get( key ) );
+          }
+
+          HashMap<String, Object> restrictions = new HashMap<>();
+          if ( upperCaseProperties.containsKey( PropertyDefinition.Catalog.name().toUpperCase() ) ) {
+            List<String> restriction = new ArrayList<>();
+            restriction.add( request.getProperties().get( "Catalog" ) );
+            restrictions.put( Property.StandardMemberProperty.CATALOG_NAME.name(), restriction );
+          }
+          DmvXmlaRequest dmvXmlaRequest = new DmvXmlaRequest(
+            restrictions,
+            request.getProperties(),
+            request.getRoleName(),
+            dmvQuery.getTableName().toUpperCase(),
+            request.getUsername(),
+            request.getPassword(),
+            request.getSessionId()
+          );
+
+          executeDmvQuery(
+            dmvXmlaRequest,
+            response,
+            dmvQuery.getTableName().toUpperCase(),
+            dmvQuery.getWhereExpression(),
+            defaultXmlaRequest.getParameters()
+          );
+
+          return;
         } else {
           checkedCanceled( request );
           result = executeQuery( request );
@@ -987,6 +1031,140 @@ public class XmlaHandler {
         }
       }
     }
+  }
+
+  private void executeDmvQuery(
+    DmvXmlaRequest dmvXmlaRequest,
+    XmlaResponse response,
+    String rowsetName,
+    Exp whereExpression,
+    Map<String, String> parameters )
+    throws XmlaException {
+    final RowsetDefinition rowsetDefinition = RowsetDefinition.valueOf( rowsetName );
+
+    Rowset rowset = rowsetDefinition.getRowset( dmvXmlaRequest, this );
+
+    SaxWriter writer = response.getWriter();
+
+    writer.startDocument();
+
+    writer.startElement( "DiscoverResponse", "xmlns", NS_XMLA );
+    writer.startElement( "return" );
+    writer.startElement(
+      "root",
+      "xmlns", NS_XMLA_ROWSET,
+      "xmlns:xsi", NS_XSI,
+      "xmlns:xsd", NS_XSD,
+      "xmlns:EX", NS_XMLA_EX );
+
+    rowset.rowsetDefinition.writeRowsetXmlSchema( writer );
+
+    try {
+      final List<Rowset.Row> rows = new ArrayList<>();
+      rowset.populate( response, null, rows );
+
+      final Comparator<Rowset.Row> comparator = rowsetDefinition.getComparator();
+      if ( comparator != null ) {
+        rows.sort( comparator );
+      }
+
+      writer.startSequence( null, "row" );
+
+      for ( Rowset.Row row : rows ) {
+        if ( isCompatible( row, whereExpression, parameters ) ) {
+          rowset.emit( row, response );
+        }
+      }
+
+      writer.endSequence();
+    } catch ( XmlaException xex ) {
+      throw xex;
+    } catch ( Throwable t ) {
+      throw new XmlaException( SERVER_FAULT_FC, HSB_DISCOVER_UNPARSE_CODE, HSB_DISCOVER_UNPARSE_FAULT_FS, t );
+    } finally {
+      // keep the tags balanced, even if there's an error
+      try {
+        writer.endElement();
+        writer.endElement();
+        writer.endElement();
+      } catch ( Throwable e ) {
+        // Ignore any errors balancing the tags. The original exception is more important.
+      }
+    }
+
+    writer.endDocument();
+  }
+
+  private boolean isCompatible( Rowset.Row row, Exp exp, Map<String, String> parameters ) {
+    if ( exp == null ) {
+      return true;
+    }
+
+    if ( exp instanceof UnresolvedFunCall ) {
+      UnresolvedFunCall unresolvedFunCall = (UnresolvedFunCall) exp;
+      final String functionName = unresolvedFunCall.getFunName();
+
+      Object o1, o2;
+      boolean result;
+
+      switch ( functionName ) {
+        case "AND":
+          return isCompatible( row, unresolvedFunCall.getArgs()[ 0 ], parameters )
+            && isCompatible( row, unresolvedFunCall.getArgs()[ 1 ], parameters );
+        case "OR":
+          return isCompatible( row, unresolvedFunCall.getArgs()[ 0 ], parameters )
+            || isCompatible( row, unresolvedFunCall.getArgs()[ 1 ], parameters );
+        case "=":
+          o1 = getValue( row, unresolvedFunCall.getArgs()[ 0 ], parameters );
+          o2 = getValue( row, unresolvedFunCall.getArgs()[ 1 ], parameters );
+
+          result = ( o1 == null && o2 == null ) || ( o1 != null && o1.equals( o2 ) );
+
+          return result;
+        case "<>":
+          o1 = getValue( row, unresolvedFunCall.getArgs()[ 0 ], parameters );
+          o2 = getValue( row, unresolvedFunCall.getArgs()[ 1 ], parameters );
+
+          result = !( ( o1 == null && o2 == null ) || ( o1 != null && o1.equals( o2 ) ) );
+
+          return result;
+        default:
+          return true;
+      }
+    } else if ( exp instanceof Id ) {
+      Object value = getValue( row, exp, parameters );
+      return value != null && value.equals( "true" );
+    }
+
+    return true;
+  }
+
+  private Object getValue( Rowset.Row row, Exp exp, Map<String, String> parameters ) {
+    if ( exp instanceof Id ) {
+      String columnName = ( (Id.NameSegment) ( (Id) exp ).getElement( 0 ) ).getName();
+
+      if ( columnName.startsWith( "@" ) ) {
+        columnName = columnName.substring( 1 );
+        Object value = null;
+        if ( parameters.containsKey( columnName ) ) {
+          value = parameters.get( columnName );
+        }
+        return value;
+      } else {
+        Object value = row.get( columnName );
+        if ( value != null ) {
+          value = value.toString();
+        }
+        return value;
+      }
+    } else if ( exp instanceof Literal ) {
+      Object value = ( (Literal) exp ).getValue();
+      if ( value != null ) {
+        value = value.toString();
+      }
+      return value;
+    }
+    return null;
   }
 
   private void discover( XmlaRequest request, XmlaResponse response ) throws XmlaException {

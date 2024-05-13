@@ -1043,6 +1043,10 @@ public class ParserTest extends FoodMartTestCase {
       return null;
     }
 
+    public DmvQuery makeDmvQuery( String tableName, List<String> columns, Exp whereExpression ) {
+      return null;
+    }
+
     public DrillThrough makeDrillThrough(
       Query query,
       int maxRowCount,

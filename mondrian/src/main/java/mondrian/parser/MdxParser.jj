@@ -243,6 +243,7 @@ TOKEN :
     | <SECTIONS: "SECTIONS">
     | <SELECT: "SELECT">
     | <SET: "SET">
+    | <$SYSTEM: "$SYSTEM">
     | <THEN: "THEN">
     | <WHEN: "WHEN">
     | <WHERE: "WHERE">
@@ -306,6 +307,7 @@ MORE :
 TOKEN :
 {
     < ASTERISK: "*" >
+    | <ATSIGN: "@">
     | < BANG: "!" >
     | < COLON : ":" >
     | < COMMA : "," >
@@ -460,6 +462,9 @@ Id.NameSegment nameSegment() :
         // Allow a non-reserved keyword to be converted back into an identifier
         // if it is not in a context where it is meaningful.
         return new Id.NameSegment(id, Id.Quoting.UNQUOTED);
+    }
+|   <ATSIGN><ID> {
+        return new Id.NameSegment("@" + token.image, Id.Quoting.UNQUOTED);
     }
 |   <ID> {
         return new Id.NameSegment(token.image, Id.Quoting.UNQUOTED);
@@ -966,9 +971,14 @@ List<Exp> expList() :
 // ----------------------------------------------------------------------------
 // MDX Statement
 //
-// <statement> ::= <selectStatement>
+// <statement> ::= dmvSelectStatement
+//                   | <selectStatement>
 //                   | <drillthroughStatement>
 //                   | <explainStatement>
+//
+// <dmvSelectStatement> ::= SELECT [<column>[, <column>...]]
+//                          FROM <$SYSTEM><DOT>[<table>]
+//                          [WHERE <expression>]
 //
 // <selectStatement> ::= [WITH <formulaSpecification>]
 //                         SELECT [<axisSpecification>
@@ -993,6 +1003,9 @@ QueryPart statement() :
 }
 {
     (
+        LOOKAHEAD(dmvSelectStatement())
+        qp = dmvSelectStatement()
+    |
         qp = selectStatement()
     |
         qp = drillthroughStatement()
@@ -1014,6 +1027,38 @@ QueryPart selectOrDrillthroughStatement() :
     }
 |   qp = drillthroughStatement() {
         return qp;
+    }
+}
+
+DmvQuery dmvSelectStatement() :
+{
+    Id.NameSegment tableId;
+    Id c;
+    List<Id> columns = new ArrayList<Id>();
+    Exp w = null;
+}
+{
+    <SELECT>
+    (
+        c = compoundId() { columns.add( c ); }
+        (
+            <COMMA>
+            c = compoundId() { columns.add( c ); }
+        )*
+
+    )?
+    <FROM> <$SYSTEM><DOT>tableId = nameSegment()
+    (
+        <WHERE> w = expression()
+    )?
+    {
+        List<String> selectList = new ArrayList<String>( columns.size() );
+
+        for( Id id: columns ) {
+            selectList.add( ( (Id.NameSegment) id.getElement( 0 ) ).name );
+        }
+
+        return factory.makeDmvQuery( tableId.name, selectList, w );
     }
 }
 
