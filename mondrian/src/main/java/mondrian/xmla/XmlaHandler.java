@@ -10,6 +10,7 @@
  * Copyright (C) 2005-2024 Hitachi Vantara
  * All Rights Reserved.
  */
+
 package mondrian.xmla;
 
 import mondrian.olap.DrillThrough;
@@ -123,7 +124,8 @@ import static org.olap4j.metadata.XmlaConstants.Method;
  * @author jhyde, Gang Chen
  * @since 27 April, 2003
  */
-@SuppressWarnings( { "unused", "SameParameterValue", "java:S1192", "java:S1172", "java:S3740", "rawtypes" } )
+@SuppressWarnings( { "unused", "SameParameterValue", "java:S1192", "java:S1172", "java:S3740", "java:S3776",
+  "java:S6541", "rawtypes" } )
 public class XmlaHandler {
   /**
    * Name of property used by JDBC to hold locale. It is not hard-wired into DriverManager like "user" and
@@ -499,7 +501,7 @@ public class XmlaHandler {
    * @param sqlType SQL type
    * @return XSD type
    */
-  private static String sqlToXsdType( final int sqlType, final int scale ) {
+  static String sqlToXsdType( final int sqlType, final int scale ) {
     switch ( sqlType ) {
       // Integer
       case Types.INTEGER:
@@ -827,6 +829,7 @@ public class XmlaHandler {
           }
 
           break;
+        default: break;
       }
 
       try {
@@ -840,6 +843,7 @@ public class XmlaHandler {
             }
 
             break;
+          default: break;
         }
       } catch ( XmlaException xex ) {
         throw xex;
@@ -1564,8 +1568,8 @@ public class XmlaHandler {
      */
     static String getValueTypeHint( final String dataType ) {
       if ( dataType != null ) {
-        return ( dataType.equals( "Integer" ) ) ? XSD_INT :
-          ( ( dataType.equals( "Numeric" ) ) ? XSD_DOUBLE : XSD_STRING );
+        return ( dataType.equals( "Integer" ) ) ? XSD_INT
+          : ( ( dataType.equals( "Numeric" ) ) ? XSD_DOUBLE : XSD_STRING );
       } else {
         return null;
       }
@@ -2000,9 +2004,9 @@ public class XmlaHandler {
     private void writeProperty( SaxWriter writer, Hierarchy hierarchy, final Property prop ) {
       IMondrianOlap4jProperty currentProperty = (IMondrianOlap4jProperty) prop;
       String thisHierarchyName = hierarchy.getName();
-      String thatHierarchiName = currentProperty.getLevel().getHierarchy().getName();
+      String thatHierarchyName = currentProperty.getLevel().getHierarchy().getName();
 
-      if ( thisHierarchyName.equals( thatHierarchiName ) ) {
+      if ( thisHierarchyName.equals( thatHierarchyName ) ) {
         writeElement( writer, hierarchy, prop );
       }
     }
@@ -2068,7 +2072,7 @@ public class XmlaHandler {
       if ( omitDefaultSlicerInfo ) {
         CellSetAxis slicerAxis = cellSet.getFilterAxis();
         // We always write a slicer axis. There are two 'empty' cases:
-        // zero positions (which happens when the WHERE clause evalutes
+        // zero positions (which happens when the WHERE clause evaluates
         // to an empty set) or one position containing a tuple of zero
         // members (which happens when there is no WHERE clause) and we
         // need to be able to distinguish between the two.
@@ -2189,8 +2193,8 @@ public class XmlaHandler {
         } else if ( longProp == StandardMemberProperty.DEPTH ) {
           value = member.getDepth();
         } else {
-          value = ( longProp instanceof IMondrianOlap4jProperty ) ? getHierarchyProperty( member, longProp ) :
-            member.getPropertyValue( longProp );
+          value = ( longProp instanceof IMondrianOlap4jProperty ) ? getHierarchyProperty( member, longProp )
+            : member.getPropertyValue( longProp );
         }
 
         if ( value != null ) {
@@ -2366,7 +2370,7 @@ public class XmlaHandler {
     }
   }
 
-  static abstract class ColumnHandler {
+  abstract static class ColumnHandler {
     protected final String name;
     protected final String encodedName;
 
@@ -2663,7 +2667,7 @@ public class XmlaHandler {
         if ( axis >= 2 ) {
           iterate( writer, axis - 1, ho );
         } else {
-          writer.startElement( "row" );// abrimos la fila
+          writer.startElement( "row" ); // abrimos la fila
           pos[ axis ] = i; // coordenadas: fila i
           pos[ 0 ] = 0; // coordenadas (0,i): columna 0
 
@@ -2672,7 +2676,7 @@ public class XmlaHandler {
               columnHandler.write( writer, null, this.members );
             } else if ( columnHandler instanceof CellColumnHandler ) {
               columnHandler.write( writer, cellSet.getCell( posList ), null );
-              pos[ 0 ]++;// next col.
+              pos[ 0 ]++; // next col.
             }
           }
 
