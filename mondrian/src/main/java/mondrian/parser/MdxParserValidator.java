@@ -11,6 +11,7 @@
 
 package mondrian.parser;
 
+import mondrian.olap.DmvQuery;
 import mondrian.olap.DrillThrough;
 import mondrian.olap.Exp;
 import mondrian.olap.Explain;
@@ -48,6 +49,12 @@ public interface MdxParserValidator {
      */
     Query makeQuery( Statement statement, Formula[] formulae, QueryAxis[] axes, String cube, Exp slicer,
                      QueryPart[] cellProps, boolean strictValidation );
+
+    /**
+     * Creates a {@link mondrian.olap.DmvQuery} object.
+     * Override this function to make your kind of query.
+     */
+    DmvQuery makeDmvQuery( String tableName, List<String> columns, Exp whereExpression );
 
     /**
      * Creates a {@link mondrian.olap.DrillThrough} object.

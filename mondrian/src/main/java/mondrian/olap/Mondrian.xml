@@ -601,7 +601,15 @@ Revision is $Id$
             </Doc>
         </Attribute>
         <Attribute name="origin" required="false">
-            <Doc/>
+            <Doc>
+                A bit mask that determines the source of the hierarchy:
+                MD_ORIGIN_USER_DEFINED identifies levels in a user defined hierarchy (0x0000001).
+                MD_ORIGIN_ATTRIBUTE identifies levels in an attribute hierarchy (0x0000002).
+                MD_ORIGIN_INTERNAL identifies levels in attribute hierarchies that are not enabled (0x0000004).
+                MD_ORIGIN_KEY_ATTRIBUTE identifies levels in a key attribute hierarchy (0x0000008).
+
+                The default value is MD_ORIGIN_USER_DEFINED. For Measure it is MD_ORIGIN_ATTRIBUTE &amp; MD_ORIGIN_INTERNAL (0x0000006)
+            </Doc>
         </Attribute>
 
         <Object name="annotations" type="Annotations" required="false">

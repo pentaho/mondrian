@@ -51,6 +51,7 @@ public class DefaultXmlaRequest implements XmlaRequest, XmlaConstants {
   private String statement;
   private boolean drillThrough;
   private String command;
+  private Map<String, String> parameters = Collections.unmodifiableMap( new HashMap<>() );
 
   /* DISCOVER content */
   private String requestType;
@@ -89,6 +90,10 @@ public class DefaultXmlaRequest implements XmlaRequest, XmlaConstants {
 
   public Map<String, String> getProperties() {
     return properties;
+  }
+
+  public Map<String, String> getParameters() {
+    return parameters;
   }
 
   public Map<String, Object> getRestrictions() {
@@ -207,6 +212,11 @@ public class DefaultXmlaRequest implements XmlaRequest, XmlaConstants {
     }
 
     initProperties( childElems[ 0 ] ); // <Properties><PropertyList>
+
+    childElems = XmlaUtil.filterChildElements( executeRoot, NS_XMLA, "Parameters" );
+    if ( childElems.length > 0 ) {
+      initParameters( childElems[ 0 ] ); // <Parameters>
+    }
   }
 
   private void initRestrictions( Element restrictionsRoot ) throws XmlaException {
@@ -296,6 +306,30 @@ public class DefaultXmlaRequest implements XmlaRequest, XmlaConstants {
     }
 
     this.properties = Collections.unmodifiableMap( localProperties );
+  }
+
+  private void initParameters( Element parameterElement ) throws XmlaException {
+    Map<String, String> localParameters = new HashMap<>();
+
+    NodeList nlst = parameterElement.getChildNodes();
+    for ( int i = 0, nlen = nlst.getLength(); i < nlen; i++ ) {
+      Node n = nlst.item( i );
+      if ( n instanceof Element ) {
+        Element[] nameElems = XmlaUtil.filterChildElements( (Element) n, NS_XMLA, "Name" );
+        if ( nameElems.length > 0 ) {
+          final String name = XmlaUtil.textInElement( nameElems[ 0 ] );
+
+          //TODO: Implement xsi:type
+          Element[] valueElems = XmlaUtil.filterChildElements( (Element) n, NS_XMLA, "Value" );
+          if ( valueElems.length > 0 ) {
+            localParameters.put( name, XmlaUtil.textInElement( valueElems[ 0 ] ) );
+          } else {
+            localParameters.put( name, null );
+          }
+        }
+      }
+    }
+    this.parameters = Collections.unmodifiableMap( localParameters );
   }
 
   private void initCommand( Element commandRoot ) throws XmlaException {

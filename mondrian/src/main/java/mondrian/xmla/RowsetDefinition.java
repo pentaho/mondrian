@@ -4412,7 +4412,7 @@ TODO: see above
 
         try {
           hierarchyOrigin = Integer.parseInt( xmlHierarchy.origin );
-        } catch ( NumberFormatException var17 ) {
+        } catch ( NumberFormatException nfe ) {
           hierarchyOrigin = 1;
         }
       }
