@@ -1,16 +1,17 @@
 /*
-* This software is subject to the terms of the Eclipse Public License v1.0
-* Agreement, available at the following URL:
-* http://www.eclipse.org/legal/epl-v10.html.
-* You must accept the terms of that agreement to use this software.
-*
-* Copyright (C) 1999-2005 Julian Hyde
-* Copyright (C) 2005-2024 Pentaho and others
-* All Rights Reserved.
-*
-* Grammar condensed from OLE DB reference
-* (http://www.microsoft.com/data/reference/oledb2.htm) by jhyde on 990120.
-*/
+ * This software is subject to the terms of the Eclipse Public License v1.0
+ * Agreement, available at the following URL:
+ * http://www.eclipse.org/legal/epl-v10.html.
+ * You must accept the terms of that agreement to use this software.
+ *
+ * Copyright (C) 1999-2005 Julian Hyde
+ * Copyright (C) 2021 Sergei Semenkov
+ * Copyright (C) 2005-2024 Hitachi Vantara and others
+ * All Rights Reserved.
+ *
+ * Grammar condensed from OLE DB reference
+ * (http://www.microsoft.com/data/reference/oledb2.htm) by jhyde on 990120.
+ */
 
 import java_cup.runtime.*;
 
@@ -1807,5 +1808,3 @@ explain_statement ::=
 // the property MDPROP_MDX_FORMULAS to see whether a provider supports this
 // feature.
 //
-
-// End Parser.cup

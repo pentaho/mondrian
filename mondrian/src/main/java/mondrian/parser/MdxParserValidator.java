@@ -4,7 +4,8 @@
  * http://www.eclipse.org/legal/epl-v10.html.
  * You must accept the terms of that agreement to use this software.
  *
- * Copyright (c) 2002-2024 Hitachi Vantara.
+ * Copyright (C) 2021 Sergei Semenkov
+ * Copyright (C) 2002-2024 Hitachi Vantara.
  * All rights reserved.
  */
 

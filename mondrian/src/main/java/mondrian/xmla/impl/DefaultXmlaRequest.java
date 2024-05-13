@@ -36,6 +36,7 @@ import static org.olap4j.metadata.XmlaConstants.Method;
  *
  * @author Gang Chen
  */
+@SuppressWarnings( { "java:S3776", "java:S5361" } )
 public class DefaultXmlaRequest implements XmlaRequest, XmlaConstants {
   private static final Logger LOGGER = LogManager.getLogger( DefaultXmlaRequest.class );
 

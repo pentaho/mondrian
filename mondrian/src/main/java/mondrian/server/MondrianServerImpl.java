@@ -388,8 +388,8 @@ class MondrianServerImpl extends MondrianServer implements CatalogFinder, XmlaHa
     try {
       ObjectName mxbeanName = new ObjectName( "mondrian.server:type=Server-" + id );
       mbs.registerMBean( getMonitor(), mxbeanName );
-    } catch ( MalformedObjectNameException | NotCompliantMBeanException | InstanceAlreadyExistsException |
-              MBeanRegistrationException e ) {
+    } catch ( MalformedObjectNameException | NotCompliantMBeanException | InstanceAlreadyExistsException
+              | MBeanRegistrationException e ) {
       LOGGER.warn( "Failed to register JMX MBean", e );
     }
   }
