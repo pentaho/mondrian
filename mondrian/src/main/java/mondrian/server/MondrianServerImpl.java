@@ -4,7 +4,10 @@
  * http://www.eclipse.org/legal/epl-v10.html.
  * You must accept the terms of that agreement to use this software.
  *
- * Copyright (C) 2006-2024 Hitachi Vantara. All rights reserved.
+ * Copyright (C) 2019 Topsoft
+ * Copyright (C) 2021 Sergei Semenkov
+ * Copyright (C) 2006-2024 Hitachi Vantara
+ * All rights reserved.
  */
 
 package mondrian.server;
@@ -38,6 +41,7 @@ import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -388,5 +392,21 @@ class MondrianServerImpl extends MondrianServer implements CatalogFinder, XmlaHa
               MBeanRegistrationException e ) {
       LOGGER.warn( "Failed to register JMX MBean", e );
     }
+  }
+
+  public List<Statement> getStatements( String sessionId ) {
+    List<Statement> result = new ArrayList<>();
+
+    for ( Statement statement : statementMap.values() ) {
+      if ( statement.getMondrianConnection().getConnectInfo().get( "sessionId" ).equals( sessionId ) ) {
+        result.add( statement );
+      }
+    }
+
+    return result;
+  }
+
+  public Repository getRepository() {
+    return this.repository;
   }
 }

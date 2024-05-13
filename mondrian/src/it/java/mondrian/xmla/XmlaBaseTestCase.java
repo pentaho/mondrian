@@ -70,11 +70,10 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
   public static final String FORMAT_MULTI_DIMENSIONAL = "Multidimensional";
   public static final String ROLE_PROP = "Role";
   public static final String LOCALE_PROP = "locale";
-  protected static final String LAST_SCHEMA_UPDATE_DATE =
-    "xxxx-xx-xxTxx:xx:xx";
+  protected static final String LAST_UPDATE_DATE_MASK = "xxxx-xx-xxTxx:xx:xx";
   protected static final boolean DEBUG = false;
-  private static final String LAST_SCHEMA_UPDATE_NODE_NAME =
-    "LAST_SCHEMA_UPDATE";
+  private static final String LAST_SCHEMA_UPDATE_NODE_NAME = "LAST_SCHEMA_UPDATE";
+  private static final String LAST_DATA_UPDATE_NODE_NAME = "LAST_DATA_UPDATE";
   private static final String DATA_SOURCE_INFO_RESPONSE_PROP =
     "data.source.info.response";
   private static int sessionIdCounter = 1000;
@@ -213,7 +212,8 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     }
 
     Document gotDoc = XmlUtil.parse( bytes );
-    gotDoc = replaceLastSchemaUpdateDate( gotDoc );
+    gotDoc = replaceUpdateDate( gotDoc, LAST_SCHEMA_UPDATE_NODE_NAME );
+    gotDoc = replaceUpdateDate( gotDoc, LAST_DATA_UPDATE_NODE_NAME );
     String gotStr = XmlUtil.toString( gotDoc, true );
     gotStr = maskVersion( gotStr );
     gotStr = testContext.upgradeActual( gotStr );
@@ -223,7 +223,8 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
       }
       return;
     }
-    expectedDoc = replaceLastSchemaUpdateDate( expectedDoc );
+    expectedDoc = replaceUpdateDate( expectedDoc, LAST_SCHEMA_UPDATE_NODE_NAME );
+    expectedDoc = replaceUpdateDate( expectedDoc, LAST_DATA_UPDATE_NODE_NAME );
     String expectedStr = XmlUtil.toString( expectedDoc, true );
     try {
       XMLAssert.assertXMLEqual( expectedStr, gotStr );
@@ -360,21 +361,20 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     return s;
   }
 
-  protected Document replaceLastSchemaUpdateDate( Document doc ) {
-    NodeList elements =
-      doc.getElementsByTagName( LAST_SCHEMA_UPDATE_NODE_NAME );
+  protected Document replaceUpdateDate( Document doc, String nodeName ) {
+    NodeList elements = doc.getElementsByTagName( nodeName );
+
     for ( int i = 0; i < elements.getLength(); i++ ) {
       Node node = elements.item( i );
-      node.getFirstChild().setNodeValue(
-        LAST_SCHEMA_UPDATE_DATE );
+      node.getFirstChild().setNodeValue( LAST_UPDATE_DATE_MASK );
     }
+
     return doc;
   }
 
-  private String ignoreLastUpdateDate( String document ) {
-    return document.replaceAll(
-      "\"LAST_SCHEMA_UPDATE\": \"....-..-..T..:..:..\"",
-      "\"LAST_SCHEMA_UPDATE\": \"" + LAST_SCHEMA_UPDATE_DATE + "\"" );
+  private String ignoreUpdateDate( String document, String nodeName ) {
+    return document.replaceAll( "\"" + nodeName + "\": \"....-..-..T..:..:..\"",
+      "\"" + nodeName + "\": \"" + LAST_UPDATE_DATE_MASK + "\"" );
   }
 
   protected Map<String, String> getCatalogNameUrls( TestContext testContext ) {
@@ -712,7 +712,8 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     }
 
     String gotStr = new String( bytes );
-    gotStr = ignoreLastUpdateDate( gotStr );
+    gotStr = ignoreUpdateDate( gotStr, LAST_SCHEMA_UPDATE_NODE_NAME );
+    gotStr = ignoreUpdateDate( gotStr, LAST_DATA_UPDATE_NODE_NAME );
     gotStr = maskVersion( gotStr );
     gotStr = testContext.upgradeActual( gotStr );
     if ( expectedStr != null ) {

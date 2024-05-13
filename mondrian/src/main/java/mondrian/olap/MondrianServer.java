@@ -4,7 +4,8 @@
  * http://www.eclipse.org/legal/epl-v10.html.
  * You must accept the terms of that agreement to use this software.
  *
- * Copyright (c) 2002-2024 Hitachi Vantara.
+ * Copyright (C) 2021 Sergei Semenkov
+ * Copyright (C) 2002-2024 Hitachi Vantara
  * All rights reserved.
  */
 
@@ -14,6 +15,7 @@ import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapResultShepherd;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.server.MondrianServerRegistry;
+import mondrian.server.Repository;
 import mondrian.server.RepositoryContentFinder;
 import mondrian.server.Statement;
 import mondrian.server.monitor.Monitor;
@@ -221,6 +223,10 @@ public abstract class MondrianServer {
   public abstract Monitor getMonitor();
 
   public abstract AggregationManager getAggregationManager();
+
+  public abstract List<Statement> getStatements( String sessionId );
+
+  public abstract Repository getRepository();
 
   /**
    * Description of the version of the server.

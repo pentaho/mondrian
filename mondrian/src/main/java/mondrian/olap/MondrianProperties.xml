@@ -4,6 +4,7 @@
   == http://www.eclipse.org/legal/epl-v10.html.
   == You must accept the terms of that agreement to use this software.
   ==
+  == Copyright (C) 2020-2021 Sergei Semenkov
   == Copyright (C) 2011-2024 Hitachi Vantara
   == All Rights Reserved.
   ==
@@ -67,6 +68,16 @@ Should prime with {@link #ResultLimit mondrian.result.limit}.
         </Description>
         <Type>int</Type>
         <Default>1</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
+      <Name>IdleOrphanSessionTimeout</Name>
+      <Path>mondrian.server.idleOrphanSessionTimeout</Path>
+      <Description>
+Integer property that defines how long, in seconds, orphaned sessions will be retained in server memory.
+An orphaned session is one that no longer has an associated connection. The default is 3600 seconds.
+      </Description>
+      <Type>int</Type>
+      <Default>3600</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>TestName</Name>

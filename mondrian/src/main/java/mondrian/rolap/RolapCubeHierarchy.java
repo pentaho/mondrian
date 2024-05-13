@@ -5,6 +5,7 @@
  * You must accept the terms of that agreement to use this software.
  *
  * Copyright (C) 2001-2005 Julian Hyde
+ * Copyright (C) 2021 Sergei Semenkov
  * Copyright (C) 2005-2024 Hitachi Vantara and others
  * All Rights Reserved.
  */
@@ -91,8 +92,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
   public RolapCubeHierarchy( RolapCubeDimension cubeDimension, MondrianDef.CubeDimension cubeDim,
                              RolapHierarchy rolapHierarchy, String subName, int ordinal, RolapCube factCube ) {
     super( cubeDimension, subName, applyPrefix( cubeDim, rolapHierarchy.getCaption() ), rolapHierarchy.isVisible(),
-      applyPrefix( cubeDim, rolapHierarchy.getDescription() ), rolapHierarchy.hasAll(), null,
-      rolapHierarchy.getAnnotationMap() );
+      applyPrefix( cubeDim, rolapHierarchy.getDescription() ), rolapHierarchy.getDisplayFolder(),
+      rolapHierarchy.hasAll(), null, rolapHierarchy.getAnnotationMap() );
     this.ordinal = ordinal;
     final boolean cubeIsVirtual = cubeDimension.getCube().isVirtual();
 

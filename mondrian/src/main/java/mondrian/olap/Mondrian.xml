@@ -7,6 +7,7 @@
   == You must accept the terms of that agreement to use this software.
   ==
   == Copyright (C) 2001-2005 Julian Hyde
+  == Copyright (C) 2021-2022 Sergei Semenkov
   == Copyright (C) 2005-2024 Hitachi Vantara and others
   == All Rights Reserved.
   ==
@@ -587,12 +588,20 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="displayFolder" required="false">
+            <Doc>
+                Specifies the folder in which to list the hierarchy for users.
+            </Doc>
+        </Attribute>
         <Attribute name="uniqueKeyLevelName" required="false">
             <Doc>
 		        Should be set to the level (if such a level exists) at which depth it is known
 		        that all members have entirely unique rows, allowing SQL GROUP BY clauses to
                 be completely eliminated from the query.
             </Doc>
+        </Attribute>
+        <Attribute name="origin" required="false">
+            <Doc/>
         </Attribute>
 
         <Object name="annotations" type="Annotations" required="false">
@@ -2123,6 +2132,7 @@ Revision is $Id$
         </Object>
         <Array name="schemaGrants" type="SchemaGrant"/>
         <Object name="union" type="Union" required="false" />
+        <Array name="members" type="RoleMember" />
     </Element>
 
     <Class class="Grant">
@@ -2236,6 +2246,13 @@ Revision is $Id$
             <Value>all</Value>
             <Value>none</Value>
         </Attribute>
+    </Element>
+
+    <Element type="RoleMember">
+        <Doc>
+            User name or member group name.
+        </Doc>
+        <Attribute name="name" required="true"/>
     </Element>
 
     <!-- Union ============================================================ -->
