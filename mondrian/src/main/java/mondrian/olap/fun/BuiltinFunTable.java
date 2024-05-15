@@ -110,8 +110,6 @@ public class BuiltinFunTable extends FunTableImpl {
     // first char: p=Property, m=Method, i=Infix, P=Prefix
     // 2nd:
 
-    // ARRAY FUNCTIONS
-
     //
     // DIMENSION FUNCTIONS
     builder.define( HierarchyDimensionFunDef.instance );
@@ -850,6 +848,8 @@ public class BuiltinFunTable extends FunTableImpl {
           };
         }
       } );
+
+    builder.define( NonEmptyFunDef.Resolver );
 
     builder.define( CrossJoinFunDef.Resolver );
     builder.define( NonEmptyCrossJoinFunDef.Resolver );

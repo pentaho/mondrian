@@ -56,7 +56,7 @@ import java.util.concurrent.CancellationException;
 public class FunctionTest extends FoodMartTestCase {
 
   private static final Logger LOGGER = LogManager.getLogger( FunctionTest.class );
-  private static final int NUM_EXPECTED_FUNCTIONS = 325;
+  private static final int NUM_EXPECTED_FUNCTIONS = 326;
 
   private static final String months =
     "[Time].[1997].[Q1].[1]\n"
