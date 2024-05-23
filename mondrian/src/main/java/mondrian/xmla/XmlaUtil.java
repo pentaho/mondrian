@@ -5,9 +5,10 @@
  * You must accept the terms of that agreement to use this software.
  *
  * Copyright (C) 2003-2005 Julian Hyde
- * Copyright (C) 2005-2017 Hitachi Vantara
+ * Copyright (C) 2005-2024 Hitachi Vantara
  * All Rights Reserved.
  */
+
 package mondrian.xmla;
 
 import mondrian.olap.MondrianException;
