@@ -14,7 +14,10 @@ import mondrian.calc.ExpCompiler;
 import mondrian.calc.impl.ConstantCalc;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
+// PATCH: Additional imports
 import mondrian.olap.*;
+import mondrian.olap.type.Type;
+import mondrian.olap.type.ScalarType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,15 +52,20 @@ class CaseMatchFunDef extends FunDefBase {
         final int matchCount = (args.length - 1) / 2;
         final Calc[] matchCalcs = new Calc[matchCount];
         final Calc[] exprCalcs = new Calc[matchCount];
+        // PATCH: Check if return type is ScalarType
+        boolean returnScalar = call.getType() instanceof ScalarType;
         for (int i = 0, j = 1; i < exprCalcs.length; i++) {
             matchCalcs[i] = compiler.compileScalar(args[j++], true);
             calcList.add(matchCalcs[i]);
-            exprCalcs[i] = compiler.compile(args[j++]);
+            // PATCH: Compile scalar value for Member and Tuple types
+            exprCalcs[i] = returnScalar ? compiler.compileScalar(args[j++], true) : compiler.compile(args[j++]);
             calcList.add(exprCalcs[i]);
         }
         final Calc defaultCalc =
             args.length % 2 == 0
-            ? compiler.compile(args[args.length - 1])
+            // PATCH: Compile scalar value for Member and Tuple types
+            ? (returnScalar ? compiler.compileScalar(args[args.length - 1], true) :
+                compiler.compile(args[args.length - 1]))
             : ConstantCalc.constantNull(call.getType());
         calcList.add(defaultCalc);
         final Calc[] calcs = calcList.toArray(new Calc[calcList.size()]);
@@ -65,9 +73,16 @@ class CaseMatchFunDef extends FunDefBase {
         return new GenericCalc(call) {
             public Object evaluate(Evaluator evaluator) {
                 Object value = valueCalc.evaluate(evaluator);
+                // PATCH: Get double value for BigDecimal and Double comparison
+                double doubleValue = 0;
+                if (value instanceof Number) {
+                    doubleValue = ((Number) value).doubleValue();
+                }
                 for (int i = 0; i < matchCalcs.length; i++) {
                     Object match = matchCalcs[i].evaluate(evaluator);
-                    if (match.equals(value)) {
+                    // PATCH: Compare also double values for BigDecimal and Double comparison
+                    if (match.equals(value) || match instanceof Number && value instanceof Number &&
+                            ((Number) match).doubleValue() == doubleValue) {
                         return exprCalcs[i].evaluate(evaluator);
                     }
                 }
@@ -78,6 +93,17 @@ class CaseMatchFunDef extends FunDefBase {
                 return calcs;
             }
         };
+    }
+
+    // PATCH: Override getResultType to use first return type
+    public Type getResultType(Validator validator, Exp[] args) {
+        Type firstReturnType = args.length > 2 ? args[2].getType() : null;
+        Type type = castType(firstReturnType, getReturnCategory());
+        if (type != null) {
+            return type;
+        }
+        throw Util.newInternal(
+            "Cannot deduce type of call to function '_CaseMatch'");
     }
 
     private static class ResolverImpl extends ResolverBase {
@@ -98,6 +124,10 @@ class CaseMatchFunDef extends FunDefBase {
                 return null;
             }
             int valueType = args[0].getCategory();
+            // PATCH: Change value type from Member or Tuple to generic Value type
+            if (valueType == Category.Member || valueType == Category.Tuple) {
+                valueType = Category.Value;
+            }
             int returnType = args[2].getCategory();
             int j = 0;
             int clauseCount = (args.length - 1) / 2;
@@ -113,14 +143,22 @@ class CaseMatchFunDef extends FunDefBase {
                 if (!validator.canConvert(
                         j, args[j++], returnType, conversions))
                 {
-                    mismatchingArgs++;
+                    // PATCH: Change return type to generic Value type
+                    returnType = Category.Value;
+                    if (!validator.canConvert(j, args[j - 1], returnType, conversions)) {
+                        mismatchingArgs++;
+                    }
                 }
             }
             if (j < args.length) {
                 if (!validator.canConvert(
                         j, args[j++], returnType, conversions))
                 {
-                    mismatchingArgs++;
+                    // PATCH: Change return type to generic Value type
+                    returnType = Category.Value;
+                    if (!validator.canConvert(j, args[j - 1], returnType, conversions)) {
+                        mismatchingArgs++;
+                    }
                 }
             }
             Util.assertTrue(j == args.length);

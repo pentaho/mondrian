@@ -14,6 +14,9 @@ import mondrian.calc.impl.ConstantCalc;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+// PATCH: Additional imports
+import mondrian.olap.type.Type;
+import mondrian.olap.type.ScalarType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,17 +49,22 @@ class CaseTestFunDef extends FunDefBase {
                 new BooleanCalc[args.length / 2];
         final Calc[] exprCalcs =
                 new Calc[args.length / 2];
+        // PATCH: Check if return type is ScalarType
+        boolean returnScalar = call.getType() instanceof ScalarType;
         final List<Calc> calcList = new ArrayList<Calc>();
         for (int i = 0, j = 0; i < exprCalcs.length; i++) {
             conditionCalcs[i] =
                     compiler.compileBoolean(args[j++]);
             calcList.add(conditionCalcs[i]);
-            exprCalcs[i] = compiler.compile(args[j++]);
+            // PATCH: Compile scalar value for Member and Tuple types
+            exprCalcs[i] = returnScalar ? compiler.compileScalar(args[j++], true) : compiler.compile(args[j++]);
             calcList.add(exprCalcs[i]);
         }
         final Calc defaultCalc =
             args.length % 2 == 1
-            ? compiler.compileScalar(args[args.length - 1], true)
+            // PATCH: Compile scalar value for Member and Tuple types
+            ? (returnScalar ? compiler.compileScalar(args[args.length - 1], true) :
+                compiler.compile(args[args.length - 1]))
             : ConstantCalc.constantNull(call.getType());
         calcList.add(defaultCalc);
         final Calc[] calcs = calcList.toArray(new Calc[calcList.size()]);
@@ -75,6 +83,17 @@ class CaseTestFunDef extends FunDefBase {
                 return calcs;
             }
         };
+    }
+
+    // PATCH: Override getResultType to use first return type
+    public Type getResultType(Validator validator, Exp[] args) {
+        Type firstReturnType = args.length > 1 ? args[1].getType() : null;
+        Type type = castType(firstReturnType, getReturnCategory());
+        if (type != null) {
+            return type;
+        }
+        throw Util.newInternal(
+            "Cannot deduce type of call to function '_CaseTest'");
     }
 
     private static class ResolverImpl extends ResolverBase {
@@ -107,14 +126,22 @@ class CaseTestFunDef extends FunDefBase {
                 if (!validator.canConvert(
                         j, args[j++], returnType, conversions))
                 {
-                    mismatchingArgs++;
+                    // PATCH: Change return type to generic Value type
+                    returnType = Category.Value;
+                    if (!validator.canConvert(j, args[j - 1], returnType, conversions)) {
+                        mismatchingArgs++;
+                    }
                 }
             }
             if (j < args.length) {
                 if (!validator.canConvert(
                         j, args[j++], returnType, conversions))
                 {
-                    mismatchingArgs++;
+                    // PATCH: Change return type to generic Value type
+                    returnType = Category.Value;
+                    if (!validator.canConvert(j, args[j - 1], returnType, conversions)) {
+                        mismatchingArgs++;
+                    }
                 }
             }
             Util.assertTrue(j == args.length);
