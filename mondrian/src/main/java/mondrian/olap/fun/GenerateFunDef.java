@@ -51,19 +51,35 @@ class GenerateFunDef extends FunDefBase {
     }
 
     public Type getResultType(Validator validator, Exp[] args) {
-        final Type type = args[1].getType();
-        if (type instanceof StringType) {
+        // PATCH: Detect if the second argument is a measure with string expression
+        if (isStringArg(args[1])) {
             // Generate(<Set>, <String>[, <String>])
-            return type;
+            return new StringType();
         } else {
+            final Type type = args[1].getType();
             final Type memberType = TypeUtil.toMemberOrTupleType(type);
             return new SetType(memberType);
         }
     }
 
+    // PATCH: Detect the type of the argument
+    private boolean isStringArg(Exp arg) {
+        if (arg.getType() instanceof StringType) {
+            return true;
+        } else if (arg.getType() instanceof MemberType) {
+            Member member = ((MemberType) arg.getType()).getMember();
+            if (member != null && member.isMeasure()) {
+                // Assume that the measure will return a string
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final IterCalc iterCalc = compiler.compileIter(call.getArg(0));
-        if (call.getArg(1).getType() instanceof StringType) {
+        // PATCH: Detect the type of the second argument
+        if (isStringArg(call.getArg(1))) {
             final StringCalc stringCalc =
                 compiler.compileString(call.getArg(1));
             final StringCalc delimCalc;
