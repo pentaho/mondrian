@@ -27,6 +27,15 @@ public class MatchesUdf implements UserDefinedFunction {
         Object arg0 = arguments[0].evaluateScalar(evaluator);
         Object arg1 = arguments[1].evaluateScalar(evaluator);
 
+        // PATCH: Check that the arguments are present.
+        if (arg0 == null || arg1 == null) {
+            return Boolean.FALSE;
+        }
+        // PATCH: Convert the first argument to a string.
+        if (!(arg0 instanceof String)) {
+            arg0 = String.valueOf(arg0);
+        }
+
         return Boolean.valueOf(Pattern.matches((String)arg1, (String)arg0));
     }
 
