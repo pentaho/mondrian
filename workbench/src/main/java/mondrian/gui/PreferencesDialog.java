@@ -280,7 +280,7 @@ public class PreferencesDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         jPanel1.add(requireSchemaButton, gridBagConstraints);
 
-        driverClassTextField.setText("org.gjt.mm.mysql.Driver");
+        driverClassTextField.setText("com.mysql.jdbc.Driver");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
