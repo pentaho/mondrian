@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2015-2017 Hitachi Vantara and others
+// Copyright (C) 2015-2024 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -18,7 +18,7 @@ import mondrian.test.FoodMartTestCase;
 
 import java.math.BigDecimal;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
