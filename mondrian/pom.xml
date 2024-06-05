@@ -27,6 +27,7 @@
     <driver.version.major>${project.version.major}</driver.version.major>
     <driver.version.minor>${project.version.minor}</driver.version.minor>
     <vendor>Pentaho</vendor>
+    <pentaho.docker.pull.host>one.hitachivantara.com/pnt-docker</pentaho.docker.pull.host>
     <maven-failsafe-plugin.argLine>-Duser.language=en -Duser.country=US -Djava.locale.providers=COMPAT,SPI</maven-failsafe-plugin.argLine>
   </properties>
   <dependencies>
@@ -150,7 +151,7 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
       <version>${mockito-all.version}</version>
       <scope>test</scope>
     </dependency>
@@ -168,6 +169,12 @@
       <groupId>com.mysql</groupId>
       <artifactId>mysql-connector-j</artifactId>
       <version>${mysql-connector-j.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.nashorn</groupId>
+      <artifactId>nashorn-core</artifactId>
+      <version>15.4</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

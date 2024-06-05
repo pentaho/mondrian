@@ -4,28 +4,50 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2015-2017 Hitachi Vantara..  All rights reserved.
+// Copyright (c) 2015-2024 Hitachi Vantara..  All rights reserved.
 */
 package mondrian.rolap;
 
-import mondrian.olap.*;
+import mondrian.olap.Access;
+import mondrian.olap.Category;
+import mondrian.olap.Dimension;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Level;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianDef;
+import mondrian.olap.MondrianException;
+import mondrian.olap.MondrianServer;
+import mondrian.olap.OlapElement;
+import mondrian.olap.Role;
+import mondrian.olap.RoleImpl;
+import mondrian.olap.SchemaReader;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapSchema.RolapStarRegistry;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.SegmentCacheManager;
 import mondrian.test.PropertyRestoringTestCase;
 import mondrian.util.ByteString;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
-
-import java.lang.reflect.Field;
-import java.util.List;
-
 import org.eigenbase.xom.DOMWrapper;
 import org.eigenbase.xom.Parser;
 import org.eigenbase.xom.XOMException;
 import org.eigenbase.xom.XOMUtil;
+
+import java.lang.reflect.Field;
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Andrey Khayrutdinov
@@ -67,8 +89,8 @@ public class RolapSchemaTest extends PropertyRestoringTestCase {
         SchemaReader reader = mock(SchemaReader.class);
         when(reader.withLocus()).thenReturn(reader);
         when(reader.lookupCompound(
-            any(OlapElement.class), anyListOf(Id.Segment.class),
-            anyBoolean(), eq(category)))
+            nullable(OlapElement.class), nullable(List.class),
+            nullable(Boolean.class), eq(category)))
             .thenReturn(element);
         return reader;
     }
@@ -160,16 +182,16 @@ public class RolapSchemaTest extends PropertyRestoringTestCase {
         schema = spy(schema);
         doNothing().when(schema)
             .handleHierarchyGrant(
-                any(RoleImpl.class),
-                any(RolapCube.class),
-                any(SchemaReader.class),
-                any(MondrianDef.HierarchyGrant.class));
+                nullable(RoleImpl.class),
+                nullable(RolapCube.class),
+                nullable(SchemaReader.class),
+                nullable(MondrianDef.HierarchyGrant.class));
 
         final Dimension dimension = mock(Dimension.class);
         SchemaReader reader = mockSchemaReader(Category.Dimension, dimension);
 
         RolapCube cube = mockCube(schema);
-        when(cube.getSchemaReader(any(Role.class))).thenReturn(reader);
+        when(cube.getSchemaReader(nullable(Role.class))).thenReturn(reader);
         doReturn(cube).when(schema).lookupCube("cube");
 
         MondrianDef.DimensionGrant dimensionGrant =
@@ -367,7 +389,7 @@ public class RolapSchemaTest extends PropertyRestoringTestCase {
 
         if (expectedMemberAccess != null) {
             when(reader.getMemberByUniqueName(
-                anyListOf(Id.Segment.class), anyBoolean())).thenReturn(member);
+              anyList(), anyBoolean())).thenReturn(member);
         }
 
         schema.handleHierarchyGrant(role, cube, reader, grant);
