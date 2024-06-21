@@ -1384,8 +1384,8 @@
                 <li>firebird</li>
                 <li>googlebigquery</li>
                 <li>greenplum</li>
-                <li>hsqldb</li>
                 <li>hive</li>
+                <li>hsqldb</li>
                 <li>impala</li>
                 <li>infobright</li>
                 <li>informix</li>
@@ -1418,8 +1418,8 @@
             <Value>firebird</Value>
             <Value>googlebigquery</Value>
             <Value>greenplum</Value>
-            <Value>hsqldb</Value>
             <Value>hive</Value>
+            <Value>hsqldb</Value>
             <Value>impala</Value>
             <Value>infobright</Value>
             <Value>informix</Value>
