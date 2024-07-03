@@ -125,7 +125,7 @@ public class FileRepository implements Repository {
 
       // In some cases (e.g. PowerBI connecting) the database name is actually the catalog name, search for a match
       if ( datasourceInfo == null && databaseName.equals( catalogName ) ) {
-        for ( Map.Entry<String, DatabaseInfo> dbInfo : serverInfo.datasourceMap.entrySet() ) {
+        for ( Map.Entry<String, DatabaseInfo> dbInfo : localServerInfo.datasourceMap.entrySet() ) {
           if ( dbInfo.getValue().catalogMap.containsKey( catalogName ) ) {
             datasourceInfo = dbInfo.getValue();
             break;
