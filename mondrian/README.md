@@ -16,10 +16,6 @@ Skip the integration tests by omitting `-DrunITs -P embedded-mysql,load-foodmart
 #### Run Isolate Integration Test
 To run the tests locally, the following property must be set
 ```
-<pentaho.docker.pull.host>one.hitachivantara.com/pnt-docker</pentaho.docker.pull.host>
-```
-or
-```
 <pentaho.docker.pull.host>repo.orl.eng.hitachivantara.com/pnt-docker</pentaho.docker.pull.host>
 ```
 It must not have the "/" at the end, because in wingman this variable is being overridden, and it does not have the "/" at the end https://github.com/pentaho/jenkins-pipelines/blob/master/resources/config/maven/wingman-settings.xml#L91.
