@@ -244,7 +244,8 @@ public class RolapLevel extends LevelBase {
         return LOGGER;
     }
 
-    String getTableName() {
+    // PATCH: Make the method public to allow access to it in Java 17 and higher
+    public String getTableName() {
         String tableName = null;
 
         MondrianDef.Expression expr = getKeyExp();
