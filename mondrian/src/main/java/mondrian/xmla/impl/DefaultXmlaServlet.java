@@ -10,7 +10,7 @@
 */
 package mondrian.xmla.impl;
 
-import mondrian.util.XmlParserFactoryProducer;
+import org.pentaho.di.core.xml.XMLParserFactoryProducer;
 import mondrian.xmla.Enumeration;
 import mondrian.xmla.SaxWriter;
 import mondrian.xmla.XmlaConstants;
@@ -77,7 +77,7 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
   protected static DocumentBuilderFactory getDocumentBuilderFactory() {
     DocumentBuilderFactory factory;
     try {
-      factory = XmlParserFactoryProducer.createSecureDocBuilderFactory();
+      factory = XMLParserFactoryProducer.createSecureDocBuilderFactory();
     } catch ( ParserConfigurationException ex ) {
       throw new XmlaException(
         SERVER_FAULT_FC,
