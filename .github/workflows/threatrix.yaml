@@ -11,7 +11,6 @@ jobs:
     with:
       app-name: mondrian-poc
       trx-host: https://app.threatrix.io
-      pullRequestId: ${{ github.event.number }}
     secrets:
       TOKEN: ${{ secrets.GITHUB_TOKEN }}
       THREATRIX_EID: ${{ secrets.THREATRIX_EID }}
