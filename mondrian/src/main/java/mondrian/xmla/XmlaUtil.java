@@ -13,7 +13,7 @@ package mondrian.xmla;
 
 import mondrian.olap.MondrianException;
 import mondrian.olap.Util;
-import org.pentaho.di.core.xml.XMLParserFactoryProducer;
+import mondrian.util.XmlParserFactoryProducer;
 import mondrian.xmla.impl.DefaultXmlaResponse;
 import org.olap4j.OlapConnection;
 import org.olap4j.impl.LcidLocale;
@@ -156,7 +156,7 @@ public class XmlaUtil implements XmlaConstants {
 
   private static Element _2Element( InputSource source ) throws XmlaException {
     try {
-      DocumentBuilderFactory factory = XMLParserFactoryProducer.createSecureDocBuilderFactory();
+      DocumentBuilderFactory factory = XmlParserFactoryProducer.createSecureDocBuilderFactory();
       factory.setIgnoringElementContentWhitespace( true );
       factory.setIgnoringComments( true );
       factory.setNamespaceAware( true );

@@ -9,7 +9,7 @@
 package mondrian.tui;
 
 import mondrian.olap.Util;
-import org.pentaho.di.core.xml.XMLParserFactoryProducer;
+import mondrian.util.XmlParserFactoryProducer;
 
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.impl.Constants;
@@ -853,7 +853,7 @@ public class XmlUtil {
                TransformerException
     {
         DocumentBuilderFactory dfactory =
-           XMLParserFactoryProducer.createSecureDocBuilderFactory();
+                XmlParserFactoryProducer.createSecureDocBuilderFactory();
         dfactory.setNamespaceAware(true);
 
         DocumentBuilder docBuilder = dfactory.newDocumentBuilder();
@@ -904,7 +904,7 @@ public class XmlUtil {
                TransformerException
     {
         DocumentBuilderFactory dfactory =
-            XMLParserFactoryProducer.createSecureDocBuilderFactory();
+                XmlParserFactoryProducer.createSecureDocBuilderFactory();
         dfactory.setNamespaceAware(true);
 
         DocumentBuilder docBuilder = dfactory.newDocumentBuilder();
