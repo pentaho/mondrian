@@ -1,0 +1,1037 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!-- region: processed elements -->
+
+  <xs:element name="Schema" type="SchemaType"/>
+
+  <xs:complexType name="SchemaType" >
+    <xs:annotation>
+      <xs:documentation>
+        A schema is a collection of cubes and virtual cubes.
+        It can also contain shared dimensions (for use by those
+        cubes), named sets, roles, and declarations of
+        user-defined functions.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Name of this schema
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="description" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Description of this schema.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="measuresCaption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Label for the measures dimension.
+          Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:attribute name="defaultRole" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the default role for connections to this schema.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+
+      <xs:element name="Parameter" type="ParameterType" minOccurs="0" maxOccurs="unbounded"/>
+
+      <xs:element name="Dimension" type="DimensionType" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Dimension available to be used by any cube of this schema.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+
+      <xs:element name="Cube" type="CubeType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+
+      <xs:element name="VirtualCube" type="VirtualCubeType" minOccurs="0" maxOccurs="unbounded"/>
+
+      <xs:element name="NamedSet" type="NamedSetType" minOccurs="0" maxOccurs="unbounded"/>
+
+      <xs:element name="Role" type="RoleType" minOccurs="0" maxOccurs="unbounded"/>
+
+      <xs:element name="UserDefinedFunction" type="UserDefinedFunctionType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AnnotationsType">
+    <xs:annotation>
+      <xs:documentation>
+        Contains values of user-defined properties.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Annotation" type="AnnotationType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AnnotationType" mixed="true">
+      <xs:attribute name="name" type="xs:string" minOccurs="0"/>
+  </xs:complexType>
+
+  <xs:complexType name="ParameterType">
+    <xs:annotation>
+      <xs:documentation>
+        A Parameter defines a schema parameter. It can be referenced from an MDX
+        statement using the ParamRef function and, if not final, its value can be overridden.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Name of this parameter.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Description of this parameter.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" default="String"> <!-- TODO this particular use case should be tested (using default value instead of required) but in principal MondrianDef should apply the default value -->
+      <xs:annotation>
+        <xs:documentation>
+          Indicates the type of this parameter: String, Numeric, Integer,
+          Boolean, Date, Time, Timestamp, or Member.
+        </xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="String"/>
+          <xs:enumeration value="Numeric"/>
+          <xs:enumeration value="Integer"/>
+          <xs:enumeration value="Boolean"/>
+          <xs:enumeration value="Date"/>
+          <xs:enumeration value="Time"/>
+          <xs:enumeration value="Timestamp"/>
+          <xs:enumeration value="Member"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+
+    <xs:attribute name="modifiable" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>
+          If false, statement cannot change the value of this parameter; the
+          parameter becomes effectively constant (provided that its default
+          value expression always returns the same value). Default is true.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="defaultValue" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Expression for the default value of this parameter.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+  </xs:complexType>
+
+  <xs:complexType name="DimensionType"> <!-- TODO DimensionType seems like an odd mixed bag of both shared and private dimension information. However that's how MondrianDef has it...  -->
+    <xs:annotation>
+      <xs:documentation>
+        A Dimension is a collection of hierarchies. There are
+        two kinds: a public dimension belongs to a
+        Schema, and be used by several cubes; a
+        private dimension belongs to a
+        Cube. The foreignKey field is only
+        applicable to private dimensions.
+      </xs:documentation>
+    </xs:annotation>
+
+    <xs:complexContent>
+      <xs:extension base="CubeDimensionType">
+
+        <xs:attribute name="type" default="StandardDimension">
+          <xs:annotation>
+            <xs:documentation>
+              The dimension's type may be one of "StandardDimension" or "TimeDimension".
+              A time  dimension will allow the use of the MDX time functions
+              (WTD, YTD, QTD, etc.). Use a standard dimension if the dimension
+              is not a time-related dimension. The default value is "StandardDimension".
+            </xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="StandardDimension"/>
+              <xs:enumeration value="TimeDimension"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="usagePrefix">
+          <xs:annotation>
+            <xs:documentation>
+              If present, then this is prepended to the Dimension column
+              names during the building of collapse dimension aggregates
+              allowing 1) different dimensions to be disambiguated
+              during aggregate table recognition.
+              This should only be set for private dimensions. <!-- TODO if this is only for private dimensions then probably hierarchical relation between xsd dimension types should change -->
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute >
+
+        <xs:sequence>
+          <xs:element name="Hierarchy" type="HierarchyType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="CubeDimensionType" abstract="true"> <!-- TODO validate abstract attribute -->
+    <xs:annotation>
+      <xs:documentation>
+        A CubeDimension is either a usage of a Dimension ('shared
+        dimension', in MSOLAP parlance), or a 'private dimension'.
+      </xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="name" use="required"/>
+    <xs:attribute name="caption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          A string being displayed instead of the Dimension's name.
+          Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="visible" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>
+          Whether this dimension is visible in the user-interface.
+          Default true.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Description of this dimension.
+          Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="foreignKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the column in the fact table which joins
+          to the leaf level of this dimension. Required in a
+          private Dimension or a DimensionUsage, but not in a
+          public Dimension.
+        </xs:documentation> <!-- TODO if foreignKey is not required in a shared dimension then probably hierarchical relation between xsd dimension types should change -->
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="highCardinality" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation>
+          Flag to mark this dimension as a high cardinality one
+          and avoid caching.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="HierarchyType">
+    <xs:annotation>
+      <xs:documentation>
+        <![CDATA[
+                Defines a hierarchy.
+                You must specify at most one <Relation> or memberReaderClass.
+                If you specify none, the hierarchy is assumed to come from the same
+                fact table of the current cube.
+                ]]>
+      </xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Name of the hierarchy. If this is not specified, the hierarchy
+          has the same name as its dimension.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="visible" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>
+          Whether this hierarchy is visible in the user-interface.
+          Default true.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute> <!-- New -->
+    <xs:attribute name="hasAll" type="xs:boolean" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Whether this hierarchy has an 'all' member.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allMemberName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Name of the 'all' member. If this attribute is not specified,
+          the all member is named 'All hierarchyName', for example, 'All Store'.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allMemberCaption" type="xs:string" >
+      <xs:annotation>
+        <xs:documentation>
+          A string being displayed instead as the all member's name.
+          Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="allLevelName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Name of the 'all' level. If this attribute is not specified, the all member is named '(All)'.
+          Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="primaryKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the column which identifies members, and which is referenced by rows
+          in the fact table. If not specified, the key of the lowest level is used.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="primaryKeyTable" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the table which contains primaryKey. If the hierarchy has only one table,
+          defaults to that; otherwise it is required.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="defaultMember" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Default member of this hierarchy.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="memberReaderClass" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Name of the custom member reader class. Must implement the
+          mondrian.rolap.MemberReader interface.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="caption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          A string to be displayed in the user interface. If not specified, the hierarchy's name is used.
+          Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Description of this hierarchy. Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="displayFolder" type="xs:string"> <!-- New -->
+      <xs:annotation>
+        <xs:documentation>
+          Specifies the folder in which to list the hierarchy for users.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute> <!-- New -->
+    <xs:attribute name="uniqueKeyLevelName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Should be set to the level (if such a level exists) at which depth it is known that all members
+          have entirely unique rows, allowing SQL GROUP BY clauses to be completely eliminated from the query.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="origin" type="xs:unsignedShort">  <!-- New --> <!-- TODO check what this is... what values should be settable. type inferred from mondrian.xmla.RowsetDefinition class.  -->
+      <xs:annotation>
+        <xs:documentation>
+          A bit mask that determines the source of the hierarchy:
+          MD_ORIGIN_USER_DEFINED identifies levels in a user defined hierarchy (0x0000001).
+          MD_ORIGIN_ATTRIBUTE identifies levels in an attribute hierarchy (0x0000002).
+          MD_ORIGIN_INTERNAL identifies levels in attribute hierarchies that are not enabled (0x0000004).
+          MD_ORIGIN_KEY_ATTRIBUTE identifies levels in a key attribute hierarchy (0x0000008).
+
+          The default value is MD_ORIGIN_USER_DEFINED. For Measure it is MD_ORIGIN_ATTRIBUTE &amp; MD_ORIGIN_INTERNAL (0x0000006)
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:group ref="RelationOrJoinGroup" minOccurs="0"> <!-- TODO check -->
+        <xs:annotation>
+          <xs:documentation>
+            The Table, Join (set of tables), View (SQL statement), or InlineTable which populates this hierarchy.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:group>
+      <xs:element name="Level" type="LevelType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+      <xs:element name="MemberReaderParameter" type="MemberReaderParameterType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- endregion: Types Up from here are processed -->
+
+  
+  <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
+
+
+
+
+
+  <!-- endregion  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
+
+  <xs:group name="RelationGroup">
+    <xs:choice>
+        <xs:element name="Table" type="TableType"/>
+        <xs:element name="View" type="ViewType"/>
+        <xs:element name="InlineTable" type="InlineTableType"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="RelationOrJoinGroup" >
+    <xs:choice>
+      <xs:group ref="RelationGroup"/> <!-- TODO check this group within a group for choices. In the other xsd everything is "flat" and the top group is named Relation -->
+      <xs:element name="Join" type="JoinType"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:complexType name="InlineTableType">
+    <xs:sequence>
+      <xs:element name="alias" type="xs:string" minOccurs="0"/>
+      <xs:element name="columnDefs" type="columnDefs" minOccurs="0"/>
+      <xs:element name="rows" type="rows" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="TableType">
+        <xs:sequence>
+          <xs:element name="name" type="xs:string" minOccurs="0"/>
+          <xs:element name="schema" type="xs:string" minOccurs="0"/>
+          <xs:element name="alias" type="xs:string" minOccurs="0"/>
+          <xs:element name="filter" type="sql" minOccurs="0"/>
+          <xs:element name="aggExcludes" type="aggExclude" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="aggTables" type="aggTable" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="tableHints" type="hint" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ViewType">
+    <xs:sequence>
+      <xs:element name="alias" type="xs:string" minOccurs="0"/>
+      <xs:element name="selects" type="sql" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="JoinType">
+    <xs:sequence>
+      <xs:element name="leftAlias" type="xs:string" minOccurs="0"/>
+      <xs:element name="leftKey" type="xs:string" minOccurs="0"/>
+      <xs:element name="rightAlias" type="xs:string" minOccurs="0"/>
+      <xs:element name="rightKey" type="xs:string" minOccurs="0"/>
+      <xs:element name="left" type="relationOrJoin" minOccurs="0"/>
+      <xs:element name="right" type="relationOrJoin" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CubeType">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="caption" type="xs:string" minOccurs="0"/>
+      <xs:element name="visible" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="description" type="xs:string" minOccurs="0"/>
+      <xs:element name="defaultMeasure" type="xs:string" minOccurs="0"/>
+      <xs:element name="cache" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="enabled" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:element name="fact" type="relation" minOccurs="0"/>
+      <xs:element name="dimensions" type="CubeDimensionType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="measures" type="measure" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="calculatedMembers" type="calculatedMember" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="namedSets" type="NamedSetType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="VirtualCubeType">
+    <xs:sequence>
+      <xs:element name="enabled" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="defaultMeasure" type="xs:string" minOccurs="0"/>
+      <xs:element name="caption" type="xs:string" minOccurs="0"/>
+      <xs:element name="visible" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="description" type="xs:string" minOccurs="0"/>
+      <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:element name="cubeUsage" type="cubeUsages" minOccurs="0"/>
+      <xs:element name="dimensions" type="virtualCubeDimension" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="measures" type="virtualCubeMeasure" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="calculatedMembers" type="calculatedMember" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="namedSets" type="NamedSetType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="NamedSetType">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="caption" type="xs:string" minOccurs="0"/>
+      <xs:element name="description" type="xs:string" minOccurs="0"/>
+      <xs:element name="formula" type="xs:string" minOccurs="0"/>
+      <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:element name="formulaElement" type="formula" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RoleType">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:element name="schemaGrants" type="schemaGrant" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="union" type="union" minOccurs="0"/>
+      <xs:element name="members" type="roleMember" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <xs:complexType name="propertyFormatter">
+    <xs:complexContent>
+      <xs:extension base="elementFormatter">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="elementFormatter" abstract="true">
+    <xs:sequence>
+      <xs:element name="className" type="xs:string" minOccurs="0"/>
+      <xs:element name="script" type="script" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="script">
+    <xs:sequence>
+      <xs:element name="language" type="xs:string" minOccurs="0"/>
+      <xs:element name="cdata" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="memberFormatter">
+    <xs:complexContent>
+      <xs:extension base="elementFormatter">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="cellFormatter">
+    <xs:complexContent>
+      <xs:extension base="elementFormatter">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+
+
+
+  <xs:complexType name="UserDefinedFunctionType">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="className" type="xs:string" minOccurs="0"/>
+      <xs:element name="script" type="script" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="roleUsage">
+    <xs:sequence>
+      <xs:element name="roleName" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="union">
+    <xs:sequence>
+      <xs:element name="roleUsages" type="roleUsage" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="roleMember">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="memberGrant">
+    <xs:sequence>
+      <xs:element name="member" type="xs:string" minOccurs="0"/>
+      <xs:element name="access" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="hierarchyGrant">
+    <xs:sequence>
+      <xs:element name="access" type="xs:string" minOccurs="0"/>
+      <xs:element name="hierarchy" type="xs:string" minOccurs="0"/>
+      <xs:element name="topLevel" type="xs:string" minOccurs="0"/>
+      <xs:element name="bottomLevel" type="xs:string" minOccurs="0"/>
+      <xs:element name="rollupPolicy" type="xs:string" minOccurs="0"/>
+      <xs:element name="memberGrants" type="memberGrant" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="dimensionGrant">
+    <xs:sequence>
+      <xs:element name="access" type="xs:string" minOccurs="0"/>
+      <xs:element name="dimension" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="cubeGrant">
+    <xs:sequence>
+      <xs:element name="access" type="xs:string" minOccurs="0"/>
+      <xs:element name="cube" type="xs:string" minOccurs="0"/>
+      <xs:element name="dimensionGrants" type="dimensionGrant" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="hierarchyGrants" type="hierarchyGrant" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="schemaGrant">
+    <xs:sequence>
+      <xs:element name="access" type="xs:string" minOccurs="0"/>
+      <xs:element name="cubeGrants" type="cubeGrant" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+
+  <xs:complexType name="measureExpression">
+    <xs:complexContent>
+      <xs:extension base="expressionView">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="expressionView" abstract="true">
+    <xs:sequence>
+      <xs:element name="expressions" type="sql" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="sql">
+    <xs:sequence>
+      <xs:element name="dialect" type="xs:string" minOccurs="0"/>
+      <xs:element name="cdata" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="captionExpression">
+    <xs:sequence/>
+  </xs:complexType>
+
+  <xs:complexType name="nameExpression">
+    <xs:sequence/>
+  </xs:complexType>
+
+  <xs:complexType name="ordinalExpression">
+    <xs:sequence/>
+  </xs:complexType>
+
+  <xs:complexType name="parentExpression">
+    <xs:complexContent>
+      <xs:extension base="expressionView">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="keyExpression">
+    <xs:complexContent>
+      <xs:extension base="expressionView">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="column">
+    <xs:sequence>
+      <xs:element name="table" type="xs:string" minOccurs="0"/>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="aggMeasure">
+    <xs:sequence>
+      <xs:element name="column" type="xs:string" minOccurs="0"/>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="rollupType" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="aggLevelProperty">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="column" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="aggLevel">
+    <xs:sequence>
+      <xs:element name="column" type="xs:string" minOccurs="0"/>
+      <xs:element name="ordinalColumn" type="xs:string" minOccurs="0"/>
+      <xs:element name="captionColumn" type="xs:string" minOccurs="0"/>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="nameColumn" type="xs:string" minOccurs="0"/>
+      <xs:element name="collapsed" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="properties" type="aggLevelProperty" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="aggForeignKey">
+    <xs:sequence>
+      <xs:element name="factColumn" type="xs:string" minOccurs="0"/>
+      <xs:element name="aggColumn" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="aggIgnoreColumn">
+    <xs:complexContent>
+      <xs:extension base="aggColumnName">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="aggColumnName" abstract="true">
+    <xs:sequence>
+      <xs:element name="column" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="aggMeasureFactCount">
+    <xs:sequence>
+      <xs:element name="factColumn" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="aggFactCount">
+    <xs:complexContent>
+      <xs:extension base="aggColumnName">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="aggExclude">
+    <xs:sequence>
+      <xs:element name="pattern" type="xs:string" minOccurs="0"/>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="ignorecase" type="xs:boolean" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="aggPattern">
+    <xs:complexContent>
+      <xs:extension base="aggTable">
+        <xs:sequence>
+          <xs:element name="pattern" type="xs:string" minOccurs="0"/>
+          <xs:element name="excludes" type="aggExclude" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="aggTable" abstract="true">
+    <xs:sequence>
+      <xs:element name="ignorecase" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="factcount" type="aggFactCount" minOccurs="0"/>
+      <xs:element name="measuresfactcount" type="aggMeasureFactCount" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="ignoreColumns" type="aggIgnoreColumn" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="foreignKeys" type="aggForeignKey" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="measures" type="aggMeasure" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="levels" type="aggLevel" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="aggName">
+    <xs:complexContent>
+      <xs:extension base="aggTable">
+        <xs:sequence>
+          <xs:element name="name" type="xs:string" minOccurs="0"/>
+          <xs:element name="approxRowCount" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="value">
+    <xs:sequence>
+      <xs:element name="column" type="xs:string" minOccurs="0"/>
+      <xs:element name="cdata" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="row">
+    <xs:sequence>
+      <xs:element name="values" type="value" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="rows">
+    <xs:sequence>
+      <xs:element name="array" type="row" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="columnDef">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="type" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="columnDefs">
+    <xs:sequence>
+      <xs:element name="array" type="columnDef" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+
+
+
+  <xs:complexType name="hint">
+    <xs:sequence>
+      <xs:element name="type" type="xs:string" minOccurs="0"/>
+      <xs:element name="cdata" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+
+
+
+
+
+  <xs:complexType name="MemberReaderParameterType">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="value" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="formula">
+    <xs:sequence>
+      <xs:element name="cdata" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+
+  <xs:complexType name="calculatedMemberProperty">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="caption" type="xs:string" minOccurs="0"/>
+      <xs:element name="description" type="xs:string" minOccurs="0"/>
+      <xs:element name="expression" type="xs:string" minOccurs="0"/>
+      <xs:element name="value" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="calculatedMember">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="formatString" type="xs:string" minOccurs="0"/>
+      <xs:element name="caption" type="xs:string" minOccurs="0"/>
+      <xs:element name="description" type="xs:string" minOccurs="0"/>
+      <xs:element name="formula" type="xs:string" minOccurs="0"/>
+      <xs:element name="dimension" type="xs:string" minOccurs="0"/>
+      <xs:element name="hierarchy" type="xs:string" minOccurs="0"/>
+      <xs:element name="parent" type="xs:string" minOccurs="0"/>
+      <xs:element name="visible" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:element name="formulaElement" type="formula" minOccurs="0"/>
+      <xs:element name="cellFormatter" type="cellFormatter" minOccurs="0"/>
+      <xs:element name="memberProperties" type="calculatedMemberProperty" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="measure">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="column" type="xs:string" minOccurs="0"/>
+      <xs:element name="datatype" type="xs:string" minOccurs="0"/>
+      <xs:element name="formatString" type="xs:string" minOccurs="0"/>
+      <xs:element name="aggregator" type="xs:string" minOccurs="0"/>
+      <xs:element name="formatter" type="xs:string" minOccurs="0"/>
+      <xs:element name="caption" type="xs:string" minOccurs="0"/>
+      <xs:element name="description" type="xs:string" minOccurs="0"/>
+      <xs:element name="visible" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:element name="measureExp" type="measureExpression" minOccurs="0"/>
+      <xs:element name="cellFormatter" type="cellFormatter" minOccurs="0"/>
+      <xs:element name="memberProperties" type="calculatedMemberProperty" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="property">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="column" type="xs:string" minOccurs="0"/>
+      <xs:element name="type" type="xs:string" minOccurs="0"/>
+      <xs:element name="formatter" type="xs:string" minOccurs="0"/>
+      <xs:element name="caption" type="xs:string" minOccurs="0"/>
+      <xs:element name="description" type="xs:string" minOccurs="0"/>
+      <xs:element name="dependsOnLevelValue" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="propertyFormatter" type="propertyFormatter" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="closure">
+    <xs:sequence>
+      <xs:element name="parentColumn" type="xs:string" minOccurs="0"/>
+      <xs:element name="childColumn" type="xs:string" minOccurs="0"/>
+      <xs:element name="table" type="TableType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="LevelType">
+    <xs:sequence>
+      <xs:element name="approxRowCount" type="xs:string" minOccurs="0"/>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="visible" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="table" type="xs:string" minOccurs="0"/>
+      <xs:element name="column" type="xs:string" minOccurs="0"/>
+      <xs:element name="nameColumn" type="xs:string" minOccurs="0"/>
+      <xs:element name="ordinalColumn" type="xs:string" minOccurs="0"/>
+      <xs:element name="parentColumn" type="xs:string" minOccurs="0"/>
+      <xs:element name="nullParentValue" type="xs:string" minOccurs="0"/>
+      <xs:element name="type" type="xs:string" minOccurs="0"/>
+      <xs:element name="internalType" type="xs:string" minOccurs="0"/>
+      <xs:element name="uniqueMembers" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="levelType" type="xs:string" minOccurs="0"/>
+      <xs:element name="hideMemberIf" type="xs:string" minOccurs="0"/>
+      <xs:element name="formatter" type="xs:string" minOccurs="0"/>
+      <xs:element name="caption" type="xs:string" minOccurs="0"/>
+      <xs:element name="description" type="xs:string" minOccurs="0"/>
+      <xs:element name="captionColumn" type="xs:string" minOccurs="0"/>
+      <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:element name="keyExp" type="keyExpression" minOccurs="0"/>
+      <xs:element name="nameExp" type="nameExpression" minOccurs="0"/>
+      <xs:element name="captionExp" type="captionExpression" minOccurs="0"/>
+      <xs:element name="ordinalExp" type="ordinalExpression" minOccurs="0"/>
+      <xs:element name="parentExp" type="parentExpression" minOccurs="0"/>
+      <xs:element name="memberFormatter" type="memberFormatter" minOccurs="0"/>
+      <xs:element name="closure" type="closure" minOccurs="0"/>
+      <xs:element name="properties" type="property" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+
+
+
+
+
+  <xs:complexType name="dimensionUsage">
+    <xs:complexContent>
+      <xs:extension base="CubeDimensionType">
+        <xs:sequence>
+          <xs:element name="source" type="xs:string" minOccurs="0"/>
+          <xs:element name="level" type="xs:string" minOccurs="0"/>
+          <xs:element name="usagePrefix" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="virtualCubeMeasure">
+    <xs:sequence>
+      <xs:element name="cubeName" type="xs:string" minOccurs="0"/>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="visible" type="xs:boolean" minOccurs="0"/>
+      <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="virtualCubeDimension">
+    <xs:complexContent>
+      <xs:extension base="CubeDimensionType">
+        <xs:sequence>
+          <xs:element name="cubeName" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="cubeUsage">
+    <xs:sequence>
+      <xs:element name="cubeName" type="xs:string" minOccurs="0"/>
+      <xs:element name="ignoreUnrelatedDimensions" type="xs:boolean" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="cubeUsages">
+    <xs:sequence>
+      <xs:element name="cubeUsages" type="cubeUsage" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+
+
+
+
+</xs:schema>
+
