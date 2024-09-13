@@ -198,7 +198,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="CubeDimensionType" abstract="true"> <!-- TODO validate abstract attribute -->
+  <xs:complexType name="CubeDimensionType" abstract="true"> <!-- TODO validate abstract attribute. Element was named PrivateDimension in other XSD. -->
     <xs:annotation>
       <xs:documentation>
         A CubeDimension is either a usage of a Dimension ('shared
@@ -404,16 +404,139 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="CubeType">
+
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Name of this cube.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="caption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          A string being displayed instead of the cube's name. Can be localized from Properties
+          file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="visible" type="xs:boolean" default="true"> <!-- New -->
+      <xs:annotation>
+        <xs:documentation>
+          Whether this cube is visible in the user-interface.
+          Default true.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Description of this cube. Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="defaultMeasure" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the measure that would be taken as the default measure of the cube.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="cache" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>
+          Should the Fact table data for this Cube be cached by Mondrian or not.
+          The default action is to cache the data.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="enabled" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>
+          Whether element is enabled - if true, then the Cube is realized
+          otherwise it is ignored.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:group ref="RelationGroup" minOccurs="1" maxOccurs="1"> <!-- New : the used group in the other xsd is named FactTable and did not include the InlineTable element -->
+        <xs:annotation>
+          <xs:documentation>
+            The element from this group will represent the fact table of the cube.
+            The fact table is the source of all measures in this cube.
+            If this is a Table and the schema name is not present, table name is left unqualified.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:group>
+      <xs:choice minOccurs="1" maxOccurs="unbounded"> <!-- TODO check minOccurs="1" as MondrianDef does not require a Cube to have Dimensions -->
+        <!-- Dimensions -->
+        <xs:annotation>
+          <xs:documentation>
+            Dimensions available to be used by this cube.
+          </xs:documentation>
+          <xs:element name="Dimension" type="DimensionType"/>
+          <xs:element name="DimensionUsage" type="DimensionUsageType"/>
+          <xs:element name="VirtualCubeDimension" type="VirtualCubeDimensionType"/> <!-- New --> <!-- TODO check if this should be here. It was NOT in the other xsd but MondrianDef allows for it. Also doesnt seem to make sense to have it and the comments for the CubeDimension say it can only be a shared or private dimension. -->
+        </xs:annotation>
+      </xs:choice>
+      <xs:element name="Measure" type="MeasureType" minOccurs="1" maxOccurs="unbounded"> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+        <xs:annotation>
+          <xs:documentation>
+            Measure available to be used by this cube.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="CalculatedMember" type="CalculatedMemberType" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Calculated members in this cube.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="NamedSet" type="NamedSetType" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Named sets in this virtual cube.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
-  
+
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
 
 
 
 
-
   <!-- endregion  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
+
+  <xs:complexType name="DimensionUsageType">
+    <xs:complexContent>
+      <xs:extension base="CubeDimensionType">
+        <xs:sequence>
+          <xs:element name="source" type="xs:string" minOccurs="0"/>
+          <xs:element name="level" type="xs:string" minOccurs="0"/>
+          <xs:element name="usagePrefix" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="VirtualCubeDimensionType">
+    <xs:complexContent>
+      <xs:extension base="CubeDimensionType">
+        <xs:sequence>
+          <xs:element name="cubeName" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
 
   <xs:group name="RelationGroup">
     <xs:choice>
@@ -468,23 +591,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="CubeType">
-    <xs:sequence>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="caption" type="xs:string" minOccurs="0"/>
-      <xs:element name="visible" type="xs:boolean" minOccurs="0"/>
-      <xs:element name="description" type="xs:string" minOccurs="0"/>
-      <xs:element name="defaultMeasure" type="xs:string" minOccurs="0"/>
-      <xs:element name="cache" type="xs:boolean" minOccurs="0"/>
-      <xs:element name="enabled" type="xs:boolean" minOccurs="0"/>
-      <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="fact" type="relation" minOccurs="0"/>
-      <xs:element name="dimensions" type="CubeDimensionType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="measures" type="measure" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="calculatedMembers" type="calculatedMember" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="namedSets" type="NamedSetType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
+
 
   <xs:complexType name="VirtualCubeType">
     <xs:sequence>
@@ -496,9 +603,9 @@
       <xs:element name="description" type="xs:string" minOccurs="0"/>
       <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
       <xs:element name="cubeUsage" type="cubeUsages" minOccurs="0"/>
-      <xs:element name="dimensions" type="virtualCubeDimension" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="dimensions" type="VirtualCubeDimensionType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="measures" type="virtualCubeMeasure" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="calculatedMembers" type="calculatedMember" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="calculatedMembers" type="CalculatedMemberType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="namedSets" type="NamedSetType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
@@ -889,7 +996,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="calculatedMember">
+  <xs:complexType name="CalculatedMemberType">
     <xs:sequence>
       <xs:element name="name" type="xs:string" minOccurs="0"/>
       <xs:element name="formatString" type="xs:string" minOccurs="0"/>
@@ -907,7 +1014,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="measure">
+  <xs:complexType name="MeasureType">
     <xs:sequence>
       <xs:element name="name" type="xs:string" minOccurs="0"/>
       <xs:element name="column" type="xs:string" minOccurs="0"/>
@@ -984,17 +1091,7 @@
 
 
 
-  <xs:complexType name="dimensionUsage">
-    <xs:complexContent>
-      <xs:extension base="CubeDimensionType">
-        <xs:sequence>
-          <xs:element name="source" type="xs:string" minOccurs="0"/>
-          <xs:element name="level" type="xs:string" minOccurs="0"/>
-          <xs:element name="usagePrefix" type="xs:string" minOccurs="0"/>
-        </xs:sequence>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
+
 
   <xs:complexType name="virtualCubeMeasure">
     <xs:sequence>
@@ -1005,15 +1102,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="virtualCubeDimension">
-    <xs:complexContent>
-      <xs:extension base="CubeDimensionType">
-        <xs:sequence>
-          <xs:element name="cubeName" type="xs:string" minOccurs="0"/>
-        </xs:sequence>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
+
 
   <xs:complexType name="cubeUsage">
     <xs:sequence>
