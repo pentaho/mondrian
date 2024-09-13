@@ -615,9 +615,35 @@
 
   <!-- endregion: Types Up from here are processed -->
 
+  <xs:complexType name="CubeUsagesType">
+    <xs:annotation>
+      <xs:documentation>
+        List of base cubes used by the virtual cube.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="CubeUsage" type="CubeUsageType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CubeUsageType">
+    <xs:attribute name="cubeName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Name of the cube which the virtualCube uses.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignoreUnrelatedDimensions" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation>
+          Unrelated dimensions to measures in this cube will be pushed to top level member.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
-
 
 
 
@@ -1197,18 +1223,7 @@
 
 
 
-  <xs:complexType name="cubeUsage">
-    <xs:sequence>
-      <xs:element name="cubeName" type="xs:string" minOccurs="0"/>
-      <xs:element name="ignoreUnrelatedDimensions" type="xs:boolean" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
 
-  <xs:complexType name="CubeUsagesType">
-    <xs:sequence>
-      <xs:element name="cubeUsages" type="cubeUsage" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
 
 
 
