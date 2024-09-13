@@ -198,7 +198,8 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="CubeDimensionType" abstract="true"> <!-- TODO validate abstract attribute. Element was named PrivateDimension in other XSD. -->
+  <xs:complexType name="CubeDimensionType" abstract="true"> <!-- TODO validate abstract attribute. Element was named PrivateDimension in other XSD. Or maybe not... Might be -->
+    <!-- TODO All Dimension Types need to be verified as they are a weird mix of attributes and elements  -->
     <xs:annotation>
       <xs:documentation>
         A CubeDimension is either a usage of a Dimension ('shared
@@ -642,6 +643,7 @@
   </xs:complexType>
 
   <xs:complexType name="VirtualCubeDimensionType">
+    <!-- TODO validate is this Dimension Type should inherit from CubeDimensionType like others. According to MondrianDef it does. -->
     <xs:annotation>
       <xs:documentation>
         A VirtualCubeDimension is a usage of a Dimension in a VirtualCube.
@@ -696,29 +698,53 @@
     </xs:sequence>
   </xs:complexType>
 
-
+  <xs:complexType name="DimensionUsageType">
+    <xs:annotation>
+      <xs:documentation>
+        A DimensionUsage is usage of a shared Dimension within the context of a cube.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="CubeDimensionType"> <!-- TODO validate that this Dimension type should inherit from CubeDimensionType. Or just pick the appropriate attributes and elements. -->
+        <xs:attribute name="source" type="xs:string" use="required">
+          <xs:annotation>
+            <xs:documentation>
+              Name of the source dimension. Must be a dimension in this schema. Case-sensitive.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="level" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              Name of the level to join to. If not specified, joins to the lowest level of the dimension.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="usagePrefix" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              If present, then this is prepended to the Dimension column names
+              during the building of collapse dimension aggregates allowing 1) different
+              dimension usages to be disambiguated during aggregate table recognition and
+              2) multiple shared dimensions that have common column names to be disambiguated.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
 
 
 
   <!-- endregion: Types Up from here are processed -->
-  
+
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
 
 
 
   <!-- endregion  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
 
-  <xs:complexType name="DimensionUsageType">
-    <xs:complexContent>
-      <xs:extension base="CubeDimensionType">
-        <xs:sequence>
-          <xs:element name="source" type="xs:string" minOccurs="0"/>
-          <xs:element name="level" type="xs:string" minOccurs="0"/>
-          <xs:element name="usagePrefix" type="xs:string" minOccurs="0"/>
-        </xs:sequence>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
+
 
 
 
