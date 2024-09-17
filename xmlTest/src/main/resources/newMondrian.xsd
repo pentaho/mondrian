@@ -757,6 +757,34 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="SchemaGrantType">
+    <xs:annotation>
+      <xs:documentation>
+        Grants (or denies) this role access to this schema. access may be "all", "all_dimensions", or "none".
+        If access is "all_dimensions", the role has access to all dimensions but still needs explicit access to cubes.
+        See mondrian.olap.Role#grant(mondrian.olap.Schema,int).
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="access" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Values correspond to Access.
+        </xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string"> <!-- TODO mondrian.xml says to have the three values in the comments, but doesn't have all_dimensions in the definition. XOM also has custom -->
+          <xs:enumeration value="all"/>
+          <xs:enumeration value="all_dimensions"/>
+          <xs:enumeration value="none"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+
+    <xs:sequence>
+      <xs:element name="cubeGrants" type="CubeGrantType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
 
 
   <!-- endregion: Types Up from here are processed -->
@@ -952,7 +980,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="cubeGrant">
+  <xs:complexType name="CubeGrantType">
     <xs:sequence>
       <xs:element name="access" type="xs:string" minOccurs="0"/>
       <xs:element name="cube" type="xs:string" minOccurs="0"/>
@@ -960,14 +988,6 @@
       <xs:element name="hierarchyGrants" type="hierarchyGrant" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
-
-  <xs:complexType name="SchemaGrantType">
-    <xs:sequence>
-      <xs:element name="access" type="xs:string" minOccurs="0"/>
-      <xs:element name="cubeGrants" type="cubeGrant" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-
 
 
   <xs:complexType name="measureExpression">
