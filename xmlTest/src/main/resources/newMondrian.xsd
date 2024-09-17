@@ -785,12 +785,48 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="CubeGrantType">
+    <xs:annotation>
+      <xs:documentation>
+        Grants (or denies) this role access to a cube.
+        <code>access</code> may be "all", "custom", or "none".
+        If <code>access</code> is "custom", no access will be inherited
+        by the dimensions of this cube, unless the parent SchemaGrant is
+        set to "ALL_DIMENSIONS".
+        See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Cube, int)">mondrian.olap.Role#grant(mondrian.olap.Cube,int)</a>.
+      </xs:documentation>
+    </xs:annotation>
+     <xs:attribute name="access" type="xs:string" use="required">
+          <xs:annotation>
+            <xs:documentation>
+              Values correspond to Access.
+            </xs:documentation>
+          </xs:annotation>
+          <xs:simpleType>
+            <xs:restriction base="xs:string"> <!-- TODO mondrian.xml says to have "all" or "none", XOM also has "custom", MondrianDef has all 4 options -->
+              <xs:enumeration value="all"/>
+              <xs:enumeration value="none"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="cube" type="xs:string" use="required">
+          <xs:annotation>
+            <xs:documentation>
+              The unique name of the cube
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+
+    <xs:sequence>
+      <xs:element name="dimensionGrants" type="DimensionGrantType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="hierarchyGrants" type="HierarchyGrantType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
 
 
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
-
 
 
   <!-- endregion  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -962,7 +998,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="hierarchyGrant">
+  <xs:complexType name="HierarchyGrantType">
     <xs:sequence>
       <xs:element name="access" type="xs:string" minOccurs="0"/>
       <xs:element name="hierarchy" type="xs:string" minOccurs="0"/>
@@ -973,19 +1009,10 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="dimensionGrant">
+  <xs:complexType name="DimensionGrantType">
     <xs:sequence>
       <xs:element name="access" type="xs:string" minOccurs="0"/>
       <xs:element name="dimension" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="CubeGrantType">
-    <xs:sequence>
-      <xs:element name="access" type="xs:string" minOccurs="0"/>
-      <xs:element name="cube" type="xs:string" minOccurs="0"/>
-      <xs:element name="dimensionGrants" type="dimensionGrant" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="hierarchyGrants" type="hierarchyGrant" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
