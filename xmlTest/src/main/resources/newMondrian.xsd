@@ -975,6 +975,19 @@
     <xs:attribute name="name" use="required"/>
   </xs:complexType>
 
+  <xs:complexType name="UnionType">
+    <xs:annotation>
+      <xs:documentation>
+        Body of a Role definition which defines a Role to be the union
+        of several Roles. The RoleUsage elements must refer to Roles that
+        have been declared earlier in this schema file.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="roleUsages" type="RoleUsageType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+    </xs:sequence>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -1124,19 +1137,11 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="roleUsage">
+  <xs:complexType name="RoleUsageType">
     <xs:sequence>
       <xs:element name="roleName" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
-
-  <xs:complexType name="UnionType">
-    <xs:sequence>
-      <xs:element name="roleUsages" type="roleUsage" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-
-
 
 
   <xs:complexType name="measureExpression">
