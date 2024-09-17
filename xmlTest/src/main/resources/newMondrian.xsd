@@ -734,6 +734,29 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:complexType name="RoleType">
+    <xs:annotation>
+      <xs:documentation>
+        A role defines an access-control profile. It has a series of grants
+        (or denials) for schema elements.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string" use="required" />
+
+    <xs:sequence>
+      <xs:element name="annotations" type="AnnotationsType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            Contains values of user-defined properties.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="schemaGrant" type="SchemaGrantType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="union" type="UnionType" minOccurs="0"/>
+      <xs:element name="member" type="RoleMemberType" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+
 
 
   <!-- endregion: Types Up from here are processed -->
@@ -816,16 +839,6 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="RoleType">
-    <xs:sequence>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="schemaGrants" type="schemaGrant" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="union" type="union" minOccurs="0"/>
-      <xs:element name="members" type="roleMember" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-
 
 
 
@@ -902,13 +915,13 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="union">
+  <xs:complexType name="UnionType">
     <xs:sequence>
       <xs:element name="roleUsages" type="roleUsage" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="roleMember">
+  <xs:complexType name="RoleMemberType">
     <xs:sequence>
       <xs:element name="name" type="xs:string" minOccurs="0"/>
     </xs:sequence>
@@ -948,7 +961,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="schemaGrant">
+  <xs:complexType name="SchemaGrantType">
     <xs:sequence>
       <xs:element name="access" type="xs:string" minOccurs="0"/>
       <xs:element name="cubeGrants" type="cubeGrant" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
