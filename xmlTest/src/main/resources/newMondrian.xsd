@@ -988,15 +988,21 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="RoleUsageType">
+    <xs:annotation>
+      <xs:documentation>
+        Usage of a Role in a union Role.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="roleName" type="xs:string" use="required"/> <!-- TODO not required in mondrian.xsd -->
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
 
 
   <!-- endregion  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
-
-
-
 
 
   <xs:group name="RelationGroup">
@@ -1054,8 +1060,6 @@
 
 
 
-
-
   <xs:complexType name="NamedSetType">
     <xs:sequence>
       <xs:element name="name" type="xs:string" minOccurs="0"/>
@@ -1066,24 +1070,6 @@
       <xs:element name="formulaElement" type="formula" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1127,19 +1113,11 @@
 
 
 
-
-
   <xs:complexType name="UserDefinedFunctionType">
     <xs:sequence>
       <xs:element name="name" type="xs:string" minOccurs="0"/>
       <xs:element name="className" type="xs:string" minOccurs="0"/>
       <xs:element name="script" type="script" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="RoleUsageType">
-    <xs:sequence>
-      <xs:element name="roleName" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -1338,18 +1316,12 @@
 
 
 
-
-
   <xs:complexType name="hint">
     <xs:sequence>
       <xs:element name="type" type="xs:string" minOccurs="0"/>
       <xs:element name="cdata" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
-
-
-
-
 
 
 
@@ -1468,4 +1440,3 @@
   </xs:complexType>
 
 </xs:schema>
-
