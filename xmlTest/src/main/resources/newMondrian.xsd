@@ -935,6 +935,37 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="MemberGrantType">
+    <xs:annotation>
+      <xs:documentation>
+        Grants (or denies) this role access to a member.
+        The children of this member inherit that access.
+        You can implicitly see a member if you can see any of its children.
+        See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Member, int)">mondrian.olap.Role#grant(mondrian.olap.Member,int)</a>.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="access" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Values correspond to Access.
+        </xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="all"/>
+          <xs:enumeration value="none"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="member" type="xs:string" use="required"> <!-- TODO only required in XOM -->
+      <xs:annotation>
+        <xs:documentation>
+          The unique name of the member
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -1099,13 +1130,6 @@
   <xs:complexType name="RoleMemberType">
     <xs:sequence>
       <xs:element name="name" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="MemberGrantType">
-    <xs:sequence>
-      <xs:element name="member" type="xs:string" minOccurs="0"/>
-      <xs:element name="access" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
 
