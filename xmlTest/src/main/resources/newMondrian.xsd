@@ -860,6 +860,80 @@
     </xs:attribute>
   </xs:complexType>
 
+  <xs:complexType name="HierarchyGrantType">
+    <xs:annotation>
+      <xs:documentation>
+        Grants (or denies) this role access to a hierarchy.
+        <code>access</code> may be "all", "custom" or "none".
+        If <code>access</code> is "custom", you may also specify the
+        attributes <code>topLevel</code>, <code>bottomLevel</code>, and
+        the member grants.
+        If <code>access</code> is "custom", the child levels of this
+        hierarchy will not inherit access rights from this hierarchy,
+        should there be no explicit rules defined for the said child level.
+        See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)">mondrian.olap.Role#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)</a>.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="access" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Values correspond to Access.
+        </xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string"> <!-- TODO mondrian.xml and XOM say to have "all", "custom" and "none",MondrianDef also has "all_dimensions" -->
+          <xs:enumeration value="all"/>
+          <xs:enumeration value="custom"/>
+          <xs:enumeration value="none"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="hierarchy" type="xs:string" use="required">
+        <xs:annotation>
+            <xs:documentation>
+                The unique name of the hierarchy
+            </xs:documentation>
+        </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="topLevel" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Unique name of the highest level of the hierarchy from which
+          this role is allowed to see members. May only be specified if
+          the <code>HierarchyGrant.access</code> is "custom". If not
+          specified, role can see members up to the top level.el.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="bottomLevel" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Unique name of the lowest level of the hierarchy from which
+          this role is allowed to see members. May only be specified if
+          the <code>HierarchyGrant.access</code> is "custom". If not
+          specified, role can see members down to the leaf level.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rollupPolicy" type="xs:string" default="full">
+      <xs:annotation>
+        <xs:documentation>
+          Policy which determines how cell values are calculated if not all the children of the current cell are visible to the current role.
+          Allowable values are 'full' (the default), 'partial', and 'hidden'.
+        </xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="full"/>
+          <xs:enumeration value="partial"/>
+          <xs:enumeration value="hidden"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:sequence>
+      <xs:element name="memberGrants" type="MemberGrantType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
 
   <!-- endregion: Types Up from here are processed -->
 
@@ -1028,24 +1102,12 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="memberGrant">
+  <xs:complexType name="MemberGrantType">
     <xs:sequence>
       <xs:element name="member" type="xs:string" minOccurs="0"/>
       <xs:element name="access" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
-
-  <xs:complexType name="HierarchyGrantType">
-    <xs:sequence>
-      <xs:element name="access" type="xs:string" minOccurs="0"/>
-      <xs:element name="hierarchy" type="xs:string" minOccurs="0"/>
-      <xs:element name="topLevel" type="xs:string" minOccurs="0"/>
-      <xs:element name="bottomLevel" type="xs:string" minOccurs="0"/>
-      <xs:element name="rollupPolicy" type="xs:string" minOccurs="0"/>
-      <xs:element name="memberGrants" type="memberGrant" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-
 
 
   <xs:complexType name="measureExpression">
