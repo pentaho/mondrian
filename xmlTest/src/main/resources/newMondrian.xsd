@@ -1327,6 +1327,61 @@
     </xs:attribute>
   </xs:complexType>
 
+  <xs:complexType name="NamedSetType">
+    <xs:annotation>
+      <xs:documentation>
+        Defines a named set which can be used in queries in the same way as a set
+        defined using a WITH SET clause. A named set can be defined against a particular cube,
+        or can be global to a schema. If it is defined against a cube, it is only available to queries which use that cube.
+        A named set defined against a cube is not inherited by a virtual cubes defined against that cube.
+        (But you can define a named set against a virtual cube). A named set defined against a schema
+        is available in all cubes and virtual cubes in that schema.
+        However, it is only valid if the cube contains dimensions with the names required to make the formula valid.
+      </xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Name of this named set.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="caption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Caption of this named set. Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Description of this named set. Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="formula" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          MDX expression which gives the value of this set. Equivalent to the Formula sub-element.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:element name="Formula" type="xs:string" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            MDX expression which gives the value of this set.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+
+  </xs:complexType>
+
   <xs:complexType name="RoleType">
     <xs:annotation>
       <xs:documentation>
@@ -1844,16 +1899,7 @@
 
 
 
-  <xs:complexType name="NamedSetType">
-    <xs:sequence>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="caption" type="xs:string" minOccurs="0"/>
-      <xs:element name="description" type="xs:string" minOccurs="0"/>
-      <xs:element name="formula" type="xs:string" minOccurs="0"/>
-      <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="formulaElement" type="FormulaType" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
+
 
 
 
