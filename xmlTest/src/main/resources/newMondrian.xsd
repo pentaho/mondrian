@@ -1554,6 +1554,24 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:complexType name="InlineTableType">
+    <xs:attribute name="alias" type="xs:string"> <!--TODO not present in mondrian.xsd -->
+      <xs:annotation>
+        <xs:documentation>
+          Alias to be used with this table when it is used to
+          form queries. If not specified, defaults to the table
+          name, but in any case, must be unique within the
+          schema. (You can use the same table in different
+          hierarchies, but it must have different aliases.)
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:sequence>
+      <xs:element name="columnDefs" type="ColumnDefsType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="rows" type="RowsType" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="ValueType">
     <xs:annotation>
       <xs:documentation>
@@ -1593,13 +1611,6 @@
     </xs:choice>
   </xs:group>
 
-  <xs:complexType name="InlineTableType">
-    <xs:sequence>
-      <xs:element name="alias" type="xs:string" minOccurs="0"/>
-      <xs:element name="columnDefs" type="columnDefs" minOccurs="0"/>
-      <xs:element name="rows" type="rows" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
 
   <xs:complexType name="TableType">
         <xs:sequence>
@@ -1814,7 +1825,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="rows">
+  <xs:complexType name="RowsType">
     <xs:sequence>
       <xs:element name="array" type="row" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
@@ -1827,7 +1838,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="columnDefs">
+  <xs:complexType name="ColumnDefsType">
     <xs:sequence>
       <xs:element name="array" type="columnDef" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
