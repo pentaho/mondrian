@@ -1554,6 +1554,22 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:complexType name="ValueType">
+    <xs:annotation>
+      <xs:documentation>
+        Column value for an inline table.
+        The CDATA holds the value of the column.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="column" type="xs:string" use="required"> <!-- TODO not required in mondrian.xsd but required in MondrianXOM.xml -->
+      <xs:annotation>
+        <xs:documentation>
+          Name of the column.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -1790,16 +1806,11 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="value">
-    <xs:sequence>
-      <xs:element name="column" type="xs:string" minOccurs="0"/>
-      <xs:element name="cdata" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
+
 
   <xs:complexType name="row">
     <xs:sequence>
-      <xs:element name="values" type="value" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="values" type="ValueType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
