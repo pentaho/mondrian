@@ -1382,6 +1382,16 @@
 
   </xs:complexType>
 
+  <xs:complexType name="MemberReaderParameterType" minOccurs="0" maxOccurs="unbounded"> <!-- TODO there's a comment saying this is not used. Check what to do. Perhaps mark as deprecated. -->
+    <xs:annotation>
+      <xs:documentation>
+        Not used
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string" use="required"/> <!-- TODO optional in XOM -->
+    <xs:attribute name="value" type="xs:string" use="required"/> <!-- TODO optional in XOM -->
+  </xs:complexType>
+
   <xs:complexType name="RoleType">
     <xs:annotation>
       <xs:documentation>
@@ -1848,6 +1858,7 @@
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
 
 
+
   <!-- endregion  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
 
 
@@ -2070,25 +2081,5 @@
       <xs:element name="cdata" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
-
-
-
-  <xs:complexType name="MemberReaderParameterType">
-    <xs:sequence>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="value" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
-
-
-
-
-
-
-
-
-
-
-
 
 </xs:schema>
