@@ -1333,6 +1333,21 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="CellFormatterType">
+    <xs:annotation>
+      <xs:documentation>
+        Plugin that formats the values of cells.
+        It must be implemented by a Java
+        class which implements the interface
+        <a href="api/mondrian/spi/CellFormatter.html">mondrian.spi.CellFormatter</a>,
+        or by a script.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="ElementFormatterType"/>
+    </xs:complexContent>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -1428,13 +1443,6 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="cellFormatter">
-    <xs:complexContent>
-      <xs:extension base="elementFormatter">
-        <xs:sequence/>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
 
 
   <xs:complexType name="measureExpression">
