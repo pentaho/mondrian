@@ -781,7 +781,7 @@
     </xs:attribute>
 
     <xs:sequence>
-      <xs:element name="cubeGrants" type="CubeGrantType" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="cubeGrants" type="CubeGrantType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
     </xs:sequence>
   </xs:complexType>
 
@@ -851,7 +851,7 @@
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="dimension" type="xs:string" use="required">
+    <xs:attribute name="dimension" type="xs:string" use="required"> <!-- TODO required in mondrian.xsd -->
       <xs:annotation>
         <xs:documentation>
           The unique name of the dimension
