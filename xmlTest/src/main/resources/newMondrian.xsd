@@ -1019,6 +1019,76 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="PropertyType">
+    <xs:annotation>
+      <xs:documentation>
+        Member property.
+      </xs:documentation>
+    </xs:annotation>
+
+    <xs:attribute name="name" type="xs:string" use="required" /> <!-- TODO optional in MondrianDef -->
+    <xs:attribute name="column" type="xs:string" use="required" /> <!-- TODO optional in MondrianDef -->
+    <xs:attribute name="type" default="String">
+      <xs:annotation>
+        <xs:documentation>
+          Data type of this property: String, Numeric, Integer, Long, Boolean, Date, Time or Timestamp.
+        </xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="String"/>
+          <xs:enumeration value="Numeric"/>
+          <xs:enumeration value="Integer"/>
+          <xs:enumeration value="Long"/> <!-- New -->
+          <xs:enumeration value="Boolean"/>
+          <xs:enumeration value="Date"/>
+          <xs:enumeration value="Time"/>
+          <xs:enumeration value="Timestamp"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="formatter" type="xs:string" > <!-- TODO couldn't find a good way to mark as deprecated. Check if there is a reasonable way to do it -->
+      <xs:annotation>
+        <xs:documentation>
+          This attribute is deprecated. Please use a nested PropertyFormatter element.
+
+          Name of a formatter class for the appropriate property value being displayed.
+
+          The class must implement the mondrian.spi.PropertyFormatter interface.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="caption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          A string being displayed instead of the name. Can be localized from Properties
+          file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Description of this member property. Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="dependsOnLevelValue" type="xs:boolean" default="false" > <!-- TODO the default is not defined in XOM. It's default to false because the Boolean( String s) constructor returns false for any value other than "true" (case ignored) -->
+      <xs:annotation>
+        <xs:documentation>
+          Should be set to true if the value of the property is functionally dependent on the level value.
+          This permits the associated property column to be omitted from the GROUP BY clause
+          (if the database permits columns in the SELECT that are not in the GROUP BY).
+          This can be a significant performance enhancement on some databases, such as MySQL.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:sequence>
+      <xs:element name="PropertyFormatter" type="PropertyFormatterType" minOccurs="0"/> <!-- New -->
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="RoleType">
     <xs:annotation>
       <xs:documentation>
@@ -1718,18 +1788,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="PropertyType">
-    <xs:sequence>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="column" type="xs:string" minOccurs="0"/>
-      <xs:element name="type" type="xs:string" minOccurs="0"/>
-      <xs:element name="formatter" type="xs:string" minOccurs="0"/>
-      <xs:element name="caption" type="xs:string" minOccurs="0"/>
-      <xs:element name="description" type="xs:string" minOccurs="0"/>
-      <xs:element name="dependsOnLevelValue" type="xs:boolean" minOccurs="0"/>
-      <xs:element name="propertyFormatter" type="propertyFormatter" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
+
 
 
 
