@@ -1933,7 +1933,7 @@
       <xs:element name="visible" type="xs:boolean" minOccurs="0"/>
       <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
       <xs:element name="formulaElement" type="formula" minOccurs="0"/>
-      <xs:element name="cellFormatter" type="cellFormatter" minOccurs="0"/>
+      <xs:element name="cellFormatter" type="CellFormatterType" minOccurs="0"/>
       <xs:element name="memberProperties" type="CalculatedMemberPropertyType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
