@@ -1403,7 +1403,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="CellFormatterType">
+  <xs:complexType name="CellFormatterType"> <!--TODO does not add anything to ElementFormatterType. Can probably be deleted for simplification. -->
     <xs:annotation>
       <xs:documentation>
         Plugin that formats the values of cells.
@@ -1418,7 +1418,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="MemberFormatterType">
+  <xs:complexType name="MemberFormatterType"> <!--TODO does not add anything to ElementFormatterType. Can probably be deleted for simplification. -->
     <xs:annotation>
       <xs:documentation>
         Plugin that formats members.
@@ -1433,7 +1433,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="PropertyFormatterType">
+  <xs:complexType name="PropertyFormatterType"> <!--TODO does not add anything to ElementFormatterType. Can probably be deleted for simplification. -->
     <xs:annotation>
       <xs:documentation>
         Plugin that formats properties.
