@@ -1624,7 +1624,19 @@
       </xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="array" type="RowsType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+      <xs:element name="array" type="RowType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RowType">
+    <xs:annotation>
+      <xs:documentation>
+        Row definition for an inline table.
+        Must have one Column for each ColumnDef in the InlineTable.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="values" type="ValueType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
     </xs:sequence>
   </xs:complexType>
 
@@ -1871,14 +1883,6 @@
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
-  </xs:complexType>
-
-
-
-  <xs:complexType name="row">
-    <xs:sequence>
-      <xs:element name="values" type="ValueType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
   </xs:complexType>
 
 
