@@ -1022,15 +1022,9 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="script" type="ScriptType" ><!-- TODO does not exist in mondrian.xsd -->
-      <xs:annotation>
-        <xs:documentation>
-          Script to implement this user-defined function.
-          <p>Either the "Script" element or the "className" attribute
-          must be specified.</p>
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:sequence>
+      <xs:element name="script" type="ScriptType" minOccurs="0" /> <!-- TODO does not exist in mondrian.xsd -->
+    </xs:sequence>
   </xs:complexType>
 
   <!-- endregion: Types Up from here are processed -->
