@@ -1026,6 +1026,28 @@
     </xs:attribute>
   </xs:complexType>
 
+  <xs:complexType name="ElementFormatterType" abstract="true"> <!--TODO does not exist in mondrian.xsd -->
+    <xs:annotation>
+      <xs:documentation>
+        Abstract type just in order to avoid duplication.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="className" type="xs:string" >
+      <xs:annotation>
+        <xs:documentation>
+          Name of the class which implements this formatter.
+          Must implement the corresponding SPI
+          interface.
+          <p>Either the "Script" element or the "className" attribute
+          must be specified.</p>
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:sequence>
+      <xs:element name="script" type="ScriptType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -1110,12 +1132,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="elementFormatter" abstract="true">
-    <xs:sequence>
-      <xs:element name="className" type="xs:string" minOccurs="0"/>
-      <xs:element name="script" type="ScriptType" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
+
 
 
   <xs:complexType name="memberFormatter">
