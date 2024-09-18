@@ -1280,6 +1280,53 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="CalculatedMemberPropertyType">
+    <xs:annotation>
+      <xs:documentation>
+        Property of a calculated member defined against a cube. It must have either an expression or a value.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Name of this member property.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="caption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          A string being displayed instead of the Properties's name.
+          Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Description of this calculated member property. Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="expression" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          MDX expression which defines the value of this property.
+          If the expression is a constant string, you could enclose it in quotes,
+          or just specify the 'value' attribute instead.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="value" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Value of this property. If the value is not constant,
+          specify the 'expression' attribute instead.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <xs:complexType name="RoleType">
     <xs:annotation>
       <xs:documentation>
@@ -1988,15 +2035,7 @@
   </xs:complexType>
 
 
-  <xs:complexType name="CalculatedMemberPropertyType">
-    <xs:sequence>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="caption" type="xs:string" minOccurs="0"/>
-      <xs:element name="description" type="xs:string" minOccurs="0"/>
-      <xs:element name="expression" type="xs:string" minOccurs="0"/>
-      <xs:element name="value" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
+
 
 
 
