@@ -1002,6 +1002,23 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:complexType name="ClosureType">
+    <xs:annotation>
+      <xs:documentation>
+        Specifies the transitive closure of a parent-child hierarchy.
+        Optional, but recommended for better performance.
+        The closure is provided as a set of (parent/child) pairs:
+        since it is the transitive closure these are actually (ancestor/descendant) pairs.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="parentColumn" type="xs:string" use="required"/>
+    <xs:attribute name="childColumn" type="xs:string" use="required"/>
+
+    <xs:sequence>
+      <xs:element name="Table" type="TableType" minOccurs="1" maxOccurs="1" />
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="RoleType">
     <xs:annotation>
       <xs:documentation>
@@ -1694,14 +1711,6 @@
       <xs:element name="description" type="xs:string" minOccurs="0"/>
       <xs:element name="dependsOnLevelValue" type="xs:boolean" minOccurs="0"/>
       <xs:element name="propertyFormatter" type="propertyFormatter" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="ClosureType">
-    <xs:sequence>
-      <xs:element name="parentColumn" type="xs:string" minOccurs="0"/>
-      <xs:element name="childColumn" type="xs:string" minOccurs="0"/>
-      <xs:element name="table" type="TableType" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
 
