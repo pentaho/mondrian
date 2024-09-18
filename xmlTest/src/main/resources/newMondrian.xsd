@@ -1579,8 +1579,42 @@
       </xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="array" type="columnDef" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+      <xs:element name="array" type="ColumnDefType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
     </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ColumnDefType">
+    <xs:annotation>
+      <xs:documentation>
+        Column definition for an inline table.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string" use="required"> <!-- TODO not required in mondrian.xsd -->
+      <xs:annotation>
+        <xs:documentation>
+          Name of the column.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" use="required"> <!-- TODO not required in mondrian.xsd -->
+      <xs:annotation>
+        <xs:documentation>
+          Type of the column:
+          String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+        </xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="String"/>
+          <xs:enumeration value="Numeric"/>
+          <xs:enumeration value="Integer"/>
+          <xs:enumeration value="Boolean"/>
+          <xs:enumeration value="Date"/>
+          <xs:enumeration value="Time"/>
+          <xs:enumeration value="Timestamp"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="ValueType">
@@ -1842,12 +1876,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="columnDef">
-    <xs:sequence>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="type" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
+
 
 
 
