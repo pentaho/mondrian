@@ -1089,6 +1089,112 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="MeasureType">
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Name of this measure.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="column" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Column which is source of this measure's values. If not specified,
+          a measure expression must be specified.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="datatype">
+      <xs:annotation>
+        <xs:documentation>
+          The datatype of this measure: String, Numeric, Integer.
+          The default datatype of a measure is 'Integer' if the measure's aggregator is 'Count', otherwise it is 'Numeric'.
+        </xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="String"/>
+          <xs:enumeration value="Numeric"/>
+          <xs:enumeration value="Integer"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="formatString" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Format string with which to format cells of this measure.
+          For more details, see the mondrian.util.Format class.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="aggregator" use="required"> <!-- TODO MondrianDef allows any value. We restricted values according to comments and did not include "distinct count" as a possible value because it is deprecated. -->
+      <xs:annotation>
+        <xs:documentation>
+          Aggregation function. Allowed values are "sum", "count", "min", "max", "avg", and "distinct-count".
+          ("distinct count" is allowed for backwards compatibility, but is deprecated because XML
+          enumerated attributes in a DTD cannot legally contain spaces.)
+        </xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="sum"/>
+          <xs:enumeration value="count"/>
+          <xs:enumeration value="min"/>
+          <xs:enumeration value="max"/>
+          <xs:enumeration value="avg"/>
+          <xs:enumeration value="distinct-count"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="formatter" type="xs:string" > <!-- TODO couldn't find a good way to mark as deprecated. Check if there is a reasonable way to do it -->
+      <xs:annotation>
+        <xs:documentation>
+          This attribute is deprecated. Please use a nested CellFormatter element.
+
+          Name of a formatter class for the member labels being displayed.
+          The class must implement the mondrian.olap.CellFormatter interface.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="caption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          A string being displayed instead of the name.
+          Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Description of this measure. Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="visible" type="xs:boolean"> <!-- New --> <!-- TODO XOM does not define a default value. MondrianDef will use the Boolean constructor which will return false for null values. However the default value should be true...  Some XOM elements define true as the default value. Check "visible" attributes of other elements -->
+      <xs:annotation>
+        <xs:documentation>
+          Whether this member is visible in the user-interface. Default true. <!-- TODO Although comment says default its true, its false because XOM is not defining a default value. -->
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:element name="MeasureExpression" type="ExpressionViewType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            The SQL expression used to calculate a measure.
+            Must be specified if a source column is not specified.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="CellFormatter" type="CellFormatterType" minOccurs="0"/> <!-- New -->
+      <xs:element name="CalculatedMemberProperty" type="CalculatedMemberPropertyType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="RoleType">
     <xs:annotation>
       <xs:documentation>
@@ -1742,7 +1848,7 @@
 
 
 
-  <xs:complexType name="calculatedMemberProperty">
+  <xs:complexType name="CalculatedMemberPropertyType">
     <xs:sequence>
       <xs:element name="name" type="xs:string" minOccurs="0"/>
       <xs:element name="caption" type="xs:string" minOccurs="0"/>
@@ -1766,27 +1872,11 @@
       <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
       <xs:element name="formulaElement" type="formula" minOccurs="0"/>
       <xs:element name="cellFormatter" type="cellFormatter" minOccurs="0"/>
-      <xs:element name="memberProperties" type="calculatedMemberProperty" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="memberProperties" type="CalculatedMemberPropertyType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="MeasureType">
-    <xs:sequence>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="column" type="xs:string" minOccurs="0"/>
-      <xs:element name="datatype" type="xs:string" minOccurs="0"/>
-      <xs:element name="formatString" type="xs:string" minOccurs="0"/>
-      <xs:element name="aggregator" type="xs:string" minOccurs="0"/>
-      <xs:element name="formatter" type="xs:string" minOccurs="0"/>
-      <xs:element name="caption" type="xs:string" minOccurs="0"/>
-      <xs:element name="description" type="xs:string" minOccurs="0"/>
-      <xs:element name="visible" type="xs:boolean" minOccurs="0"/>
-      <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="measureExp" type="measureExpression" minOccurs="0"/>
-      <xs:element name="cellFormatter" type="cellFormatter" minOccurs="0"/>
-      <xs:element name="memberProperties" type="calculatedMemberProperty" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
+
 
 
 
