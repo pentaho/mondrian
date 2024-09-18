@@ -734,6 +734,274 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:complexType name="LevelType">
+
+    <xs:attribute name="approxRowCount" type="xs:integer">
+      <xs:annotation>
+        <xs:documentation>
+          The estimated number of members in this level. Setting this property improves
+          the performance of MDSCHEMA_LEVELS, MDSCHEMA_HIERARCHIES
+          and MDSCHEMA_DIMENSIONS XMLA requests.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="visible" type="xs:boolean" default="true"> <!-- New -->
+      <xs:annotation>
+        <xs:documentation>
+          Whether this level is visible in the user-interface. Default true.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="table" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the table that the column comes from. If this hierarchy
+          is based upon just one table, defaults to the name of that table;
+          otherwise, it is required. Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="column" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the column which holds the unique identifier of this level.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nameColumn" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the column which holds the user identifier of this level.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ordinalColumn" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the column which holds member ordinals.
+          If this column is not specified, the key column is used for ordering.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="parentColumn" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the column which references the parent member in a parent-child hierarchy.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nullParentValue" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Value which identifies null parents in a parent-child hierarchy. Typical values are 'NULL' and '0'.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="type" type="ColumnTypeType">
+      <xs:annotation>
+        <xs:documentation>
+          Indicates the type of this level's key column: String, Numeric, Integer, Boolean, Date,
+          Time or Timestamp. When generating SQL statements, Mondrian encloses values
+          for String columns in quotation marks, but leaves values for Integer and Numeric columns un-quoted.
+          Date, Time, and Timestamp values are quoted according to the SQL dialect.
+          For a SQL-compliant dialect, the values appear prefixed by their typename, for example, "DATE '2006-06-01'".
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="internalType" type="JavaTypeType"> <!-- New -->
+      <xs:annotation>
+        <xs:documentation>
+          Indicates the Java type that Mondrian uses to store this
+          level's key column. It also determines the JDBC method that
+          Mondrian will call to retrieve the column; for example, if the
+          Java type is 'int', Mondrian will call 'ResultSet.getInt(int)'.
+
+          Usually this attribute is not needed, because Mondrian can
+          choose a sensible type based on the type of the database
+          column.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="uniqueMembers" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation>
+          Whether members are unique across all parents. For example, zipcodes are unique across all states.
+          The first level's members are always unique.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="levelType" default="Regular">
+      <xs:annotation>
+        <xs:documentation>
+          Whether this is a regular or a time-related level. The value makes a difference to time-related
+          functions such as YTD (year-to-date).
+        </xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Regular"/>
+          <xs:enumeration value="TimeYears"/>
+          <xs:enumeration value="TimeHalfYears"/> <!-- New -->
+          <xs:enumeration value="TimeQuarters"/>
+          <xs:enumeration value="TimeMonths"/>
+          <xs:enumeration value="TimeWeeks"/>
+          <xs:enumeration value="TimeDays"/>
+          <xs:enumeration value="TimeHours"/> <!-- New -->
+          <xs:enumeration value="TimeMinutes"/> <!-- New -->
+          <xs:enumeration value="TimeSeconds"/> <!-- New -->
+          <xs:enumeration value="TimeUndefined"/> <!-- New -->
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="hideMemberIf" default="Never">
+      <xs:annotation>
+        <xs:documentation>
+          Condition which determines whether a member of this level is hidden. If a hierarchy has one
+          or more levels with hidden members, then it is possible that not all leaf members are the same
+          distance from the root, and it is termed a ragged hierarchy.
+          Allowable values are: Never (a member always appears; the default);
+          IfBlankName (a member doesn't appear if its name is null or empty); and
+          IfParentsName (a member appears unless its name matches the parent's.
+        </xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="Never"/>
+          <xs:enumeration value="IfBlankName"/>
+          <xs:enumeration value="IfParentsName"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="formatter" type="xs:string" > <!-- TODO couldn't find a good way to mark as deprecated. Check if there is a reasonable way to do it -->
+      <xs:annotation>
+        <xs:documentation>
+          This attribute is deprecated. Please use a nested MemberFormatter element.
+
+          Name of a formatter class for the member labels being displayed.
+          The class must implement the mondrian.olap.MemberFormatter interface.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="caption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          A string being displayed instead of the level's name. Can be localized from
+          Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Description of this level. Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="captionColumn" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the database column that holds the caption for the members.
+          See also the Caption sub-element.
+          If neither captionColumn nor Caption are specified, defaults to the nameColumn.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:element name="KeyExpression" type="ExpressionViewType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            The SQL expression used to populate this level's key.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="NameExpression" type="ExpressionViewType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            The SQL expression used to populate this level's name.
+            If not specified, the level's key is used.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="CaptionExpression" type="ExpressionViewType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            Expression which forms the caption of members.
+            If not specified, the level name is used.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="OrdinalExpression" type="ExpressionViewType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            The SQL expression used to populate this level's ordinal.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="ParentExpression" type="ExpressionViewType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            The SQL expression used to join to the parent member in a parent-child hierarchy.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="MemberFormatter" type="MemberFormatterType" minOccurs="0"/> <!-- New -->
+      <xs:element name="Closure" type="ClosureType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            Specifies the transitive closure of a parent-child hierarchy. Optional, but recommended
+            for better performance. The closure is provided as a set of (parent/child) pairs: since it is
+            the transitive closure these are actually (ancestor/descendant) pairs.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Property" type="PropertyType" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Member property.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="ColumnTypeType">
+    <xs:annotation>
+      <xs:documentation>
+        Indicates the type of a column: String, Numeric, Integer, Boolean, Date,
+        Time or Timestamp. When generating SQL statements, Mondrian encloses values
+        for String columns in quotation marks, but leaves values for Integer and Numeric columns un-quoted.
+        Date, Time, and Timestamp values are quoted according to the SQL dialect.
+        For a SQL-compliant dialect, the values appear prefixed by their typename, for example, "DATE '2006-06-01'".
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="String"/>
+      <xs:enumeration value="Numeric"/>
+      <xs:enumeration value="Integer"/>
+      <xs:enumeration value="Boolean"/>
+      <xs:enumeration value="Date"/>
+      <xs:enumeration value="Time"/>
+      <xs:enumeration value="Timestamp"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="JavaTypeType">
+    <xs:annotation>
+      <xs:documentation>
+        Indicates a Java type.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="int"/>
+      <xs:enumeration value="long"/>
+      <xs:enumeration value="Object"/>
+      <xs:enumeration value="String"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="RoleType">
     <xs:annotation>
       <xs:documentation>
@@ -1135,7 +1403,7 @@
 
 
 
-  <xs:complexType name="memberFormatter">
+  <xs:complexType name="MemberFormatterType">
     <xs:complexContent>
       <xs:extension base="elementFormatter">
         <xs:sequence/>
@@ -1154,13 +1422,13 @@
 
   <xs:complexType name="measureExpression">
     <xs:complexContent>
-      <xs:extension base="expressionView">
+      <xs:extension base="ExpressionViewType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="expressionView" abstract="true">
+  <xs:complexType name="ExpressionViewType" abstract="true">
     <xs:sequence>
       <xs:element name="expressions" type="sql" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
@@ -1187,7 +1455,7 @@
 
   <xs:complexType name="parentExpression">
     <xs:complexContent>
-      <xs:extension base="expressionView">
+      <xs:extension base="ExpressionViewType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -1195,7 +1463,7 @@
 
   <xs:complexType name="keyExpression">
     <xs:complexContent>
-      <xs:extension base="expressionView">
+      <xs:extension base="ExpressionViewType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
@@ -1416,7 +1684,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="property">
+  <xs:complexType name="PropertyType">
     <xs:sequence>
       <xs:element name="name" type="xs:string" minOccurs="0"/>
       <xs:element name="column" type="xs:string" minOccurs="0"/>
@@ -1429,7 +1697,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="closure">
+  <xs:complexType name="ClosureType">
     <xs:sequence>
       <xs:element name="parentColumn" type="xs:string" minOccurs="0"/>
       <xs:element name="childColumn" type="xs:string" minOccurs="0"/>
@@ -1437,36 +1705,6 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="LevelType">
-    <xs:sequence>
-      <xs:element name="approxRowCount" type="xs:string" minOccurs="0"/>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="visible" type="xs:boolean" minOccurs="0"/>
-      <xs:element name="table" type="xs:string" minOccurs="0"/>
-      <xs:element name="column" type="xs:string" minOccurs="0"/>
-      <xs:element name="nameColumn" type="xs:string" minOccurs="0"/>
-      <xs:element name="ordinalColumn" type="xs:string" minOccurs="0"/>
-      <xs:element name="parentColumn" type="xs:string" minOccurs="0"/>
-      <xs:element name="nullParentValue" type="xs:string" minOccurs="0"/>
-      <xs:element name="type" type="xs:string" minOccurs="0"/>
-      <xs:element name="internalType" type="xs:string" minOccurs="0"/>
-      <xs:element name="uniqueMembers" type="xs:boolean" minOccurs="0"/>
-      <xs:element name="levelType" type="xs:string" minOccurs="0"/>
-      <xs:element name="hideMemberIf" type="xs:string" minOccurs="0"/>
-      <xs:element name="formatter" type="xs:string" minOccurs="0"/>
-      <xs:element name="caption" type="xs:string" minOccurs="0"/>
-      <xs:element name="description" type="xs:string" minOccurs="0"/>
-      <xs:element name="captionColumn" type="xs:string" minOccurs="0"/>
-      <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="keyExp" type="keyExpression" minOccurs="0"/>
-      <xs:element name="nameExp" type="nameExpression" minOccurs="0"/>
-      <xs:element name="captionExp" type="captionExpression" minOccurs="0"/>
-      <xs:element name="ordinalExp" type="ordinalExpression" minOccurs="0"/>
-      <xs:element name="parentExp" type="parentExpression" minOccurs="0"/>
-      <xs:element name="memberFormatter" type="memberFormatter" minOccurs="0"/>
-      <xs:element name="closure" type="closure" minOccurs="0"/>
-      <xs:element name="properties" type="property" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
+
 
 </xs:schema>
