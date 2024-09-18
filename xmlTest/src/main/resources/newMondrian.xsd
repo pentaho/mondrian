@@ -1195,6 +1195,91 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="CalculatedMemberType">
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Name of this calculated member.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="formatString" type="xs:string"> <!-- TODO should this be deprecated given the new CellFormatter element? -->
+      <xs:annotation>
+        <xs:documentation>
+          Format string with which to format cells of this member.
+          For more details, see {@link mondrian.util.Format}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="caption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          A string being displayed instead of the name. Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="xs:string" >
+      <xs:annotation>
+        <xs:documentation>
+          Description of this calculated member. Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="formula" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          MDX expression which gives the value of this member. Equivalent to the Formula sub-element.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="dimension" type="xs:string"> <!-- TODO couldn't find a good way to mark as deprecated. Check if there is a reasonable way to do it -->
+      <!-- New / Change : this attribute was required in the old xsd, but is now optional -->
+      <xs:annotation>
+        <xs:documentation>
+          This attribute is deprecated. Please use hierarchy attribute instead.
+
+          Name of the dimension which this member belongs to.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="hierarchy" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Name of the hierarchy that this member belongs to.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute> <!-- New -->
+    <xs:attribute name="parent" type="xs:string"> <!-- New -->
+      <xs:annotation>
+        <xs:documentation>
+          Fully-qualified name of the parent member.
+          If not specified, the member will be at the lowest level
+          (besides the 'all' level) in the hierarchy.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="visible" type="xs:boolean" default="true"> <!-- TODO XOM does not define a default value. MondrianDef will use the Boolean constructor which will return false for null values. However the default value should be true...  Some XOM elements define true as the default value. Check "visible" attributes of other elements -->
+      <xs:annotation>
+        <xs:documentation>
+          Whether this member is visible in the user-interface. Default true.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:element name="Formula" type="xs:string" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            MDX expression which gives the value of this member.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="CellFormatter" type="CellFormatterType" minOccurs="0"/> <!-- New -->
+      <xs:element name="CalculatedMemberProperty" type="CalculatedMemberPropertyType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="RoleType">
     <xs:annotation>
       <xs:documentation>
@@ -1719,7 +1804,7 @@
       <xs:element name="description" type="xs:string" minOccurs="0"/>
       <xs:element name="formula" type="xs:string" minOccurs="0"/>
       <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="formulaElement" type="formula" minOccurs="0"/>
+      <xs:element name="formulaElement" type="FormulaType" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -1902,13 +1987,6 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="formula">
-    <xs:sequence>
-      <xs:element name="cdata" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
-
-
 
   <xs:complexType name="CalculatedMemberPropertyType">
     <xs:sequence>
@@ -1920,23 +1998,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="CalculatedMemberType">
-    <xs:sequence>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="formatString" type="xs:string" minOccurs="0"/>
-      <xs:element name="caption" type="xs:string" minOccurs="0"/>
-      <xs:element name="description" type="xs:string" minOccurs="0"/>
-      <xs:element name="formula" type="xs:string" minOccurs="0"/>
-      <xs:element name="dimension" type="xs:string" minOccurs="0"/>
-      <xs:element name="hierarchy" type="xs:string" minOccurs="0"/>
-      <xs:element name="parent" type="xs:string" minOccurs="0"/>
-      <xs:element name="visible" type="xs:boolean" minOccurs="0"/>
-      <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="formulaElement" type="formula" minOccurs="0"/>
-      <xs:element name="cellFormatter" type="CellFormatterType" minOccurs="0"/>
-      <xs:element name="memberProperties" type="CalculatedMemberPropertyType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
+
 
 
 
