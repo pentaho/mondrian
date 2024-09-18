@@ -1572,6 +1572,17 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="ColumnDefsType">
+    <xs:annotation>
+      <xs:documentation>
+        Holder for an array of ColumnDef elements
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="array" type="columnDef" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="ValueType">
     <xs:annotation>
       <xs:documentation>
@@ -1838,11 +1849,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="ColumnDefsType">
-    <xs:sequence>
-      <xs:element name="array" type="columnDef" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
+
 
 
 
