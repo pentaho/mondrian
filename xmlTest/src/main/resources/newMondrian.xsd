@@ -997,6 +997,42 @@
     <xs:attribute name="roleName" type="xs:string" use="required"/> <!-- TODO not required in mondrian.xsd -->
   </xs:complexType>
 
+  <xs:complexType name="UserDefinedFunctionType">
+    <xs:annotation>
+      <xs:documentation>
+        A <code>UserDefinedFunction</code> is a function which
+        extends the MDX language. It must be implemented by a Java
+        class which implements the interface
+        <a href="api/mondrian/spi/UserDefinedFunction.html">mondrian.spi.UserDefinedFunction</a>.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Name with which the user-defined function will be referenced in MDX expressions.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="className" type="xs:string" use="required"> <!-- TODO required in mondrian.xsd -->
+      <xs:annotation>
+        <xs:documentation>
+          Name of the class which implements this user-defined function.
+          Must implement the <code>mondrian.spi.UserDefinedFunction</code>
+          interface.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="script" type="ScriptType" ><!-- TODO does not exist in mondrian.xsd -->
+      <xs:annotation>
+        <xs:documentation>
+          Script to implement this user-defined function.
+          <p>Either the "Script" element or the "className" attribute
+          must be specified.</p>
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -1084,11 +1120,11 @@
   <xs:complexType name="elementFormatter" abstract="true">
     <xs:sequence>
       <xs:element name="className" type="xs:string" minOccurs="0"/>
-      <xs:element name="script" type="script" minOccurs="0"/>
+      <xs:element name="script" type="ScriptType" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="script">
+  <xs:complexType name="ScriptType">
     <xs:sequence>
       <xs:element name="language" type="xs:string" minOccurs="0"/>
       <xs:element name="cdata" type="xs:string" minOccurs="0"/>
@@ -1109,16 +1145,6 @@
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
-  </xs:complexType>
-
-
-
-  <xs:complexType name="UserDefinedFunctionType">
-    <xs:sequence>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="className" type="xs:string" minOccurs="0"/>
-      <xs:element name="script" type="script" minOccurs="0"/>
-    </xs:sequence>
   </xs:complexType>
 
 
