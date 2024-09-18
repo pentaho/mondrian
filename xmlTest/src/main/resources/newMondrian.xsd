@@ -1007,6 +1007,25 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="ScriptType">
+    <xs:annotation>
+      <xs:documentation>
+        Script fragment to implement an SPI such as user-defined function,
+        member formatter, cell formatter.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="language" type="xs:string" default="JavaScript">
+      <xs:annotation>
+        <xs:documentation>
+          The language of the script. Must be a supported scripting
+          language in the current JVM. See
+          {@link javax.script.ScriptEngineManager}.
+          Default value is 'JavaScript'.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -1098,12 +1117,6 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="ScriptType">
-    <xs:sequence>
-      <xs:element name="language" type="xs:string" minOccurs="0"/>
-      <xs:element name="cdata" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
 
   <xs:complexType name="memberFormatter">
     <xs:complexContent>
