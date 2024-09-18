@@ -1359,9 +1359,22 @@
       </xs:documentation>
     </xs:annotation>
     <xs:complexContent>
-      <xs:extension base="ElementFormatterType">
-        <xs:sequence/>
-      </xs:extension>
+      <xs:extension base="ElementFormatterType"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="PropertyFormatterType">
+    <xs:annotation>
+      <xs:documentation>
+        Plugin that formats properties.
+        It must be implemented by a Java
+        class which implements the interface
+        <a href="api/mondrian/spi/PropertyFormatter.html">mondrian.spi.PropertyFormatter</a>,
+        or by a script.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="ElementFormatterType"/>
     </xs:complexContent>
   </xs:complexType>
 
@@ -1437,16 +1450,6 @@
       <xs:element name="annotations" type="AnnotationsType" minOccurs="0"/>
       <xs:element name="formulaElement" type="formula" minOccurs="0"/>
     </xs:sequence>
-  </xs:complexType>
-
-
-
-  <xs:complexType name="propertyFormatter">
-    <xs:complexContent>
-      <xs:extension base="elementFormatter">
-        <xs:sequence/>
-      </xs:extension>
-    </xs:complexContent>
   </xs:complexType>
 
 
