@@ -1617,6 +1617,17 @@
     </xs:attribute>
   </xs:complexType>
 
+  <xs:complexType name="RowsType">
+    <xs:annotation>
+      <xs:documentation>
+        Holder for an array of Row elements
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="array" type="RowsType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="ValueType">
     <xs:annotation>
       <xs:documentation>
@@ -1869,17 +1880,6 @@
       <xs:element name="values" type="ValueType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
-
-  <xs:complexType name="RowsType">
-    <xs:sequence>
-      <xs:element name="array" type="row" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-
-
-
-
-
 
 
   <xs:complexType name="hint">
