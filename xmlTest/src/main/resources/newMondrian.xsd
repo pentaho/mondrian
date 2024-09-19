@@ -2080,7 +2080,7 @@
       </xs:annotation>
     </xs:attribute>
     <xs:sequence>
-      <xs:element name="factcount" type="AggFactCountType" minOccurs="1" maxOccurs="1">
+      <xs:element name="AggFactCount" type="AggColumnNameType" minOccurs="1" maxOccurs="1">
         <xs:annotation>
           <xs:documentation>
             What does the fact_count column look like.
@@ -2150,7 +2150,7 @@
     </xs:choice>
   </xs:group>
 
-  <xs:complexType name="AggColumnNameType" abstract="true"> <!-- TODO not abstract in mondrian.xsd. -->
+  <xs:complexType name="AggColumnNameType"> <!-- TODO no longer abstract, as it was in XOM, to use in AggFactCountType's place -->
     <xs:attribute name="column" type="xs:string" use="required" /> <!-- TODO Didn't add comment from MondrianXOM, as it seems to belong to one of the subclasses -->
   </xs:complexType>
 
@@ -2258,13 +2258,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="AggFactCountType">
-    <xs:complexContent>
-      <xs:extension base="AggColumnNameType">
-        <xs:sequence/>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
+
 
   <xs:complexType name="hint">
     <xs:sequence>
