@@ -2154,6 +2154,20 @@
     <xs:attribute name="column" type="xs:string" use="required" /> <!-- TODO Didn't add comment from MondrianXOM, as it seems to belong to one of the subclasses -->
   </xs:complexType>
 
+  <xs:complexType name="AggMeasureFactCountType">
+      <xs:complexContent>
+        <xs:extension base="AggColumnNameType">
+          <xs:attribute name="factColumn" type="xs:string" use="required">
+            <xs:annotation>
+              <xs:documentation>
+                The name of the fact column associated with a base measure.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:attribute>
+        </xs:extension>
+      </xs:complexContent>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -2249,13 +2263,6 @@
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
-  </xs:complexType>
-
-
-  <xs:complexType name="AggMeasureFactCountType">
-    <xs:sequence>
-      <xs:element name="factColumn" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
   </xs:complexType>
 
 
