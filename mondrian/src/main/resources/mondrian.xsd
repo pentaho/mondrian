@@ -1720,7 +1720,7 @@
     <xsd:complexType name="CalculatedMember">
         <xsd:sequence>
             <xsd:element name="Annotations" type="Annotations" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="Formula" minOccurs="0" maxOccurs="1">
+            <xsd:element name="FormulaT" minOccurs="0" maxOccurs="1">
                 <xsd:annotation>
                     <xsd:documentation>
                         MDX expression which gives the value of this member.
@@ -1868,7 +1868,7 @@
                 </xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="formula" type="xsd:string" use="optional">
+        <xsd:attribute name="formulaT" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation>
                     MDX expression which gives the value of this set. Equivalent to the Formula sub-element.
