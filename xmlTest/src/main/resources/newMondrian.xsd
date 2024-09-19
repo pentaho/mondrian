@@ -1878,6 +1878,16 @@
     </xs:attribute>
   </xs:complexType>
 
+  <xs:complexType name="AggLevelPropertyType"> <!-- TODO not present in mondrian.xsd -->
+    <xs:annotation>
+      <xs:documentation>
+        Member property.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="column" type="xs:string"/>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -1994,13 +2004,6 @@
   </xs:complexType>
 
 
-  <xs:complexType name="aggLevelProperty">
-    <xs:sequence>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="column" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
-
   <xs:complexType name="aggLevel">
     <xs:sequence>
       <xs:element name="column" type="xs:string" minOccurs="0"/>
@@ -2009,7 +2012,7 @@
       <xs:element name="name" type="xs:string" minOccurs="0"/>
       <xs:element name="nameColumn" type="xs:string" minOccurs="0"/>
       <xs:element name="collapsed" type="xs:boolean" minOccurs="0"/>
-      <xs:element name="properties" type="aggLevelProperty" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="properties" type="AggLevelPropertyType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
