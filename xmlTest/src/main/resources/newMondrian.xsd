@@ -1938,6 +1938,29 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="AggForeignKeyType">
+    <xs:annotation>
+      <xs:documentation>
+        The name of the column mapping from base fact table foreign key
+        to aggregate table foreign key.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="factColumn" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the base fact table foreign key.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="aggColumn" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the aggregate table foreign key.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -2055,13 +2078,6 @@
   </xs:complexType>
 
 
-  <xs:complexType name="aggForeignKey">
-    <xs:sequence>
-      <xs:element name="factColumn" type="xs:string" minOccurs="0"/>
-      <xs:element name="aggColumn" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
-
   <xs:complexType name="aggIgnoreColumn">
     <xs:complexContent>
       <xs:extension base="aggColumnName">
@@ -2115,9 +2131,9 @@
       <xs:element name="factcount" type="aggFactCount" minOccurs="0"/>
       <xs:element name="measuresfactcount" type="aggMeasureFactCount" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="ignoreColumns" type="aggIgnoreColumn" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="foreignKeys" type="aggForeignKey" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="foreignKeys" type="AggForeignKeyType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="measures" type="AggMeasureType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="levels" type="aggLevel" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="levels" type="AggLevelType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
