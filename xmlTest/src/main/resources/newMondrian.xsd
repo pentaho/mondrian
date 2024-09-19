@@ -1471,6 +1471,36 @@
     </xs:attribute>
   </xs:complexType>
 
+  <xs:complexType name="JoinType">
+    <xs:sequence>
+      <xs:group ref="RelationOrJoinGroup" minOccurs="2" maxOccurs="2">
+        <xs:annotation>
+          <xs:documentation>
+            The left and right relations or joins.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:group>
+    </xs:sequence>
+
+    <xs:attribute name="leftAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Defaults to left's alias if left is a table, otherwise required.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="leftKey" type="xs:string" use="required"/> <!-- TODO required by XOM not required in old xsd -->
+    <xs:attribute name="rightAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Defaults to right's alias if right is a table, otherwise required.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rightKey" type="xs:string" use="required"/> <!-- TODO required by XOM not required in old xsd -->
+
+  </xs:complexType>
+
   <xs:complexType name="RoleType">
     <xs:annotation>
       <xs:documentation>
@@ -2198,19 +2228,6 @@
           <xs:element name="tableHints" type="hint" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
   </xs:complexType>
-
-  <xs:complexType name="JoinType">
-    <xs:sequence>
-      <xs:element name="leftAlias" type="xs:string" minOccurs="0"/>
-      <xs:element name="leftKey" type="xs:string" minOccurs="0"/>
-      <xs:element name="rightAlias" type="xs:string" minOccurs="0"/>
-      <xs:element name="rightKey" type="xs:string" minOccurs="0"/>
-      <xs:element name="left" type="relationOrJoin" minOccurs="0"/>
-      <xs:element name="right" type="relationOrJoin" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
-
-
 
   <xs:complexType name="hint">
     <xs:sequence>
