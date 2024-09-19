@@ -1392,6 +1392,31 @@
     <xs:attribute name="value" type="xs:string" use="required"/> <!-- TODO optional in XOM -->
   </xs:complexType>
 
+  <xs:group name="RelationGroup">
+    <xs:annotation>
+      <xs:documentation>
+        A Table or a View or an InlineTable.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:element name="Table" type="TableType"/>
+      <xs:element name="View" type="ViewType"/>
+      <xs:element name="InlineTable" type="InlineTableType"/>
+    </xs:choice>
+  </xs:group>
+
+  <xs:group name="RelationOrJoinGroup" >
+    <xs:annotation>
+      <xs:documentation>
+        A Relation or a Join.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+      <xs:group ref="RelationGroup"/>
+      <xs:element name="Join" type="JoinType"/>
+    </xs:choice>
+  </xs:group>
+
   <xs:complexType name="RoleType">
     <xs:annotation>
       <xs:documentation>
@@ -1991,22 +2016,6 @@
 
 
   <!-- endregion  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
-
-
-  <xs:group name="RelationGroup">
-    <xs:choice>
-        <xs:element name="Table" type="TableType"/>
-        <xs:element name="View" type="ViewType"/>
-        <xs:element name="InlineTable" type="InlineTableType"/>
-    </xs:choice>
-  </xs:group>
-
-  <xs:group name="RelationOrJoinGroup" >
-    <xs:choice>
-      <xs:group ref="RelationGroup"/> <!-- TODO check this group within a group for choices. In the other xsd everything is "flat" and the top group is named Relation -->
-      <xs:element name="Join" type="JoinType"/>
-    </xs:choice>
-  </xs:group>
 
 
   <xs:complexType name="TableType">
