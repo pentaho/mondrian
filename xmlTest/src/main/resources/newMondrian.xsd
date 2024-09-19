@@ -2084,6 +2084,23 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:complexType name="AggPatternType">
+    <xs:complexContent>
+      <xs:extension base="AggTableType">
+        <xs:attribute name="pattern" type="xs:string" use="required">
+          <xs:annotation>
+            <xs:documentation>
+             A Table pattern used to define a set of aggregate tables.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:sequence>
+          <xs:element name="excludes" type="AggExcludeType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -2205,19 +2222,6 @@
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
-
-
-  <xs:complexType name="aggPattern">
-    <xs:complexContent>
-      <xs:extension base="AggTableType">
-        <xs:sequence>
-          <xs:element name="pattern" type="xs:string" minOccurs="0"/>
-          <xs:element name="excludes" type="AggExcludeType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
 
   <xs:complexType name="hint">
     <xs:sequence>
