@@ -1961,6 +1961,30 @@
     </xs:attribute>
   </xs:complexType>
 
+  <xs:complexType name="AggExcludeType">
+    <xs:attribute name="pattern" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          A Table pattern not to be matched.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          The Table name not to be matched.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ignorecase" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>
+          Whether or not the match should ignore case.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -1991,7 +2015,7 @@
           <xs:element name="schema" type="xs:string" minOccurs="0"/>
           <xs:element name="alias" type="xs:string" minOccurs="0"/>
           <xs:element name="filter" type="sql" minOccurs="0"/>
-          <xs:element name="aggExcludes" type="aggExclude" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="aggExcludes" type="AggExcludeType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="aggTables" type="aggTable" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="tableHints" type="hint" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
@@ -2106,20 +2130,13 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="aggExclude">
-    <xs:sequence>
-      <xs:element name="pattern" type="xs:string" minOccurs="0"/>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="ignorecase" type="xs:boolean" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
 
   <xs:complexType name="aggPattern">
     <xs:complexContent>
       <xs:extension base="aggTable">
         <xs:sequence>
           <xs:element name="pattern" type="xs:string" minOccurs="0"/>
-          <xs:element name="excludes" type="aggExclude" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="excludes" type="AggExcludeType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
