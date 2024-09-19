@@ -2108,6 +2108,10 @@
     </xs:choice>
   </xs:group>
 
+  <xs:complexType name="AggColumnNameType" abstract="true"> <!-- TODO not abstract in mondrian.xsd. -->
+    <xs:attribute name="column" type="xs:string" use="required" /> <!-- TODO Didn't add comment from MondrianXOM, as it seems to belong to one of the subclasses -->
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -2123,7 +2127,7 @@
           <xs:element name="alias" type="xs:string" minOccurs="0"/>
           <xs:element name="filter" type="SQLType" minOccurs="0"/>
           <xs:element name="aggExcludes" type="AggExcludeType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="aggTables" type="aggTable" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="aggTables" type="AggTableType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="tableHints" type="hint" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
   </xs:complexType>
@@ -2204,17 +2208,12 @@
 
   <xs:complexType name="AggIgnoreColumnType">
     <xs:complexContent>
-      <xs:extension base="aggColumnName">
+      <xs:extension base="AggColumnNameType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="aggColumnName" abstract="true">
-    <xs:sequence>
-      <xs:element name="column" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
 
   <xs:complexType name="AggMeasureFactCountType">
     <xs:sequence>
@@ -2224,7 +2223,7 @@
 
   <xs:complexType name="AggFactCountType">
     <xs:complexContent>
-      <xs:extension base="aggColumnName">
+      <xs:extension base="AggColumnNameType">
         <xs:sequence/>
       </xs:extension>
     </xs:complexContent>
