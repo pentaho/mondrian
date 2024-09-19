@@ -2094,7 +2094,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="AggIgnoreColumn" type="AggIgnoreColumnType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="AggIgnoreColumn" type="AggColumnNameType" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="AggForeignKey" type="AggForeignKeyType" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="AggMeasure" type="AggMeasureType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
       <xs:element name="AggLevel" type="AggLevelType" minOccurs="0" maxOccurs="unbounded"/>
@@ -2255,16 +2255,6 @@
       <xs:element name="name" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
-
-
-  <xs:complexType name="AggIgnoreColumnType">
-    <xs:complexContent>
-      <xs:extension base="AggColumnNameType">
-        <xs:sequence/>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
 
 
   <xs:complexType name="hint">
