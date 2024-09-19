@@ -2010,6 +2010,43 @@
     </xs:attribute>
   </xs:complexType>
 
+  <xs:complexType name="AggTableType" abstract="true">
+    <xs:annotation>
+      <xs:documentation>
+        A definition of an aggregate table for a base fact table.
+        This aggregate table must be in the same schema as the
+        base fact table.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="ignorecase" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>
+          Whether or not the match should ignore case.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:sequence>
+      <xs:element name="factcount" type="AggFactCountType" minOccurs="1" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            What does the fact_count column look like.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="measuresfactcount" type="AggMeasureFactCountType" minOccurs="0" maxOccurs="unbounded"> <!-- TODO not present in mondrian.xsd -->
+        <xs:annotation>
+          <xs:documentation>
+            What does the fact_count column look like.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="ignoreColumns" type="AggIgnoreColumnType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="foreignKeys" type="AggForeignKeyType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="measures" type="AggMeasureType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+      <xs:element name="levels" type="AggLevelType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -2111,7 +2148,7 @@
   </xs:complexType>
 
 
-  <xs:complexType name="aggIgnoreColumn">
+  <xs:complexType name="AggIgnoreColumnType">
     <xs:complexContent>
       <xs:extension base="aggColumnName">
         <xs:sequence/>
@@ -2125,13 +2162,13 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="aggMeasureFactCount">
+  <xs:complexType name="AggMeasureFactCountType">
     <xs:sequence>
       <xs:element name="factColumn" type="xs:string" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="aggFactCount">
+  <xs:complexType name="AggFactCountType">
     <xs:complexContent>
       <xs:extension base="aggColumnName">
         <xs:sequence/>
@@ -2142,7 +2179,7 @@
 
   <xs:complexType name="aggPattern">
     <xs:complexContent>
-      <xs:extension base="aggTable">
+      <xs:extension base="AggTableType">
         <xs:sequence>
           <xs:element name="pattern" type="xs:string" minOccurs="0"/>
           <xs:element name="excludes" type="AggExcludeType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
@@ -2151,21 +2188,11 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="aggTable" abstract="true">
-    <xs:sequence>
-      <xs:element name="ignorecase" type="xs:boolean" minOccurs="0"/>
-      <xs:element name="factcount" type="aggFactCount" minOccurs="0"/>
-      <xs:element name="measuresfactcount" type="aggMeasureFactCount" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="ignoreColumns" type="aggIgnoreColumn" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="foreignKeys" type="AggForeignKeyType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="measures" type="AggMeasureType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="levels" type="AggLevelType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
+
 
   <xs:complexType name="aggName">
     <xs:complexContent>
-      <xs:extension base="aggTable">
+      <xs:extension base="AggTableType">
         <xs:sequence>
           <xs:element name="name" type="xs:string" minOccurs="0"/>
           <xs:element name="approxRowCount" type="xs:string" minOccurs="0"/>
