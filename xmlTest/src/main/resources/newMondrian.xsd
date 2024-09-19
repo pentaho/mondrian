@@ -2168,6 +2168,17 @@
       </xs:complexContent>
   </xs:complexType>
 
+  <xs:complexType name="ExpressionViewType"> <!-- TODO used this type for subclasses that were not adding anything -->
+    <xs:annotation>
+      <xs:documentation>
+        A collection of SQL expressions, one per dialect.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="SQL" type="SQLType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
@@ -2200,54 +2211,6 @@
   </xs:complexType>
 
 
-
-
-
-
-
-  <xs:complexType name="measureExpression">
-    <xs:complexContent>
-      <xs:extension base="ExpressionViewType">
-        <xs:sequence/>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="ExpressionViewType" abstract="true">
-    <xs:sequence>
-      <xs:element name="expressions" type="SQLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-
-
-
-  <xs:complexType name="captionExpression">
-    <xs:sequence/>
-  </xs:complexType>
-
-  <xs:complexType name="nameExpression">
-    <xs:sequence/>
-  </xs:complexType>
-
-  <xs:complexType name="ordinalExpression">
-    <xs:sequence/>
-  </xs:complexType>
-
-  <xs:complexType name="parentExpression">
-    <xs:complexContent>
-      <xs:extension base="ExpressionViewType">
-        <xs:sequence/>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="keyExpression">
-    <xs:complexContent>
-      <xs:extension base="ExpressionViewType">
-        <xs:sequence/>
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
 
   <xs:complexType name="hint">
     <xs:sequence>
