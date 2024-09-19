@@ -1417,6 +1417,18 @@
     </xs:choice>
   </xs:group>
 
+  <xs:complexType name="ViewType">
+    <xs:annotation>
+      <xs:documentation>
+        A collection of SQL statements, one per dialect.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:attribute name="alias" type="xs:string" use="required" />
+    <xs:sequence>
+      <xs:element name="SQL" type="SQLType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
   <xs:complexType name="RoleType">
     <xs:annotation>
       <xs:documentation>
@@ -2060,18 +2072,11 @@
           <xs:element name="name" type="xs:string" minOccurs="0"/>
           <xs:element name="schema" type="xs:string" minOccurs="0"/>
           <xs:element name="alias" type="xs:string" minOccurs="0"/>
-          <xs:element name="filter" type="sql" minOccurs="0"/>
+          <xs:element name="filter" type="SQLType" minOccurs="0"/>
           <xs:element name="aggExcludes" type="AggExcludeType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="aggTables" type="aggTable" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
           <xs:element name="tableHints" type="hint" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="ViewType">
-    <xs:sequence>
-      <xs:element name="alias" type="xs:string" minOccurs="0"/>
-      <xs:element name="selects" type="sql" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="JoinType">
@@ -2101,11 +2106,11 @@
 
   <xs:complexType name="ExpressionViewType" abstract="true">
     <xs:sequence>
-      <xs:element name="expressions" type="sql" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="expressions" type="SQLType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="sql">
+  <xs:complexType name="SQLType">
     <xs:sequence>
       <xs:element name="dialect" type="xs:string" minOccurs="0"/>
       <xs:element name="cdata" type="xs:string" minOccurs="0"/>
