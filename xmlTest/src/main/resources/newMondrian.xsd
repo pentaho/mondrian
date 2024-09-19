@@ -1888,9 +1888,60 @@
     <xs:attribute name="column" type="xs:string"/>
   </xs:complexType>
 
+<xs:complexType name="AggLevelType">
+    <xs:attribute name="column" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation> <!-- TODO different comment in mondrian.xsd -->
+          The name of the column mapping to the level name.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="ordinalColumn" type="xs:string"> <!-- TODO not present in mondrian.xsd -->
+      <xs:annotation>
+        <xs:documentation>
+          The ordinal column for this level.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="captionColumn" type="xs:string"> <!-- TODO not present in mondrian.xsd -->
+      <xs:annotation>
+        <xs:documentation>
+          The name of the database column that holds the caption for this level.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation> <!-- TODO different comment in mondrian.xsd -->
+          The name of the Dimension Hierarchy level.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="nameColumn" type="xs:string"> <!-- TODO not present in mondrian.xsd -->
+      <xs:annotation>
+        <xs:documentation>
+          The name of the column which holds the user identifier of
+          this level.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="collapsed" type="xs:boolean" default="true"> <!-- TODO not present in mondrian.xsd -->
+      <xs:annotation>
+        <xs:documentation>
+          Whether this is a collapsed level. The parents of that level
+          are also present in the aggregation table.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:sequence>
+      <xs:element name="properties" type="AggLevelPropertyType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
+
 
   <!-- endregion  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
 
@@ -2003,18 +2054,6 @@
     </xs:sequence>
   </xs:complexType>
 
-
-  <xs:complexType name="aggLevel">
-    <xs:sequence>
-      <xs:element name="column" type="xs:string" minOccurs="0"/>
-      <xs:element name="ordinalColumn" type="xs:string" minOccurs="0"/>
-      <xs:element name="captionColumn" type="xs:string" minOccurs="0"/>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="nameColumn" type="xs:string" minOccurs="0"/>
-      <xs:element name="collapsed" type="xs:boolean" minOccurs="0"/>
-      <xs:element name="properties" type="AggLevelPropertyType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
 
   <xs:complexType name="aggForeignKey">
     <xs:sequence>
