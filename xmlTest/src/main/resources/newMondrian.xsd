@@ -1853,11 +1853,34 @@
     </xs:attribute>
   </xs:complexType>
 
+  <xs:complexType name="AggMeasureType">
+    <xs:attribute name="column" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the column mapping to the measure name.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="name" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the Cube measure.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="rollupType" type="xs:string"> <!-- TODO not present in mondrian.xsd -->
+      <xs:annotation>
+        <xs:documentation> <!-- TODO should this be an enum? it is a plain string in XOM-->
+          Explicitly define rollup type. Available types: AvgFromSum, AvgFromAvg, SumFromAvg.
+          Will be ignored if wrong type is chosen.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
-
-
 
   <!-- endregion  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
 
@@ -1970,13 +1993,6 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="aggMeasure">
-    <xs:sequence>
-      <xs:element name="column" type="xs:string" minOccurs="0"/>
-      <xs:element name="name" type="xs:string" minOccurs="0"/>
-      <xs:element name="rollupType" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
 
   <xs:complexType name="aggLevelProperty">
     <xs:sequence>
@@ -2058,7 +2074,7 @@
       <xs:element name="measuresfactcount" type="aggMeasureFactCount" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="ignoreColumns" type="aggIgnoreColumn" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="foreignKeys" type="aggForeignKey" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="measures" type="aggMeasure" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="measures" type="AggMeasureType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="levels" type="aggLevel" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
