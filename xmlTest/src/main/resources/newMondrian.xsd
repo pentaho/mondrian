@@ -2101,6 +2101,13 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:group name="AggTableGroup">
+    <xs:choice>
+      <xs:element name="aggName" type="AggNameType"/>
+      <xs:element name="aggPattern" type="AggPatternType"/>
+    </xs:choice>
+  </xs:group>
+
   <!-- endregion: Types Up from here are processed -->
 
   <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
