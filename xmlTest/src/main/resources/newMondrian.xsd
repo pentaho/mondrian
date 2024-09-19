@@ -14,6 +14,31 @@
         user-defined functions.
       </xs:documentation>
     </xs:annotation>
+
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+
+      <xs:element name="Parameter" type="ParameterType" minOccurs="0" maxOccurs="unbounded"/>
+
+      <xs:element name="Dimension" type="DimensionType" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Dimension available to be used by any cube of this schema.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+
+      <xs:element name="Cube" type="CubeType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+
+      <xs:element name="VirtualCube" type="VirtualCubeType" minOccurs="0" maxOccurs="unbounded"/>
+
+      <xs:element name="NamedSet" type="NamedSetType" minOccurs="0" maxOccurs="unbounded"/>
+
+      <xs:element name="Role" type="RoleType" minOccurs="0" maxOccurs="unbounded"/>
+
+      <xs:element name="UserDefinedFunction" type="UserDefinedFunctionType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
@@ -47,29 +72,7 @@
       </xs:annotation>
     </xs:attribute>
 
-    <xs:sequence>
-      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
 
-      <xs:element name="Parameter" type="ParameterType" minOccurs="0" maxOccurs="unbounded"/>
-
-      <xs:element name="Dimension" type="DimensionType" minOccurs="0" maxOccurs="unbounded">
-        <xs:annotation>
-          <xs:documentation>
-            Dimension available to be used by any cube of this schema.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-
-      <xs:element name="Cube" type="CubeType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
-
-      <xs:element name="VirtualCube" type="VirtualCubeType" minOccurs="0" maxOccurs="unbounded"/>
-
-      <xs:element name="NamedSet" type="NamedSetType" minOccurs="0" maxOccurs="unbounded"/>
-
-      <xs:element name="Role" type="RoleType" minOccurs="0" maxOccurs="unbounded"/>
-
-      <xs:element name="UserDefinedFunction" type="UserDefinedFunctionType" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="AnnotationsType">
@@ -84,7 +87,7 @@
   </xs:complexType>
 
   <xs:complexType name="AnnotationType" mixed="true">
-      <xs:attribute name="name" type="xs:string" minOccurs="0"/>
+      <xs:attribute name="name" type="xs:string"/>
   </xs:complexType>
 
   <xs:complexType name="ParameterType">
@@ -162,6 +165,9 @@
 
     <xs:complexContent>
       <xs:extension base="CubeDimensionType">
+        <xs:sequence>
+          <xs:element name="Hierarchy" type="HierarchyType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+        </xs:sequence>
 
         <xs:attribute name="type" default="StandardDimension">
           <xs:annotation>
@@ -191,9 +197,6 @@
           </xs:annotation>
         </xs:attribute >
 
-        <xs:sequence>
-          <xs:element name="Hierarchy" type="HierarchyType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
-        </xs:sequence>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -206,6 +209,10 @@
         dimension', in MSOLAP parlance), or a 'private dimension'.
       </xs:documentation>
     </xs:annotation>
+
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+    </xs:sequence>
 
     <xs:attribute name="name" use="required"/>
     <xs:attribute name="caption" type="xs:string">
@@ -251,9 +258,6 @@
       </xs:annotation>
     </xs:attribute>
 
-    <xs:sequence>
-      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="HierarchyType">
@@ -267,6 +271,19 @@
                 ]]>
       </xs:documentation>
     </xs:annotation>
+
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:group ref="RelationOrJoinGroup" minOccurs="0"> <!-- TODO check -->
+        <xs:annotation>
+          <xs:documentation>
+            The Table, Join (set of tables), View (SQL statement), or InlineTable which populates this hierarchy.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:group>
+      <xs:element name="Level" type="LevelType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+      <xs:element name="MemberReaderParameter" type="MemberReaderParameterType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
 
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
@@ -390,22 +407,54 @@
       </xs:annotation>
     </xs:attribute>
 
-
-    <xs:sequence>
-      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:group ref="RelationOrJoinGroup" minOccurs="0"> <!-- TODO check -->
-        <xs:annotation>
-          <xs:documentation>
-            The Table, Join (set of tables), View (SQL statement), or InlineTable which populates this hierarchy.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:group>
-      <xs:element name="Level" type="LevelType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
-      <xs:element name="MemberReaderParameter" type="MemberReaderParameterType" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="CubeType">
+
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:group ref="RelationGroup" minOccurs="1" maxOccurs="1"> <!-- New : the used group in the other xsd is named FactTable and did not include the InlineTable element -->
+        <xs:annotation>
+          <xs:documentation>
+            The element from this group will represent the fact table of the cube.
+            The fact table is the source of all measures in this cube.
+            If this is a Table and the schema name is not present, table name is left unqualified.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:group>
+      <xs:choice minOccurs="1" maxOccurs="unbounded"> <!-- TODO check minOccurs="1" as MondrianDef does not require a Cube to have Dimensions -->
+        <!-- Dimensions -->
+        <xs:annotation>
+          <xs:documentation>
+            Dimensions available to be used by this cube.
+          </xs:documentation>
+        </xs:annotation>
+        <xs:element name="Dimension" type="DimensionType"/>
+        <xs:element name="DimensionUsage" type="DimensionUsageType"/>
+        <xs:element name="VirtualCubeDimension" type="VirtualCubeDimensionType"/> <!-- New --> <!-- TODO check if this should be here. It was NOT in the other xsd but MondrianDef allows for it. Also doesnt seem to make sense to have it and the comments for the CubeDimension say it can only be a shared or private dimension. -->
+      </xs:choice>
+      <xs:element name="Measure" type="MeasureType" minOccurs="1" maxOccurs="unbounded"> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+        <xs:annotation>
+          <xs:documentation>
+            Measure available to be used by this cube.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="CalculatedMember" type="CalculatedMemberType" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Calculated members in this cube.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="NamedSet" type="NamedSetType" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Named sets in this virtual cube.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
 
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
@@ -461,50 +510,6 @@
       </xs:annotation>
     </xs:attribute>
 
-    <xs:sequence>
-      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:group ref="RelationGroup" minOccurs="1" maxOccurs="1"> <!-- New : the used group in the other xsd is named FactTable and did not include the InlineTable element -->
-        <xs:annotation>
-          <xs:documentation>
-            The element from this group will represent the fact table of the cube.
-            The fact table is the source of all measures in this cube.
-            If this is a Table and the schema name is not present, table name is left unqualified.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:group>
-      <xs:choice minOccurs="1" maxOccurs="unbounded"> <!-- TODO check minOccurs="1" as MondrianDef does not require a Cube to have Dimensions -->
-        <!-- Dimensions -->
-        <xs:annotation>
-          <xs:documentation>
-            Dimensions available to be used by this cube.
-          </xs:documentation>
-          <xs:element name="Dimension" type="DimensionType"/>
-          <xs:element name="DimensionUsage" type="DimensionUsageType"/>
-          <xs:element name="VirtualCubeDimension" type="VirtualCubeDimensionType"/> <!-- New --> <!-- TODO check if this should be here. It was NOT in the other xsd but MondrianDef allows for it. Also doesnt seem to make sense to have it and the comments for the CubeDimension say it can only be a shared or private dimension. -->
-        </xs:annotation>
-      </xs:choice>
-      <xs:element name="Measure" type="MeasureType" minOccurs="1" maxOccurs="unbounded"> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
-        <xs:annotation>
-          <xs:documentation>
-            Measure available to be used by this cube.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="CalculatedMember" type="CalculatedMemberType" minOccurs="0" maxOccurs="unbounded">
-        <xs:annotation>
-          <xs:documentation>
-            Calculated members in this cube.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="NamedSet" type="NamedSetType" minOccurs="0" maxOccurs="unbounded">
-        <xs:annotation>
-          <xs:documentation>
-            Named sets in this virtual cube.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="VirtualCubeType">
@@ -513,43 +518,6 @@
         A VirtualCube is a set of dimensions and measures gleaned from other cubes.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="enabled" type="xs:boolean" default="true">
-      <xs:annotation>
-        <xs:documentation>
-          Whether this element is enabled - if true, then the Virtual Cube is realized otherwise it is ignored.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required"/> <!-- TODO check if this is required. It was in the other xsd but is optional in MondrianDef -->
-    <xs:attribute name="defaultMeasure" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>
-          The name of the measure that would be taken as the default measure of the cube.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="caption" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>
-          A string being displayed instead of the cube's name. Can be localized from Properties file using #{propertyname}.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="visible" type="xs:boolean" default="true"> <!-- New --> <!-- TODO check if we keep this -->
-      <xs:annotation>
-        <xs:documentation>
-          Whether this cube is visible in the user-interface.
-          Default true.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="description" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>
-          Description of this virtual cube. Can be localized from Properties file using #{propertyname}.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
 
     <xs:sequence>
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
@@ -612,6 +580,45 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
+
+    <xs:attribute name="enabled" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>
+          Whether this element is enabled - if true, then the Virtual Cube is realized otherwise it is ignored.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="name" type="xs:string" use="required"/> <!-- TODO check if this is required. It was in the other xsd but is optional in MondrianDef -->
+    <xs:attribute name="defaultMeasure" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          The name of the measure that would be taken as the default measure of the cube.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="caption" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          A string being displayed instead of the cube's name. Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="visible" type="xs:boolean" default="true"> <!-- New --> <!-- TODO check if we keep this -->
+      <xs:annotation>
+        <xs:documentation>
+          Whether this cube is visible in the user-interface.
+          Default true.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="description" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Description of this virtual cube. Can be localized from Properties file using #{propertyname}.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
   </xs:complexType>
 
   <xs:complexType name="CubeUsagesType">
@@ -671,6 +678,11 @@
         A VirtualCubeMeasure is a usage of a Measure in a VirtualCube.
       </xs:documentation>
     </xs:annotation>
+
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+    </xs:sequence>
+
     <xs:attribute name="cubeName" type="xs:string" use="required"> <!-- TODO not required in MondrianDef -->
       <xs:annotation>
         <xs:documentation>
@@ -693,9 +705,6 @@
       </xs:annotation>
     </xs:attribute>
 
-    <xs:sequence>
-      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="DimensionUsageType">
@@ -735,6 +744,64 @@
   </xs:complexType>
 
   <xs:complexType name="LevelType">
+
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:element name="KeyExpression" type="ExpressionViewType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            The SQL expression used to populate this level's key.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="NameExpression" type="ExpressionViewType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            The SQL expression used to populate this level's name.
+            If not specified, the level's key is used.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="CaptionExpression" type="ExpressionViewType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            Expression which forms the caption of members.
+            If not specified, the level name is used.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="OrdinalExpression" type="ExpressionViewType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            The SQL expression used to populate this level's ordinal.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="ParentExpression" type="ExpressionViewType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            The SQL expression used to join to the parent member in a parent-child hierarchy.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="MemberFormatter" type="MemberFormatterType" minOccurs="0"/> <!-- New -->
+      <xs:element name="Closure" type="ClosureType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            Specifies the transitive closure of a parent-child hierarchy. Optional, but recommended
+            for better performance. The closure is provided as a set of (parent/child) pairs: since it is
+            the transitive closure these are actually (ancestor/descendant) pairs.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="Property" type="PropertyType" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Member property.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
 
     <xs:attribute name="approxRowCount" type="xs:integer">
       <xs:annotation>
@@ -908,63 +975,6 @@
       </xs:annotation>
     </xs:attribute>
 
-    <xs:sequence>
-      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="KeyExpression" type="ExpressionViewType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            The SQL expression used to populate this level's key.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="NameExpression" type="ExpressionViewType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            The SQL expression used to populate this level's name.
-            If not specified, the level's key is used.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="CaptionExpression" type="ExpressionViewType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            Expression which forms the caption of members.
-            If not specified, the level name is used.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="OrdinalExpression" type="ExpressionViewType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            The SQL expression used to populate this level's ordinal.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="ParentExpression" type="ExpressionViewType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            The SQL expression used to join to the parent member in a parent-child hierarchy.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="MemberFormatter" type="MemberFormatterType" minOccurs="0"/> <!-- New -->
-      <xs:element name="Closure" type="ClosureType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            Specifies the transitive closure of a parent-child hierarchy. Optional, but recommended
-            for better performance. The closure is provided as a set of (parent/child) pairs: since it is
-            the transitive closure these are actually (ancestor/descendant) pairs.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="Property" type="PropertyType" minOccurs="0" maxOccurs="unbounded">
-        <xs:annotation>
-          <xs:documentation>
-            Member property.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
   </xs:complexType>
 
   <xs:simpleType name="ColumnTypeType">
@@ -1011,12 +1021,14 @@
         since it is the transitive closure these are actually (ancestor/descendant) pairs.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="parentColumn" type="xs:string" use="required"/>
-    <xs:attribute name="childColumn" type="xs:string" use="required"/>
 
     <xs:sequence>
       <xs:element name="Table" type="TableType" minOccurs="1" maxOccurs="1" />
     </xs:sequence>
+
+    <xs:attribute name="parentColumn" type="xs:string" use="required"/>
+    <xs:attribute name="childColumn" type="xs:string" use="required"/>
+
   </xs:complexType>
 
   <xs:complexType name="PropertyType">
@@ -1025,6 +1037,10 @@
         Member property.
       </xs:documentation>
     </xs:annotation>
+
+    <xs:sequence>
+      <xs:element name="PropertyFormatter" type="PropertyFormatterType" minOccurs="0"/> <!-- New -->
+    </xs:sequence>
 
     <xs:attribute name="name" type="xs:string" use="required" /> <!-- TODO optional in MondrianDef -->
     <xs:attribute name="column" type="xs:string" use="required" /> <!-- TODO optional in MondrianDef -->
@@ -1084,12 +1100,23 @@
       </xs:annotation>
     </xs:attribute>
 
-    <xs:sequence>
-      <xs:element name="PropertyFormatter" type="PropertyFormatterType" minOccurs="0"/> <!-- New -->
-    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="MeasureType">
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:element name="MeasureExpression" type="ExpressionViewType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            The SQL expression used to calculate a measure.
+            Must be specified if a source column is not specified.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="CellFormatter" type="CellFormatterType" minOccurs="0"/> <!-- New -->
+      <xs:element name="CalculatedMemberProperty" type="CalculatedMemberPropertyType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
@@ -1180,22 +1207,22 @@
       </xs:annotation>
     </xs:attribute>
 
+  </xs:complexType>
+
+  <xs:complexType name="CalculatedMemberType">
     <xs:sequence>
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="MeasureExpression" type="ExpressionViewType" minOccurs="0">
+      <xs:element name="Formula" type="xs:string" minOccurs="0">
         <xs:annotation>
           <xs:documentation>
-            The SQL expression used to calculate a measure.
-            Must be specified if a source column is not specified.
+            MDX expression which gives the value of this member.
           </xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element name="CellFormatter" type="CellFormatterType" minOccurs="0"/> <!-- New -->
       <xs:element name="CalculatedMemberProperty" type="CalculatedMemberPropertyType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
-  </xs:complexType>
 
-  <xs:complexType name="CalculatedMemberType">
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
@@ -1266,18 +1293,6 @@
       </xs:annotation>
     </xs:attribute>
 
-    <xs:sequence>
-      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="Formula" type="xs:string" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            MDX expression which gives the value of this member.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="CellFormatter" type="CellFormatterType" minOccurs="0"/> <!-- New -->
-      <xs:element name="CalculatedMemberProperty" type="CalculatedMemberPropertyType" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="CalculatedMemberPropertyType">
@@ -1340,6 +1355,17 @@
       </xs:documentation>
     </xs:annotation>
 
+    <xs:sequence>
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
+      <xs:element name="Formula" type="xs:string" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            MDX expression which gives the value of this set.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
@@ -1369,20 +1395,9 @@
       </xs:annotation>
     </xs:attribute>
 
-    <xs:sequence>
-      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="Formula" type="xs:string" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            MDX expression which gives the value of this set.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
-
   </xs:complexType>
 
-  <xs:complexType name="MemberReaderParameterType" minOccurs="0" maxOccurs="unbounded"> <!-- TODO there's a comment saying this is not used. Check what to do. Perhaps mark as deprecated. -->
+  <xs:complexType name="MemberReaderParameterType"> <!-- TODO there's a comment saying this is not used. Check what to do. Perhaps mark as deprecated. -->
     <xs:annotation>
       <xs:documentation>
         Not used
@@ -1423,10 +1438,13 @@
         A collection of SQL statements, one per dialect.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="alias" type="xs:string" use="required" />
+
     <xs:sequence>
       <xs:element name="SQL" type="SQLType" minOccurs="1" maxOccurs="unbounded"/>
     </xs:sequence>
+
+    <xs:attribute name="alias" type="xs:string" use="required" />
+
   </xs:complexType>
 
   <xs:complexType name="SQLType" mixed="true">
@@ -1564,7 +1582,6 @@
         (or denials) for schema elements.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="name" type="xs:string" use="required" />
 
     <xs:sequence>
       <xs:element name="annotations" type="AnnotationsType" minOccurs="0">
@@ -1578,6 +1595,9 @@
       <xs:element name="union" type="UnionType" minOccurs="0"/>
       <xs:element name="member" type="RoleMemberType" minOccurs="0" maxOccurs="unbounded" /> <!-- TODO only present in XOM -->
     </xs:sequence>
+
+    <xs:attribute name="name" type="xs:string" use="required" />
+
   </xs:complexType>
 
   <xs:complexType name="GrantType" abstract="true">
@@ -1629,6 +1649,12 @@
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Cube, int)">mondrian.olap.Role#grant(mondrian.olap.Cube,int)</a>.
           </xs:documentation>
         </xs:annotation>
+
+        <xs:sequence>
+          <xs:element name="dimensionGrants" type="DimensionGrantType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="hierarchyGrants" type="HierarchyGrantType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+
         <xs:attribute name="cube" type="xs:string" use="required">
           <xs:annotation>
             <xs:documentation>
@@ -1637,10 +1663,6 @@
           </xs:annotation>
         </xs:attribute>
 
-        <xs:sequence>
-          <xs:element name="dimensionGrants" type="DimensionGrantType" minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="hierarchyGrants" type="HierarchyGrantType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -1689,6 +1711,11 @@
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)">mondrian.olap.Role#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)</a>.
           </xs:documentation>
         </xs:annotation>
+
+        <xs:sequence>
+          <xs:element name="memberGrants" type="MemberGrantType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+
         <xs:attribute name="hierarchy" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
@@ -1731,9 +1758,7 @@
             </xs:restriction>
           </xs:simpleType>
         </xs:attribute>
-        <xs:sequence>
-          <xs:element name="memberGrants" type="MemberGrantType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -1809,6 +1834,11 @@
         <a href="api/mondrian/spi/UserDefinedFunction.html">mondrian.spi.UserDefinedFunction</a>.
       </xs:documentation>
     </xs:annotation>
+
+    <xs:sequence>
+      <xs:element name="script" type="ScriptType" minOccurs="0" /> <!-- TODO does not exist in mondrian.xsd -->
+    </xs:sequence>
+
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
@@ -1825,9 +1855,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:sequence>
-      <xs:element name="script" type="ScriptType" minOccurs="0" /> <!-- TODO does not exist in mondrian.xsd -->
-    </xs:sequence>
+
   </xs:complexType>
 
   <xs:complexType name="ScriptType">
@@ -1855,6 +1883,11 @@
         Abstract type just in order to avoid duplication.
       </xs:documentation>
     </xs:annotation>
+
+    <xs:sequence>
+      <xs:element name="script" type="ScriptType" minOccurs="0"/>
+    </xs:sequence>
+
     <xs:attribute name="className" type="xs:string" >
       <xs:annotation>
         <xs:documentation>
@@ -1866,9 +1899,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:sequence>
-      <xs:element name="script" type="ScriptType" minOccurs="0"/>
-    </xs:sequence>
+
   </xs:complexType>
 
   <xs:complexType name="CellFormatterType"> <!--TODO does not add anything to ElementFormatterType. Can probably be deleted for simplification. -->
@@ -1917,6 +1948,11 @@
   </xs:complexType>
 
   <xs:complexType name="InlineTableType">
+    <xs:sequence>
+      <xs:element name="columnDefs" type="ColumnDefsType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="rows" type="RowsType" minOccurs="1" maxOccurs="1"/>
+    </xs:sequence>
+
     <xs:attribute name="alias" type="xs:string"> <!--TODO not present in mondrian.xsd -->
       <xs:annotation>
         <xs:documentation>
@@ -1928,10 +1964,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:sequence>
-      <xs:element name="columnDefs" type="ColumnDefsType" minOccurs="1" maxOccurs="1"/>
-      <xs:element name="rows" type="RowsType" minOccurs="1" maxOccurs="1"/>
-    </xs:sequence>
+
   </xs:complexType>
 
   <xs:complexType name="ColumnDefsType">
@@ -2053,7 +2086,11 @@
     <xs:attribute name="column" type="xs:string"/>
   </xs:complexType>
 
-<xs:complexType name="AggLevelType">
+  <xs:complexType name="AggLevelType">
+    <xs:sequence>
+      <xs:element name="AggLevelProperty" type="AggLevelPropertyType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+
     <xs:attribute name="column" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation> <!-- TODO different comment in mondrian.xsd -->
@@ -2098,9 +2135,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:sequence>
-      <xs:element name="AggLevelProperty" type="AggLevelPropertyType" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
+
   </xs:complexType>
 
   <xs:complexType name="AggForeignKeyType">
@@ -2158,13 +2193,7 @@
         base fact table.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="ignorecase" type="xs:boolean" default="true">
-      <xs:annotation>
-        <xs:documentation>
-          Whether or not the match should ignore case.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+
     <xs:sequence>
       <xs:element name="AggFactCount" type="AggColumnNameType" minOccurs="1" maxOccurs="1">
         <xs:annotation>
@@ -2185,6 +2214,15 @@
       <xs:element name="AggMeasure" type="AggMeasureType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
       <xs:element name="AggLevel" type="AggLevelType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
+
+    <xs:attribute name="ignorecase" type="xs:boolean" default="true">
+      <xs:annotation>
+        <xs:documentation>
+          Whether or not the match should ignore case.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+
   </xs:complexType>
 
   <xs:complexType name="AggNameType">
@@ -2215,6 +2253,10 @@
   <xs:complexType name="AggPatternType">
     <xs:complexContent>
       <xs:extension base="AggTableType">
+        <xs:sequence>
+          <xs:element name="AggExclude" type="AggExcludeType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+
         <xs:attribute name="pattern" type="xs:string" use="required">
           <xs:annotation>
             <xs:documentation>
@@ -2222,9 +2264,7 @@
             </xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:sequence>
-          <xs:element name="AggExclude" type="AggExcludeType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
+
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
