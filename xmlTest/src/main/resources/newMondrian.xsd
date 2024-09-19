@@ -1429,6 +1429,48 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="SQLType" mixed="true">
+    <xs:attribute name="dialect" type="xs:string" default="generic"> <!-- TODO in XSD was as required without default value -->
+      <xs:annotation>
+        <xs:documentation>
+          Dialect of SQL the view is intended for. Valid values include, but are not limited to:
+          * generic
+          * access
+          * db2
+          * derby
+          * firebird
+          * googlebigquery
+          * greenplum
+          * hsqldb
+          * hive
+          * impala
+          * infobright
+          * informix
+          * ingres
+          * interbase
+          * luciddb
+          * mariadb
+          * monetdb
+          * mssql
+          * mysql
+          * neoview
+          * netezza
+          * nuodb
+          * oracle
+          * pdi
+          * postgres
+          * redshift
+          * snowflake
+          * sqlstream
+          * sybase
+          * teradata
+          * vectorwise
+          * vertica
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <xs:complexType name="RoleType">
     <xs:annotation>
       <xs:documentation>
@@ -2163,12 +2205,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="SQLType">
-    <xs:sequence>
-      <xs:element name="dialect" type="xs:string" minOccurs="0"/>
-      <xs:element name="cdata" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
+
 
   <xs:complexType name="captionExpression">
     <xs:sequence/>
