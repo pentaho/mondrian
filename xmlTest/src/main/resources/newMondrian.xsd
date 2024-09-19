@@ -1501,6 +1501,62 @@
 
   </xs:complexType>
 
+  <xs:complexType name="TableType">
+    <xs:sequence>
+      <xs:element name="SQL" type="SQLType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            The SQL WHERE clause expression to be appended to any select statement
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="AggExclude" type="AggExcludeType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="AggTableGroup" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            A definition of an aggregate table for a base fact table.
+            This aggregate table must be in the same schema as the base fact table.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:group>
+      <xs:element name="Hint" type="HintType" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Dialect-specific table optimization hints.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="schema" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Optional qualifier for table.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="alias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>
+          Alias to be used with this table when it is used to form queries.
+          If not specified, defaults to the table name, but in any case, must be unique within the schema.
+          (You can use the same table in different hierarchies, but it must have different aliases.)
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
+  <xs:complexType name="HintType" mixed="true">
+    <xs:attribute name="type" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          Type of hint, interpreted and applied on a per-dialect basis.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+
   <xs:complexType name="RoleType">
     <xs:annotation>
       <xs:documentation>
@@ -2216,24 +2272,5 @@
 
   <!-- endregion  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
 
-
-  <xs:complexType name="TableType">
-        <xs:sequence>
-          <xs:element name="name" type="xs:string" minOccurs="0"/>
-          <xs:element name="schema" type="xs:string" minOccurs="0"/>
-          <xs:element name="alias" type="xs:string" minOccurs="0"/>
-          <xs:element name="filter" type="SQLType" minOccurs="0"/>
-          <xs:element name="aggExcludes" type="AggExcludeType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="aggTables" type="AggTableType" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="tableHints" type="hint" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="hint">
-    <xs:sequence>
-      <xs:element name="type" type="xs:string" minOccurs="0"/>
-      <xs:element name="cdata" type="xs:string" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
 
 </xs:schema>
