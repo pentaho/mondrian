@@ -2013,7 +2013,7 @@
       </xs:annotation>
     </xs:attribute>
     <xs:sequence>
-      <xs:element name="properties" type="AggLevelPropertyType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="AggLevelProperty" type="AggLevelPropertyType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -2087,17 +2087,17 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="measuresfactcount" type="AggMeasureFactCountType" minOccurs="0" maxOccurs="unbounded"> <!-- TODO not present in mondrian.xsd -->
+      <xs:element name="AggMeasureFactCount" type="AggMeasureFactCountType" minOccurs="0" maxOccurs="unbounded"> <!-- TODO not present in mondrian.xsd -->
         <xs:annotation>
           <xs:documentation>
             What does the fact_count column look like.
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="ignoreColumns" type="AggIgnoreColumnType" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="foreignKeys" type="AggForeignKeyType" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="measures" type="AggMeasureType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
-      <xs:element name="levels" type="AggLevelType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="AggIgnoreColumn" type="AggIgnoreColumnType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="AggForeignKey" type="AggForeignKeyType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="AggMeasure" type="AggMeasureType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+      <xs:element name="AggLevel" type="AggLevelType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -2137,7 +2137,7 @@
           </xs:annotation>
         </xs:attribute>
         <xs:sequence>
-          <xs:element name="excludes" type="AggExcludeType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="AggExclude" type="AggExcludeType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
