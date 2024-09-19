@@ -17,9 +17,7 @@
 
     <xs:sequence>
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-
       <xs:element name="Parameter" type="ParameterType" minOccurs="0" maxOccurs="unbounded"/>
-
       <xs:element name="Dimension" type="DimensionType" minOccurs="0" maxOccurs="unbounded">
         <xs:annotation>
           <xs:documentation>
@@ -27,15 +25,10 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-
       <xs:element name="Cube" type="CubeType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
-
       <xs:element name="VirtualCube" type="VirtualCubeType" minOccurs="0" maxOccurs="unbounded"/>
-
       <xs:element name="NamedSet" type="NamedSetType" minOccurs="0" maxOccurs="unbounded"/>
-
       <xs:element name="Role" type="RoleType" minOccurs="0" maxOccurs="unbounded"/>
-
       <xs:element name="UserDefinedFunction" type="UserDefinedFunctionType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
 
@@ -46,7 +39,6 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-
     <xs:attribute name="description" type="xs:string">
       <xs:annotation>
         <xs:documentation>
@@ -54,7 +46,6 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-
     <xs:attribute name="measuresCaption" type="xs:string">
       <xs:annotation>
         <xs:documentation>
@@ -63,7 +54,6 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-
     <xs:attribute name="defaultRole" type="xs:string">
       <xs:annotation>
         <xs:documentation>
@@ -71,7 +61,6 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-
 
   </xs:complexType>
 
@@ -97,6 +86,7 @@
         statement using the ParamRef function and, if not final, its value can be overridden.
       </xs:documentation>
     </xs:annotation>
+
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
@@ -131,7 +121,6 @@
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>
-
     <xs:attribute name="modifiable" type="xs:boolean" default="true">
       <xs:annotation>
         <xs:documentation>
@@ -1584,16 +1573,16 @@
     </xs:annotation>
 
     <xs:sequence>
-      <xs:element name="annotations" type="AnnotationsType" minOccurs="0">
+      <xs:element name="Annotations" type="AnnotationsType" minOccurs="0">
         <xs:annotation>
           <xs:documentation>
             Contains values of user-defined properties.
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="schemaGrant" type="SchemaGrantType" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="union" type="UnionType" minOccurs="0"/>
-      <xs:element name="member" type="RoleMemberType" minOccurs="0" maxOccurs="unbounded" /> <!-- TODO only present in XOM -->
+      <xs:element name="SchemaGrant" type="SchemaGrantType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="Union" type="UnionType" minOccurs="0"/>
+      <xs:element name="RoleMember" type="RoleMemberType" minOccurs="0" maxOccurs="unbounded" /> <!-- TODO only present in XOM -->
     </xs:sequence>
 
     <xs:attribute name="name" type="xs:string" use="required" />
@@ -1630,7 +1619,7 @@
         </xs:annotation>
 
         <xs:sequence>
-          <xs:element name="cubeGrants" type="CubeGrantType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+          <xs:element name="CubeGrant" type="CubeGrantType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -1651,8 +1640,8 @@
         </xs:annotation>
 
         <xs:sequence>
-          <xs:element name="dimensionGrants" type="DimensionGrantType" minOccurs="0" maxOccurs="unbounded"/>
-          <xs:element name="hierarchyGrants" type="HierarchyGrantType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="DimensionGrant" type="DimensionGrantType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="HierarchyGrant" type="HierarchyGrantType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
 
         <xs:attribute name="cube" type="xs:string" use="required">
@@ -1713,7 +1702,7 @@
         </xs:annotation>
 
         <xs:sequence>
-          <xs:element name="memberGrants" type="MemberGrantType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="MemberGrant" type="MemberGrantType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
 
         <xs:attribute name="hierarchy" type="xs:string" use="required">
@@ -1812,7 +1801,7 @@
       </xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="roleUsages" type="RoleUsageType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+      <xs:element name="RoleUsage" type="RoleUsageType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
     </xs:sequence>
   </xs:complexType>
 
@@ -1836,7 +1825,7 @@
     </xs:annotation>
 
     <xs:sequence>
-      <xs:element name="script" type="ScriptType" minOccurs="0" /> <!-- TODO does not exist in mondrian.xsd -->
+      <xs:element name="Script" type="ScriptType" minOccurs="0" /> <!-- TODO does not exist in mondrian.xsd -->
     </xs:sequence>
 
     <xs:attribute name="name" type="xs:string" use="required">
@@ -1885,7 +1874,7 @@
     </xs:annotation>
 
     <xs:sequence>
-      <xs:element name="script" type="ScriptType" minOccurs="0"/>
+      <xs:element name="Script" type="ScriptType" minOccurs="0"/>
     </xs:sequence>
 
     <xs:attribute name="className" type="xs:string" >
@@ -1949,8 +1938,8 @@
 
   <xs:complexType name="InlineTableType">
     <xs:sequence>
-      <xs:element name="columnDefs" type="ColumnDefsType" minOccurs="1" maxOccurs="1"/>
-      <xs:element name="rows" type="RowsType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="ColumnDefs" type="ColumnDefsType" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="Rows" type="RowsType" minOccurs="1" maxOccurs="1"/>
     </xs:sequence>
 
     <xs:attribute name="alias" type="xs:string"> <!--TODO not present in mondrian.xsd -->
@@ -1974,7 +1963,7 @@
       </xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="array" type="ColumnDefType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+      <xs:element name="ColumnDef" type="ColumnDefType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
     </xs:sequence>
   </xs:complexType>
 
@@ -2019,7 +2008,7 @@
       </xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="array" type="RowType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+      <xs:element name="Row" type="RowType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
     </xs:sequence>
   </xs:complexType>
 
@@ -2031,7 +2020,7 @@
       </xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="values" type="ValueType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+      <xs:element name="Value" type="ValueType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
     </xs:sequence>
   </xs:complexType>
 
@@ -2271,8 +2260,8 @@
 
   <xs:group name="AggTableGroup">
     <xs:choice>
-      <xs:element name="aggName" type="AggNameType"/>
-      <xs:element name="aggPattern" type="AggPatternType"/>
+      <xs:element name="AggName" type="AggNameType"/>
+      <xs:element name="AggPattern" type="AggPatternType"/>
     </xs:choice>
   </xs:group>
 
@@ -2304,13 +2293,5 @@
       <xs:element name="SQL" type="SQLType" minOccurs="1" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
-
-  <!-- endregion: Types Up from here are processed -->
-
-  <!--region: processing elements region ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
-
-
-  <!-- endregion  ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo-->
-
 
 </xs:schema>
