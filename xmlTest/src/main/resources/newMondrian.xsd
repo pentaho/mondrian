@@ -516,28 +516,6 @@
             List of base cubes used by the virtual cube.
           </xs:documentation>
         </xs:annotation>
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="CubeUsage" minOccurs="1" maxOccurs="unbounded">
-              <xs:complexType>
-                <xs:attribute name="cubeName" type="xs:string" use="required">
-                  <xs:annotation>
-                    <xs:documentation>
-                      Name of the cube which the virtualCube uses.
-                    </xs:documentation>
-                  </xs:annotation>
-                </xs:attribute>
-                <xs:attribute name="ignoreUnrelatedDimensions" type="xs:boolean" default="false" use="optional">
-                  <xs:annotation>
-                    <xs:documentation>
-                      Unrelated dimensions to measures in this cube will be pushed to top level member.
-                    </xs:documentation>
-                  </xs:annotation>
-                </xs:attribute>
-              </xs:complexType>
-            </xs:element>
-          </xs:sequence>
-        </xs:complexType>
       </xs:element>
       <xs:element name="VirtualCubeDimension" type="VirtualCubeDimensionType" minOccurs="1" maxOccurs="unbounded"> <!-- TODO check minOccurs="1" as MondrianDef does not require a VirtualCube to have VirtualCubeDimensions -->
         <xs:annotation>
@@ -1595,7 +1573,7 @@
         Values correspond to <code>Access</code>.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="access" type="xs:string" use="required">
+    <xs:attribute name="access" use="required">
       <xs:simpleType>
         <xs:restriction base="xs:string">
           <xs:enumeration value="all"/>
@@ -1732,7 +1710,7 @@
             </xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="rollupPolicy" type="xs:string" default="full">
+        <xs:attribute name="rollupPolicy" default="full">
           <xs:annotation>
             <xs:documentation>
               Policy which determines how cell values are calculated if not all the children of the current cell are visible to the current role.
@@ -1761,7 +1739,7 @@
         See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Member, int)">mondrian.olap.Role#grant(mondrian.olap.Member,int)</a>.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="access" type="xs:string" use="required">
+    <xs:attribute name="access" use="required">
       <xs:annotation>
         <xs:documentation>
           Values correspond to Access.
