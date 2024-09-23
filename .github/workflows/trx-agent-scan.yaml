@@ -1,0 +1,17 @@
+on:
+  push:
+   branches:
+    - 'main'
+    - 'master'
+  workflow_dispatch:
+jobs:
+  execute-scan-workflow:
+    uses: threatrix/threat-agent-scan/.github/workflows/scan-repo-reusable.yaml@master
+    with:
+      eid: 152cdb22-7aa4-4eb4-9ecf-e3790437833f
+      oid: b7c5524a-63d2-406e-9752-56cbf90228cc
+      app-name: mondrian
+      trx-host: https://app.threatrix.io
+    secrets:
+      TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      THREATRIX_SERVER_API_KEY: ${{ secrets.THREATRIX_API_KEY }}
