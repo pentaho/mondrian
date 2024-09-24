@@ -263,7 +263,7 @@
 
     <xs:sequence>
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:group ref="RelationOrJoinGroup" minOccurs="0"> <!-- TODO check -->
+      <xs:group ref="RelationOrJoinGroup" minOccurs="0">
         <xs:annotation>
           <xs:documentation>
             The Table, Join (set of tables), View (SQL statement), or InlineTable which populates this hierarchy.
