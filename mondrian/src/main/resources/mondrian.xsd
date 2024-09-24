@@ -3,6 +3,7 @@
     <xsd:element name="Schema" >
         <xsd:annotation>
             <xsd:documentation>
+                Innocuous comment
                 A schema is a collection of cubes and virtual cubes.
                 It can also contain shared dimensions (for use by those cubes),
                 named sets, roles, and declarations of user-defined functions.
