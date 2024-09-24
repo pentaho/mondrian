@@ -8,7 +8,7 @@
   <xs:complexType name="SchemaType" >
     <xs:annotation>
       <xs:documentation>
-        A schema is a collection of cubes and virtual cubes. 
+        A schema is a collection of cubes and virtual cubes.
         It can also contain shared dimensions (for use by those
         cubes), named sets, roles, and declarations of
         user-defined functions.
@@ -71,7 +71,7 @@
       </xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="Annotation" type="AnnotationType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+      <xs:element name="Annotation" type="AnnotationType" minOccurs="1" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -263,14 +263,14 @@
 
     <xs:sequence>
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:group ref="RelationOrJoinGroup" minOccurs="0"> <!-- TODO check -->
+      <xs:group ref="RelationOrJoinGroup" minOccurs="0">
         <xs:annotation>
           <xs:documentation>
             The Table, Join (set of tables), View (SQL statement), or InlineTable which populates this hierarchy.
           </xs:documentation>
         </xs:annotation>
       </xs:group>
-      <xs:element name="Level" type="LevelType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+      <xs:element name="Level" type="LevelType" minOccurs="1" maxOccurs="unbounded"/>
       <xs:element name="MemberReaderParameter" type="MemberReaderParameterType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
 
@@ -1166,10 +1166,10 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="visible" type="xs:boolean"> <!-- New --> <!-- TODO XOM does not define a default value. MondrianDef will use the Boolean constructor which will return false for null values. However the default value should be true...  Some XOM elements define true as the default value. Check "visible" attributes of other elements -->
+    <xs:attribute name="visible" type="xs:boolean" default="true"> <!-- New -->
       <xs:annotation>
         <xs:documentation>
-          Whether this member is visible in the user-interface. Default true. <!-- TODO Although comment says default its true, its false because XOM is not defining a default value. -->
+          Whether this member is visible in the user-interface. Default true.
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -1597,7 +1597,7 @@
         </xs:annotation>
 
         <xs:sequence>
-          <xs:element name="CubeGrant" type="CubeGrantType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+          <xs:element name="CubeGrant" type="CubeGrantType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -1798,12 +1798,13 @@
         A <code>UserDefinedFunction</code> is a function which
         extends the MDX language. It must be implemented by a Java
         class which implements the interface
-        <a href="api/mondrian/spi/UserDefinedFunction.html">mondrian.spi.UserDefinedFunction</a>.
+        <a href="api/mondrian/spi/UserDefinedFunction.html">mondrian.spi.UserDefinedFunction</a>
+        or by a <code>Script</code>.
       </xs:documentation>
     </xs:annotation>
 
     <xs:sequence>
-      <xs:element name="Script" type="ScriptType" minOccurs="0" /> <!-- TODO does not exist in mondrian.xsd -->
+      <xs:element name="Script" type="ScriptType" minOccurs="0" />
     </xs:sequence>
 
     <xs:attribute name="name" type="xs:string" use="required">
@@ -1813,7 +1814,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="className" type="xs:string" use="required"> <!-- TODO required in mondrian.xsd -->
+    <xs:attribute name="className" type="xs:string">
       <xs:annotation>
         <xs:documentation>
           Name of the class which implements this user-defined function.
