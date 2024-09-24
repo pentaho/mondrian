@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (c) 2015-2021 Hitachi Vantara.
+// Copyright (c) 2015-2024 Hitachi Vantara.
 // All rights reserved.
  */
 package mondrian.spi.impl;
@@ -17,7 +17,7 @@ import mondrian.spi.Dialect;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

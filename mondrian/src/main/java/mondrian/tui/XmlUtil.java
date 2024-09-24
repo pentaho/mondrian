@@ -853,7 +853,7 @@ public class XmlUtil {
                TransformerException
     {
         DocumentBuilderFactory dfactory =
-            XmlParserFactoryProducer.createSecureDocBuilderFactory();
+                XmlParserFactoryProducer.createSecureDocBuilderFactory();
         dfactory.setNamespaceAware(true);
 
         DocumentBuilder docBuilder = dfactory.newDocumentBuilder();
@@ -904,7 +904,7 @@ public class XmlUtil {
                TransformerException
     {
         DocumentBuilderFactory dfactory =
-            XmlParserFactoryProducer.createSecureDocBuilderFactory();
+                XmlParserFactoryProducer.createSecureDocBuilderFactory();
         dfactory.setNamespaceAware(true);
 
         DocumentBuilder docBuilder = dfactory.newDocumentBuilder();

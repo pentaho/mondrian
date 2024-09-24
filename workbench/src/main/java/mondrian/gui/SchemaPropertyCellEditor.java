@@ -326,8 +326,10 @@ public class SchemaPropertyCellEditor
             listEditor.setEditable(false);
             listEditor.setToolTipText(null);
             listEditor.removeActionListener(al);
+            String[] dialects = MondrianGuiDef.SQL._dialect_values.clone();
+            Arrays.sort(dialects);
             listEditor.setModel(
-                new DefaultComboBoxModel(MondrianGuiDef.SQL._dialect_values));
+                new DefaultComboBoxModel(dialects));
             listEditor.setSelectedItem((String) value);
             activeEditor = listEditor;
 

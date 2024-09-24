@@ -5,11 +5,11 @@
   <parent>
     <groupId>org.pentaho</groupId>
     <artifactId>pentaho-ce-jar-parent-pom</artifactId>
-    <version>10.2.0.0-SNAPSHOT</version>
+    <version>10.3.0.0-SNAPSHOT</version>
   </parent>
   <groupId>pentaho</groupId>
   <artifactId>pentaho-mondrian-parent-pom</artifactId>
-  <version>10.2.0.0-SNAPSHOT</version>
+  <version>10.3.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Pentaho Mondrian Parent POM</name>
   <description>Container pom for mondrian and mondrian workbench</description>
@@ -41,7 +41,7 @@
     <commons-math.version>1.1</commons-math.version>
     <olap4j-xmla.version>1.2.0</olap4j-xmla.version>
     <jsp-api.version>2.0</jsp-api.version>
-    <mockito-all.version>1.9.5</mockito-all.version>
+    <mockito-all.version>5.10.0</mockito-all.version>
     <commons-dbcp2.version>2.9.0</commons-dbcp2.version>
     <olap4j-xmlaserver.version>1.2.0</olap4j-xmlaserver.version>
     <eigenbase-xom.version>1.3.5</eigenbase-xom.version>

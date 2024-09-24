@@ -46,9 +46,9 @@ public class XmlParserFactoryProducer {
             throws ParserConfigurationException
     {
         DocumentBuilderFactory docBuilderFactory =
-            DocumentBuilderFactory.newInstance();
+                DocumentBuilderFactory.newInstance();
         docBuilderFactory.setFeature(
-            XMLConstants.FEATURE_SECURE_PROCESSING, true);
+                XMLConstants.FEATURE_SECURE_PROCESSING, true);
         docBuilderFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 
         return docBuilderFactory;

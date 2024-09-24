@@ -4,27 +4,38 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2015-2017 Hitachi Vantara and others
+// Copyright (C) 2015-2024 Hitachi Vantara and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
+import junit.framework.TestCase;
 import mondrian.olap.Util;
 import mondrian.util.ByteString;
-
-import junit.framework.TestCase;
-
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.util.*;
-import java.util.concurrent.*;
 import javax.sql.DataSource;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Queue;
+import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import static mondrian.rolap.RolapConnectionProperties.CatalogContent;
 import static mondrian.rolap.RolapConnectionProperties.UseContentChecksum;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -45,12 +56,12 @@ public class RolapSchemaPoolConcurrencyTest extends TestCase
         poolSpy = spy(RolapSchemaPool.instance());
         doAnswer(this).when(poolSpy)
                 .createRolapSchema(
-                    anyString(),
-                    any(DataSource.class),
-                    any(Util.PropertyList.class),
-                    anyString(),
-                    any(SchemaKey.class),
-                    any(ByteString.class));
+                    nullable(String.class),
+                    nullable(DataSource.class),
+                    nullable(Util.PropertyList.class),
+                    nullable(String.class),
+                    nullable(SchemaKey.class),
+                    nullable(ByteString.class));
     }
 
     public void tearDown() {
