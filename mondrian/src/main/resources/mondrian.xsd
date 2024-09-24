@@ -1798,7 +1798,8 @@
         A <code>UserDefinedFunction</code> is a function which
         extends the MDX language. It must be implemented by a Java
         class which implements the interface
-        <a href="api/mondrian/spi/UserDefinedFunction.html">mondrian.spi.UserDefinedFunction</a>.
+        <a href="api/mondrian/spi/UserDefinedFunction.html">mondrian.spi.UserDefinedFunction</a>
+        or by a <code>Script</code>.
       </xs:documentation>
     </xs:annotation>
 
@@ -1813,7 +1814,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="className" type="xs:string" use="required"> <!-- TODO required in mondrian.xsd -->
+    <xs:attribute name="className" type="xs:string">
       <xs:annotation>
         <xs:documentation>
           Name of the class which implements this user-defined function.
