@@ -1166,10 +1166,10 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="visible" type="xs:boolean"> <!-- New --> <!-- TODO XOM does not define a default value. MondrianDef will use the Boolean constructor which will return false for null values. However the default value should be true...  Some XOM elements define true as the default value. Check "visible" attributes of other elements -->
+    <xs:attribute name="visible" type="xs:boolean" default="true"> <!-- New -->
       <xs:annotation>
         <xs:documentation>
-          Whether this member is visible in the user-interface. Default true. <!-- TODO Although comment says default its true, its false because XOM is not defining a default value. -->
+          Whether this member is visible in the user-interface. Default true.
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
