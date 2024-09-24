@@ -1804,7 +1804,7 @@
     </xs:annotation>
 
     <xs:sequence>
-      <xs:element name="Script" type="ScriptType" minOccurs="0" /> <!-- TODO does not exist in mondrian.xsd -->
+      <xs:element name="Script" type="ScriptType" minOccurs="0" />
     </xs:sequence>
 
     <xs:attribute name="name" type="xs:string" use="required">
