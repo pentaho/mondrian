@@ -1597,7 +1597,7 @@
         </xs:annotation>
 
         <xs:sequence>
-          <xs:element name="CubeGrant" type="CubeGrantType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+          <xs:element name="CubeGrant" type="CubeGrantType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
