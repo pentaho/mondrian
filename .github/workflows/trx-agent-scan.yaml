@@ -1,12 +1,5 @@
 on:
   push:
-   branches:
-    - 'main'
-    - 'master'
-  pull_request:
-    types:
-      - 'opened'
-      - 'reopened'
   workflow_dispatch:
 jobs:
   execute-scan-workflow:
@@ -14,7 +7,8 @@ jobs:
     with:
       eid: 152cdb22-7aa4-4eb4-9ecf-e3790437833f
       oid: b7c5524a-63d2-406e-9752-56cbf90228cc
-      app-name: mondrian
+      # SCPID is for Pentaho Legacy BoM Certify Project
+      scpid: 3ef4b1f1-778b-4204-94ae-5c7e360f13ab
       trx-host: https://app.threatrix.io
     secrets:
       TOKEN: ${{ secrets.GITHUB_TOKEN }}
