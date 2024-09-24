@@ -270,7 +270,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:group>
-      <xs:element name="Level" type="LevelType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+      <xs:element name="Level" type="LevelType" minOccurs="1" maxOccurs="unbounded"/>
       <xs:element name="MemberReaderParameter" type="MemberReaderParameterType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
 
