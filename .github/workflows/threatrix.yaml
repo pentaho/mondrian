@@ -10,8 +10,6 @@ jobs:
     uses: threatrix/threat-agent-scan/.github/workflows/scan-repo-reusable.yaml@master
     with:
       trx-host: https://app.threatrix.io
-      # SCPID is for Pentaho Legacy BoM Certify Project
-      scpid: 3ef4b1f1-778b-4204-94ae-5c7e360f13ab
     secrets:
       TOKEN: ${{ secrets.GITHUB_TOKEN }}
       THREATRIX_EID: ${{ secrets.THREATRIX_EID }}
