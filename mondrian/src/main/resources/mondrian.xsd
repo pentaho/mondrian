@@ -8,7 +8,7 @@
   <xs:complexType name="SchemaType" >
     <xs:annotation>
       <xs:documentation>
-        A schema is a collection of cubes and virtual cubes. 
+        A schema is a collection of cubes and virtual cubes.
         It can also contain shared dimensions (for use by those
         cubes), named sets, roles, and declarations of
         user-defined functions.
