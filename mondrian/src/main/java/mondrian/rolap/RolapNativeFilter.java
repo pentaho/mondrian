@@ -1,14 +1,14 @@
-/*! ******************************************************************************
- *
- * Pentaho
- *
- * Copyright (C) 2024 by Hitachi Vantara, LLC : http://www.pentaho.com
- *
- * Use of this software is governed by the Business Source License included
- * in the LICENSE.TXT file.
- *
- * Change Date: 2028-08-13
- ******************************************************************************/
+/*
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2017 Hitachi Vantara
+// All Rights Reserved.
+*/
 package mondrian.rolap;
 
 import mondrian.mdx.MdxVisitorImpl;
