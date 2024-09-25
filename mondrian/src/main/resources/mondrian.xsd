@@ -25,7 +25,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="Cube" type="CubeType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+      <xs:element name="Cube" type="CubeType" minOccurs="1" maxOccurs="unbounded"/>
       <xs:element name="VirtualCube" type="VirtualCubeType" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="NamedSet" type="NamedSetType" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="Role" type="RoleType" minOccurs="0" maxOccurs="unbounded"/>
