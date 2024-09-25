@@ -420,7 +420,6 @@
         </xs:annotation>
         <xs:element name="Dimension" type="DimensionType"/>
         <xs:element name="DimensionUsage" type="DimensionUsageType"/>
-        <xs:element name="VirtualCubeDimension" type="VirtualCubeDimensionType"/> <!-- New --> <!-- TODO check if this should be here. It was NOT in the other xsd but MondrianDef allows for it. Also doesnt seem to make sense to have it and the comments for the CubeDimension say it can only be a shared or private dimension. -->
       </xs:choice>
       <xs:element name="Measure" type="MeasureType" minOccurs="1" maxOccurs="unbounded"> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
         <xs:annotation>
