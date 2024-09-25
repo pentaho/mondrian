@@ -411,7 +411,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:group>
-      <xs:choice minOccurs="1" maxOccurs="unbounded"> <!-- TODO check minOccurs="1" as MondrianDef does not require a Cube to have Dimensions -->
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
         <!-- Dimensions -->
         <xs:annotation>
           <xs:documentation>
