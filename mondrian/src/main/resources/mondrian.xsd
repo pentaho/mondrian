@@ -622,7 +622,7 @@
         A VirtualCubeDimension is a usage of a Dimension in a VirtualCube.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="cubeName" type="xs:string"> <!-- TODO probably should be required -->
+    <xs:attribute name="cubeName" type="xs:string">
       <xs:annotation>
         <xs:documentation>
           Name of the cube which the dimension belongs to, or unspecified if the dimension is shared.
