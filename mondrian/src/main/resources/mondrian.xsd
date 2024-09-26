@@ -636,6 +636,14 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="visible" type="xs:boolean" default="true"> <!-- New -->
+      <xs:annotation>
+        <xs:documentation>
+          Whether this cube dimension is visible in the user-interface.
+          Default true.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="VirtualCubeMeasureType">
