@@ -402,7 +402,7 @@
 
     <xs:sequence>
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:group ref="RelationGroup" minOccurs="1" maxOccurs="1"> <!-- New : the used group in the other xsd is named FactTable and did not include the InlineTable element -->
+      <xs:group ref="RelationGroup" minOccurs="1" maxOccurs="1"> <!-- New -->
         <xs:annotation>
           <xs:documentation>
             The element from this group will represent the fact table of the cube.
