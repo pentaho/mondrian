@@ -155,7 +155,7 @@
     <xs:complexContent>
       <xs:extension base="CubeDimensionType">
         <xs:sequence>
-          <xs:element name="Hierarchy" type="HierarchyType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+          <xs:element name="Hierarchy" type="HierarchyType" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
 
         <xs:attribute name="type" default="StandardDimension">
@@ -402,7 +402,7 @@
 
     <xs:sequence>
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:group ref="RelationGroup" minOccurs="1" maxOccurs="1"> <!-- New : the used group in the other xsd is named FactTable and did not include the InlineTable element -->
+      <xs:group ref="RelationGroup" minOccurs="1" maxOccurs="1"> <!-- New -->
         <xs:annotation>
           <xs:documentation>
             The element from this group will represent the fact table of the cube.
@@ -509,21 +509,21 @@
 
     <xs:sequence>
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="CubeUsages" type="CubeUsagesType" minOccurs="1"> <!-- TODO check minOccurs="1" as MondrianDef does not require a VirtualCube to have CubeUsages -->
+      <xs:element name="CubeUsages" type="CubeUsagesType" minOccurs="0">
         <xs:annotation>
           <xs:documentation>
             List of base cubes used by the virtual cube.
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="VirtualCubeDimension" type="VirtualCubeDimensionType" minOccurs="1" maxOccurs="unbounded"> <!-- TODO check minOccurs="1" as MondrianDef does not require a VirtualCube to have VirtualCubeDimensions -->
+      <xs:element name="VirtualCubeDimension" type="VirtualCubeDimensionType" minOccurs="0" maxOccurs="unbounded">
         <xs:annotation>
           <xs:documentation>
             A VirtualCubeDimension is a usage of a Dimension in a VirtualCube.
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="VirtualCubeMeasure" type="VirtualCubeMeasureType" minOccurs="1" maxOccurs="unbounded"> <!-- TODO check if minOccurs="1" is correct. It was in the other xsd but is optional in MondrianDef -->
+      <xs:element name="VirtualCubeMeasure" type="VirtualCubeMeasureType" minOccurs="1" maxOccurs="unbounded">
         <xs:annotation>
           <xs:documentation>
             A VirtualCubeMeasure is a usage of a Measure in a VirtualCube.
@@ -554,7 +554,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required"/> <!-- TODO check if this is required. It was in the other xsd but is optional in MondrianDef -->
+    <xs:attribute name="name" type="xs:string" use="required"/>
     <xs:attribute name="defaultMeasure" type="xs:string">
       <xs:annotation>
         <xs:documentation>
@@ -569,7 +569,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="visible" type="xs:boolean" default="true"> <!-- New --> <!-- TODO check if we keep this -->
+    <xs:attribute name="visible" type="xs:boolean" default="true"> <!-- New -->
       <xs:annotation>
         <xs:documentation>
           Whether this cube is visible in the user-interface.
@@ -622,17 +622,25 @@
         A VirtualCubeDimension is a usage of a Dimension in a VirtualCube.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="cubeName" type="xs:string"> <!-- TODO probably should be required -->
+    <xs:attribute name="cubeName" type="xs:string">
       <xs:annotation>
         <xs:documentation>
           Name of the cube which the dimension belongs to, or unspecified if the dimension is shared.
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="name" type="xs:string"> <!-- TODO probably should be required -->
+    <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
           Name of the dimension.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="visible" type="xs:boolean" default="true"> <!-- New -->
+      <xs:annotation>
+        <xs:documentation>
+          Whether this cube dimension is visible in the user-interface.
+          Default true.
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -649,14 +657,14 @@
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
     </xs:sequence>
 
-    <xs:attribute name="cubeName" type="xs:string" use="required"> <!-- TODO not required in MondrianDef -->
+    <xs:attribute name="cubeName" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
           Name of the cube which the measure belongs to.
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required"> <!-- TODO not required in MondrianDef -->
+    <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
           Unique name of the measure within its cube.
