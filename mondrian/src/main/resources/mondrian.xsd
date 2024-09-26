@@ -664,7 +664,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required"> <!-- TODO not required in MondrianDef -->
+    <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
           Unique name of the measure within its cube.
