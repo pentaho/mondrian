@@ -554,7 +554,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required"/> <!-- TODO check if this is required. It was in the other xsd but is optional in MondrianDef -->
+    <xs:attribute name="name" type="xs:string" use="required"/>
     <xs:attribute name="defaultMeasure" type="xs:string">
       <xs:annotation>
         <xs:documentation>
