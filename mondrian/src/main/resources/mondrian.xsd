@@ -657,7 +657,7 @@
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
     </xs:sequence>
 
-    <xs:attribute name="cubeName" type="xs:string" use="required"> <!-- TODO not required in MondrianDef -->
+    <xs:attribute name="cubeName" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
           Name of the cube which the measure belongs to.
