@@ -516,7 +516,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="VirtualCubeDimension" type="VirtualCubeDimensionType" minOccurs="1" maxOccurs="unbounded"> <!-- TODO check minOccurs="1" as MondrianDef does not require a VirtualCube to have VirtualCubeDimensions -->
+      <xs:element name="VirtualCubeDimension" type="VirtualCubeDimensionType" minOccurs="0" maxOccurs="unbounded">
         <xs:annotation>
           <xs:documentation>
             A VirtualCubeDimension is a usage of a Dimension in a VirtualCube.
