@@ -140,7 +140,7 @@
 
   </xs:complexType>
 
-  <xs:complexType name="DimensionType"> <!-- TODO DimensionType seems like an odd mixed bag of both shared and private dimension information. However that's how MondrianDef has it...  -->
+  <xs:complexType name="DimensionType">
     <xs:annotation>
       <xs:documentation>
         A Dimension is a collection of hierarchies. There are
@@ -174,24 +174,11 @@
             </xs:restriction>
           </xs:simpleType>
         </xs:attribute>
-        <xs:attribute name="usagePrefix">
-          <xs:annotation>
-            <xs:documentation>
-              If present, then this is prepended to the Dimension column
-              names during the building of collapse dimension aggregates
-              allowing 1) different dimensions to be disambiguated
-              during aggregate table recognition.
-              This should only be set for private dimensions. <!-- TODO if this is only for private dimensions then probably hierarchical relation between xsd dimension types should change -->
-            </xs:documentation>
-          </xs:annotation>
-        </xs:attribute >
-
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="CubeDimensionType" abstract="true"> <!-- TODO validate abstract attribute. Element was named PrivateDimension in other XSD. Or maybe not... Might be -->
-    <!-- TODO All Dimension Types need to be verified as they are a weird mix of attributes and elements  -->
+  <xs:complexType name="CubeDimensionType" abstract="true">
     <xs:annotation>
       <xs:documentation>
         A CubeDimension is either a usage of a Dimension ('shared
@@ -228,16 +215,6 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="foreignKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>
-          The name of the column in the fact table which joins
-          to the leaf level of this dimension. Required in a
-          private Dimension or a DimensionUsage, but not in a
-          public Dimension.
-        </xs:documentation> <!-- TODO if foreignKey is not required in a shared dimension then probably hierarchical relation between xsd dimension types should change -->
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="highCardinality" type="xs:boolean" default="false">
       <xs:annotation>
         <xs:documentation>
@@ -247,6 +224,30 @@
       </xs:annotation>
     </xs:attribute>
 
+  </xs:complexType>
+
+  <xs:complexType name="PrivateDimensionType">
+    <xs:complexContent>
+      <xs:extension base="DimensionType">
+        <xs:attribute name="foreignKey" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              The name of the column in the fact table which joins
+              to the leaf level of this dimension.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="usagePrefix" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              If present, then this is prepended to the Dimension column names
+              during the building of collapse dimension aggregates allowing different
+              dimension usages to be disambiguated during aggregate table recognition.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="HierarchyType">
@@ -418,7 +419,7 @@
             Dimensions available to be used by this cube.
           </xs:documentation>
         </xs:annotation>
-        <xs:element name="Dimension" type="DimensionType"/>
+        <xs:element name="Dimension" type="PrivateDimensionType"/>
         <xs:element name="DimensionUsage" type="DimensionUsageType"/>
       </xs:choice>
       <xs:element name="Measure" type="MeasureType" minOccurs="0" maxOccurs="unbounded">
@@ -616,7 +617,6 @@
   </xs:complexType>
 
   <xs:complexType name="VirtualCubeDimensionType">
-    <!-- TODO validate is this Dimension Type should inherit from CubeDimensionType like others. According to MondrianDef it does. -->
     <xs:annotation>
       <xs:documentation>
         A VirtualCubeDimension is a usage of a Dimension in a VirtualCube.
@@ -688,7 +688,15 @@
       </xs:documentation>
     </xs:annotation>
     <xs:complexContent>
-      <xs:extension base="CubeDimensionType"> <!-- TODO validate that this Dimension type should inherit from CubeDimensionType. Or just pick the appropriate attributes and elements. -->
+      <xs:extension base="CubeDimensionType">
+        <xs:attribute name="foreignKey" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              The name of the column in the fact table which joins
+              to the leaf level of this dimension.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="source" type="xs:string" use="required">
           <xs:annotation>
             <xs:documentation>
