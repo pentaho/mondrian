@@ -509,7 +509,7 @@
 
     <xs:sequence>
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="CubeUsages" type="CubeUsagesType" minOccurs="1"> <!-- TODO check minOccurs="1" as MondrianDef does not require a VirtualCube to have CubeUsages -->
+      <xs:element name="CubeUsages" type="CubeUsagesType" minOccurs="0">
         <xs:annotation>
           <xs:documentation>
             List of base cubes used by the virtual cube.
