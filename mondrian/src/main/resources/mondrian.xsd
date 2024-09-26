@@ -140,7 +140,7 @@
 
   </xs:complexType>
 
-  <xs:complexType name="DimensionType"> <!-- TODO DimensionType seems like an odd mixed bag of both shared and private dimension information. However that's how MondrianDef has it...  -->
+  <xs:complexType name="DimensionType">
     <xs:annotation>
       <xs:documentation>
         A Dimension is a collection of hierarchies. There are
@@ -174,24 +174,11 @@
             </xs:restriction>
           </xs:simpleType>
         </xs:attribute>
-        <xs:attribute name="usagePrefix">
-          <xs:annotation>
-            <xs:documentation>
-              If present, then this is prepended to the Dimension column
-              names during the building of collapse dimension aggregates
-              allowing 1) different dimensions to be disambiguated
-              during aggregate table recognition.
-              This should only be set for private dimensions. <!-- TODO if this is only for private dimensions then probably hierarchical relation between xsd dimension types should change -->
-            </xs:documentation>
-          </xs:annotation>
-        </xs:attribute >
-
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="CubeDimensionType" abstract="true"> <!-- TODO validate abstract attribute. Element was named PrivateDimension in other XSD. Or maybe not... Might be -->
-    <!-- TODO All Dimension Types need to be verified as they are a weird mix of attributes and elements  -->
+  <xs:complexType name="CubeDimensionType" abstract="true">
     <xs:annotation>
       <xs:documentation>
         A CubeDimension is either a usage of a Dimension ('shared
@@ -247,6 +234,15 @@
             <xs:documentation>
               The name of the column in the fact table which joins
               to the leaf level of this dimension.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="usagePrefix" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              If present, then this is prepended to the Dimension column names
+              during the building of collapse dimension aggregates allowing different
+              dimension usages to be disambiguated during aggregate table recognition.
             </xs:documentation>
           </xs:annotation>
         </xs:attribute>
