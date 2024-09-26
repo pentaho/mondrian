@@ -523,7 +523,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="VirtualCubeMeasure" type="VirtualCubeMeasureType" minOccurs="1" maxOccurs="unbounded"> <!-- TODO check if minOccurs="1" is correct. It was in the other xsd but is optional in MondrianDef -->
+      <xs:element name="VirtualCubeMeasure" type="VirtualCubeMeasureType" minOccurs="1" maxOccurs="unbounded">
         <xs:annotation>
           <xs:documentation>
             A VirtualCubeMeasure is a usage of a Measure in a VirtualCube.
