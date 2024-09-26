@@ -155,7 +155,7 @@
     <xs:complexContent>
       <xs:extension base="CubeDimensionType">
         <xs:sequence>
-          <xs:element name="Hierarchy" type="HierarchyType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs="1" when on MondrianDef its optional -->
+          <xs:element name="Hierarchy" type="HierarchyType" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
 
         <xs:attribute name="type" default="StandardDimension">
