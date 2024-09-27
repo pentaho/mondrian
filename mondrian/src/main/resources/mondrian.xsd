@@ -1841,7 +1841,7 @@
 
   </xs:complexType>
 
-  <xs:complexType name="ScriptType">
+  <xs:complexType name="ScriptType" mixed="true">
     <xs:annotation>
       <xs:documentation>
         Script fragment to implement an SPI such as user-defined function,
