@@ -1573,8 +1573,16 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="SchemaGrant" type="SchemaGrantType" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="Union" type="UnionType" minOccurs="0"/>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <!-- SchemaGrant or Union -->
+        <xs:annotation>
+          <xs:documentation>
+            Schema Grant or Union
+          </xs:documentation>
+        </xs:annotation>
+        <xs:element name="SchemaGrant" type="SchemaGrantType"/>
+        <xs:element name="Union" type="UnionType"/>
+      </xs:choice>
       <xs:element name="RoleMember" type="RoleMemberType" minOccurs="0" maxOccurs="unbounded" /> <!-- TODO only present in XOM -->
     </xs:sequence>
 
