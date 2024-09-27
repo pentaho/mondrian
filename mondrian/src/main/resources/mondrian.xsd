@@ -1430,7 +1430,7 @@
   </xs:complexType>
 
   <xs:complexType name="SQLType" mixed="true">
-    <xs:attribute name="dialect" type="xs:string" default="generic"> <!-- TODO in XSD was as required without default value -->
+    <xs:attribute name="dialect" type="xs:string" default="generic">
       <xs:annotation>
         <xs:documentation>
           Dialect of SQL the view is intended for. Valid values include, but are not limited to:
