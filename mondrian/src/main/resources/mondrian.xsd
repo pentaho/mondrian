@@ -1773,7 +1773,7 @@
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="member" type="xs:string" use="required"> <!-- TODO only required in XOM -->
+    <xs:attribute name="member" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
           The unique name of the member
