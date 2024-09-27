@@ -1025,7 +1025,7 @@
     </xs:sequence>
 
     <xs:attribute name="name" type="xs:string" use="required" />
-    <xs:attribute name="column" type="xs:string" use="required" /> <!-- TODO optional in MondrianDef -->
+    <xs:attribute name="column" type="xs:string" use="required" /> <!-- Despite being replaced by the script content when that is defined, not specifying a column will turn into an error at Report execution time in Analyzer -->
     <xs:attribute name="type" default="String">
       <xs:annotation>
         <xs:documentation>
