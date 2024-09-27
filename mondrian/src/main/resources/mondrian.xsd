@@ -1024,8 +1024,8 @@
       <xs:element name="PropertyFormatter" type="PropertyFormatterType" minOccurs="0"/> <!-- New -->
     </xs:sequence>
 
-    <xs:attribute name="name" type="xs:string" use="required" /> <!-- TODO optional in MondrianDef -->
-    <xs:attribute name="column" type="xs:string" use="required" /> <!-- TODO optional in MondrianDef -->
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="column" type="xs:string" use="required" /> <!-- Despite being replaced by the script content when that is defined, not specifying a column will turn into an error at Report execution time in Analyzer -->
     <xs:attribute name="type" default="String">
       <xs:annotation>
         <xs:documentation>
@@ -1267,7 +1267,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="visible" type="xs:boolean" default="true"> <!-- TODO XOM does not define a default value. MondrianDef will use the Boolean constructor which will return false for null values. However the default value should be true...  Some XOM elements define true as the default value. Check "visible" attributes of other elements -->
+    <xs:attribute name="visible" type="xs:boolean" default="true">
       <xs:annotation>
         <xs:documentation>
           Whether this member is visible in the user-interface. Default true.
@@ -1430,7 +1430,7 @@
   </xs:complexType>
 
   <xs:complexType name="SQLType" mixed="true">
-    <xs:attribute name="dialect" type="xs:string" default="generic"> <!-- TODO in XSD was as required without default value -->
+    <xs:attribute name="dialect" type="xs:string" default="generic">
       <xs:annotation>
         <xs:documentation>
           Dialect of SQL the view is intended for. Valid values include, but are not limited to:
@@ -1489,7 +1489,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="leftKey" type="xs:string" use="required"/> <!-- TODO required by XOM not required in old xsd -->
+    <xs:attribute name="leftKey" type="xs:string" use="required"/>
     <xs:attribute name="rightAlias" type="xs:string">
       <xs:annotation>
         <xs:documentation>
@@ -1497,7 +1497,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="rightKey" type="xs:string" use="required"/> <!-- TODO required by XOM not required in old xsd -->
+    <xs:attribute name="rightKey" type="xs:string" use="required"/>
 
   </xs:complexType>
 
@@ -1860,7 +1860,7 @@
     </xs:attribute>
   </xs:complexType>
 
-  <xs:complexType name="ElementFormatterType" abstract="true"> <!--TODO does not exist in mondrian.xsd -->
+  <xs:complexType name="ElementFormatterType" abstract="true">
     <xs:annotation>
       <xs:documentation>
         Abstract type just in order to avoid duplication.
@@ -1885,7 +1885,7 @@
 
   </xs:complexType>
 
-  <xs:complexType name="CellFormatterType"> <!--TODO does not add anything to ElementFormatterType. Can probably be deleted for simplification. -->
+  <xs:complexType name="CellFormatterType">
     <xs:annotation>
       <xs:documentation>
         Plugin that formats the values of cells.
@@ -1900,7 +1900,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="MemberFormatterType"> <!--TODO does not add anything to ElementFormatterType. Can probably be deleted for simplification. -->
+  <xs:complexType name="MemberFormatterType">
     <xs:annotation>
       <xs:documentation>
         Plugin that formats members.
@@ -1915,7 +1915,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="PropertyFormatterType"> <!--TODO does not add anything to ElementFormatterType. Can probably be deleted for simplification. -->
+  <xs:complexType name="PropertyFormatterType">
     <xs:annotation>
       <xs:documentation>
         Plugin that formats properties.
@@ -1957,7 +1957,7 @@
       </xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="ColumnDef" type="ColumnDefType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+      <xs:element name="ColumnDef" type="ColumnDefType" minOccurs="1" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -1967,14 +1967,14 @@
         Column definition for an inline table.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="name" type="xs:string" use="required"> <!-- TODO not required in mondrian.xsd -->
+    <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
           Name of the column.
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="type" use="required"> <!-- TODO not required in mondrian.xsd -->
+    <xs:attribute name="type" use="required">
       <xs:annotation>
         <xs:documentation>
           Type of the column:
@@ -2002,7 +2002,7 @@
       </xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="Row" type="RowType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+      <xs:element name="Row" type="RowType" minOccurs="1" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -2014,7 +2014,7 @@
       </xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="Value" type="ValueType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+      <xs:element name="Value" type="ValueType" minOccurs="1" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -2025,7 +2025,7 @@
         The CDATA holds the value of the column.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="column" type="xs:string" use="required"> <!-- TODO not required in mondrian.xsd but required in MondrianXOM.xml -->
+    <xs:attribute name="column" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
           Name of the column.
@@ -2277,7 +2277,7 @@
       </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="ExpressionViewType"> <!-- TODO used this type for subclasses that were not adding anything -->
+  <xs:complexType name="ExpressionViewType">
     <xs:annotation>
       <xs:documentation>
         A collection of SQL expressions, one per dialect.
