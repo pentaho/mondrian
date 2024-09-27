@@ -1860,7 +1860,7 @@
     </xs:attribute>
   </xs:complexType>
 
-  <xs:complexType name="ElementFormatterType" abstract="true"> <!--TODO does not exist in mondrian.xsd -->
+  <xs:complexType name="ElementFormatterType" abstract="true">
     <xs:annotation>
       <xs:documentation>
         Abstract type just in order to avoid duplication.
@@ -1885,7 +1885,7 @@
 
   </xs:complexType>
 
-  <xs:complexType name="CellFormatterType"> <!--TODO does not add anything to ElementFormatterType. Can probably be deleted for simplification. -->
+  <xs:complexType name="CellFormatterType">
     <xs:annotation>
       <xs:documentation>
         Plugin that formats the values of cells.
@@ -1900,7 +1900,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="MemberFormatterType"> <!--TODO does not add anything to ElementFormatterType. Can probably be deleted for simplification. -->
+  <xs:complexType name="MemberFormatterType">
     <xs:annotation>
       <xs:documentation>
         Plugin that formats members.
@@ -1915,7 +1915,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="PropertyFormatterType"> <!--TODO does not add anything to ElementFormatterType. Can probably be deleted for simplification. -->
+  <xs:complexType name="PropertyFormatterType">
     <xs:annotation>
       <xs:documentation>
         Plugin that formats properties.
