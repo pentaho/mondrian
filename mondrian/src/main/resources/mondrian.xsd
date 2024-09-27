@@ -2277,7 +2277,7 @@
       </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="ExpressionViewType"> <!-- TODO used this type for subclasses that were not adding anything -->
+  <xs:complexType name="ExpressionViewType">
     <xs:annotation>
       <xs:documentation>
         A collection of SQL expressions, one per dialect.
