@@ -1974,7 +1974,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="type" use="required"> <!-- TODO not required in mondrian.xsd -->
+    <xs:attribute name="type" use="required">
       <xs:annotation>
         <xs:documentation>
           Type of the column:
