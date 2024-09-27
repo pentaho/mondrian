@@ -1841,7 +1841,7 @@
 
   </xs:complexType>
 
-  <xs:complexType name="ScriptType">
+  <xs:complexType name="ScriptType" mixed="true">
     <xs:annotation>
       <xs:documentation>
         Script fragment to implement an SPI such as user-defined function,
@@ -1936,12 +1936,11 @@
       <xs:element name="Rows" type="RowsType" minOccurs="1" maxOccurs="1"/>
     </xs:sequence>
 
-    <xs:attribute name="alias" type="xs:string"> <!--TODO not present in mondrian.xsd -->
+    <xs:attribute name="alias" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
           Alias to be used with this table when it is used to
-          form queries. If not specified, defaults to the table
-          name, but in any case, must be unique within the
+          form queries. It must be unique within the
           schema. (You can use the same table in different
           hierarchies, but it must have different aliases.)
         </xs:documentation>
@@ -2018,7 +2017,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="ValueType">
+  <xs:complexType name="ValueType" mixed="true">
     <xs:annotation>
       <xs:documentation>
         Column value for an inline table.
