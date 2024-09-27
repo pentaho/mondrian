@@ -1600,21 +1600,28 @@
   </xs:complexType>
 
   <xs:complexType name="SchemaGrantType">
-    <xs:complexContent>
-      <xs:extension base="GrantType"> <!-- TODO in mondrian.xsd access only allows values "all" and "none" -->
-        <xs:annotation>
-          <xs:documentation>
-            Grants (or denies) this role access to this schema. access may be "all", "all_dimensions", or "none".
-            If access is "all_dimensions", the role has access to all dimensions but still needs explicit access to cubes.
-            See mondrian.olap.Role#grant(mondrian.olap.Schema,int).
-          </xs:documentation>
-        </xs:annotation>
+    <xs:annotation>
+      <xs:documentation>
+        Grants (or denies) this role access to this schema. access may be "all", "all_dimensions", or "none".
+        If access is "all_dimensions", the role has access to all dimensions but still needs explicit access to cubes.
+        See mondrian.olap.Role#grant(mondrian.olap.Schema,int).
+      </xs:documentation>
+    </xs:annotation>
 
-        <xs:sequence>
-          <xs:element name="CubeGrant" type="CubeGrantType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
-      </xs:extension>
-    </xs:complexContent>
+    <xs:sequence>
+      <xs:element name="CubeGrant" type="CubeGrantType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+
+    <xs:attribute name="access" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="all"/>
+          <xs:enumeration value="all_dimensions"/>
+          <xs:enumeration value="custom"/>
+          <xs:enumeration value="none"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="CubeGrantType">
