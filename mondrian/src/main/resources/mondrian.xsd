@@ -1626,7 +1626,7 @@
 
   <xs:complexType name="CubeGrantType">
     <xs:complexContent>
-      <xs:extension base="GrantType"> <!-- TODO in mondrian.xsd access only allows values "all" and "none" -->
+      <xs:extension base="GrantType">
         <xs:annotation>
           <xs:documentation>
             Grants (or denies) this role access to a cube.
@@ -1657,7 +1657,7 @@
 
   <xs:complexType name="DimensionGrantType">
     <xs:complexContent>
-      <xs:extension base="GrantType"> <!-- TODO in mondrian.xsd access only allows values "all" and "none" -->
+      <xs:extension base="GrantType">
         <xs:annotation>
           <xs:documentation>
             Grants (or denies) this role access to a dimension.
@@ -1685,7 +1685,7 @@
 
   <xs:complexType name="HierarchyGrantType">
     <xs:complexContent>
-      <xs:extension base="GrantType"> <!-- TODO in mondrian.xsd access only allows values "all" and "none" -->
+      <xs:extension base="GrantType">
         <xs:annotation>
           <xs:documentation>
             Grants (or denies) this role access to a hierarchy.
