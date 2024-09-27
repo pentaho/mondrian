@@ -2017,7 +2017,7 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="ValueType">
+  <xs:complexType name="ValueType" mixed="true">
     <xs:annotation>
       <xs:documentation>
         Column value for an inline table.
