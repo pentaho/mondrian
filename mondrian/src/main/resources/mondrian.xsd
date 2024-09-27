@@ -2025,7 +2025,7 @@
         The CDATA holds the value of the column.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="column" type="xs:string" use="required"> <!-- TODO not required in mondrian.xsd but required in MondrianXOM.xml -->
+    <xs:attribute name="column" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
           Name of the column.
