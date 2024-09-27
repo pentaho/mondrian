@@ -1489,7 +1489,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="leftKey" type="xs:string" use="required"/> <!-- TODO required by XOM not required in old xsd -->
+    <xs:attribute name="leftKey" type="xs:string" use="required"/>
     <xs:attribute name="rightAlias" type="xs:string">
       <xs:annotation>
         <xs:documentation>
@@ -1497,7 +1497,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="rightKey" type="xs:string" use="required"/> <!-- TODO required by XOM not required in old xsd -->
+    <xs:attribute name="rightKey" type="xs:string" use="required"/>
 
   </xs:complexType>
 
