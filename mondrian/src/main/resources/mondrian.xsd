@@ -1024,7 +1024,7 @@
       <xs:element name="PropertyFormatter" type="PropertyFormatterType" minOccurs="0"/> <!-- New -->
     </xs:sequence>
 
-    <xs:attribute name="name" type="xs:string" use="required" /> <!-- TODO optional in MondrianDef -->
+    <xs:attribute name="name" type="xs:string" use="required" />
     <xs:attribute name="column" type="xs:string" use="required" /> <!-- TODO optional in MondrianDef -->
     <xs:attribute name="type" default="String">
       <xs:annotation>
