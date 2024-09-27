@@ -1672,7 +1672,7 @@
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Dimension, int)">mondrian.olap.Role#grant(mondrian.olap.Dimension,int)</a>.
           </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="dimension" type="xs:string" use="required"> <!-- TODO required in mondrian.xsd -->
+        <xs:attribute name="dimension" type="xs:string" use="required">
           <xs:annotation>
             <xs:documentation>
               The unique name of the dimension
