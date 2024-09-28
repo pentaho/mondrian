@@ -1818,7 +1818,7 @@
         Usage of a Role in a union Role.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="roleName" type="xs:string" use="required"/> <!-- TODO not required in mondrian.xsd -->
+    <xs:attribute name="roleName" type="xs:string" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="UserDefinedFunctionType">
