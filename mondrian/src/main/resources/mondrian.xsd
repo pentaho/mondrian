@@ -1573,8 +1573,16 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="SchemaGrant" type="SchemaGrantType" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="Union" type="UnionType" minOccurs="0"/>
+      <xs:choice minOccurs="0" maxOccurs="1">
+        <!-- SchemaGrant or Union -->
+        <xs:annotation>
+          <xs:documentation>
+            Schema Grant or Union
+          </xs:documentation>
+        </xs:annotation>
+        <xs:element name="SchemaGrant" type="SchemaGrantType" maxOccurs="unbounded"/>
+        <xs:element name="Union" type="UnionType" maxOccurs="unbounded"/>
+      </xs:choice>
       <xs:element name="RoleMember" type="RoleMemberType" minOccurs="0" maxOccurs="unbounded" /> <!-- TODO only present in XOM -->
     </xs:sequence>
 
@@ -1592,7 +1600,6 @@
       <xs:simpleType>
         <xs:restriction base="xs:string">
           <xs:enumeration value="all"/>
-          <xs:enumeration value="all-dimensions"/>
           <xs:enumeration value="custom"/>
           <xs:enumeration value="none"/>
         </xs:restriction>
@@ -1601,26 +1608,33 @@
   </xs:complexType>
 
   <xs:complexType name="SchemaGrantType">
-    <xs:complexContent>
-      <xs:extension base="GrantType"> <!-- TODO in mondrian.xsd access only allows values "all" and "none" -->
-        <xs:annotation>
-          <xs:documentation>
-            Grants (or denies) this role access to this schema. access may be "all", "all_dimensions", or "none".
-            If access is "all_dimensions", the role has access to all dimensions but still needs explicit access to cubes.
-            See mondrian.olap.Role#grant(mondrian.olap.Schema,int).
-          </xs:documentation>
-        </xs:annotation>
+    <xs:annotation>
+      <xs:documentation>
+        Grants (or denies) this role access to this schema. access may be "all", "all_dimensions", "custom" or "none".
+        If access is "all_dimensions", the role has access to all dimensions but still needs explicit access to cubes.
+        See mondrian.olap.Role#grant(mondrian.olap.Schema,int).
+      </xs:documentation>
+    </xs:annotation>
 
-        <xs:sequence>
-          <xs:element name="CubeGrant" type="CubeGrantType" minOccurs="0" maxOccurs="unbounded"/>
-        </xs:sequence>
-      </xs:extension>
-    </xs:complexContent>
+    <xs:sequence>
+      <xs:element name="CubeGrant" type="CubeGrantType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+
+    <xs:attribute name="access" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="all"/>
+          <xs:enumeration value="all_dimensions"/>
+          <xs:enumeration value="custom"/>
+          <xs:enumeration value="none"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="CubeGrantType">
     <xs:complexContent>
-      <xs:extension base="GrantType"> <!-- TODO in mondrian.xsd access only allows values "all" and "none" -->
+      <xs:extension base="GrantType">
         <xs:annotation>
           <xs:documentation>
             Grants (or denies) this role access to a cube.
@@ -1651,7 +1665,7 @@
 
   <xs:complexType name="DimensionGrantType">
     <xs:complexContent>
-      <xs:extension base="GrantType"> <!-- TODO in mondrian.xsd access only allows values "all" and "none" -->
+      <xs:extension base="GrantType">
         <xs:annotation>
           <xs:documentation>
             Grants (or denies) this role access to a dimension.
@@ -1666,7 +1680,7 @@
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Dimension, int)">mondrian.olap.Role#grant(mondrian.olap.Dimension,int)</a>.
           </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="dimension" type="xs:string" use="required"> <!-- TODO required in mondrian.xsd -->
+        <xs:attribute name="dimension" type="xs:string" use="required">
           <xs:annotation>
             <xs:documentation>
               The unique name of the dimension
@@ -1679,7 +1693,7 @@
 
   <xs:complexType name="HierarchyGrantType">
     <xs:complexContent>
-      <xs:extension base="GrantType"> <!-- TODO in mondrian.xsd access only allows values "all" and "none" -->
+      <xs:extension base="GrantType">
         <xs:annotation>
           <xs:documentation>
             Grants (or denies) this role access to a hierarchy.
@@ -1767,7 +1781,7 @@
         </xs:restriction>
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="member" type="xs:string" use="required"> <!-- TODO only required in XOM -->
+    <xs:attribute name="member" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>
           The unique name of the member
@@ -1804,7 +1818,7 @@
         Usage of a Role in a union Role.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="roleName" type="xs:string" use="required"/> <!-- TODO not required in mondrian.xsd -->
+    <xs:attribute name="roleName" type="xs:string" use="required"/>
   </xs:complexType>
 
   <xs:complexType name="UserDefinedFunctionType">
