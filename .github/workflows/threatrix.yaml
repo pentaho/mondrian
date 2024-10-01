@@ -1,10 +1,10 @@
 name: Threatrix Scan
 on:
-  pull_request:
-    types:
-      - 'opened'
-      - 'reopened'
-  workflow_dispatch:
+  push:
+#    types:
+#      - 'opened'
+#      - 'reopened'
+#  workflow_dispatch:
 jobs:
   execute-scan-workflow:
     uses: threatrix/threat-agent-scan/.github/workflows/scan-repo-reusable.yaml@master
