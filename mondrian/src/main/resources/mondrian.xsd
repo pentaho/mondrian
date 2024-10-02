@@ -622,28 +622,17 @@
         A VirtualCubeDimension is a usage of a Dimension in a VirtualCube.
       </xs:documentation>
     </xs:annotation>
-    <xs:attribute name="cubeName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>
-          Name of the cube which the dimension belongs to, or unspecified if the dimension is shared.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>
-          Name of the dimension.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="visible" type="xs:boolean" default="true"> <!-- New -->
-      <xs:annotation>
-        <xs:documentation>
-          Whether this cube dimension is visible in the user-interface.
-          Default true.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:complexContent>
+      <xs:extension base="CubeDimensionType">
+        <xs:attribute name="cubeName" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              Name of the cube which the dimension belongs to, or unspecified if the dimension is shared.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="VirtualCubeMeasureType">
@@ -928,7 +917,7 @@
           This attribute is deprecated. Please use a nested MemberFormatter element.
 
           Name of a formatter class for the member labels being displayed.
-          The class must implement the mondrian.olap.MemberFormatter interface.
+          The class must implement the mondrian.spi.MemberFormatter interface.
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -1162,7 +1151,7 @@
           This attribute is deprecated. Please use a nested CellFormatter element.
 
           Name of a formatter class for the member labels being displayed.
-          The class must implement the mondrian.olap.CellFormatter interface.
+          The class must implement the mondrian.spi.CellFormatter interface.
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
