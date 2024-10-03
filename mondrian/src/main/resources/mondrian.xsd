@@ -2051,17 +2051,24 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="rollupType" type="xs:string"> <!-- TODO not present in mondrian.xsd -->
+    <xs:attribute name="rollupType"> <!-- New -->
       <xs:annotation>
-        <xs:documentation> <!-- TODO should this be an enum? it is a plain string in XOM-->
+        <xs:documentation>
           Explicitly define rollup type. Available types: AvgFromSum, AvgFromAvg, SumFromAvg.
           Will be ignored if wrong type is chosen.
         </xs:documentation>
       </xs:annotation>
+      <xs:simpleType>
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="AvgFromSum"/>
+          <xs:enumeration value="AvgFromAvg"/>
+          <xs:enumeration value="SumFromAvg"/>
+        </xs:restriction>
+      </xs:simpleType>
     </xs:attribute>
   </xs:complexType>
 
-  <xs:complexType name="AggLevelPropertyType"> <!-- TODO not present in mondrian.xsd -->
+  <xs:complexType name="AggLevelPropertyType"> <!-- New -->
     <xs:annotation>
       <xs:documentation>
         Member property.
@@ -2078,19 +2085,19 @@
 
     <xs:attribute name="column" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation> <!-- TODO different comment in mondrian.xsd -->
+        <xs:documentation>
           The name of the column mapping to the level name.
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="ordinalColumn" type="xs:string"> <!-- TODO not present in mondrian.xsd -->
+    <xs:attribute name="ordinalColumn" type="xs:string"> <!-- New -->
       <xs:annotation>
         <xs:documentation>
           The ordinal column for this level.
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="captionColumn" type="xs:string"> <!-- TODO not present in mondrian.xsd -->
+    <xs:attribute name="captionColumn" type="xs:string"> <!-- New -->
       <xs:annotation>
         <xs:documentation>
           The name of the database column that holds the caption for this level.
@@ -2099,12 +2106,12 @@
     </xs:attribute>
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation> <!-- TODO different comment in mondrian.xsd -->
+        <xs:documentation>
           The name of the Dimension Hierarchy level.
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="nameColumn" type="xs:string"> <!-- TODO not present in mondrian.xsd -->
+    <xs:attribute name="nameColumn" type="xs:string"> <!-- New -->
       <xs:annotation>
         <xs:documentation>
           The name of the column which holds the user identifier of
@@ -2112,7 +2119,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="collapsed" type="xs:boolean" default="true"> <!-- TODO not present in mondrian.xsd -->
+    <xs:attribute name="collapsed" type="xs:boolean" default="true"> <!-- New -->
       <xs:annotation>
         <xs:documentation>
           Whether this is a collapsed level. The parents of that level
@@ -2187,7 +2194,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="AggMeasureFactCount" type="AggMeasureFactCountType" minOccurs="0" maxOccurs="unbounded"> <!-- TODO not present in mondrian.xsd -->
+      <xs:element name="AggMeasureFactCount" type="AggMeasureFactCountType" minOccurs="0" maxOccurs="unbounded"> <!-- New -->
         <xs:annotation>
           <xs:documentation>
             What does the fact_count column look like.
@@ -2196,7 +2203,7 @@
       </xs:element>
       <xs:element name="AggIgnoreColumn" type="AggColumnNameType" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="AggForeignKey" type="AggForeignKeyType" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="AggMeasure" type="AggMeasureType" minOccurs="1" maxOccurs="unbounded"/> <!-- TODO minOccurs 1 in mondrian.xsd -->
+      <xs:element name="AggMeasure" type="AggMeasureType" minOccurs="1" maxOccurs="unbounded"/>
       <xs:element name="AggLevel" type="AggLevelType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
 
@@ -2220,7 +2227,7 @@
             </xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="approxRowCount" type="xs:string" use="required"> <!--TODO not present in mondrian.xsd -->
+        <xs:attribute name="approxRowCount" type="xs:string" use="required"> <!-- New -->
           <xs:annotation>
             <xs:documentation>
               The estimated number of rows in this aggregation
@@ -2261,8 +2268,14 @@
     </xs:choice>
   </xs:group>
 
-  <xs:complexType name="AggColumnNameType"> <!-- TODO no longer abstract, as it was in XOM, to use in AggFactCountType's place -->
-    <xs:attribute name="column" type="xs:string" use="required" /> <!-- TODO Didn't add comment from MondrianXOM, as it seems to belong to one of the subclasses -->
+  <xs:complexType name="AggColumnNameType">
+    <xs:attribute name="column" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>
+          The aggregation table's column name
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <xs:complexType name="AggMeasureFactCountType">
