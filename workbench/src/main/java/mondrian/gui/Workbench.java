@@ -20,12 +20,9 @@ import mondrian.server.MondrianServerRegistry;
 import mondrian.util.UnionIterator;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
-import org.eigenbase.xom.XMLOutput;
 import org.eigenbase.xom.*;
 
 import org.pentaho.di.core.Const;
@@ -40,12 +37,17 @@ import org.pentaho.ui.xul.*;
 import org.pentaho.ui.xul.containers.XulDialog;
 import org.pentaho.ui.xul.swing.SwingXulLoader;
 
-import java.awt.*;
+import java.awt.Font;
+import java.awt.Color;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Cursor;
 import java.awt.event.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.List;
+import java.text.SimpleDateFormat;
+
 import javax.swing.*;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
@@ -53,6 +55,7 @@ import javax.swing.filechooser.FileSystemView;
 import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.TreePath;
+import javax.swing.border.EmptyBorder;
 
 /**
  * @author sean
@@ -1094,40 +1097,89 @@ public class Workbench extends javax.swing.JFrame {
 
     private void aboutMenuItemActionPerformed(ActionEvent evt) {
         try {
-            URL versionUrl = myClassLoader.getResource(
-                getResourceConverter().getGUIReference("version"));
-            InputStream versionIn = versionUrl.openStream();
-            String ver = IOUtils.toString(versionIn);
-            ver = ver.replace(
-                "PRODUCT_VERSION",
-                MondrianServerRegistry.INSTANCE.getProductVersion());
-            ver = ver.replace(
-                "COPYRIGHT_YEAR",
-                MondrianServerRegistry.INSTANCE.getCopyrightYear());
-            JEditorPane jEditorPane =
-                new JEditorPane("text/html", ver);
-            jEditorPane.setEditable(false);
-            JScrollPane jScrollPane = new JScrollPane(jEditorPane);
-            JPanel jPanel = new JPanel();
-            jPanel.setLayout(new java.awt.BorderLayout());
-            jPanel.add(jScrollPane, java.awt.BorderLayout.CENTER);
+          final ImageIcon picture = new ImageIcon(
+            myClassLoader.getResource(
+                getResourceConverter().getGUIReference(
+                    "aboutSplash")));
+          final JPanel imagePanel = new JPanel( new BorderLayout() );
+          imagePanel.setUI( new BackgroundUI( picture ) );
+          imagePanel.setBorder( BorderFactory.createLineBorder( Color.DARK_GRAY ) );
 
-            JInternalFrame jf = new JInternalFrame();
-            jf.setTitle("About");
-            jf.getContentPane().add(jPanel);
+          final JLabel versionLabel = new JLabel();
+          versionLabel.setText( getResourceConverter().getFormattedString( 
+                                  "schemaExplorer.about.version",
+                                  "Version: {0}",
+                                  MondrianServerRegistry.INSTANCE.getProductVersion() ) );
+          versionLabel.setFont( new Font( Font.SANS_SERIF, Font.BOLD, 14 ) );
+          versionLabel.setOpaque( false );
+          versionLabel.setBackground( new Color( 0, 0, 0, 0 ) );
+          versionLabel.setForeground( new Color( 65, 65, 65 ) );
+          versionLabel.setBorder( new EmptyBorder( 0, 0, 0, 0 ) );
+          versionLabel.setBounds( 300, 80, 700, versionLabel.getPreferredSize().height );
 
-            Dimension screenSize = this.getSize();
-            int aboutW = 400;
-            int aboutH = 300;
-            int width = (screenSize.width / 2) - (aboutW / 2);
-            int height = (screenSize.height / 2) - (aboutH / 2) - 100;
-            jf.setBounds(width, height, aboutW, aboutH);
-            jf.setClosable(true);
+          final String year = new SimpleDateFormat( "yyyy" ).format( new Date() );
+          final JTextArea copyrightArea = new JTextArea( getResourceConverter().getFormattedString( 
+                                                          "schemaExplorer.about.copyright",
+                                                          "Copyright (c) {0} Hitachi Vantara. All rights reserved.",
+                                                          year ) );
+          copyrightArea.setEditable( false );
+          copyrightArea.setBounds( 300, 105, 700, 25 );
+          copyrightArea.setOpaque( false );
+          copyrightArea.setLineWrap( true );
+          copyrightArea.setWrapStyleWord( true );
+          copyrightArea.setFont( new Font( Font.SANS_SERIF, Font.PLAIN, 12 ) );
+          copyrightArea.setEnabled( false );
+          copyrightArea.setBackground( new Color( 0, 0, 0, 0 ) );
+          copyrightArea.setForeground( new Color( 65, 65, 65 ) );
+          copyrightArea.setBorder( new EmptyBorder( 0, 0, 0, 0 ) );
+          copyrightArea.setDisabledTextColor( copyrightArea.getForeground() );
 
-            desktopPane.add(jf);
+          StringBuilder sb = new StringBuilder();
+          String line;
+          try {
+              BufferedReader reader =
+                      new BufferedReader(
+                        new InputStreamReader(
+                          Workbench.class.getClassLoader().getResourceAsStream(
+                              "mondrian/gui/resources/license.txt" ) ) );
+              while ( ( line = reader.readLine() ) != null ) {
+                sb.append( line + System.getProperty( "line.separator" ) );
+              }
+          } catch ( Exception ex ) {
+            LOGGER.error( getResourceConverter().getString( "schemaExplorer.about.licenseTextNotFound",
+                                                          "Failed to load the license text" ), ex );
+          }
+          final JTextArea licenseArea = new JTextArea( sb.toString() );
+          licenseArea.setEditable( false );
+          licenseArea.setBounds( 300, 130, 700, 800 );
+          licenseArea.setOpaque( false );
+          licenseArea.setLineWrap( true );
+          licenseArea.setWrapStyleWord( true );
+          licenseArea.setFont( new Font( "Monospaced", Font.PLAIN, 9 ) );
+          licenseArea.setEnabled( false );
+          licenseArea.setBackground( new Color( 0, 0, 0, 0 ) );
+          licenseArea.setBorder( new EmptyBorder( 0, 0, 0, 0 ) );
+          licenseArea.setDisabledTextColor( copyrightArea.getForeground() );
 
-            jf.setVisible(true);
-            jf.show();
+          // Add all the overlays
+          final JPanel imagePanelOverlay = new JPanel( null );
+          imagePanelOverlay.setOpaque( false );
+          imagePanelOverlay.add( versionLabel );
+          imagePanelOverlay.add( copyrightArea );
+          imagePanelOverlay.add( licenseArea );
+          imagePanelOverlay.setBackground( new Color( 0, 0, 0, 0 ) );
+
+          imagePanel.add( imagePanelOverlay );
+          imagePanel.setPreferredSize( new Dimension( picture.getIconWidth(), picture.getIconHeight() ) );
+
+          JFrame.setDefaultLookAndFeelDecorated(true);
+          JFrame jf = new JFrame("About");
+          jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+          jf.getContentPane().add(imagePanel);
+          jf.pack();
+          jf.setLocationRelativeTo(null);
+          jf.setVisible(true);
+
         } catch (Exception ex) {
             LOGGER.error("aboutMenuItemActionPerformed", ex);
         }
