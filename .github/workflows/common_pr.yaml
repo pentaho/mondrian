@@ -131,4 +131,4 @@ jobs:
 
       - run: |
            curl -LJO https://github.com/threatrix/threat-matrix/releases/download/agent-release-latest/threat-agent-v2.2.1.jar
-           java -jar threat-agent-latest.jar --verbose --progress --app-name=${{ github.event.repository.name }} --branch=${{ github.head_ref || github.ref_name }} --repo-owner=pentaho --repo-name=${{ github.event.repository.name }} --scpId="${{ inputs.threatrix_scpid }}" --oid=${{ secrets.THREATRIX_OID }} --eid=${{ secrets.THREATRIX_EID }} --api-key=${{ secrets.THREATRIX_SERVER_API_KEY }} .
+           java -jar threat-agent-v2.2.1.jar --verbose --progress --app-name=${{ github.event.repository.name }} --branch=${{ github.head_ref || github.ref_name }} --repo-owner=pentaho --repo-name=${{ github.event.repository.name }} --scpId="${{ inputs.threatrix_scpid }}" --oid=${{ secrets.THREATRIX_OID }} --eid=${{ secrets.THREATRIX_EID }} --api-key=${{ secrets.THREATRIX_SERVER_API_KEY }} .
