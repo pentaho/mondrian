@@ -8,10 +8,5 @@ jobs:
     with:
       slack_channels: ""
 #      sonar_project_key: "pdi-plugins-ee"
-      additional_mvn_directives: "-am
-        -Duse-existing-docker-network=$(docker container ls --filter name=onehitachivantaracomdevopsdockerreleasepentahoactionscommon --latest -q | xargs -I % docker inspect % -f '{{.HostConfig.NetworkMode}}') 
-        -Dmaven.test.redirectTestOutputToFile=false 
-        -DrunITs 
-        -Drelease -Dpentaho-ee-dsc.version=10.2.0.0-111 
-        -DsetVmMaxMapCountForElasticsearch"
+      additional_mvn_directives: ""
     secrets: inherit
