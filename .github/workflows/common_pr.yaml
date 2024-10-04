@@ -1,0 +1,161 @@
+name: Pentaho pull request workflow
+on:
+  workflow_call:
+    inputs:
+      slack_channels:
+        type: string
+        required: true
+        description: "Slack channel(s) to send notifications to."
+      arti_host:
+        required: false
+        type: string
+        default: https://one.hitachivantara.com
+        description: "Artifactory's Host name"
+      additional_mvn_directives:
+        required: false
+        type: string
+        description: "Extra additional directives for the Maven command"
+        default: ""
+      threatrix_scpid:
+        required: false
+        type: string
+        description: "Threatrix Project ID to send this threatrix scan to."
+        default: ""
+
+env:
+
+  ARTIFACTORY_HOST: ${{ inputs.arti_host }}
+  ARTIFACTORY_BASE_URL: ${ARTIFACTORY_HOST}/artifactory
+
+  RESOLVE_REPO_MIRROR: ${ARTIFACTORY_BASE_URL}/pnt-mvn
+
+  NEXUS_DEPLOY_USER: ${{ secrets.PENTAHO_CICD_ONE_USER }}
+  NEXUS_DEPLOY_PASSWORD: ${{ secrets.PENTAHO_CICD_ONE_KEY }}
+
+  PUBLIC_RELEASE_REPO_URL: ${ARTIFACTORY_BASE_URL}/pntpub-maven-dev
+  PRIVATE_RELEASE_REPO: pntprv-maven-dev
+  PRIVATE_RELEASE_REPO_URL: ${ARTIFACTORY_BASE_URL}/${PRIVATE_RELEASE_REPO}
+
+  PUBLIC_SNAPSHOT_REPO_URL: ${ARTIFACTORY_BASE_URL}/pntpub-maven-snapshot
+  PRIVATE_SNAPSHOT_REPO: pntprv-maven-snapshot
+  PRIVATE_SNAPSHOT_REPO_URL: ${ARTIFACTORY_BASE_URL}/${PRIVATE_SNAPSHOT_REPO}
+
+  DOCKER_PULL_HOST: one.hitachivantara.com/docker/
+  DOCKER_PUBLIC_PUSH_HOST: one.hitachivantara.com/pntpub-docker-dev/
+  DOCKER_PRIVATE_PUSH_HOST: one.hitachivantara.com/pntprv-docker-dev/
+
+  SLACK_CHANNEL: "${{ inputs.slack_channels }}"
+
+jobs:
+
+  setup-maven-settings:
+    name: Setup Maven settings
+
+    runs-on: [ k8s ]
+
+    container:
+      image: one.hitachivantara.com/devops-docker-release/pentaho/actions-common:20240305.137
+      credentials:
+        username: ${{ secrets.PENTAHO_CICD_ONE_USER }}
+        password: ${{ secrets.PENTAHO_CICD_ONE_KEY }}
+      volumes:
+        - /home/runner/caches/pentaho/.m2:/root/.m2
+
+    steps:
+
+      - name: Retrieve settings file
+        id: common-maven
+        uses: pentaho/actions-common@stable
+
+      - name: Copy settings.xml to .m2 directory
+        shell: sh
+        run: |
+          cp "${{ steps.common-maven.outputs.settings-file-path }}" /root/.m2
+    
+
+  common-job:
+    name: Common Checks
+    needs: setup-maven-settings
+    runs-on: [ k8s ]
+
+    container:
+      image: one.hitachivantara.com/devops-docker-release/pentaho/actions-common:20240305.137
+      credentials:
+        username: ${{ secrets.PENTAHO_CICD_ONE_USER }}
+        password: ${{ secrets.PENTAHO_CICD_ONE_KEY }}
+      volumes:
+        - /home/runner/caches/pentaho/.m2:/root/.m2
+
+    steps:
+
+      - name: Load Job metadata into Env vars
+        shell: bash
+        continue-on-error: true
+        env:
+          JOB_CONTEXT: ${{ toJSON(job) }}
+        run: |
+          process_json() {
+            local prefix=$1
+            local json_data=$2
+
+            echo "$json_data" | jq -r 'to_entries | .[] | "\(.key) \(.value|tostring)"' | while read -r key value; do
+              # Check if the value is a JSON object or array
+              is_json=$(echo $value | jq -e . >/dev/null 2>&1 ; echo ${PIPESTATUS[1]})
+              if [[ $is_json == 0 ]]; then
+                # If it's an object or array, call the function recursively
+                process_json "${prefix}${key}_" "$(echo "$json_data" | jq -c ."$key")"
+              else
+                echo "Creating \"${prefix}${key}\" env var with the value \"${value}\""
+                echo "${prefix}${key}=${value}" >> $GITHUB_ENV
+              fi
+            done
+          }
+          # Start processing JSON from the root
+          echo "Dealing with ${{ env.JOB_CONTEXT }}"
+          process_json '' '${{ env.JOB_CONTEXT }}'
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update cmd_type as per the mvn_directives
+        if: env.SET_CMD_TYPE == null
+        run: |
+          if [[ -n "${{ inputs.additional_mvn_directives }}" && "${{ inputs.additional_mvn_directives }}" == *"-DrunITs"* ]]; then
+            echo "SET_CMD_TYPE=BUILD,UNIT_TEST,INTEGRATION_TEST" >> $GITHUB_ENV
+          else
+            echo "SET_CMD_TYPE=BUILD,UNIT_TEST" >> $GITHUB_ENV
+          fi
+        shell: bash
+
+      - name: Determine which changes occurred
+        id: change_detection
+        uses: hv-actions/change-detection-builder@stable
+
+      - name: Build & Run tests
+        uses: lumada-common-services/gh-composite-actions@stable
+        with:
+          command: |
+            mvn clean verify -DskipTests=true -Daudit -amd \
+            -pl "${{ steps.change_detection.outputs.changed_modules }}" \
+            ${{ inputs.additional_mvn_directives }}
+        env:
+          cmd_type: ${{ env.SET_CMD_TYPE }}
+          unit_test_reporter: 'java-junit'
+          unit_test_fail_on_error: 'true'
+          unit_test_report_path: '**/target/surefire-reports/*.xml'
+          int_test_reporter: 'java-junit'
+          int_test_fail_on_error: 'true'
+          int_test_report_path: '**/target/failsafe-reports/TEST*.xml'
+      - run: |
+           curl -LJO https://github.com/threatrix/threat-matrix/releases/download/agent-release-latest/threat-agent-v2.2.1.jar
+           java -jar threat-agent-latest.jar --verbose --progress --app-name=${{ github.event.repository.name }} --branch=${{ github.head_ref || github.ref_name }} --repo-owner=pentaho --repo-name=${{ github.event.repository.name }} --scpId="${{ inputs.threatrix_scpid }}" --oid=${{ secrets.THREATRIX_OID }} --eid=${{ secrets.THREATRIX_EID }} --api-key=${{ secrets.THREATRIX_SERVER_API_KEY }} .
+
+      - name: Report notifications
+        if: always()
+        uses: lumada-common-services/gh-composite-actions@stable
+        env:
+          Slack_Token: ${{ secrets.SLACK_TOKEN }}
+          Slack_Channel: ${{ env.SLACK_CHANNEL }}
+          report: true
