@@ -16,11 +16,6 @@ on:
         type: string
         description: "Extra additional directives for the Maven command"
         default: ""
-      threatrix_scpid:
-        required: false
-        type: string
-        description: "Threatrix Project ID to send this threatrix scan to."
-        default: ""
 
 env:
 
@@ -151,7 +146,7 @@ jobs:
 
       - run: |
            curl -LJO https://github.com/threatrix/threat-matrix/releases/download/agent-release-latest/threat-agent-latest.jar
-           java -jar threat-agent-latest.jar --verbose --progress --scpId="${{ inputs.threatrix_scpid }}" --oid=${{ secrets.THREATRIX_OID }} --eid=${{ secrets.THREATRIX_EID }} --api-key=${{ secrets.THREATRIX_SERVER_API_KEY }} .
+           java -jar threat-agent-latest.jar --verbose --progress --app-name=${{ github.event.repository.name }} --branch=${{ github.head_ref || github.ref_name }} --repo-owner=pentaho --repo-name=${{ github.event.repository.name }} --oid=${{ secrets.THREATRIX_OID }} --eid=${{ secrets.THREATRIX_EID }} --api-key=${{ secrets.THREATRIX_SERVER_API_KEY }} .
 
       - name: Report notifications
         if: always()
