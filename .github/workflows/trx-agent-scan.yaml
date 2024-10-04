@@ -4,9 +4,11 @@ on: pull_request
 jobs:
 
   reusable-pr-workflow:
-    uses: pentaho/actions-common/.github/workflows/pr.yml@HNC-853
+    uses: lucboudreau/actions-common/.github/workflows/pr.yml@HNC-853-2
     with:
       slack_channels: ""
 #      sonar_project_key: "pdi-plugins-ee"
       additional_mvn_directives: ""
+      # add pentaho legacy scpid
+      threatrix_scpid: 3ef4b1f1-778b-4204-94ae-5c7e360f13ab
     secrets: inherit
