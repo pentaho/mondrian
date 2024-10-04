@@ -1,15 +1,17 @@
-on:
-  push:
-  workflow_dispatch:
+name: pull request workflow
+on: pull_request
+
 jobs:
-  execute-scan-workflow:
-    uses: threatrix/threat-agent-scan/.github/workflows/scan-repo-reusable.yaml@master
+
+  reusable-pr-workflow:
+    uses: pentaho/actions-common/.github/workflows/pr.yml@HNC-853
     with:
-      eid: 152cdb22-7aa4-4eb4-9ecf-e3790437833f
-      oid: b7c5524a-63d2-406e-9752-56cbf90228cc
-      # SCPID is for Pentaho Legacy BoM Certify Project
-      scpid: 3ef4b1f1-778b-4204-94ae-5c7e360f13ab
-      trx-host: https://app.threatrix.io
-    secrets:
-      TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      THREATRIX_SERVER_API_KEY: ${{ secrets.THREATRIX_API_KEY }}
+      slack_channels: ""
+#      sonar_project_key: "pdi-plugins-ee"
+      additional_mvn_directives: "-am
+        -Duse-existing-docker-network=$(docker container ls --filter name=onehitachivantaracomdevopsdockerreleasepentahoactionscommon --latest -q | xargs -I % docker inspect % -f '{{.HostConfig.NetworkMode}}') 
+        -Dmaven.test.redirectTestOutputToFile=false 
+        -DrunITs 
+        -Drelease -Dpentaho-ee-dsc.version=10.2.0.0-111 
+        -DsetVmMaxMapCountForElasticsearch"
+    secrets: inherit
