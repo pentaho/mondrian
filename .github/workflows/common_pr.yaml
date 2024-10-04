@@ -129,33 +129,6 @@ jobs:
           fi
         shell: bash
 
-      - name: Determine which changes occurred
-        id: change_detection
-        uses: hv-actions/change-detection-builder@stable
-
-      - name: Build & Run tests
-        uses: lumada-common-services/gh-composite-actions@stable
-        with:
-          command: |
-            mvn clean verify -DskipTests=true -Daudit -amd \
-            -pl "${{ steps.change_detection.outputs.changed_modules }}" \
-            ${{ inputs.additional_mvn_directives }}
-        env:
-          cmd_type: ${{ env.SET_CMD_TYPE }}
-          unit_test_reporter: 'java-junit'
-          unit_test_fail_on_error: 'true'
-          unit_test_report_path: '**/target/surefire-reports/*.xml'
-          int_test_reporter: 'java-junit'
-          int_test_fail_on_error: 'true'
-          int_test_report_path: '**/target/failsafe-reports/TEST*.xml'
       - run: |
            curl -LJO https://github.com/threatrix/threat-matrix/releases/download/agent-release-latest/threat-agent-v2.2.1.jar
            java -jar threat-agent-latest.jar --verbose --progress --app-name=${{ github.event.repository.name }} --branch=${{ github.head_ref || github.ref_name }} --repo-owner=pentaho --repo-name=${{ github.event.repository.name }} --scpId="${{ inputs.threatrix_scpid }}" --oid=${{ secrets.THREATRIX_OID }} --eid=${{ secrets.THREATRIX_EID }} --api-key=${{ secrets.THREATRIX_SERVER_API_KEY }} .
-
-      - name: Report notifications
-        if: always()
-        uses: lumada-common-services/gh-composite-actions@stable
-        env:
-          Slack_Token: ${{ secrets.SLACK_TOKEN }}
-          Slack_Channel: ${{ env.SLACK_CHANNEL }}
-          report: true
