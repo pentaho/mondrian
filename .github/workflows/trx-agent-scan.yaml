@@ -9,4 +9,5 @@ jobs:
       slack_channels: ""
 #      sonar_project_key: "pdi-plugins-ee"
       additional_mvn_directives: ""
+      scpId: 3ef4b1f1-778b-4204-94ae-5c7e360f13ab
     secrets: inherit
