@@ -216,12 +216,6 @@
       <artifactId>xercesImpl</artifactId>
     </dependency>
     <dependency>
-      <groupId>pentaho</groupId>
-      <artifactId>oss-licenses</artifactId>
-      <version>${oss-licenses.version}</version>
-      <type>zip</type>
-    </dependency>
-    <dependency>
       <groupId>sun</groupId>
       <artifactId>jlfgr</artifactId>
       <version>${jlfgr.version}</version>
@@ -258,7 +252,7 @@
             <configuration>
               <outputDirectory>${project.build.directory}/lib</outputDirectory>
               <includeScope>runtime</includeScope>
-              <excludeArtifactIds>oss-licenses,pdi-dataservice-client-plugin,mysql-connector-j,postgresql</excludeArtifactIds>
+              <excludeArtifactIds>pdi-dataservice-client-plugin,mysql-connector-j,postgresql</excludeArtifactIds>
             </configuration>
           </execution>
           <execution>
@@ -287,18 +281,6 @@
             </configuration>
           </execution>
 
-          <execution>
-            <id>unpack-dependencies</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>unpack-dependencies</goal>
-            </goals>
-            <configuration>
-              <includes>PentahoSchemaWorkbench_OSS_Licenses.html</includes>
-              <outputDirectory>${project.build.directory}</outputDirectory>
-              <includeArtifactIds>oss-licenses</includeArtifactIds>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
     </plugins>
