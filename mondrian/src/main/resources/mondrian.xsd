@@ -3,7 +3,12 @@
 
   <!-- region: processed elements -->
 
-  <xs:element name="Schema" type="SchemaType"/>
+  <xs:element name="Schema" type="SchemaType">
+    <xs:key name="UniqueCubeName">
+      <xs:selector xpath="Cube"/>
+      <xs:field xpath="@name"/>
+    </xs:key>
+  </xs:element>
 
   <xs:complexType name="SchemaType" >
     <xs:annotation>
