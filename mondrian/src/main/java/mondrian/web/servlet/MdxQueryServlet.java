@@ -23,9 +23,11 @@ import org.eigenbase.xom.StringEscaper;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.List;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.*;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * <code>MdxQueryServlet</code> is a servlet which receives MDX queries,

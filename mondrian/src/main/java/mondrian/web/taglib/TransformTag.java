@@ -15,8 +15,8 @@ package mondrian.web.taglib;
 
 import org.w3c.dom.Document;
 
-import javax.servlet.jsp.JspException;
-import javax.servlet.jsp.tagext.TagSupport;
+import jakarta.servlet.jsp.JspException;
+import jakarta.servlet.jsp.tagext.TagSupport;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -48,7 +48,7 @@ public class TransformTag extends TagSupport {
     public TransformTag() {
     }
 
-    public int doEndTag() throws javax.servlet.jsp.JspException {
+    public int doEndTag() throws jakarta.servlet.jsp.JspException {
         try {
             ApplResources ar =
                 ApplResources.getInstance(pageContext.getServletContext());
