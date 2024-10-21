@@ -14,8 +14,8 @@
 package mondrian.tui;
 
 import java.util.*;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
 
 /**
  * This is a partial implementation of the ServletConfig where just

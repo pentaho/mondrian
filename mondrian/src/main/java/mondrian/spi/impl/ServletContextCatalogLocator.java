@@ -17,7 +17,7 @@ import mondrian.spi.CatalogLocator;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 /**
  * Locates a catalog based upon a {@link ServletContext}.<p/>

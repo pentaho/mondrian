@@ -17,9 +17,10 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * This is a partial implementation of the HttpServletResponse where just
@@ -77,6 +78,16 @@ public class MockHttpServletResponse implements HttpServletResponse {
 
         public void clearContent() {
             buffer = new ByteArrayOutputStream();
+        }
+
+        @Override
+        public boolean isReady() {
+            return false;
+        }
+
+        @Override
+        public void setWriteListener( WriteListener writeListener ) {
+
         }
     }
 
@@ -149,8 +160,13 @@ public class MockHttpServletResponse implements HttpServletResponse {
      * this method sets the HTTP Content-Length header.
      *
      */
-    public void setContentLength(int len) {
+    public void setContentLength( int len ) {
         setIntHeader("Content-Length", len);
+    }
+
+    @Override
+    public void setContentLengthLong( long l ) {
+
     }
 
     /**
@@ -396,6 +412,11 @@ public class MockHttpServletResponse implements HttpServletResponse {
         setStatus(status);
     }
 
+    @Override
+    public int getStatus() {
+        return 0;
+    }
+
     /////////////////////////////////////////////////////////////////////////
     //
     // implementation access
@@ -411,6 +432,16 @@ public class MockHttpServletResponse implements HttpServletResponse {
         return ((list == null) || (list.size() == 0))
             ? null
             : list.get(0);
+    }
+
+    @Override
+    public Collection<String> getHeaders( String s ) {
+        return List.of();
+    }
+
+    @Override
+    public Collection<String> getHeaderNames() {
+        return List.of();
     }
 
     public String getContentType() {
