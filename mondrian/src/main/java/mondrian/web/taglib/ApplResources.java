@@ -15,8 +15,8 @@ package mondrian.web.taglib;
 
 import java.io.InputStream;
 import java.util.HashMap;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamSource;
 

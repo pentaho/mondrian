@@ -21,8 +21,10 @@ import org.apache.logging.log4j.LogManager;
 
 import org.w3c.dom.Document;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.*;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+import jakarta.servlet.http.HttpSessionBindingListener;
 import javax.xml.parsers.ParserConfigurationException;
 
 /**

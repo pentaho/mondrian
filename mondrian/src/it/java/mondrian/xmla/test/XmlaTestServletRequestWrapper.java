@@ -17,9 +17,9 @@ import mondrian.olap.Util;
 import mondrian.xmla.XmlaServlet;
 
 import java.io.*;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 
 /**
  * Dummy request for testing XmlaServlet. Provides a 'text/xml' content stream
