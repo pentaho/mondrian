@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2024 Hitachi Vantara and others
 // All Rights Reserved.
 */
 
@@ -13,8 +13,8 @@ package mondrian.web.taglib;
 
 import org.w3c.dom.Document;
 
-import javax.servlet.jsp.JspException;
-import javax.servlet.jsp.tagext.TagSupport;
+import jakarta.servlet.jsp.JspException;
+import jakarta.servlet.jsp.tagext.TagSupport;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -46,7 +46,7 @@ public class TransformTag extends TagSupport {
     public TransformTag() {
     }
 
-    public int doEndTag() throws javax.servlet.jsp.JspException {
+    public int doEndTag() throws jakarta.servlet.jsp.JspException {
         try {
             ApplResources ar =
                 ApplResources.getInstance(pageContext.getServletContext());

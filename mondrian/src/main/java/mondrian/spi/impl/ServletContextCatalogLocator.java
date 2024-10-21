@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2024 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.spi.impl;
@@ -13,7 +13,7 @@ import mondrian.spi.CatalogLocator;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 /**
  * Locates a catalog based upon a {@link ServletContext}.<p/>

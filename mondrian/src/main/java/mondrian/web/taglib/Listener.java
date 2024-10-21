@@ -5,14 +5,14 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2024 Hitachi Vantara and others
 // All Rights Reserved.
 */
 
 package mondrian.web.taglib;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 /**
  * <code>Listener</code> creates and destroys a {@link ApplResources} at the

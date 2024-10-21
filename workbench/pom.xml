@@ -18,7 +18,6 @@
     <dependency.groovy-all.revision>2.4.8</dependency.groovy-all.revision>
     <pdi-dataservice-client-plugin.version>10.3.0.0-SNAPSHOT</pdi-dataservice-client-plugin.version>
     <oss-licenses.version>10.3.0.0-SNAPSHOT</oss-licenses.version>
-    <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
     <pdi.version>10.3.0.0-SNAPSHOT</pdi.version>
     <commons-xul.version>10.3.0.0-SNAPSHOT</commons-xul.version>
   </properties>

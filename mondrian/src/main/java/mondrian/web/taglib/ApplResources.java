@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2005-2024 Hitachi Vantara and others
 // All Rights Reserved.
 */
 
@@ -13,8 +13,8 @@ package mondrian.web.taglib;
 
 import java.io.InputStream;
 import java.util.HashMap;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamSource;
 

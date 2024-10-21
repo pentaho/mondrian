@@ -19,7 +19,6 @@
     <dependency.groovy-all.revision>2.4.21</dependency.groovy-all.revision>
     <pdi-dataservice-client-plugin.version>10.3.0.0-SNAPSHOT</pdi-dataservice-client-plugin.version>
     <oss-licenses.version>10.3.0.0-SNAPSHOT</oss-licenses.version>
-    <dependency.jersey.revision>1.19.1</dependency.jersey.revision>
     <pdi.version>10.3.0.0-SNAPSHOT</pdi.version>
     <commons-xul.version>10.3.0.0-SNAPSHOT</commons-xul.version>
     <mondrian-schemaworkbench-plugins.version>10.3.0.0-SNAPSHOT</mondrian-schemaworkbench-plugins.version>
@@ -192,19 +191,19 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.sun.jersey</groupId>
-      <artifactId>jersey-core</artifactId>
-      <version>${dependency.jersey.revision}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.jersey</groupId>
+      <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-client</artifactId>
-      <version>${dependency.jersey.revision}</version>
+      <version>${jersey.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.sun.jersey.contribs</groupId>
-      <artifactId>jersey-multipart</artifactId>
-      <version>${dependency.jersey.revision}</version>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-common</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.media</groupId>
+      <artifactId>jersey-media-multipart</artifactId>
+      <version>${jersey.version}</version>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>

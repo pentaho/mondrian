@@ -4,7 +4,7 @@
 * http://www.eclipse.org/legal/epl-v10.html.
 * You must accept the terms of that agreement to use this software.
 *
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2024 Hitachi Vantara..  All rights reserved.
 */
 
 package mondrian.xmla.impl;
@@ -20,7 +20,11 @@ import mondrian.xmla.XmlaHandler;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import javax.servlet.*;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.ServletException;
 
 /**
  * Extension to {@link mondrian.xmla.XmlaServlet} that instantiates a
