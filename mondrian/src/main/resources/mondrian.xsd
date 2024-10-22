@@ -27,7 +27,7 @@
     <xs:sequence>
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
       <xs:element name="Parameter" type="ParameterType" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element name="Dimension" type="DimensionType" minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="Dimension" type="SharedDimensionType" minOccurs="0" maxOccurs="unbounded">
         <xs:annotation>
           <xs:documentation>
             Dimension available to be used by any cube of this schema.
@@ -247,6 +247,12 @@
       </xs:annotation>
     </xs:attribute>
 
+  </xs:complexType>
+  
+  <xs:complexType name="SharedDimensionType">
+    <xs:complexContent>
+      <xs:extension base="DimensionType"/>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="PrivateDimensionType">
