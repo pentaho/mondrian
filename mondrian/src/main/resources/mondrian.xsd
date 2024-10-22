@@ -8,6 +8,10 @@
       <xs:selector xpath="Cube"/>
       <xs:field xpath="@name"/>
     </xs:key>
+    <xs:key name="UniqueDimensionName">
+      <xs:selector xpath="Dimension"/>
+        <xs:field xpath="@name"/>
+      </xs:key>
   </xs:element>
 
   <xs:complexType name="SchemaType" >
@@ -29,8 +33,17 @@
             Dimension available to be used by any cube of this schema.
           </xs:documentation>
         </xs:annotation>
+        <xs:unique name="UniqueHierarchyName">
+          <xs:selector xpath="Hierarchy"/>
+          <xs:field xpath="@name"/>
+        </xs:unique>
       </xs:element>
-      <xs:element name="Cube" type="CubeType" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="Cube" type="CubeType" minOccurs="1" maxOccurs="unbounded">
+        <xs:key name="UniqueDimensionNameWithinCube">
+          <xs:selector xpath="Dimension|DimensionUsage"/>
+          <xs:field xpath="@name"/>
+        </xs:key>
+      </xs:element>
       <xs:element name="VirtualCube" type="VirtualCubeType" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="NamedSet" type="NamedSetType" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="Role" type="RoleType" minOccurs="0" maxOccurs="unbounded"/>
@@ -160,7 +173,12 @@
     <xs:complexContent>
       <xs:extension base="CubeDimensionType">
         <xs:sequence>
-          <xs:element name="Hierarchy" type="HierarchyType" minOccurs="1" maxOccurs="unbounded"/>
+          <xs:element name="Hierarchy" type="HierarchyType" minOccurs="1" maxOccurs="unbounded">
+            <xs:key name="UniqueLevelName">
+              <xs:selector xpath="Level"/>
+              <xs:field xpath="@name"/>
+            </xs:key>
+          </xs:element>
         </xs:sequence>
 
         <xs:attribute name="type" default="StandardDimension">
