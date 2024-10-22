@@ -43,6 +43,10 @@
           <xs:selector xpath="Dimension|DimensionUsage"/>
           <xs:field xpath="@name"/>
         </xs:key>
+        <xs:key name="UniqueMeasureName">
+          <xs:selector xpath="Measure"/>
+          <xs:field xpath="@name"/>
+        </xs:key>
       </xs:element>
       <xs:element name="VirtualCube" type="VirtualCubeType" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="NamedSet" type="NamedSetType" minOccurs="0" maxOccurs="unbounded"/>
