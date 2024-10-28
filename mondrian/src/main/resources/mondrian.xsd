@@ -2220,7 +2220,7 @@
     </xs:annotation>
 
     <xs:sequence>
-      <xs:element name="AggFactCount" type="AggColumnNameType" minOccurs="1" maxOccurs="1">
+      <xs:element name="AggFactCount" type="AggFactCountType" minOccurs="1" maxOccurs="1">
         <xs:annotation>
           <xs:documentation>
             What does the fact_count column look like.
@@ -2234,7 +2234,7 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="AggIgnoreColumn" type="AggColumnNameType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="AggIgnoreColumn" type="AggIgnoreColumnType" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="AggForeignKey" type="AggForeignKeyType" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element name="AggMeasure" type="AggMeasureType" minOccurs="1" maxOccurs="unbounded"/>
       <xs:element name="AggLevel" type="AggLevelType" minOccurs="0" maxOccurs="unbounded"/>
@@ -2324,6 +2324,21 @@
         </xs:extension>
       </xs:complexContent>
   </xs:complexType>
+
+  <xs:complexType name="AggFactCountType">
+    <xs:complexContent>
+      <xs:extension base="AggColumnNameType">
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="AggIgnoreColumnType">
+    <xs:complexContent>
+      <xs:extension base="AggColumnNameType">
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
 
   <xs:complexType name="ExpressionViewType">
     <xs:annotation>
