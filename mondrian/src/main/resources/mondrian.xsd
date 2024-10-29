@@ -2328,10 +2328,10 @@
   <!-- Having simple types referenced at elements, introduces issues at jaxb generated code at Semantic Model Editor (SME) project.
       SME requires the injection of a new smeID attribute at the generated types, that is not possible with the primitive String type. -->
   <xs:complexType name="FormulaType">
-    <xs:complexContent>
+    <xs:simpleContent>
       <xs:extension base="xs:string">
       </xs:extension>
-    </xs:complexContent>
+    </xs:simpleContent>
   </xs:complexType>
 
   <xs:complexType name="ExpressionViewType">
