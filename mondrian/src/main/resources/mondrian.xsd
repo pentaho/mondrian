@@ -1256,7 +1256,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="formula" type="FormulaType">
+    <xs:attribute name="formula" type="xs:string">
       <xs:annotation>
         <xs:documentation>
           MDX expression which gives the value of this member. Equivalent to the Formula sub-element.
@@ -1391,7 +1391,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="formula" type="FormulaType">
+    <xs:attribute name="formula" type="xs:string">
       <xs:annotation>
         <xs:documentation>
           MDX expression which gives the value of this set. Equivalent to the Formula sub-element.
