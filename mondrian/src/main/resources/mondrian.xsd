@@ -1216,7 +1216,7 @@
   <xs:complexType name="CalculatedMemberType">
     <xs:sequence>
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="Formula" type="xs:string" minOccurs="0">
+      <xs:element name="Formula" type="FormulaType" minOccurs="0">
         <xs:annotation>
           <xs:documentation>
             MDX expression which gives the value of this member.
@@ -1256,7 +1256,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="formula" type="xs:string">
+    <xs:attribute name="formula" type="FormulaType">
       <xs:annotation>
         <xs:documentation>
           MDX expression which gives the value of this member. Equivalent to the Formula sub-element.
@@ -1361,7 +1361,7 @@
 
     <xs:sequence>
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
-      <xs:element name="Formula" type="xs:string" minOccurs="0">
+      <xs:element name="Formula" type="FormulaType" minOccurs="0">
         <xs:annotation>
           <xs:documentation>
             MDX expression which gives the value of this set.
@@ -1391,7 +1391,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="formula" type="xs:string">
+    <xs:attribute name="formula" type="FormulaType">
       <xs:annotation>
         <xs:documentation>
           MDX expression which gives the value of this set. Equivalent to the Formula sub-element.
@@ -2323,6 +2323,15 @@
           </xs:attribute>
         </xs:extension>
       </xs:complexContent>
+  </xs:complexType>
+
+  <!-- Having simple types referenced at elements, introduces issues at jaxb generated code at Semantic Model Editor (SME) project.
+      SME requires the injection of a new smeID attribute at the generated types, that is not possible with the primitive String type. -->
+  <xs:complexType name="FormulaType">
+    <xs:complexContent>
+      <xs:extension base="xs:string">
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="ExpressionViewType">
