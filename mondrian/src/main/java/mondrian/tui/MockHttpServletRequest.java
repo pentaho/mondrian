@@ -14,6 +14,7 @@ import java.security.Principal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import jakarta.servlet.ServletConnection;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpServletRequest;
@@ -473,6 +474,20 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
     @Override
     public AsyncContext startAsync() throws IllegalStateException {
+        return null;
+    }
+    @Override
+    public ServletConnection getServletConnection() {
+        return null;
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        return null;
+    }
+
+    @Override
+    public String getRequestId() {
         return null;
     }
 
