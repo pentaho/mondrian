@@ -32,7 +32,8 @@ public final class SegmentCacheWorker {
         LogManager.getLogger(SegmentCacheWorker.class);
 
     final SegmentCache cache;
-    private final Thread cacheMgrThread;
+    // PATCH: Use a threads array instead of a single thread.
+    private final Thread[] cacheMgrThreads;
     private final boolean supportsRichIndex;
 
     /**
@@ -44,9 +45,11 @@ public final class SegmentCacheWorker {
      *                       potentially long-running calls this this cache.
      *                       Pass null if methods can be called from any thread.
      */
-    public SegmentCacheWorker(SegmentCache cache, Thread cacheMgrThread) {
+    // PATCH: Use a threads array instead of a single thread.
+    public SegmentCacheWorker(SegmentCache cache, Thread[] cacheMgrThreads) {
         this.cache = cache;
-        this.cacheMgrThread = cacheMgrThread;
+        // PATCH: Use a threads array instead of a single thread.
+        this.cacheMgrThreads = cacheMgrThreads;
 
         // no need to call checkThread(): supportsRichIndex is a fast call
         this.supportsRichIndex = cache.supportsRichIndex();
@@ -220,9 +223,13 @@ public final class SegmentCacheWorker {
     }
 
     private void checkThread() {
-        assert cacheMgrThread != Thread.currentThread()
-            : "this method is potentially slow; you should not call it from "
-            + "the cache manager thread, " + cacheMgrThread;
+        // PATCH: Use a threads array instead of a single thread.
+        // assert cacheMgrThread != Thread.currentThread()
+        Thread currentThread = Thread.currentThread();
+        for (Thread thread : cacheMgrThreads) {
+            assert thread != currentThread :
+                "this method is potentially slow; you should not call it from the cache manager thread, " + currentThread;
+        }
     }
 }
 

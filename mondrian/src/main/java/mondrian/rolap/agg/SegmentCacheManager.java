@@ -58,6 +58,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+// PATCH: Add ConcurrentHashMap
+import java.util.concurrent.ConcurrentHashMap;
 
 @SuppressWarnings( { "JavaDoc", "squid:S1192", "squid:S4274" } )
 // suppressing warnings for asserts, duplicated string constants
@@ -243,7 +245,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SegmentCacheManager {
   private final Handler handler = new Handler();
   private final Actor actor;
-  public final Thread thread;
+  // PATCH: Use array of threads to improve actor throughput.
+  // public final Thread thread;
+  public final Thread[] threads;
   private final Set<String> starFactTablesToSync;
 
   /**
@@ -302,11 +306,24 @@ public class SegmentCacheManager {
 
   public SegmentCacheManager( MondrianServer server ) {
     this.server = server;
-    actor = new Actor();
-    thread = new Thread(
-      actor, "mondrian.rolap.agg.SegmentCacheManager$ACTOR" );
-    thread.setDaemon( true );
-    thread.start();
+    // PATCH: Use array of threads to improve actor throughput.
+    // actor = new Actor();
+    // thread = new Thread(
+    //   actor, "mondrian.rolap.agg.SegmentCacheManager$ACTOR" );
+    // thread.setDaemon( true );
+    // thread.start();
+    String numThreadsValue = System.getProperty("mondrian.rolap.agg.SegmentCacheManager.actorThreads");
+    int numThreads = numThreadsValue == null ? 1 : Integer.parseInt(numThreadsValue);
+    // Limit the number of threads to a reasonable range.
+    if (numThreads < 1) numThreads = 1;
+    if (numThreads > 100) numThreads = 100;
+    actor = new Actor(numThreads);
+    threads = new Thread[numThreads];
+    for (int i = 0; i < numThreads; i++) {
+      threads[i] = new Thread(actor, "mondrian.rolap.agg.SegmentCacheManager$ACTOR" + i);
+      threads[i].setDaemon(true);
+      threads[i].start();
+    }
 
     // Create the index registry.
     this.indexRegistry = new SegmentCacheIndexRegistry();
@@ -316,7 +333,8 @@ public class SegmentCacheManager {
       && !MondrianProperties.instance().DisableCaching.get() ) {
       final MemorySegmentCache cache = new MemorySegmentCache();
       segmentCacheWorkers.add(
-        new SegmentCacheWorker( cache, thread ) );
+        // PATCH: Use threads array instead of thread.
+        new SegmentCacheWorker( cache, threads ) );
     }
 
     // Add an external cache, if configured.
@@ -324,7 +342,8 @@ public class SegmentCacheManager {
     for ( SegmentCache cache : externalCache ) {
       // Create a worker for this external cache
       segmentCacheWorkers.add(
-        new SegmentCacheWorker( cache, thread ) );
+        // PATCH: Use threads array instead of thread.
+        new SegmentCacheWorker( cache, threads ) );
       // Hook up a listener so it can update
       // the segment index.
       cache.addListener(
@@ -743,6 +762,8 @@ public class SegmentCacheManager {
      */
     void setContextMap();
 
+    // PATCH: Add getSchema method that will be used to control parallel procesing of messages from the same schema.
+    RolapSchema getSchema();
   }
 
   public abstract static class Command<T> implements Message {
@@ -755,6 +776,17 @@ public class SegmentCacheManager {
     @Override
     public void setContextMap() {
       mdc.setContextMap();
+    }
+
+    // PATCH: Get the schema from the locus.
+    @Override
+    public RolapSchema getSchema() {
+      Locus locus = getLocus();
+      if (locus != null) {
+        return locus.getSchema();
+      } else {
+        return null;
+      }
     }
   }
 
@@ -1003,6 +1035,12 @@ public class SegmentCacheManager {
     public void setContextMap() {
       mdc.setContextMap();
     }
+
+    // PATCH: Add getSchema method.
+    @Override
+    public RolapSchema getSchema() {
+      return null;
+    }
   }
 
   /**
@@ -1019,14 +1057,38 @@ public class SegmentCacheManager {
 
     private final AtomicBoolean shuttingDown = new AtomicBoolean( false );
 
+    // PATCH: Control that only one schema key is processed at a time.
+    private final Map<SchemaKey, Boolean> processingSchemaKeys = new ConcurrentHashMap<SchemaKey, Boolean>();
+
+    // PATCH: Store the number of parallel threads.
+    int numThreads;
+
+    public Actor(int numThreads) {
+      this.numThreads = numThreads;
+    }
+
     public void run() {
       try {
         while ( true ) {
           final Pair<Handler, Message> entry = eventQueue.take();
           final Handler handler = entry.left;
           final Message message = entry.right;
-          message.setContextMap(); // Set MDC logging info into this thread
+          // PATCH: Check if schema key is already being processed. Do this only if there are multiple threads.
+          RolapSchema schema = numThreads > 1 ? message.getSchema() : null;
+          SchemaKey schemaKey = schema == null ? null : schema.getKey();
+          if (schemaKey != null && processingSchemaKeys.putIfAbsent(schemaKey, Boolean.TRUE) != null) {
+            // Schema key is already being processed, put message back in the queue.
+            if (eventQueue.isEmpty()) {
+              // If the queue is empty, wait a bit before trying again.
+              Thread.sleep(1);
+            }
+            eventQueue.put(entry);
+            continue;
+          }
+
           try {
+            // PATCH: Move inside try block to ensure that schema key is removed from processing map.
+            message.setContextMap(); // Set MDC logging info into this thread
             // A message is either a command or an event.
             // A command returns a value that must be read by
             // the caller.
@@ -1039,7 +1101,10 @@ public class SegmentCacheManager {
                   command,
                   Pair.of( result, null ) );
               } catch ( PleaseShutdownException e ) {
-                shutDownAndDrainQueue( command );
+                // PATCH: Check if other thread is already performing shutdown.
+                if (!shuttingDown.get()) {
+                  shutDownAndDrainQueue( command );
+                }
                 return; // exit event loop
               } catch ( Exception e ) {
                 responseMap.put(
@@ -1057,6 +1122,11 @@ public class SegmentCacheManager {
             }
           } catch ( Exception e ) {
             LOGGER.error( e.getMessage(), e );
+          } finally {
+            // PATCH: Remove schema key from processing map.
+            if (schemaKey != null) {
+              processingSchemaKeys.remove(schemaKey);
+            }
           }
         }
       } catch ( InterruptedException e ) {
@@ -1083,6 +1153,14 @@ public class SegmentCacheManager {
           responseMap.put(
             (Command<?>) queueElement.getValue(),
             Pair.of( null, Util.newError( "Actor queue already shut down" ) ) );
+        }
+      }
+      // PATCH: Stop other threads.
+      for (int i = 1; i < numThreads; i++) {
+        try {
+          eventQueue.put(Pair.of(null, new ShutdownCommand()));
+        } catch ( InterruptedException e ) {
+          // Ignore unlikely exception.
         }
       }
     }
@@ -1167,6 +1245,11 @@ public class SegmentCacheManager {
     public void acceptWithoutResponse( Visitor visitor ) {
       visitor.visit( this );
     }
+
+    // PATCH: Add getSchema method.
+    public RolapSchema getSchema() {
+      return star.getSchema();
+    }
   }
 
   private static class SegmentLoadFailedEvent extends Event {
@@ -1205,6 +1288,11 @@ public class SegmentCacheManager {
     public void acceptWithoutResponse( Visitor visitor ) {
       visitor.visit( this );
     }
+
+    // PATCH: Add getSchema method.
+    public RolapSchema getSchema() {
+      return star.getSchema();
+    }
   }
 
   private static class SegmentRemoveEvent extends Event {
@@ -1242,6 +1330,11 @@ public class SegmentCacheManager {
 
     public void acceptWithoutResponse( Visitor visitor ) {
       visitor.visit( this );
+    }
+
+    // PATCH: Add getSchema method.
+    public RolapSchema getSchema() {
+      return star.getSchema();
     }
   }
 
@@ -1616,7 +1709,8 @@ public class SegmentCacheManager {
 
       if ( !indexes.containsKey( star.getSchema().getKey() ) ) {
         final SegmentCacheIndexImpl index =
-          new SegmentCacheIndexImpl( thread );
+          // PATCH: Use threads array instead of thread.
+          new SegmentCacheIndexImpl( threads );
         LOGGER.trace(
           "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
             + "Creating New Index "

@@ -97,6 +97,11 @@ public class Locus {
         return execution.statement.getMondrianConnection().getServer();
     }
 
+    // PATCH: Get the schema from the execution statement.
+    public final mondrian.rolap.RolapSchema getSchema() {
+        return execution.statement.getSchema();
+    }
+
     public interface Action<T> {
         T execute();
     }

@@ -67,16 +67,19 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
     private final Map<SegmentHeader, HeaderInfo> headerMap =
         new HashMap<SegmentHeader, HeaderInfo>();
 
-    private final Thread thread;
+    // PATCH: Use a threads array instead of a single thread.
+    private final Thread[] threads;
 
     /**
      * Creates a SegmentCacheIndexImpl.
      *
      * @param thread Thread that must be used to execute commands.
      */
-    public SegmentCacheIndexImpl(Thread thread) {
-        this.thread = thread;
-        assert thread != null;
+    // PATCH: Use a threads array instead of a single thread.
+    public SegmentCacheIndexImpl(Thread[] threads) {
+        this.threads = threads;
+        // assert thread != null;
+        assert threads.length > 0;
     }
 
     public static List makeConverterKey(SegmentHeader header) {
@@ -369,8 +372,16 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
     }
 
     private void checkThread() {
-        assert thread == Thread.currentThread()
-            : "expected " + thread + ", but was " + Thread.currentThread();
+        // PATCH: Use a threads array instead of a single thread.
+        // assert thread == Thread.currentThread()
+        //     : "expected " + thread + ", but was " + Thread.currentThread();
+        Thread curThread = Thread.currentThread();
+        for (Thread thread : threads) {
+            if (thread == curThread) {
+                return;
+            }
+        }
+        assert false : "expected one of " + threads + ", but was " + curThread;
     }
 
     public static boolean matches(
