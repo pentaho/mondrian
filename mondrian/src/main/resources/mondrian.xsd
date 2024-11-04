@@ -452,7 +452,12 @@
             Dimensions available to be used by this cube.
           </xs:documentation>
         </xs:annotation>
-        <xs:element name="Dimension" type="PrivateDimensionType"/>
+        <xs:element name="Dimension" type="PrivateDimensionType">
+          <xs:unique name="UniqueHierarchyNameWithinCubeDimension">
+            <xs:selector xpath="Hierarchy"/>
+            <xs:field xpath="@name"/>
+          </xs:unique>
+        </xs:element>
         <xs:element name="DimensionUsage" type="DimensionUsageType"/>
       </xs:choice>
       <xs:element name="Measure" type="MeasureType" minOccurs="0" maxOccurs="unbounded">
