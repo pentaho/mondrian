@@ -12,6 +12,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.Level;
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.cache.*;
 import mondrian.rolap.sql.MemberChildrenConstraint;
@@ -20,6 +21,7 @@ import mondrian.spi.DataSourceChangeListener;
 import mondrian.util.*;
 
 import org.apache.commons.collections.Predicate;
+import org.checkerframework.common.returnsreceiver.qual.This;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -57,6 +59,8 @@ public class MemberCacheHelper implements MemberCache {
     final SmartMemberListCache<RolapLevel, List<RolapMember>>
         mapLevelToMembers;
 
+    final MondrianProperties props;
+
     /**
      * Creates a MemberCacheHelper.
      *
@@ -79,6 +83,8 @@ public class MemberCacheHelper implements MemberCache {
         } else {
             changeListener = null;
         }
+
+        props = MondrianProperties.instance();
     }
 
     public RolapMember getMember(
@@ -158,21 +164,46 @@ public class MemberCacheHelper implements MemberCache {
     private List<RolapMember> findNamedChildrenInCache(
         final RolapMember parent, final List<String> childNames)
     {
-        List<RolapMember> children =
+        Collection<RolapMember> children =
             checkDefaultAndNamedChildrenCache(parent);
-        if (children == null || childNames == null
-            || childNames.size() > children.size())
+        if ((props.IgnoreInvalidMembers.get()
+          || props.IgnoreInvalidMembersDuringQuery.get())
+          && children != null
+          && children.isEmpty())
+        {
+              // This can happen when we're telling mondrian to ignore
+              // invalid members. We have an empty collection representing
+              // the absence of a named child for a given parent. This does
+              // not mean we missed loading children.
+              return new ArrayList<>(children);
+        }
+
+        // Convert Collection to List for predicate filtering.
+        final List<RolapMember> childrenList =
+          children == null
+            ? Collections.emptyList()
+            : new ArrayList<>(children);
+
+        // We have to check if we picked up all of the expected
+        // members. If not return null.
+        if (childNames == null
+          || childrenList.isEmpty()
+          || childNames.size() > childrenList.size())
         {
             return null;
         }
 
-        List<RolapMember> foundElements =
-          children.parallelStream().filter( member -> childNames.contains( ( (RolapMember) member ).getName() ) )
-            .collect( Collectors.toList() );
-        return childNames.size() == foundElements.size() ? foundElements : null;
+        // Keep only the requested members. We could have pulled
+        // more than needed if we used a DefaultChildMemberNameConstraint
+        // to populate a cache query with ChildMemberNameConstraint.
+        filter( childrenList, member -> childNames.contains(
+          ((RolapMember) member).getName()) );
+
+        boolean foundAll = childrenList.size() == childNames.size();
+        return !foundAll ? null : childrenList;
     }
 
-    private List<RolapMember> checkDefaultAndNamedChildrenCache(
+    private Collection<RolapMember> checkDefaultAndNamedChildrenCache(
         RolapMember parent)
     {
         Collection<RolapMember> children = mapMemberToChildren
@@ -180,8 +211,7 @@ public class MemberCacheHelper implements MemberCache {
         if (children == null) {
             children = mapParentToNamedChildren.get(parent);
         }
-        return children == null ? Collections.emptyList()
-            : new ArrayList(children);
+        return children;
     }
 
 
@@ -205,9 +235,21 @@ public class MemberCacheHelper implements MemberCache {
         final RolapMember parent,
         final List<RolapMember> children)
     {
-        if (children == null || children.isEmpty()) {
+        if (children == null ) {
             return;
         }
+
+        if ((!props.IgnoreInvalidMembers.get()
+          && !props.IgnoreInvalidMembersDuringQuery.get())
+          && children.isEmpty())
+        {
+          // This is a special case. If we told mondrian to ignore
+          // non-existing members, we still need to cache empty lists.
+          // If this optimization does not kicks in, we'll keep loading
+          // non existing children of null members.
+          return;
+        }
+
         Collection<RolapMember> cachedChildren =
             mapParentToNamedChildren.get(parent);
         if (cachedChildren == null) {
@@ -370,4 +412,3 @@ public class MemberCacheHelper implements MemberCache {
 }
 
 // End MemberCacheHelper.java
-
