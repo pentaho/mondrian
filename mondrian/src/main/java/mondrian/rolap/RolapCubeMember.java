@@ -6,6 +6,7 @@
 //
 // Copyright (C) 2001-2005 Julian Hyde
 // Copyright (C) 2005-2017 Hitachi Vantara and others
+// Copyright (C) 2023 Riccardo Gusmeroli
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -206,6 +207,12 @@ public class RolapCubeMember
 
     public final RolapCubeMember getParentMember() {
         return parentCubeMember;
+    }
+    
+    public String getParentUniqueName() {
+        return parentCubeMember == null
+            ? null
+            : parentCubeMember.getUniqueName();
     }
 
     // this method is overridden to make sure that any HierarchyExpr returns
