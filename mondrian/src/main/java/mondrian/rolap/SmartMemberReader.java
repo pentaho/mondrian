@@ -151,7 +151,7 @@ public class SmartMemberReader implements MemberReader {
             members =
                 source.getMembersInLevel(
                     level, constraint);
-            cacheHelper.putLevelMembersInCache(level, constraint, members);
+            cacheHelper.putChildren(level, constraint, members);
             return members;
         }
     }

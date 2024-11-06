@@ -12,6 +12,9 @@ package mondrian.olap;
 import mondrian.parser.*;
 import mondrian.rolap.*;
 import mondrian.server.*;
+import mondrian.spi.Dialect;
+import mondrian.test.SqlPattern;
+import mondrian.test.TestContext;
 
 import org.apache.commons.collections.*;
 
@@ -360,6 +363,93 @@ public class IdBatchResolverTest  extends BatchTestCase {
         assertTrue(childNames.getAllValues().get(1).size() == 2);
     }
 
+    public void testNullMemberCheckChildren() throws Exception {
+        propSaver.set(
+          propSaver.properties.IgnoreInvalidMembers, true);
+        propSaver.set(
+          propSaver.properties.IgnoreInvalidMembersDuringQuery, true);
+        final TestContext context = getTestContext().withSchema(
+          "<Schema name=\"ESR6529\">\n"
+            + "  <Cube name=\"Sales\" visible=\"true\" defaultMeasure=\"Unit Sales\" cache=\"true\" enabled=\"true\">\n"
+            + "    <Table name=\"time_by_day\"> \n"
+            + "    </Table>\n"
+            + "     <Dimension name=\"Promotions\" foreignKey=\"fiscal_period\">\n"
+            + "      <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"fiscal_period\" defaultMember=\"[All Promotions]\">\n"
+            + "        <Level name=\"Promotion Code\" column=\"fiscal_period\" uniqueMembers=\"true\"/>\n"
+            + "      </Hierarchy>\n"
+            + "    </Dimension>\n"
+            + "     <Dimension type=\"TimeDimension\" visible=\"true\" highCardinality=\"false\" name=\"MyTimeDimension\">\n"
+            + "      <Hierarchy name=\"DegenerateTimeFullAnnotation\" visible=\"true\" hasAll=\"true\" allMemberName=\"All\" primaryKey=\"time_id\">\n"
+            + "             <Level name=\"Year\" visible=\"true\" column=\"the_year\" type=\"String\" uniqueMembers=\"false\" levelType=\"TimeYears\" hideMemberIf=\"Never\">\n"
+            + "                     <Annotations>\n"
+            + "                       <Annotation name=\"AnalyzerDateFormat\">\n"
+            + "                             <![CDATA[[yyyy]]]>\n"
+            + "                       </Annotation>\n"
+            + "                     </Annotations>\n"
+            + "        </Level>\n"
+            + "             <Level name=\"Month\" visible=\"true\" column=\"month_of_year\" type=\"String\" uniqueMembers=\"false\" levelType=\"TimeMonths\" hideMemberIf=\"Never\">\n"
+            + "                     <Annotations>\n"
+            + "                       <Annotation name=\"AnalyzerDateFormat\">\n"
+            + "                             <![CDATA[[yyyy].[MM]]>\n"
+            + "                       </Annotation>\n"
+            + "                     </Annotations>\n"
+            + "        </Level>\n"
+            + "             <Level name=\"Day\" visible=\"true\" column=\"the_date\" type=\"String\" uniqueMembers=\"true\" levelType=\"TimeDays\" hideMemberIf=\"Never\">\n"
+            + "                     <Annotations>\n"
+            + "                       <Annotation name=\"AnalyzerDateFormat\">\n"
+            + "                             <![CDATA[[yyyy].[MM].[yyyy-MM-dd]]]>\n"
+            + "                       </Annotation>\n"
+            + "                     </Annotations>\n"
+            + "        </Level>\n"
+            + "      </Hierarchy>\n"
+            + "    </Dimension>\n"
+            + "    <Measure name=\"Unit Sales\" column=\"week_of_year\" formatString=\"Standard\" aggregator=\"sum\">\n"
+            + "    </Measure>\n"
+            + "     <Measure name=\"Unit Sales Avg\" column=\"week_of_year\" formatString=\"Standard\" aggregator=\"avg\">\n"
+            + "    </Measure>\n"
+            + "  </Cube>\n"
+            + "</Schema>\n");
+
+        final String sql =
+          "select `time_by_day`.`the_year` as `c0` from `time_by_day` as `time_by_day` where UPPER(`time_by_day`.`the_year`) = UPPER('2018') group by `time_by_day`.`the_year` order by ISNULL(`c0`) ASC, `c0` ASC";
+
+        String mdx = "WITH\n"
+          + "SET [*NATIVE_CJ_SET] AS 'NONEMPTYCROSSJOIN([*BASE_MEMBERS__Promotions_],[*BASE_MEMBERS__MyTimeDimension.DegenerateTimeFullAnnotation_])'\n"
+          + "SET [*BASE_MEMBERS__MyTimeDimension.DegenerateTimeFullAnnotation_] AS '{[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-11],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-12],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-13],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-14],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-15],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-16],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-17],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-18],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-19],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-20],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-21],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-22],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-23],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-24],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-25],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-26],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-27],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-28],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-29],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-30],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[10].[2018-10-31],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[11].[2018-11-01],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[11].[2018-11-02],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[11].[2018-11-03],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[11].[2018-11-04],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[11].[2018-11-05],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[11].[2018-11-06],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[11].[2018-11-07],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[11].[2018-11-08],[MyTimeDimension.DegenerateTimeFullAnnotation].[2018].[11].[2018-11-09]}'\n"
+          + "SET [*SORTED_ROW_AXIS] AS 'ORDER([*CJ_ROW_AXIS],[Promotions].CURRENTMEMBER.ORDERKEY,BASC,[MyTimeDimension.DegenerateTimeFullAnnotation].CURRENTMEMBER.ORDERKEY,BASC,ANCESTOR([MyTimeDimension.DegenerateTimeFullAnnotation].CURRENTMEMBER,[MyTimeDimension.DegenerateTimeFullAnnotation].[Month]).ORDERKEY,BASC)'\n"
+          + "SET [*BASE_MEMBERS__Promotions_] AS '[Promotions].[Promotion Code].MEMBERS'\n"
+          + "SET [*BASE_MEMBERS__Measures_] AS '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+          + "SET [*CJ_ROW_AXIS] AS 'GENERATE([*NATIVE_CJ_SET], {([Promotions].CURRENTMEMBER,[MyTimeDimension.DegenerateTimeFullAnnotation].CURRENTMEMBER)})'\n"
+          + "MEMBER [Measures].[*FORMATTED_MEASURE_0] AS '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=500\n"
+          + "SELECT\n"
+          + "[*BASE_MEMBERS__Measures_] ON COLUMNS\n"
+          + ", NON EMPTY\n"
+          + "[*SORTED_ROW_AXIS] ON ROWS\n"
+          + "FROM [Sales]\n";
+
+        // Run once. Should cache the children of Time.All
+        // with child constrain 2018.
+        context.assertQueryReturns(
+          mdx,
+          "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n");
+
+        // Now run again. Should not repeat the query to get
+        // children with name 2018.
+        assertQuerySqlOrNot(
+          context,
+          mdx,
+          new SqlPattern[] {
+            new SqlPattern(
+              Dialect.DatabaseProduct.MYSQL, sql, sql),
+          },
+          true,
+          false,
+          false);
+    }
 
     private void assertContains(
         String msg, Collection<String> strings, Collection<String> list)
