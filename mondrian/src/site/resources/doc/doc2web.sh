@@ -1,33 +1,15 @@
-#!/bin/bash
+# ******************************************************************************
 #
-# This software is subject to the terms of the Eclipse Public License v1.0
-# Agreement, available at the following URL:
-# http://www.eclipse.org/legal/epl-v10.html.
-# You must accept the terms of that agreement to use this software.
+# Pentaho
 #
-# Copyright (C) 2005-2019 Hitachi Vantara
-# All Rights Reserved.
+# Copyright (C) 2024 by Hitachi Vantara, LLC : http://www.pentaho.com
 #
-# Converts documentation from Mondrian's source format to Pentaho's web site.
+# Use of this software is governed by the Business Source License included
+# in the LICENSE.TXT file.
 #
-# The file structure looks like this:
-# content/
-#    en/
-#       documentation/
-#           install_doc.htm (copy of install.html)
-#    es/
-#       documentation/
-#           install_doc.htm (copy of install_es.html)
-# images/
-#    arch_mondrian_v1_tn.png
-#    (etc.)
-# api/
-#    index.html
-#    overview.html
-#    mondrian/
-#       olap/
-#          Connection.html (javadoc for mondrian.olap.Connection)
-#    (etc.)
+# Change Date: 2028-08-13
+# ******************************************************************************
+
 
 pause() {
   xmessage Continue...
