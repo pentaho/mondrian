@@ -1,14 +1,15 @@
 @echo off
-
-REM ***************************************************************************
-REM This software is subject to the terms of the Eclipse Public License v1.0
-REM Agreement, available at the following URL:
-REM http://www.eclipse.org/legal/epl-v10.html.
-REM You must accept the terms of that agreement to use this software.
+REM ******************************************************************************
 REM
-REM Copyright (c) 2007 - ${copyright.year} ${project.organization.name}. All rights reserved.
-REM ***************************************************************************
-
+REM Pentaho
+REM
+REM Copyright (C) 2024 by Hitachi Vantara, LLC : http://www.pentaho.com
+REM
+REM Use of this software is governed by the Business Source License included
+REM in the LICENSE.TXT file.
+REM
+REM Change Date: 2029-07-20
+REM ******************************************************************************
 cd /D %~dp0
 
 rem Schema Workbench launch script
