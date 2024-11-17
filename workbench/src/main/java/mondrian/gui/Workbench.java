@@ -84,6 +84,8 @@ public class Workbench extends javax.swing.JFrame {
 
     private static final Logger LOGGER = LogManager.getLogger(Workbench.class);
 
+    private static final String LICENSE_FILE_PATH = "./LICENSE.TXT";
+
     private String jdbcDriverClassName;
     private String jdbcConnectionUrl;
     private String jdbcUsername;
@@ -1136,19 +1138,17 @@ public class Workbench extends javax.swing.JFrame {
 
           StringBuilder sb = new StringBuilder();
           String line;
-          try {
-              BufferedReader reader =
-                      new BufferedReader(
-                        new InputStreamReader(
-                          Workbench.class.getClassLoader().getResourceAsStream(
-                              "mondrian/gui/resources/license.txt" ) ) );
-              while ( ( line = reader.readLine() ) != null ) {
-                sb.append( line + System.getProperty( "line.separator" ) );
-              }
-          } catch ( Exception ex ) {
-            LOGGER.error( getResourceConverter().getString( "schemaExplorer.about.licenseTextNotFound",
-                                                          "Failed to load the license text" ), ex );
-          }
+            try {
+                BufferedReader reader =
+                  new BufferedReader( new FileReader( LICENSE_FILE_PATH ) );
+                while ( ( line = reader.readLine() ) != null ) {
+                    sb.append( line + System.getProperty( "line.separator" ) );
+                }
+            } catch ( Exception ex ) {
+                sb.append( String.format( "Error reading license file from product directory: \"%s\"", LICENSE_FILE_PATH ) );
+                LOGGER.error( getResourceConverter().getString( "schemaExplorer.about.licenseTextNotFound",
+                  "Failed to load the license text" ), ex );
+            }
           final JTextArea licenseArea = new JTextArea( sb.toString() );
           licenseArea.setEditable( false );
           licenseArea.setBounds( 300, 130, 700, 800 );
