@@ -109,7 +109,7 @@
       </xs:documentation>
     </xs:annotation>
 
-    <xs:attribute name="name" type="xs:string" use="required">
+    <xs:attribute name="name" type="ElementNameType" use="required">
       <xs:annotation>
         <xs:documentation>
           Name of this parameter.
@@ -217,7 +217,7 @@
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
     </xs:sequence>
 
-    <xs:attribute name="name" use="required"/>
+    <xs:attribute name="name" use="required" type="ElementNameType"/>
     <xs:attribute name="caption" type="xs:string">
       <xs:annotation>
         <xs:documentation>
@@ -308,7 +308,7 @@
       <xs:element name="MemberReaderParameter" type="MemberReaderParameterType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
 
-    <xs:attribute name="name" type="xs:string">
+    <xs:attribute name="name" type="ElementNameType">
       <xs:annotation>
         <xs:documentation>
           Name of the hierarchy. If this is not specified, the hierarchy
@@ -483,7 +483,7 @@
       </xs:element>
     </xs:sequence>
 
-    <xs:attribute name="name" type="xs:string" use="required">
+    <xs:attribute name="name" type="ElementNameType" use="required">
       <xs:annotation>
         <xs:documentation>
           Name of this cube.
@@ -593,7 +593,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="name" type="ElementNameType" use="required"/>
     <xs:attribute name="defaultMeasure" type="xs:string">
       <xs:annotation>
         <xs:documentation>
@@ -638,7 +638,7 @@
   </xs:complexType>
 
   <xs:complexType name="CubeUsageType">
-    <xs:attribute name="cubeName" type="xs:string" use="required">
+    <xs:attribute name="cubeName" type="ElementNameType" use="required">
       <xs:annotation>
         <xs:documentation>
           Name of the cube which the virtualCube uses.
@@ -684,14 +684,14 @@
       <xs:element name="Annotations" type="AnnotationsType" minOccurs="0"/>
     </xs:sequence>
 
-    <xs:attribute name="cubeName" type="xs:string" use="required">
+    <xs:attribute name="cubeName" type="ElementNameType" use="required">
       <xs:annotation>
         <xs:documentation>
           Name of the cube which the measure belongs to.
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required">
+    <xs:attribute name="name" type="ElementNameType" use="required">
       <xs:annotation>
         <xs:documentation>
           Unique name of the measure within its cube.
@@ -724,14 +724,14 @@
             </xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="source" type="xs:string" use="required">
+        <xs:attribute name="source" type="ElementNameType" use="required">
           <xs:annotation>
             <xs:documentation>
               Name of the source dimension. Must be a dimension in this schema. Case-sensitive.
             </xs:documentation>
           </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="level" type="xs:string">
+        <xs:attribute name="level" type="ElementNameType">
           <xs:annotation>
             <xs:documentation>
               Name of the level to join to. If not specified, joins to the lowest level of the dimension.
@@ -821,7 +821,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="name" type="ElementNameType" use="required" />
     <xs:attribute name="visible" type="xs:boolean" default="true"> <!-- New -->
       <xs:annotation>
         <xs:documentation>
@@ -986,6 +986,12 @@
 
   </xs:complexType>
 
+  <xs:simpleType name="ElementNameType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z_][a-zA-Z0-9_ ]*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="ColumnTypeType">
     <xs:annotation>
       <xs:documentation>
@@ -1051,7 +1057,7 @@
       <xs:element name="PropertyFormatter" type="PropertyFormatterType" minOccurs="0"/> <!-- New -->
     </xs:sequence>
 
-    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="name" type="ElementNameType" use="required" />
     <xs:attribute name="column" type="xs:string" use="required" /> <!-- Despite being replaced by the script content when that is defined, not specifying a column will turn into an error at Report execution time in Analyzer -->
     <xs:attribute name="type" default="String">
       <xs:annotation>
@@ -1126,7 +1132,7 @@
       <xs:element name="CalculatedMemberProperty" type="CalculatedMemberPropertyType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
 
-    <xs:attribute name="name" type="xs:string" use="required">
+    <xs:attribute name="name" type="ElementNameType" use="required">
       <xs:annotation>
         <xs:documentation>
           Name of this measure.
@@ -1232,7 +1238,7 @@
       <xs:element name="CalculatedMemberProperty" type="CalculatedMemberPropertyType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
 
-    <xs:attribute name="name" type="xs:string" use="required">
+    <xs:attribute name="name" type="ElementNameType" use="required">
       <xs:annotation>
         <xs:documentation>
           Name of this calculated member.
@@ -1678,7 +1684,7 @@
           <xs:element name="HierarchyGrant" type="HierarchyGrantType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
 
-        <xs:attribute name="cube" type="xs:string" use="required">
+        <xs:attribute name="cube" type="ElementNameType" use="required">
           <xs:annotation>
             <xs:documentation>
               The unique name of the cube
@@ -1707,7 +1713,7 @@
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Dimension, int)">mondrian.olap.Role#grant(mondrian.olap.Dimension,int)</a>.
           </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="dimension" type="xs:string" use="required">
+        <xs:attribute name="dimension" type="ElementNameType" use="required">
           <xs:annotation>
             <xs:documentation>
               The unique name of the dimension
@@ -1739,7 +1745,7 @@
           <xs:element name="MemberGrant" type="MemberGrantType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
 
-        <xs:attribute name="hierarchy" type="xs:string" use="required">
+        <xs:attribute name="hierarchy" type="ElementNameType" use="required">
             <xs:annotation>
                 <xs:documentation>
                     The unique name of the hierarchy
@@ -1863,7 +1869,7 @@
       <xs:element name="Script" type="ScriptType" minOccurs="0" />
     </xs:sequence>
 
-    <xs:attribute name="name" type="xs:string" use="required">
+    <xs:attribute name="name" type="ElementNameType" use="required">
       <xs:annotation>
         <xs:documentation>
           Name with which the user-defined function will be referenced in MDX expressions.
@@ -2082,7 +2088,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required">
+    <xs:attribute name="name" type="ElementNameType" use="required">
       <xs:annotation>
         <xs:documentation>
           The name of the Cube measure.
@@ -2142,7 +2148,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="name" type="xs:string" use="required">
+    <xs:attribute name="name" type="ElementNameType" use="required">
       <xs:annotation>
         <xs:documentation>
           The name of the Dimension Hierarchy level.
