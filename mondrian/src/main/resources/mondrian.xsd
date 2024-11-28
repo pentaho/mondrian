@@ -989,6 +989,7 @@
   <xs:simpleType name="ElementNameType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[^ ].*"/>
+      <xs:pattern value=""/>
     </xs:restriction>
   </xs:simpleType>
 
