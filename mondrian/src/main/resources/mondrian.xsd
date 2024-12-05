@@ -2371,10 +2371,10 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="RelationOrJoinType" abstract="true">
+  <xs:complexType name="RelationOrJoinType" abstract="true"> <!--Used to make it easier for SME to serialize the equivalent JSON objects -->
     <xs:annotation>
       <xs:documentation>
-        Abstract class to make it easier to generate RelationOrJoinGroup elements in JSON
+        Abstract class that encloses Table, InlineTable, View and Join
       </xs:documentation>
     </xs:annotation>
   </xs:complexType>
