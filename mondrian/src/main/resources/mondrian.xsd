@@ -1449,17 +1449,21 @@
   </xs:group>
 
   <xs:complexType name="ViewType">
-    <xs:annotation>
-      <xs:documentation>
-        A collection of SQL statements, one per dialect.
-      </xs:documentation>
-    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension base="RelationOrJoinType">
+        <xs:annotation>
+          <xs:documentation>
+            A collection of SQL statements, one per dialect.
+          </xs:documentation>
+        </xs:annotation>
 
-    <xs:sequence>
-      <xs:element name="SQL" type="SQLType" minOccurs="1" maxOccurs="unbounded"/>
-    </xs:sequence>
+        <xs:sequence>
+          <xs:element name="SQL" type="SQLType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
 
-    <xs:attribute name="alias" type="xs:string" use="required" />
+        <xs:attribute name="alias" type="xs:string" use="required" />
+      </xs:extension>
+    </xs:complexContent>
 
   </xs:complexType>
 
@@ -1506,79 +1510,86 @@
   </xs:complexType>
 
   <xs:complexType name="JoinType">
-    <xs:sequence>
-      <xs:group ref="RelationOrJoinGroup" minOccurs="2" maxOccurs="2">
-        <xs:annotation>
-          <xs:documentation>
-            The left and right relations or joins.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:group>
-    </xs:sequence>
+    <xs:complexContent>
+      <xs:extension base="RelationOrJoinType">
+        <xs:sequence>
+          <xs:group ref="RelationOrJoinGroup" minOccurs="2" maxOccurs="2">
+            <xs:annotation>
+              <xs:documentation>
+                The left and right relations or joins.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:group>
+        </xs:sequence>
 
-    <xs:attribute name="leftAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>
-          Defaults to left's alias if left is a table, otherwise required.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="leftKey" type="xs:string" use="required"/>
-    <xs:attribute name="rightAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>
-          Defaults to right's alias if right is a table, otherwise required.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="rightKey" type="xs:string" use="required"/>
-
+        <xs:attribute name="leftAlias" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              Defaults to left's alias if left is a table, otherwise required.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="leftKey" type="xs:string" use="required"/>
+        <xs:attribute name="rightAlias" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              Defaults to right's alias if right is a table, otherwise required.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="rightKey" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="TableType">
-    <xs:sequence>
-      <xs:element name="SQL" type="SQLType" minOccurs="0">
-        <xs:annotation>
-          <xs:documentation>
-            The SQL WHERE clause expression to be appended to any select statement
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-      <xs:element name="AggExclude" type="AggExcludeType" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:group ref="AggTableGroup" minOccurs="0" maxOccurs="unbounded">
-        <xs:annotation>
-          <xs:documentation>
-            A definition of an aggregate table for a base fact table.
-            This aggregate table must be in the same schema as the base fact table.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:group>
-      <xs:element name="Hint" type="HintType" minOccurs="0" maxOccurs="unbounded">
-        <xs:annotation>
-          <xs:documentation>
-            Dialect-specific table optimization hints.
-          </xs:documentation>
-        </xs:annotation>
-      </xs:element>
-    </xs:sequence>
+    <xs:complexContent>
+    <xs:extension base="RelationOrJoinType">
+        <xs:sequence>
+          <xs:element name="SQL" type="SQLType" minOccurs="0">
+            <xs:annotation>
+              <xs:documentation>
+                The SQL WHERE clause expression to be appended to any select statement
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="AggExclude" type="AggExcludeType" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:group ref="AggTableGroup" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>
+                A definition of an aggregate table for a base fact table.
+                This aggregate table must be in the same schema as the base fact table.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:group>
+          <xs:element name="Hint" type="HintType" minOccurs="0" maxOccurs="unbounded">
+            <xs:annotation>
+              <xs:documentation>
+                Dialect-specific table optimization hints.
+              </xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
 
-    <xs:attribute name="name" type="xs:string" use="required"/>
-    <xs:attribute name="schema" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>
-          Optional qualifier for table.
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="alias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>
-          Alias to be used with this table when it is used to form queries.
-          If not specified, defaults to the table name, but in any case, must be unique within the schema.
-          (You can use the same table in different hierarchies, but it must have different aliases.)
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="schema" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              Optional qualifier for table.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="alias" type="xs:string">
+          <xs:annotation>
+            <xs:documentation>
+              Alias to be used with this table when it is used to form queries.
+              If not specified, defaults to the table name, but in any case, must be unique within the schema.
+              (You can use the same table in different hierarchies, but it must have different aliases.)
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="HintType" mixed="true">
@@ -1979,22 +1990,25 @@
   </xs:complexType>
 
   <xs:complexType name="InlineTableType">
-    <xs:sequence>
-      <xs:element name="ColumnDefs" type="ColumnDefsType" minOccurs="1" maxOccurs="1"/>
-      <xs:element name="Rows" type="RowsType" minOccurs="1" maxOccurs="1"/>
-    </xs:sequence>
+    <xs:complexContent>
+      <xs:extension base="RelationOrJoinType">
+        <xs:sequence>
+          <xs:element name="ColumnDefs" type="ColumnDefsType" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="Rows" type="RowsType" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
 
-    <xs:attribute name="alias" type="xs:string" use="required">
-      <xs:annotation>
-        <xs:documentation>
-          Alias to be used with this table when it is used to
-          form queries. It must be unique within the
-          schema. (You can use the same table in different
-          hierarchies, but it must have different aliases.)
-        </xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-
+        <xs:attribute name="alias" type="xs:string" use="required">
+          <xs:annotation>
+            <xs:documentation>
+              Alias to be used with this table when it is used to
+              form queries. It must be unique within the
+              schema. (You can use the same table in different
+              hierarchies, but it must have different aliases.)
+            </xs:documentation>
+          </xs:annotation>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="ColumnDefsType">
@@ -2355,6 +2369,14 @@
     <xs:sequence>
       <xs:element name="SQL" type="SQLType" minOccurs="1" maxOccurs="unbounded"/>
     </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RelationOrJoinType" abstract="true">
+    <xs:annotation>
+      <xs:documentation>
+        Abstract class to make it easier to generate RelationOrJoinGroup elements in JSON
+      </xs:documentation>
+    </xs:annotation>
   </xs:complexType>
 
 </xs:schema>
