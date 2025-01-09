@@ -3,11 +3,8 @@ on: pull_request
 
 jobs:
 
-  reusable-pr-workflow:
-    uses: pentaho/actions-common/.github/workflows/pr.yml@codeql-poc-1
+  run-codeql-pr:
+    uses: pentaho/actions-common/.github/workflows/codeql_pr.yml@codeql-poc-1
     with:
       slack_channels: ""
-#      sonar_project_key: "pdi-plugins-ee"
-      additional_mvn_directives: "-DrunITs"
-      scpId: 3ef4b1f1-778b-4204-94ae-5c7e360f13ab
     secrets: inherit
