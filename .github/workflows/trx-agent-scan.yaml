@@ -1,8 +1,9 @@
-name: pull request workflow
+name: PR Compliance Workflow
 on: pull_request
 
 jobs:
 
-  run-codeql-pr:
-    uses: pentaho/actions-common/.github/workflows/codeql_pr.yml@codeql-poc-1
+  run-pr-compliance:
+    name: Run PR Compliance Checks
+    uses: pentaho/actions-common/.github/workflows/pr_compliance.yml@codeql-poc-1
     secrets: inherit
