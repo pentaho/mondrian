@@ -4,7 +4,7 @@ on: pull_request
 jobs:
 
   reusable-pr-workflow:
-    uses: pentaho/actions-common/.github/workflows/pr.yml@HNC-853
+    uses: pentaho/actions-common/.github/workflows/pr.yml@codeql-poc-1
     with:
       slack_channels: ""
 #      sonar_project_key: "pdi-plugins-ee"
