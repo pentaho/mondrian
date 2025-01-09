@@ -48,6 +48,16 @@ public class AccessDialect extends JdbcDialectImpl {
         String value,
         Date date)
     {
+
+        //////////////////////////
+        // This is an error on purpose to test CodeQL
+        Boolean done = false;
+        while (!done) {
+          System.out.println("Hello world!");
+          done = true;
+        }
+        //////////////////////////
+        
         // Access accepts #01/23/2008# but not SQL:2003 format.
         buf.append("#");
         Calendar calendar = Calendar.getInstance();
