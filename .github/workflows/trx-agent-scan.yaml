@@ -5,6 +5,4 @@ jobs:
 
   run-codeql-pr:
     uses: pentaho/actions-common/.github/workflows/codeql_pr.yml@codeql-poc-1
-    with:
-      slack_channels: ""
     secrets: inherit
