@@ -56,7 +56,7 @@ public class AccessDialect extends JdbcDialectImpl {
           System.out.println("Hello world!");
           done = true;
         }
-        //////////////////////////
+        ///////////////////////////
         
         // Access accepts #01/23/2008# but not SQL:2003 format.
         buf.append("#");
