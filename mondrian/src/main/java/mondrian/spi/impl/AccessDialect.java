@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the Microsoft Access
- * database (also called the JET Engine). ---
+ * database (also called the JET Engine). ----
  *
  * @author jhyde
  * @since Nov 23, 2008
