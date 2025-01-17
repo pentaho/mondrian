@@ -1119,23 +1119,6 @@ public class Workbench extends javax.swing.JFrame {
           versionLabel.setBorder( new EmptyBorder( 0, 0, 0, 0 ) );
           versionLabel.setBounds( 300, 80, 700, versionLabel.getPreferredSize().height );
 
-          final String year = new SimpleDateFormat( "yyyy" ).format( new Date() );
-          final JTextArea copyrightArea = new JTextArea( getResourceConverter().getFormattedString( 
-                                                          "schemaExplorer.about.copyright",
-                                                          "Copyright (c) {0} Hitachi Vantara. All rights reserved.",
-                                                          year ) );
-          copyrightArea.setEditable( false );
-          copyrightArea.setBounds( 300, 105, 700, 25 );
-          copyrightArea.setOpaque( false );
-          copyrightArea.setLineWrap( true );
-          copyrightArea.setWrapStyleWord( true );
-          copyrightArea.setFont( new Font( Font.SANS_SERIF, Font.PLAIN, 12 ) );
-          copyrightArea.setEnabled( false );
-          copyrightArea.setBackground( new Color( 0, 0, 0, 0 ) );
-          copyrightArea.setForeground( new Color( 65, 65, 65 ) );
-          copyrightArea.setBorder( new EmptyBorder( 0, 0, 0, 0 ) );
-          copyrightArea.setDisabledTextColor( copyrightArea.getForeground() );
-
           StringBuilder sb = new StringBuilder();
           String line;
             try {
@@ -1151,7 +1134,7 @@ public class Workbench extends javax.swing.JFrame {
             }
           final JTextArea licenseArea = new JTextArea( sb.toString() );
           licenseArea.setEditable( false );
-          licenseArea.setBounds( 300, 130, 700, 800 );
+          licenseArea.setBounds( 300, 130, 700, 825 );
           licenseArea.setOpaque( false );
           licenseArea.setLineWrap( true );
           licenseArea.setWrapStyleWord( true );
@@ -1159,13 +1142,12 @@ public class Workbench extends javax.swing.JFrame {
           licenseArea.setEnabled( false );
           licenseArea.setBackground( new Color( 0, 0, 0, 0 ) );
           licenseArea.setBorder( new EmptyBorder( 0, 0, 0, 0 ) );
-          licenseArea.setDisabledTextColor( copyrightArea.getForeground() );
+          licenseArea.setDisabledTextColor( new Color( 65, 65, 65 ) );
 
           // Add all the overlays
           final JPanel imagePanelOverlay = new JPanel( null );
           imagePanelOverlay.setOpaque( false );
           imagePanelOverlay.add( versionLabel );
-          imagePanelOverlay.add( copyrightArea );
           imagePanelOverlay.add( licenseArea );
           imagePanelOverlay.setBackground( new Color( 0, 0, 0, 0 ) );
 
