@@ -11,6 +11,7 @@ package mondrian.spi.impl;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.List;
+import java.io.File;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the Microsoft Access
@@ -33,6 +34,12 @@ public class AccessDialect extends JdbcDialectImpl {
      */
     public AccessDialect(Connection connection) throws SQLException {
         super(connection);
+    }
+
+    public void example(File dir, File parent) throws IOException {
+        if (!dir.getCanonicalPath().startsWith(parent.getCanonicalPath())) {
+            throw new IOException("Path traversal attempt: " + dir.getCanonicalPath());
+        }
     }
 
     public String toUpper(String expr) {
