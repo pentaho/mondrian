@@ -84,7 +84,7 @@ public class Workbench extends javax.swing.JFrame {
 
     private static final Logger LOGGER = LogManager.getLogger(Workbench.class);
 
-    private static final String LICENSE_FILE_PATH = "./LICENSE.TXT";
+    private static final String LICENSE_FILE = "LICENSE.TXT";
 
     private String jdbcDriverClassName;
     private String jdbcConnectionUrl;
@@ -1140,12 +1140,14 @@ public class Workbench extends javax.swing.JFrame {
           String line;
             try {
                 BufferedReader reader =
-                  new BufferedReader( new FileReader( LICENSE_FILE_PATH ) );
+                  new BufferedReader(
+                    new InputStreamReader( this.getClass().getClassLoader().getResourceAsStream( LICENSE_FILE ) ) );
+
                 while ( ( line = reader.readLine() ) != null ) {
                     sb.append( line + System.getProperty( "line.separator" ) );
                 }
             } catch ( Exception ex ) {
-                sb.append( String.format( "Error reading license file from product directory: \"%s\"", LICENSE_FILE_PATH ) );
+                sb.append( String.format( "Error reading license file from product directory: \"%s\"", LICENSE_FILE ) );
                 LOGGER.error( getResourceConverter().getString( "schemaExplorer.about.licenseTextNotFound",
                   "Failed to load the license text" ), ex );
             }

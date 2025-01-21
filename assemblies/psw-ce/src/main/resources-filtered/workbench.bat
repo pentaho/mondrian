@@ -16,7 +16,7 @@ rem Schema Workbench launch script
 
 rem base Mondrian JARs need to be included
 
-set CP=lib/*;plugins/*;drivers/*;lib/
+set CP=%~dp0;lib/*;plugins/*;drivers/*;lib/
 
 rem Have a .schemaWorkbench directory for local 
 
