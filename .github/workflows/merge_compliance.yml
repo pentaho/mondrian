@@ -1,0 +1,15 @@
+name: Pentaho Merge Compliance
+
+on:
+  push:
+    branches: # Specify branches so that it doesn't get executed when a tag is pushed
+      - "*"
+    paths-ignore:
+      - .github/**
+
+jobs:
+
+  run-merge-compliance:
+    name: Run Merge Compliance Checks
+    uses: pentaho/actions-common/.github/workflows/merge_compliance.yml@codeql-poc-1
+    secrets: inherit
