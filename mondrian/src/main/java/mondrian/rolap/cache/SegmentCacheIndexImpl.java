@@ -64,8 +64,9 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
     private final Map<List, FuzzyFactInfo> fuzzyFactMap =
         new HashMap<List, FuzzyFactInfo>();
 
+    // PATCH: Use ConcurrentHashMap instead of HashMap
     private final Map<SegmentHeader, HeaderInfo> headerMap =
-        new HashMap<SegmentHeader, HeaderInfo>();
+        new ConcurrentHashMap<SegmentHeader, HeaderInfo>();
 
     // PATCH: Use a threads array instead of a single thread.
     private final Thread[] threads;
