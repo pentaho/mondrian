@@ -1696,34 +1696,43 @@ public class SegmentCacheManager {
    */
   public class SegmentCacheIndexRegistry {
     private final Map<SchemaKey, SegmentCacheIndex> indexes =
-      Collections.synchronizedMap(
-        new HashMap<>() );
+      // PATCH: Use ConcurrentHashMap instead of synchronizedMap.
+      // Collections.synchronizedMap(
+      //   new HashMap<>() );
+      new ConcurrentHashMap<SchemaKey, SegmentCacheIndex>();
 
     /**
      * Returns the {@link SegmentCacheIndex} for a given {@link RolapStar}.
      */
     public SegmentCacheIndex getIndex( RolapStar star ) {
-      LOGGER.trace(
-        "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
-          + System.identityHashCode( star ) );
+      // PATCH: Use ConcurrentHashMap instead of synchronizedMap.
 
-      if ( !indexes.containsKey( star.getSchema().getKey() ) ) {
-        final SegmentCacheIndexImpl index =
-          // PATCH: Use threads array instead of thread.
-          new SegmentCacheIndexImpl( threads );
-        LOGGER.trace(
-          "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
-            + "Creating New Index "
-            + System.identityHashCode( index ) );
-        indexes.put( star.getSchema().getKey(), index );
-      }
-      final SegmentCacheIndex index =
-        indexes.get( star.getSchema().getKey() );
-      LOGGER.trace(
-        "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
-          + "Returning Index "
-          + System.identityHashCode( index ) );
-      return index;
+      // LOGGER.trace(
+      //   "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
+      //     + System.identityHashCode( star ) );
+      //
+      // if ( !indexes.containsKey( star.getSchema().getKey() ) ) {
+      //   final SegmentCacheIndexImpl index =
+      //     // PATCH: Use threads array instead of thread.
+      //     new SegmentCacheIndexImpl( threads );
+      //   LOGGER.trace(
+      //     "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
+      //       + "Creating New Index "
+      //       + System.identityHashCode( index ) );
+      //   indexes.put( star.getSchema().getKey(), index );
+      // }
+      // final SegmentCacheIndex index =
+      //   indexes.get( star.getSchema().getKey() );
+      // LOGGER.trace(
+      //   "SegmentCacheManager.SegmentCacheIndexRegistry.getIndex:"
+      //     + "Returning Index "
+      //     + System.identityHashCode( index ) );
+      // return index;
+
+      return indexes.computeIfAbsent(
+        star.getSchema().getKey(),
+        key -> new SegmentCacheIndexImpl( threads )
+      );
     }
 
     /**
