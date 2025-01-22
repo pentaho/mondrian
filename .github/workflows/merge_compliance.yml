@@ -1,6 +1,7 @@
 name: Pentaho Merge Compliance
 
 on:
+  workflow_dispatch:
   push:
     branches: # Specify branches so that it doesn't get executed when a tag is pushed
       - "main"
