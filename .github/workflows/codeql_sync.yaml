@@ -1,0 +1,22 @@
+name: "Sync GHAS to Jira"
+
+on:
+  workflow_dispatch:
+  #schedule:
+  #  - cron: '0 */12 * * *'    
+
+jobs:
+  test_job:
+    runs-on: [ k8s ]
+    steps:
+      - name: Sync alerts to Jira issues
+        uses: github/ghas-jira-integration@v1.2.4
+        with:
+          jira_url: 'https://hv-eng.atlassian.net'
+          jira_user: '${{ secrets.JIRA_USER }}'
+          jira_token: '${{ secrets.JIRA_TOKEN }}'
+          jira_project: 'PSEC'
+          sync_direction: 'gh2jira'
+          jira_labels: 'codeql,sast,sec_own'
+          #issue_end_state: 'Closed'
+          #issue_reopen_state: 'Reopened'
