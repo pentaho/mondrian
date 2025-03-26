@@ -18,5 +18,5 @@ jobs:
           jira_project: 'PSEC'
           sync_direction: 'gh2jira'
           jira_labels: 'codeql,sast,sec_own'
-          issue_end_state: 'RESOLVED'
-          issue_reopen_state: 'REOPENED'
+          issue_end_state: 'Resolve Issue'
+          issue_reopen_state: 'Reopen Issue'
