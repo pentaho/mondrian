@@ -12,6 +12,7 @@
 
 package mondrian.spi.impl;
 
+import mondrian.olap.Util;
 import mondrian.rolap.SqlStatement;
 import mondrian.spi.DialectUtil;
 
@@ -99,7 +100,7 @@ public class OracleDialect extends JdbcDialectImpl {
         StringBuilder mappedFlags = new StringBuilder();
         String[][] mapping = new String[][]{{"c","c"},{"i","i"},{"m","m"}};
         javaRegex = extractEmbeddedFlags( javaRegex, mapping, mappedFlags );
-        
+
         final Matcher escapeMatcher = escapePattern.matcher(javaRegex);
         while (escapeMatcher.find()) {
             javaRegex =
@@ -182,6 +183,13 @@ public class OracleDialect extends JdbcDialectImpl {
         }
         logTypeInfo(metaData, columnIndex, type);
         return type;
+    }
+
+    @Override
+    public void quoteStringLiteral(StringBuilder buf, String s) {
+        // Ensure Unicode characters are handled correctly
+        buf.append('N');
+        Util.singleQuoteString(s, buf);
     }
 }
 

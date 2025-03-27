@@ -847,7 +847,13 @@ public class SqlConstraintUtilsTest extends FoodMartTestCase {
         columnValue[0] = "dummyValue";
 
         String levelStr = SqlConstraintUtils.constrainLevel(level, query, baseCube, aggStar, columnValue, false);
-        assertEquals("dummyName = 'dummyValue'",  levelStr);
+
+        // Handle Unicode characters possibility (MONDRIAN-990)
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MSSQL || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
+            assertEquals("dummyName = N'dummyValue'",  levelStr);
+        } else {
+            assertEquals("dummyName = 'dummyValue'",  levelStr);
+        }
     }
     
     private void setSlicerContext(RolapEvaluator e, Member m) {

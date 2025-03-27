@@ -82,6 +82,13 @@ public class MicrosoftSqlServerDialect extends JdbcDialectImpl {
       buf.append(Util.singleQuoteString(value));
     }
 
+    @Override
+    public void quoteStringLiteral(StringBuilder buf, String s) {
+        // Ensure Unicode characters are handled correctly
+        buf.append('N');
+        Util.singleQuoteString(s, buf);
+    }
+
     protected void quoteDateLiteral(StringBuilder buf, String value, Date date)
     {
         buf.append("CONVERT(DATE, '");
