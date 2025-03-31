@@ -371,6 +371,7 @@ public class Main extends TestSuite {
       addTest( suite, CompatibilityTest.class );
       addTest( suite, CaptionTest.class );
       addTest( suite, UdfTest.class );
+      addTest( suite, UnicodeSpecialCharactersTest.class);
       addTest( suite, NullValueTest.class );
       addTest( suite, NamedSetTest.class );
       addTest( suite, NativeSetEvaluationTest.class );
