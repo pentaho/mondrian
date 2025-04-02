@@ -10,7 +10,9 @@ import java.sql.Statement;
 
 public class UnicodeSpecialCharactersTest extends TestCase {
 
-  // Test to check fix for MONDRIAN-990
+  // Test to check fix for MONDRIAN-990, ensuring that when Unicode characters
+  // (tested with characters that don't belong to the QL_Latin1_General_CP1_CI_AS collation) are used in identifiers of
+  // a MDX query, then Mondrian is able to process the query and return a result with the characters present
   public void test_specialCharacters() throws SQLException {
     TestContext context = TestContext.instance().withSchema(
       "<?xml version=\"1.0\"?>\n"
