@@ -147,6 +147,12 @@ public class DrillThroughTest extends FoodMartTestCase {
                 }).getDrillThroughSQL(false));
 
         String sql = cell.getDrillThroughSQL(false);
+        // Handle Unicode characters possibility (MONDRIAN-990)
+        Dialect dialect = getTestContext().getDialect();
+        String unicodePrefix = "";
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MSSQL || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
+            unicodePrefix = "N";
+        }
         String expectedSql =
             "select `time_by_day`.`the_year` as `Year`,"
             + " `product_class`.`product_family` as `Product Family`,"
@@ -159,7 +165,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " and `time_by_day`.`the_year` = 1997"
             + " and `sales_fact_1997`.`product_id` = `product`.`product_id`"
             + " and `product`.`product_class_id` = `product_class`.`product_class_id`"
-            + " and `product_class`.`product_family` = 'Drink' "
+            + " and `product_class`.`product_family` = " + unicodePrefix + "'Drink' "
             + "order by "
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "`Year` ASC,"
@@ -186,7 +192,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " and `time_by_day`.`the_year` = 1997"
             + " and `sales_fact_1997`.`product_id` = `product`.`product_id`"
             + " and `product`.`product_class_id` = `product_class`.`product_class_id`"
-            + " and `product_class`.`product_family` = 'Drink' "
+            + " and `product_class`.`product_family` = " + unicodePrefix + "'Drink' "
             + "order by "
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "`Year` ASC,"
@@ -275,8 +281,15 @@ public class DrillThroughTest extends FoodMartTestCase {
         final Cell cell = result.getCell(new int[]{});
         assertTrue(cell.canDrillThrough());
         assertEquals(3584, cell.getDrillThroughCount());
-        getTestContext().assertSqlEquals(
-            "select\n"
+
+        // Handle Unicode characters possibility (MONDRIAN-990)
+        Dialect dialect = getTestContext().getDialect();
+        String unicodePrefix = "";
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MSSQL || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
+            unicodePrefix = "N";
+        }
+        String expectedSql =
+          "select\n"
             + "    time_by_day.the_year as Year,\n"
             + "    promotion.media_type as Media Type,\n"
             + "    sales_fact_1997.unit_sales as Unit Sales\n"
@@ -292,11 +305,13 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "    sales_fact_1997.promotion_id = promotion.promotion_id\n"
             + "and\n"
             + "    ((promotion.media_type in "
-            + "('Bulk Mail', 'Cash Register Handout')))\n"
+            + "(" + unicodePrefix + "'Bulk Mail', " + unicodePrefix + "'Cash Register Handout')))\n"
             + "order by\n"
             + (TestContext.instance().getDialect().requiresOrderByAlias()
-                ? "    Year ASC"
-                : "    time_by_day.the_year ASC"),
+            ? "    Year ASC"
+            : "    time_by_day.the_year ASC");
+        getTestContext().assertSqlEquals(
+            expectedSql,
             cell.getDrillThroughSQL(false), 3584);
     }
 
@@ -310,6 +325,12 @@ public class DrillThroughTest extends FoodMartTestCase {
         assertTrue(cell.canDrillThrough());
         String sql = cell.getDrillThroughSQL(false);
 
+        // Handle Unicode characters possibility (MONDRIAN-990)
+        Dialect dialect = getTestContext().getDialect();
+        String unicodePrefix = "";
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MSSQL || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
+            unicodePrefix = "N";
+        }
         String expectedSql =
             "select `time_by_day`.`the_year` as `Year`,"
             + " `product_class`.`product_family` as `Product Family`,"
@@ -322,7 +343,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " and `time_by_day`.`the_year` = 1997"
             + " and `sales_fact_1997`.`product_id` = `product`.`product_id`"
             + " and `product`.`product_class_id` = `product_class`.`product_class_id`"
-            + " and `product_class`.`product_family` = 'Drink' "
+            + " and `product_class`.`product_family` = " + unicodePrefix + "'Drink' "
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "order by `Year` ASC,"
                 + " `Product Family` ASC"
@@ -373,6 +394,12 @@ public class DrillThroughTest extends FoodMartTestCase {
 
         String nameExpStr = getNameExp(result, "Customers", "Name");
 
+        // Handle Unicode characters possibility (MONDRIAN-990)
+        Dialect dialect = getTestContext().getDialect();
+        String unicodePrefix = "";
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MSSQL || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
+            unicodePrefix = "N";
+        }
         String expectedSql =
             "select `store`.`store_country` as `Store Country`,"
             + " `store`.`store_state` as `Store State`,"
@@ -416,7 +443,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " and `time_by_day`.`the_year` = 1997"
             + " and `sales_fact_1997`.`product_id` = `product`.`product_id`"
             + " and `product`.`product_class_id` = `product_class`.`product_class_id`"
-            + " and `product_class`.`product_family` = 'Drink'"
+            + " and `product_class`.`product_family` = " + unicodePrefix + "'Drink'"
             + " and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id`"
             + " and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
             + "order by"
@@ -501,6 +528,12 @@ public class DrillThroughTest extends FoodMartTestCase {
 
         String nameExpStr = getNameExp(result, "Customers", "Name");
 
+        // Handle Unicode characters possibility (MONDRIAN-990)
+        Dialect dialect = getTestContext().getDialect();
+        String unicodePrefix = "";
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MSSQL || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
+            unicodePrefix = "N";
+        }
         String expectedSql =
             "select"
             + " `store`.`store_country` as `Store Country`,"
@@ -542,12 +575,12 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "where `sales_fact_1997`.`store_id` = `store`.`store_id` and "
             + "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and "
             + "`time_by_day`.`the_year` = 1997 and "
-            + "`time_by_day`.`quarter` = 'Q4' and "
+            + "`time_by_day`.`quarter` = " + unicodePrefix + "'Q4' and "
             + "`time_by_day`.`month_of_year` = 12 and "
             + "`sales_fact_1997`.`product_id` = `product`.`product_id` and "
             + "`product`.`product_class_id` = `product_class`.`product_class_id` and "
-            + "`product_class`.`product_family` = 'Drink' and "
-            + "`product_class`.`product_department` = 'Dairy' and "
+            + "`product_class`.`product_family` = " + unicodePrefix + "'Drink' and "
+            + "`product_class`.`product_department` = " + unicodePrefix + "'Dairy' and "
             + "`sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` and "
             + "`sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
             + "order by"
@@ -641,6 +674,12 @@ public class DrillThroughTest extends FoodMartTestCase {
 
         String nameExpStr = getNameExp(result, "Customers", "Name");
 
+        // Handle Unicode characters possibility (MONDRIAN-990)
+        Dialect dialect = getTestContext().getDialect();
+        String unicodePrefix = "";
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MSSQL || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
+            unicodePrefix = "N";
+        }
         final String expectedSql =
             "select"
             + " `store`.`store_state` as `Store State`,"
@@ -680,8 +719,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `promotion` =as= `promotion`,"
             + " `customer` =as= `customer` "
             + "where `sales_fact_1997`.`store_id` = `store`.`store_id` and"
-            + " `store`.`store_state` = 'CA' and"
-            + " `store`.`store_city` = 'Beverly Hills' and"
+            + " `store`.`store_state` = " + unicodePrefix + "'CA' and"
+            + " `store`.`store_city` = " + unicodePrefix + "'Beverly Hills' and"
             + " `sales_fact_1997`.time_id` = `time_by_day`.`time_id` and"
             + " `sales_fact_1997`.`product_id` = `product`.`product_id` and"
             + " `product`.`product_class_id` = `product_class`.`product_class_id` and"
@@ -759,6 +798,14 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "from Sales");
         String sql = result.getCell(new int[] {0, 0}).getDrillThroughSQL(false);
 
+        // Handle Unicode characters possibility (MONDRIAN-990)
+        final Cube cube = result.getQuery().getCube();
+        RolapStar star = ((RolapCube) cube).getStar();
+        Dialect dialect = star.getSqlQueryDialect();
+        String unicodePrefix = "";
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MSSQL || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
+            unicodePrefix = "N";
+        }
         String expectedSql =
             "select"
             + " `time_by_day`.`the_year` as `Year`,"
@@ -774,16 +821,12 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " and `time_by_day`.`the_year` = 1997"
             + " and `sales_fact_1997`.`product_id` = `product`.`product_id`"
             + " and `product`.`product_class_id` = `product_class`.`product_class_id`"
-            + " and `product_class`.`product_family` = 'Drink' "
+            + " and `product_class`.`product_family` = "+ unicodePrefix + "'Drink' "
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "order by `Year` ASC, `Product Family` ASC"
                 : "order by `time_by_day`.`the_year` ASC, `product_class`.`product_family` ASC");
 
-        final Cube cube = result.getQuery().getCube();
-        RolapStar star = ((RolapCube) cube).getStar();
-
         // Adjust expected SQL for dialect differences in FoodMart.xml.
-        Dialect dialect = star.getSqlQueryDialect();
         final String caseStmt =
             " \\(case when `sales_fact_1997`.`promotion_id` = 0 then 0"
             + " else `sales_fact_1997`.`store_sales` end\\)";
@@ -1019,6 +1062,12 @@ public class DrillThroughTest extends FoodMartTestCase {
 
         String sql = result.getCell(new int[]{0, 0}).getDrillThroughSQL(false);
 
+        // Handle Unicode characters possibility (MONDRIAN-990)
+        Dialect dialect = getTestContext().getDialect();
+        String unicodePrefix = "";
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.MSSQL || dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
+            unicodePrefix = "N";
+        }
         String expectedSql =
             "select `time_by_day`.`the_year` as `Year`,"
             + " `time_by_day`.`quarter` as `Quarter`,"
@@ -1032,12 +1081,12 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " `customer` =as= `customer`"
             + " where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and"
             + " `time_by_day`.`the_year` = 1997 and"
-            + " `time_by_day`.`quarter` = 'Q4' and"
+            + " `time_by_day`.`quarter` = " + unicodePrefix + "'Q4' and"
             + " `time_by_day`.`month_of_year` = 12 and"
             + " `sales_fact_1997`.`customer_id` = `customer`.customer_id` and"
-            + " `customer`.`state_province` = 'OR' and"
-            + " `customer`.`city` = 'Albany' and"
-            + " `customer`.`gender` = 'F'"
+            + " `customer`.`state_province` = " + unicodePrefix + "'OR' and"
+            + " `customer`.`city` = " + unicodePrefix + "'Albany' and"
+            + " `customer`.`gender` = " + unicodePrefix + "'F'"
             + " order by "
             + (TestContext.instance().getDialect().requiresOrderByAlias()
                 ? "`Year` ASC,"

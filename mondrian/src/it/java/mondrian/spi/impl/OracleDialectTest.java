@@ -46,12 +46,19 @@ public class OracleDialectTest extends TestCase {
 
   public void testGenerateRegularExpression_CaseInsensitive() throws Exception {
     String sql = dialect.generateRegularExpression( "table.column", "(?i)|(?u).*a.*" );
-    assertEquals( "table.column IS NOT NULL AND REGEXP_LIKE(table.column, '.*a.*', 'i')", sql );
+    assertEquals( "table.column IS NOT NULL AND REGEXP_LIKE(table.column, N'.*a.*', N'i')", sql );
   }
 
   public void testGenerateRegularExpression_CaseSensitive() throws Exception {
     String sql = dialect.generateRegularExpression( "table.column", ".*a.*" );
-    assertEquals( "table.column IS NOT NULL AND REGEXP_LIKE(table.column, '.*a.*', '')", sql );
+    assertEquals( "table.column IS NOT NULL AND REGEXP_LIKE(table.column, N'.*a.*', N'')", sql );
+  }
+
+  public void testQuoteStringLiteral() throws Exception {
+    StringBuilder buf = new StringBuilder();
+    String stringToQuote = "test";
+    dialect.quoteStringLiteral(buf, stringToQuote);
+    assertEquals("N'test'", buf.toString());
   }
 }
 //End OracleDialectTest.java

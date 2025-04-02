@@ -90,5 +90,11 @@ public class MicrosoftSqlServerDialectTest extends TestCase {
     }
   }
 
+  public void testQuoteStringLiteral() throws Exception {
+    StringBuilder buf = new StringBuilder();
+    String stringToQuote = "test";
+    dialect.quoteStringLiteral(buf, stringToQuote);
+    assertEquals("N'test'", buf.toString());
+  }
 }
 // End MicrosoftSqlServerDialectTest.java
