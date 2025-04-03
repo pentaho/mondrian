@@ -209,9 +209,6 @@ CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
           <SQL dialect="mssql">
 fname + ' ' + lname
           </SQL>
-          <SQL dialect="derby">
-"customer"."fullname"
-          </SQL>
           <SQL dialect="db2">
 CONCAT(CONCAT("customer"."fname", ' '), "customer"."lname")
           </SQL>
@@ -254,9 +251,6 @@ CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
 fname + ' ' + lname
           </SQL>
           <SQL dialect="neoview">
-"customer"."fullname"
-          </SQL>
-          <SQL dialect="derby">
 "customer"."fullname"
           </SQL>
           <SQL dialect="db2">
@@ -342,9 +336,6 @@ Iif("sales_fact_1997"."promotion_id" = 0, 0, "sales_fact_1997"."store_sales")
       </SQL>
       <SQL dialect="infobright">
 `sales_fact_1997`.`store_sales`
-      </SQL>
-      <SQL dialect="derby">
-(case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
       </SQL>
       <SQL dialect="luciddb">
 (case when "sales_fact_1997"."promotion_id" = 0 then 0 else "sales_fact_1997"."store_sales" end)
@@ -668,9 +659,6 @@ CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)
           </SQL>
           <SQL dialect="mssql">
 fname + ' ' + lname
-          </SQL>
-          <SQL dialect="derby">
-"customer"."fullname"
           </SQL>
           <SQL dialect="db2">
 CONCAT(CONCAT("customer"."fname", ' '), "customer"."lname")

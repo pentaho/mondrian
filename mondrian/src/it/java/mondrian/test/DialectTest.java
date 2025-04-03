@@ -211,8 +211,6 @@ public class DialectTest extends TestCase {
       String[] errs = {
         // oracle
         "(?s)ORA-00909: invalid number of arguments.*",
-        // derby
-        "Syntax error: Encountered \",\" at line 1, column 36.",
         // access
         "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(missing operator\\) in query expression '"
           + ".*'.",
@@ -294,8 +292,6 @@ public class DialectTest extends TestCase {
       assertTrue( getDialect().allowsCountDistinct() );
     } else {
       String[] errs = {
-        // derby
-        "Multiple DISTINCT aggregates are not supported at this time.",
         // access
         "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(missing operator\\) in query expression '"
           + ".*'.",
@@ -378,8 +374,6 @@ public class DialectTest extends TestCase {
       String[] errs = {
         // mysql
         "Every derived table must have its own alias",
-        // derby
-        "Syntax error: Encountered \"<EOF>\" at line 1, column 47.",
         // hive
         "(?s).*mismatched input \'<EOF>\' expecting Identifier in subquery source.*",
         // postgres simular with Greenplum
@@ -509,8 +503,6 @@ public class DialectTest extends TestCase {
           + "includes fields that are not selected by the query\\.  "
           + "Only those fields requested in the first query can be "
           + "included in an ORDER BY expression\\.",
-        // derby (yes, lame message)
-        "Java exception: ': java.lang.NullPointerException'.",
         // hsqldb
         "(?s)Cannot be in ORDER BY clause in statement .*",
         // neoview
@@ -580,8 +572,6 @@ public class DialectTest extends TestCase {
       assertQuerySucceeds( sql );
     } else {
       String[] errs = {
-        // derby
-        "Syntax error: Encountered \"SETS\" at line 6, column 19.",
         // hive
         "(?s).*line 6:18 mismatched input 'SETS' expecting EOF.*",
         // hsqldb
@@ -627,8 +617,6 @@ public class DialectTest extends TestCase {
       assertQuerySucceeds( sql );
     } else {
       String[] errs = {
-        // derby
-        "Syntax error: Encountered \",\" at line 3, column 20.",
         // access
         "\\[Microsoft\\]\\[ODBC Microsoft Access Driver\\] Syntax error \\(comma\\) in query expression '.*'.",
         // hive
@@ -1196,11 +1184,6 @@ public class DialectTest extends TestCase {
       String[] errs = {
         // oracle
         "ORA-00979: not a GROUP BY expression\n",
-        // derby
-        "The SELECT list of a grouped query contains at least one "
-          + "invalid expression. If a SELECT list has a GROUP BY, the "
-          + "list may only contain valid grouping expressions and valid "
-          + "aggregate expressions.  ",
         // hive
         "(?s).*line 1:18 Expression Not In Group By Key `the_month`.*",
         // hsqldb
