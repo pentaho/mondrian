@@ -2377,9 +2377,6 @@ public class SchemaTest extends FoodMartTestCase {
             + "      <SQL dialect=\"oracle\">\n"
             + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
             + "      </SQL>\n"
-            + "      <SQL dialect=\"derby\">\n"
-            + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
-            + "      </SQL>\n"
             + "      <SQL dialect=\"hsqldb\">\n"
             + "        <![CDATA[SELECT * FROM \"customer\"]]>\n"
             + "      </SQL>\n"
@@ -2639,14 +2636,11 @@ public class SchemaTest extends FoodMartTestCase {
      */
     public void testBinaryLevelKey() {
         switch (TestContext.instance().getDialect().getDatabaseProduct()) {
-        case DERBY:
         case MARIADB:
         case MYSQL:
             break;
         default:
-            // Not all databases support binary literals (e.g. X'AB01'). Only
-            // Derby returns them as byte[] values from its JDBC driver and
-            // therefore experiences bug MONDRIAN-413.
+            // Not all databases support binary literals (e.g. X'AB01').
             return;
         }
         TestContext testContext = TestContext.instance().createSubstitutingCube(

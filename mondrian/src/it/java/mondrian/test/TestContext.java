@@ -1552,11 +1552,6 @@ public class TestContext {
           search,
           "`fname` || ' ' || `lname`" );
         break;
-      case DERBY:
-        sql = sql.replaceAll(
-          search,
-          "`customer`.`fullname`" );
-        break;
       case INGRES:
         sql = sql.replaceAll(
           search,
