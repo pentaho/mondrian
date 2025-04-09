@@ -1288,12 +1288,9 @@ public class DrillThroughTest extends FoodMartTestCase {
             final ResultSet resultSet = statement.executeQuery(sql);
             final int columnCount = resultSet.getMetaData().getColumnCount();
             final Dialect dialect = testContext.getDialect();
-            if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.DERBY) {
-                // derby counts ORDER BY columns as columns. insane!
-                assertEquals(11, columnCount);
-            } else {
-                assertEquals(6, columnCount);
-            }
+
+            assertEquals(6, columnCount);
+
             final String columnName = resultSet.getMetaData().getColumnLabel(5);
             assertTrue(
                 columnName,
