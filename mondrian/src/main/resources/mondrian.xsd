@@ -245,6 +245,7 @@
     <xs:attribute name="highCardinality" type="xs:boolean" default="false">
       <xs:annotation>
         <xs:documentation>
+          This attribute is deprecated.
           Flag to mark this dimension as a high cardinality one
           and avoid caching.
         </xs:documentation>
