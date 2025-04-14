@@ -1476,7 +1476,6 @@
           * generic
           * access
           * db2
-          * derby
           * firebird
           * googlebigquery
           * greenplum
