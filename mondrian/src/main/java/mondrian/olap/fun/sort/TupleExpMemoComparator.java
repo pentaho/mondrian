@@ -14,9 +14,12 @@
 
 package mondrian.olap.fun.sort;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.util.concurrent.UncheckedExecutionException;
+// PATCH: Replace Guava with Caffeine
+// import com.google.common.cache.Cache;
+// import com.google.common.cache.CacheBuilder;
+// import com.google.common.util.concurrent.UncheckedExecutionException;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import mondrian.calc.Calc;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Member;
@@ -41,7 +44,9 @@ import java.util.stream.Collectors;
 // guava cache api was marked unstable in 17.0, but is consistent with the current, stable api
 @SuppressWarnings( "UnstableApiUsage" )
 abstract class TupleExpMemoComparator extends TupleComparator.TupleExpComparator {
-  Cache<List<Member>, Object> valueCache = CacheBuilder.newBuilder().maximumSize( 100000 ).build();
+  // PATCH: Replace Guava with Caffeine
+  // Cache<List<Member>, Object> valueCache = CacheBuilder.newBuilder().maximumSize( 100000 ).build();
+  Cache<List<Member>, Object> valueCache = Caffeine.newBuilder().maximumSize( 100000 ).build();
 
   private int[] dependentHierarchiesIndices;
   private int count = 0;
@@ -52,21 +57,23 @@ abstract class TupleExpMemoComparator extends TupleComparator.TupleExpComparator
 
   // applies the Calc to a tuple, memorizing results
   protected Object eval( List<Member> key ) {
-    try {
-      return valueCache.get( key, () -> evaluateCalc( key ) );
-    } catch ( UncheckedExecutionException e ) {
-      if ( e.getCause() instanceof CellRequestQuantumExceededException ) {
-        // this exception can occur if evaluation required greater than
-        // mondrian.result.limit batched cells.  Throwing the exception
-        // results in currently batched cells being loaded, followed by
-        // another iteration.
-        // the guava Cache wraps the exception, but we want this one to percolate up.
-        throw CellRequestQuantumExceededException.INSTANCE;
-      }
-      throw e;
-    } catch ( ExecutionException e ) {
-      return evaluateCalc( key );
-    }
+    // PATCH: Replace Guava with Caffeine, which does not wrap exceptions in UncheckedExecutionException
+    // try {
+    //   return valueCache.get( key, () -> evaluateCalc( key ) );
+    // } catch ( UncheckedExecutionException e ) {
+    //   if ( e.getCause() instanceof CellRequestQuantumExceededException ) {
+    //     // this exception can occur if evaluation required greater than
+    //     // mondrian.result.limit batched cells.  Throwing the exception
+    //     // results in currently batched cells being loaded, followed by
+    //     // another iteration.
+    //     // the guava Cache wraps the exception, but we want this one to percolate up.
+    //     throw CellRequestQuantumExceededException.INSTANCE;
+    //   }
+    //   throw e;
+    // } catch ( ExecutionException e ) {
+    //   return evaluateCalc( key );
+    // }
+    return valueCache.get( key, k -> evaluateCalc( key ) );
   }
 
   private List<Member> dependentMembers( List<Member> tuple ) {

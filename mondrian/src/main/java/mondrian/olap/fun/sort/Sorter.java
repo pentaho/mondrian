@@ -10,7 +10,8 @@
 */
 package mondrian.olap.fun.sort;
 
-import com.google.common.annotations.VisibleForTesting;
+// PATCH: Remove Guava dependency
+// import com.google.common.annotations.VisibleForTesting;
 import mondrian.calc.Calc;
 import mondrian.calc.TupleCollections;
 import mondrian.calc.TupleCursor;
@@ -422,7 +423,8 @@ public class Sorter {
     return tupleList;
   }
 
-  @VisibleForTesting
+  // PATCH: Remove Guava dependency
+  // @VisibleForTesting
   static void applySortSpecToComparator( Evaluator evaluator, int arity, ComparatorChain chain,
                                          SortKeySpec key ) {
     boolean brk = key.getDirection().brk;
