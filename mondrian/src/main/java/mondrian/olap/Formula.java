@@ -589,9 +589,15 @@ public class Formula extends QueryPart {
                 if (member instanceof RolapCalculatedMember) {
                     RolapCalculatedMember calculatedMember =
                         (RolapCalculatedMember) member;
-                    Exp exp1 =
-                        calculatedMember.getExpression().accept(validator);
-                    return hasCyclicReference(exp1, expList);
+                    // PATCH: Catch exception while validating formula
+                    // (for example, multiplication or measures sometimes is parsed as a set crossjoin)
+                    try {
+                        Exp exp1 =
+                            calculatedMember.getExpression().accept(validator);
+                        return hasCyclicReference(exp1, expList);
+                    } catch (MondrianException e) {
+                        return false;
+                    }
                 }
             }
             if (expr instanceof FunCall) {
