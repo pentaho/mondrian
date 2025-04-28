@@ -1167,8 +1167,8 @@ public class FunUtil extends Util {
     Evaluator evaluator,
     Member startMember,
     Member endMember ) {
-    final Level level = startMember.getLevel();
-    assertTrue( level == endMember.getLevel() );
+    final Level level = startMember.isNull() ? endMember.getLevel() : startMember.getLevel();
+    assertTrue(startMember.isNull() || endMember.isNull() || level == endMember.getLevel() );
     List<Member> members = new ArrayList<Member>();
     evaluator.getSchemaReader().getMemberRange(
       level, startMember, endMember, members );

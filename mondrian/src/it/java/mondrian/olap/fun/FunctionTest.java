@@ -5230,13 +5230,51 @@ public class FunctionTest extends FoodMartTestCase {
   public void testRangeBoundedByNull() {
     assertAxisReturns(
       "[Gender].[F] : [Gender].[M].NextMember",
-      "" );
+            "[Gender].[F]\n"
+                    + "[Gender].[M]" );
   }
 
   public void testRangeBoundedByNullLarge() {
     assertAxisReturns(
       "[Customers].PrevMember : [Customers].[USA].[OR]",
-      "" );
+            "[Customers].[Canada].[BC]\n"
+                    + "[Customers].[Mexico].[DF]\n"
+                    + "[Customers].[Mexico].[Guerrero]\n"
+                    + "[Customers].[Mexico].[Jalisco]\n"
+                    + "[Customers].[Mexico].[Mexico]\n"
+                    + "[Customers].[Mexico].[Oaxaca]\n"
+                    + "[Customers].[Mexico].[Sinaloa]\n"
+                    + "[Customers].[Mexico].[Veracruz]\n"
+                    + "[Customers].[Mexico].[Yucatan]\n"
+                    + "[Customers].[Mexico].[Zacatecas]\n"
+                    + "[Customers].[USA].[CA]\n"
+                    + "[Customers].[USA].[OR]" );
+  }
+
+  public void testRangeBoundedByStartMemberOfNull() {
+    assertAxisReturns(
+            "[Time.Weekly].[Year].[#null] : [Time.Weekly].[Year].[1997]",
+            "[Time].[Weekly].[1997]");
+  }
+
+  public void testRangeBoundedByEndMemberOfNull() {
+    assertAxisReturns(
+            "[Time.Weekly].[Year].[1997] : [Time.Weekly].[Year].[#null]",
+            "[Time].[Weekly].[1997]\n"
+                    + "[Time].[Weekly].[1998]");
+  }
+
+  public void testRangeBoundedByEndMemberOfNotExist() {
+    assertAxisReturns(
+            "[Time.Weekly].[Year].[1997] : [Time.Weekly].[Year].[1999]",
+            "[Time].[Weekly].[1997]\n"
+                    + "[Time].[Weekly].[1998]");
+  }
+
+  public void testRangeBoundedByAllOfNull() {
+    assertAxisReturns(
+            "[Time.Weekly].[Year].[#null] : [Time.Weekly].[Year].[#null]",
+            "");
   }
 
   public void testSetContainingLevelFails() {

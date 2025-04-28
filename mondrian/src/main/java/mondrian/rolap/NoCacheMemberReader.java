@@ -258,27 +258,46 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
     {
         assert startMember != null : "pre";
         assert endMember != null : "pre";
-        assert startMember.getLevel() == endMember.getLevel()
+        assert startMember.isNull() || endMember.isNull() || startMember.getLevel() == endMember.getLevel()
             : "pre: startMember.getLevel() == endMember.getLevel()";
 
         if (compare(startMember, endMember, false) > 0) {
             return;
         }
-        list.add(startMember);
+        if (startMember.isNull() && endMember.isNull()) {
+            return;
+        }
+        if (!startMember.isNull()) {
+            list.add(startMember);
+        }
         if (startMember.equals(endMember)) {
             return;
         }
-        SiblingIterator siblings = new SiblingIterator(this, startMember);
-        while (siblings.hasNext()) {
-            final RolapMember member = siblings.nextMember();
-            list.add(member);
-            if (member.equals(endMember)) {
+        if (startMember.isNull()) {
+            SiblingIterator siblings = new SiblingIterator(this, endMember);
+            while (siblings.hasPrevious()) {
+                final RolapMember member = siblings.previousMember();
+                list.add(member);
+            }
+            Collections.reverse(list);
+            list.add(endMember);
+            return;
+        }else {
+            SiblingIterator siblings = new SiblingIterator(this, startMember);
+            while (siblings.hasNext()) {
+                final RolapMember member = siblings.nextMember();
+                list.add(member);
+                if (member.equals(endMember)) {
+                    return;
+                }
+            }
+            if (endMember.isNull()) {
                 return;
             }
         }
         throw Util.newInternal(
-            "sibling iterator did not hit end point, start="
-            + startMember + ", end=" + endMember);
+                "sibling iterator did not hit end point, start="
+                        + startMember + ", end=" + endMember);
     }
 
     public int getMemberCount() {
@@ -292,6 +311,9 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
     {
         if (Util.equals(m1, m2)) {
             return 0;
+        }
+        if (m1.isNull() || m2.isNull()) {
+            return -1;
         }
         if (Util.equals(m1.getParentMember(), m2.getParentMember())) {
             // including case where both parents are null
@@ -396,8 +418,8 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
 
         boolean hasNext() {
             return (this.position < this.siblings.size() - 1)
-                || (parentIterator != null)
-                && parentIterator.hasNext();
+                    || (parentIterator != null)
+                    && parentIterator.hasNext();
         }
 
         Object next() {
