@@ -5138,7 +5138,29 @@ public class FunctionTest extends FoodMartTestCase {
   public void testNullRange() {
     assertAxisReturns(
       "[Time].[1997].[Q1].[2] : NULL", //[Time].[1997].[Q2].[5]
-      "" ); // Empty Set
+            "[Time].[1997].[Q1].[2]\n"
+                    + "[Time].[1997].[Q1].[3]\n"
+                    + "[Time].[1997].[Q2].[4]\n"
+                    + "[Time].[1997].[Q2].[5]\n"
+                    + "[Time].[1997].[Q2].[6]\n"
+                    + "[Time].[1997].[Q3].[7]\n"
+                    + "[Time].[1997].[Q3].[8]\n"
+                    + "[Time].[1997].[Q3].[9]\n"
+                    + "[Time].[1997].[Q4].[10]\n"
+                    + "[Time].[1997].[Q4].[11]\n"
+                    + "[Time].[1997].[Q4].[12]\n"
+                    + "[Time].[1998].[Q1].[1]\n"
+                    + "[Time].[1998].[Q1].[2]\n"
+                    + "[Time].[1998].[Q1].[3]\n"
+                    + "[Time].[1998].[Q2].[4]\n"
+                    + "[Time].[1998].[Q2].[5]\n"
+                    + "[Time].[1998].[Q2].[6]\n"
+                    + "[Time].[1998].[Q3].[7]\n"
+                    + "[Time].[1998].[Q3].[8]\n"
+                    + "[Time].[1998].[Q3].[9]\n"
+                    + "[Time].[1998].[Q4].[10]\n"
+                    + "[Time].[1998].[Q4].[11]\n"
+                    + "[Time].[1998].[Q4].[12]" );
   }
 
   /**
@@ -5252,12 +5274,24 @@ public class FunctionTest extends FoodMartTestCase {
   }
 
   public void testRangeBoundedByStartMemberOfNull() {
+    propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembers,
+            true );
+    propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
+            true );
     assertAxisReturns(
             "[Time.Weekly].[Year].[#null] : [Time.Weekly].[Year].[1997]",
             "[Time].[Weekly].[1997]");
   }
 
   public void testRangeBoundedByEndMemberOfNull() {
+    propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembers,
+            true );
+    propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
+            true );
     assertAxisReturns(
             "[Time.Weekly].[Year].[1997] : [Time.Weekly].[Year].[#null]",
             "[Time].[Weekly].[1997]\n"
@@ -5265,6 +5299,12 @@ public class FunctionTest extends FoodMartTestCase {
   }
 
   public void testRangeBoundedByEndMemberOfNotExist() {
+    propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembers,
+            true );
+    propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
+            true );
     assertAxisReturns(
             "[Time.Weekly].[Year].[1997] : [Time.Weekly].[Year].[1999]",
             "[Time].[Weekly].[1997]\n"
@@ -5272,6 +5312,12 @@ public class FunctionTest extends FoodMartTestCase {
   }
 
   public void testRangeBoundedByAllOfNull() {
+    propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembers,
+            true );
+    propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
+            true );
     assertAxisReturns(
             "[Time.Weekly].[Year].[#null] : [Time.Weekly].[Year].[#null]",
             "");
