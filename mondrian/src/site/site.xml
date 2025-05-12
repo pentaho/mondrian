@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<project name="${project.name}">
-  <body>
-    <menu ref="reports"/>
-    <menu name="User Documentation">
-      <item name="Doc" href="doc/index.html"/>
-    </menu>
-  </body>
-</project>
