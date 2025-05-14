@@ -16,7 +16,8 @@ import mondrian.rolap.RolapUtil;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 
-import org.apache.commons.lang.StringUtils;
+// PATCH: Use newer commons-lang3
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;

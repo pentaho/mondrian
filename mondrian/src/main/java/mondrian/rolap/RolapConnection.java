@@ -20,7 +20,8 @@ import mondrian.spi.*;
 import mondrian.spi.impl.JndiDataSourceResolver;
 import mondrian.util.*;
 
-import org.apache.commons.lang.StringUtils;
+// PATCH: Use newer commons-lang3
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
