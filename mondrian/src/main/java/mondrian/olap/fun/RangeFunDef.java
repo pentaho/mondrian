@@ -95,10 +95,10 @@ class RangeFunDef extends FunDefBase {
             public TupleList evaluateList(Evaluator evaluator) {
                 final Member member0 = memberCalcs[0].evaluateMember(evaluator);
                 final Member member1 = memberCalcs[1].evaluateMember(evaluator);
-                if (member0.isNull() || member1.isNull()) {
+                if (member0.isNull() && member1.isNull()) {
                     return TupleCollections.emptyList(1);
                 }
-                if (member0.getLevel() != member1.getLevel()) {
+                if (!member0.isNull() && !member1.isNull() && member0.getLevel() != member1.getLevel()) {
                     throw evaluator.newEvalException(
                         call.getFunDef(),
                         "Members must belong to the same level");
