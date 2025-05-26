@@ -27,7 +27,6 @@
     <driver.version.major>${project.version.major}</driver.version.major>
     <driver.version.minor>${project.version.minor}</driver.version.minor>
     <vendor>Pentaho</vendor>
-    <pentaho.docker.pull.host>repo.orl.eng.hitachivantara.com/pnt-docker</pentaho.docker.pull.host>
     <maven-failsafe-plugin.argLine>-Duser.language=en -Duser.country=US -Djava.locale.providers=COMPAT,SPI</maven-failsafe-plugin.argLine>
   </properties>
   <dependencies>
