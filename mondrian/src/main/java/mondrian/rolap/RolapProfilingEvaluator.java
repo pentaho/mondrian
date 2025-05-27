@@ -14,6 +14,7 @@ import mondrian.calc.impl.*;
 import mondrian.olap.*;
 import mondrian.olap.type.SetType;
 import mondrian.olap.type.Type;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.util.*;
 
@@ -221,10 +222,29 @@ public class RolapProfilingEvaluator extends RolapEvaluator {
 
         public Object evaluate(Evaluator evaluator) {
             ++callCount;
+            // PATCH: Store the profiling timing name when the expression is a function call.
+            String timingName = null;
+            boolean cacheDirty = false;
+            int missCountBefore = 0;
+            if (exp instanceof ResolvedFunCall) {
+                timingName = ((ResolvedFunCall) exp).getTimingName();
+                if (timingName != null) {
+                    cacheDirty = evaluator.isDirty();
+                    missCountBefore = evaluator.getMissCount();
+                }
+            }
             long start = System.currentTimeMillis();
             final Object o = calc.evaluate(evaluator);
             long end = System.currentTimeMillis();
-            callMillis += (end - start);
+            long duration = end - start;
+            callMillis += duration;
+            if (timingName != null) {
+                // Do not store the timing if there was a cache miss while getting measures values.
+                // It means that this expression will be executed one more time.
+                if (!cacheDirty && evaluator.getMissCount() == missCountBefore) {
+                    evaluator.getTiming().markFull(timingName, duration);
+                }
+            }
             return o;
         }
 

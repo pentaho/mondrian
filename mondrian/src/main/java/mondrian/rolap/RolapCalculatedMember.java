@@ -11,6 +11,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.mdx.ResolvedFunCall;
 
 import java.util.Collections;
 import java.util.Map;
@@ -84,7 +85,12 @@ public class RolapCalculatedMember extends RolapMemberBase {
     }
 
     public Exp getExpression() {
-        return formula.getExpression();
+        // PATCH: Store the profiling timing name when the expression is a function call.
+        Exp expression = formula.getExpression();
+        if (expression instanceof ResolvedFunCall) {
+            ((ResolvedFunCall) expression).setTimingName(getUniqueName());
+        }
+        return expression;
     }
 
     public Formula getFormula() {

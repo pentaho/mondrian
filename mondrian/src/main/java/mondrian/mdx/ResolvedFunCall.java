@@ -162,6 +162,17 @@ public final class ResolvedFunCall extends ExpBase implements FunCall {
         }
         return o;
     }
+
+    // PATCH: Used to store the profiling timing name as a calculated member unique name.
+    private String timingName;
+
+    public String getTimingName() {
+        return timingName;
+    }
+
+    public void setTimingName(String timingName) {
+        this.timingName = timingName;
+    }
 }
 
 // End ResolvedFunCall.java
