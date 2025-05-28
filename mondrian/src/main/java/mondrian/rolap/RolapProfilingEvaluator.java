@@ -239,11 +239,10 @@ public class RolapProfilingEvaluator extends RolapEvaluator {
             long duration = end - start;
             callMillis += duration;
             if (timingName != null) {
-                // Do not store the timing if there was a cache miss while getting measures values.
-                // It means that this expression will be executed one more time.
-                if (!cacheDirty && evaluator.getMissCount() == missCountBefore) {
-                    evaluator.getTiming().markFull(timingName, duration);
-                }
+                // If there was a cache miss while getting measures values then this expression will be executed one more time
+                // and therefore do not store the count of this call, only duration.
+                long count = !cacheDirty && evaluator.getMissCount() == missCountBefore ? 1 : 0;
+                evaluator.getTiming().markFullCount(timingName, duration, count);
             }
             return o;
         }

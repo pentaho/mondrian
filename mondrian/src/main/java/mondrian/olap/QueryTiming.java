@@ -95,6 +95,14 @@ public class QueryTiming {
     }
   }
 
+  // PATCH: This method is used to mark the duration of a Query component's execution
+  // with a count of how many times it was executed.
+  public synchronized final void markFullCount( String name, long duration, long count ) {
+    if ( enabled ) {
+      markFullCountInternal( name, duration, count );
+    }
+  }
+
   private void markStartInternal( String name ) {
     currentTimings.push( new TimingInfo( name ) );
     Integer depth = currentTimingDepth.get( name );
@@ -134,6 +142,17 @@ public class QueryTiming {
       fullTimings.put( name, p );
     }
     p.count++;
+    p.duration += duration;
+  }
+
+  // PATCH: This method is used to mark the count as well.
+  private void markFullCountInternal( String name, long duration, long count ) {
+    DurationCount p = fullTimings.get( name );
+    if ( p == null ) {
+      p = new DurationCount();
+      fullTimings.put( name, p );
+    }
+    p.count += count;
     p.duration += duration;
   }
 
