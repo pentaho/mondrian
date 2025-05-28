@@ -12,6 +12,7 @@ package mondrian.olap;
 import mondrian.util.ArrayStack;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Provides hooks for recording timing information of components of Query execution.
@@ -36,7 +37,8 @@ public class QueryTiming {
   // Tracks Query components that are already on the stack so that we don't double count their durations
   private final HashMap<String, Integer> currentTimingDepth = new HashMap<>();
   private final Map<String, DurationCount> timings = new HashMap<>();
-  private final Map<String, DurationCount> fullTimings = new HashMap<>();
+  // PATCH: Use ConcurrentHashMap to allow concurrent access from multiple threads.
+  private final ConcurrentHashMap<String, DurationCount> fullTimings = new ConcurrentHashMap<>();
 
   /**
    * Initializes (or re-initializes) a query timing, also setting whether enabled. All previous stats are removed.
@@ -81,15 +83,16 @@ public class QueryTiming {
 
   /**
    * Marks the duration of a Query component's execution.
-   * 
-   * markFull is synchronized because it may be called from either Actor's spawn thread or RolapResultShepherd thread
-   * 
+   *
+   * markFull was synchronized because it may be called from either Actor's spawn thread or RolapResultShepherd thread
+   * PATCH: Now it uses ConcurrentHashMap for fullTimings so it does not need to be synchronized.
+   *
    * @param name
    *          Name of the component
    * @param duration
    *          Duration of the execution
    */
-  public synchronized final void markFull( String name, long duration ) {
+  public final void markFull( String name, long duration ) {
     if ( enabled ) {
       markFullInternal( name, duration );
     }
@@ -97,7 +100,7 @@ public class QueryTiming {
 
   // PATCH: This method is used to mark the duration of a Query component's execution
   // with a count of how many times it was executed.
-  public synchronized final void markFullCount( String name, long duration, long count ) {
+  public final void markFullCount( String name, long duration, long count ) {
     if ( enabled ) {
       markFullCountInternal( name, duration, count );
     }
@@ -132,31 +135,34 @@ public class QueryTiming {
       dc.duration += ( finished.endTime - finished.startTime );
     }
     currentTimingDepth.put( name, depth - 1 );
-    
   }
 
+  // PATCH: Use ConcurrentHashMap compute to avoid synchronization.
   private void markFullInternal( String name, long duration ) {
-    DurationCount p = fullTimings.get( name );
-    if ( p == null ) {
-      p = new DurationCount();
-      fullTimings.put( name, p );
-    }
-    p.count++;
-    p.duration += duration;
+    fullTimings.compute(name, (n, p) -> {
+      if (p == null) {
+        p = new DurationCount();
+      }
+      p.count++;
+      p.duration += duration;
+      return p;
+    });
   }
 
   // PATCH: This method is used to mark the count as well.
   private void markFullCountInternal( String name, long duration, long count ) {
-    DurationCount p = fullTimings.get( name );
-    if ( p == null ) {
-      p = new DurationCount();
-      fullTimings.put( name, p );
-    }
-    p.count += count;
-    p.duration += duration;
+    fullTimings.compute(name, (n, p) -> {
+      if (p == null) {
+        p = new DurationCount();
+      }
+      p.count += count;
+      p.duration += duration;
+      return p;
+    });
   }
 
-  public synchronized String toString() {
+  // PATCH: No need for synchronization here, as we are using concurrent fullTimings.
+  public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append( "Query Timing (Cumulative):" );
     for ( Map.Entry<String, DurationCount> entry : timings.entrySet() ) {
