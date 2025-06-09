@@ -34,6 +34,8 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
             "Returns the cross product of two sets, excluding empty tuples and tuples without associated fact table data.",
             new String[]{"fxxx"},
             NonEmptyCrossJoinFunDef.class);
+    // PATCH: Add profiling timing
+    private static final String TIMING_NAME = NonEmptyCrossJoinFunDef.class.getSimpleName();
 
     public NonEmptyCrossJoinFunDef(FunDef dummyFunDef) {
         super(dummyFunDef);
@@ -46,6 +48,8 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
             call, new Calc[] {listCalc1, listCalc2}, false)
         {
             public TupleList evaluateList(Evaluator evaluator) {
+                // PATCH: Add profiling timing
+                evaluator.getTiming().markStart(TIMING_NAME);
                 SchemaReader schemaReader = evaluator.getSchemaReader();
 
                 // Evaluate the arguments in non empty mode, but remove from
@@ -96,6 +100,8 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
                     return result;
                 } finally {
                     evaluator.restore(savepoint);
+                    // PATCH: Add profiling timing
+                    evaluator.getTiming().markEnd(TIMING_NAME);
                 }
             }
 
