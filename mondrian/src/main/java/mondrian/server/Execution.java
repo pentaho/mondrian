@@ -85,6 +85,9 @@ public class Execution {
 
   private final Execution parent;
 
+  // PATCH: Used for CancellationChecker
+  private final int checkCancelOrTimeoutInterval = MondrianProperties.instance().CheckCancelOrTimeoutInterval.get();
+
   public Execution( Statement statement, long timeoutIntervalMillis ) {
     Execution parentExec = null;
     if ( !Locus.isEmpty() ) {
@@ -163,6 +166,11 @@ public class Execution {
       this.outOfMemoryMsg = msg;
       this.state = State.ERROR;
     }
+  }
+
+  // PATCH: Get checkCancelOrTimeoutInterval for CancellationChecker
+  public int getCheckCancelOrTimeoutInterval() {
+    return checkCancelOrTimeoutInterval;
   }
 
   /**
