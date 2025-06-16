@@ -22,6 +22,8 @@ import mondrian.olap.Member;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.NamedSet;
 import mondrian.olap.Util;
+import mondrian.server.Execution;
+import mondrian.util.CancellationChecker;
 
 /**
  * Evaluation context for a particular named set.
@@ -100,7 +102,12 @@ class RolapNamedSetEvaluator implements Evaluator.NamedSetEvaluator, TupleList.P
       } else {
         rawList = TupleCollections.createList( iterable.getArity() );
         TupleCursor cursor = iterable.tupleCursor();
+        // PATCH: Initialize checking cancellation.
+        int currentIteration = 0;
+        Execution execution = evaluator.getQuery().getStatement().getCurrentExecution();
         while ( cursor.forward() ) {
+          // PATCH: Check cancellation to avoid infinite loops.
+          CancellationChecker.checkCancelOrTimeout( currentIteration++, execution );
           rawList.addCurrent( cursor );
         }
       }
