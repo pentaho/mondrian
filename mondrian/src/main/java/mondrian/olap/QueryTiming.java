@@ -161,17 +161,27 @@ public class QueryTiming {
     sb.append( "Query Timing (Cumulative):" );
     for ( Map.Entry<String, DurationCount> entry : timings.entrySet() ) {
       sb.append( Util.nl );
-      sb.append( entry.getKey() ).append( " invoked " ).append( entry.getValue().count ).append(
-          " times for total of " ).append( entry.getValue().duration ).append( "ms.  (Avg. " ).append( entry
-              .getValue().duration / entry.getValue().count ).append( "ms/invocation)" );
+      // PATCH: Check that count > 0 before dividing by it.
+      long count = entry.getValue().count;
+      long duration = entry.getValue().duration;
+      sb.append(entry.getKey()).append(" invoked ").append(count).
+        append(" times for total of ").append(duration).append("ms.");
+      if (count > 0) {
+        sb.append("  (Avg. ").append(duration / count).append( "ms/invocation)");
+      }
     }
     for ( Map.Entry<String, DurationCount> entry : fullTimings.entrySet() ) {
       if ( sb.length() > 0 ) {
         sb.append( Util.nl );
       }
-      sb.append( entry.getKey() ).append( " invoked " ).append( entry.getValue().count ).append(
-          " times for total of " ).append( entry.getValue().duration ).append( "ms.  (Avg. " ).append( entry
-              .getValue().duration / entry.getValue().count ).append( "ms/invocation)" );
+      // PATCH: Check that count > 0 before dividing by it.
+      long count = entry.getValue().count;
+      long duration = entry.getValue().duration;
+      sb.append(entry.getKey()).append(" invoked ").append(count).
+        append(" times for total of ").append(duration).append("ms.");
+      if (count > 0) {
+        sb.append("  (Avg. ").append(duration / count).append( "ms/invocation)");
+      }
     }
     sb.append( Util.nl );
     return sb.toString();
