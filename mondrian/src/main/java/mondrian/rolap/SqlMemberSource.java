@@ -12,6 +12,7 @@ package mondrian.rolap;
 
 import mondrian.calc.TupleList;
 import mondrian.olap.*;
+import mondrian.olap.fun.sort.Sorter;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
@@ -857,13 +858,23 @@ RME is this right
                     parentMembers, mcc);
             List<RolapMember> list =
                 getMembersInLevel(childLevel, lmc);
+            // PATCH: Sort list by parents and children order key
+            if (assignOrderKeys) {
+                Sorter.sortParentChildMembers(list);
+            }
             children.addAll(list);
             return Util.toNullValuesMap(children);
         }
 
         // fetch them one by one
         for (RolapMember parentMember : parentMembers) {
-            getMemberChildren(parentMember, children, mcc);
+            // PATCH: Sort each parent children by order key
+            List<RolapMember> parentChildren = assignOrderKeys ? new ArrayList<RolapMember>() : children;
+            getMemberChildren(parentMember, parentChildren, mcc);
+            if (assignOrderKeys) {
+                Sorter.sortSiblingMembers(parentChildren);
+                children.addAll(parentChildren);
+            }
         }
         return Util.toNullValuesMap(children);
     }
