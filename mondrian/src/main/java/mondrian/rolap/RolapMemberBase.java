@@ -572,6 +572,14 @@ public class RolapMemberBase
             }
             return COLLATOR_THREAD_LOCAL.get().compare(this.value, otherValue);
         }
+
+        public String getValue() {
+            return value;
+        }
+
+        public String toString() {
+            return value;
+        }
     }
 
     void setOrderKey(Comparable orderKey) {
