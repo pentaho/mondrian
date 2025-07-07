@@ -47,15 +47,8 @@ class HierarchizeFunDef extends FunDefBase {
     final boolean post = order.equals( "POST" );
     return new AbstractListCalc( call, new Calc[] { listCalc } ) {
       public TupleList evaluateList( Evaluator evaluator ) {
-        // PATCH: Skip sorting siblings inside Hierarchize as sorting of results will be done.
-        boolean skipSortSiblingMembers = Sorter.getSkipSortSiblingMembers();
-        try {
-          Sorter.setSkipSortSiblingMembers( true );
-          TupleList list = listCalc.evaluateList( evaluator );
-          return Sorter.hierarchizeTupleList( list, post );
-        } finally {
-          Sorter.setSkipSortSiblingMembers( skipSortSiblingMembers );
-        }
+        TupleList list = listCalc.evaluateList( evaluator );
+        return Sorter.hierarchizeTupleList( list, post );
       }
     };
   }

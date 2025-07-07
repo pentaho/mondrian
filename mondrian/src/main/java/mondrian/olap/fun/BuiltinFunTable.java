@@ -64,8 +64,6 @@ import mondrian.olap.type.LevelType;
 import mondrian.olap.type.NullType;
 import mondrian.olap.type.Type;
 
-import mondrian.olap.fun.sort.Sorter;
-
 /**
  * <code>BuiltinFunTable</code> contains a list of all built-in MDX functions.
  *
@@ -881,11 +879,8 @@ public class BuiltinFunTable extends FunTableImpl {
                         // Return the list of children. The list is immutable,
                         // hence 'false' above.
                         Member member = memberCalc.evaluateMember(evaluator);
-                        // PATCH: Use Sorter.sortSiblingMembers to ensure
-                        // children are sorted by their order key.
-                        List<Member> children = getNonEmptyMemberChildren(evaluator, member);
-                        Sorter.sortSiblingMembers(children);
-                        return new UnaryTupleList(children);
+                        return new UnaryTupleList(
+                            getNonEmptyMemberChildren(evaluator, member));
                     }
                 };
             }

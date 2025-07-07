@@ -14,8 +14,6 @@ import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapMeasure;
 import mondrian.server.Locus;
 
-import mondrian.olap.fun.sort.Sorter;
-
 import org.olap4j.OlapException;
 import org.olap4j.impl.AbstractNamedList;
 import org.olap4j.impl.Named;
@@ -79,12 +77,9 @@ class MondrianOlap4jMember
                 "MondrianOlap4jMember.getChildMembers",
                 new Locus.Action<List<mondrian.olap.Member>>() {
                     public List<mondrian.olap.Member> execute() {
-                        // PATCH: Use Sorter.sortSiblingMembers to ensure
-                        // children are sorted by their order key.
-                        List<mondrian.olap.Member> children =
-                            conn.getSchemaReader().getMemberChildren(member);
-                        Sorter.sortSiblingMembers(children);
-                        return children;
+                        return
+                            conn.getSchemaReader()
+                                .getMemberChildren(member);
                     }
                 });
         return new AbstractNamedList<MondrianOlap4jMember>() {
