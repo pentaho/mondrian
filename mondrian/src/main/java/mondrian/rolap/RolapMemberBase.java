@@ -26,6 +26,7 @@ import org.apache.logging.log4j.LogManager;
 
 import org.eigenbase.util.property.StringProperty;
 
+import java.text.Collator;
 import java.util.*;
 
 
@@ -76,6 +77,9 @@ public class RolapMemberBase
     private int ordinal;
     private final Object key;
 
+    // PATCH: Set assignOrderKeys if orderKey should be defaulted from key.
+    private boolean assignOrderKeys = false;
+
     /**
      * Maps property name to property value.
      *
@@ -119,6 +123,9 @@ public class RolapMemberBase
         }
         this.ordinal = -1;
         this.mapPropertyNameToValue = Collections.emptyMap();
+
+        // PATCH: Detect if orderKey should be defaulted from key.
+        this.assignOrderKeys = MondrianProperties.instance().CompareSiblingsByOrderKey.get();
 
         if (name != null
             && !(key != null && name.equals(key.toString())))
@@ -517,6 +524,10 @@ public class RolapMemberBase
     }
 
     public Comparable getOrderKey() {
+        // PATCH: Initialize orderKey by default to key if it is not set.
+        if (orderKey == null && assignOrderKeys && key instanceof Comparable) {
+            setOrderKey((Comparable) key);
+        }
         return orderKey;
     }
 
@@ -527,15 +538,48 @@ public class RolapMemberBase
     }
 
     protected void setOrdinal(int ordinal, boolean forced) {
-      if (forced) {
-          this.ordinal = ordinal;
-      } else {
-        setOrdinal(ordinal);
-      }
-  }
+        if (forced) {
+            this.ordinal = ordinal;
+        } else {
+            setOrdinal(ordinal);
+        }
+    }
+
+    // PATCH: Add wrapper class for case-insensitive and accent-insensitive comparison
+    public static class CaseInsensitiveString implements Comparable {
+        private final String value;
+
+        private static final ThreadLocal<Collator> COLLATOR_THREAD_LOCAL =
+            ThreadLocal.withInitial(() -> {
+                Collator collator = Collator.getInstance(Locale.getDefault());
+                collator.setStrength(Collator.SECONDARY);
+                return collator;
+            });
+
+        public CaseInsensitiveString(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public int compareTo(Object other) {
+            String otherValue;
+            if (other instanceof CaseInsensitiveString) {
+                otherValue = ((CaseInsensitiveString) other).value;
+            } else if (other instanceof String) {
+                otherValue = (String) other;
+            } else {
+                otherValue = other.toString();
+            }
+            return COLLATOR_THREAD_LOCAL.get().compare(this.value, otherValue);
+        }
+    }
 
     void setOrderKey(Comparable orderKey) {
-        this.orderKey = orderKey;
+        if (orderKey instanceof String) {
+            this.orderKey = new CaseInsensitiveString((String) orderKey);
+        } else {
+            this.orderKey = orderKey;
+        }
     }
 
     private void resetOrdinal() {
