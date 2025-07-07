@@ -26,6 +26,7 @@ import mondrian.olap.fun.MemberOrderKeyFunDef;
 import mondrian.olap.type.ScalarType;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapHierarchy;
+import mondrian.rolap.RolapMemberBase;
 import mondrian.rolap.RolapUtil;
 import mondrian.server.Execution;
 
@@ -487,6 +488,42 @@ public class Sorter {
       comp = Collections.reverseOrder( comp );
     }
     return stablePartialSort( list, comp, limit );
+  }
+
+  // PATCH: Add sortSiblings method for sorting member children
+  public static void sortSiblingMembers( List<Member> memberList ) {
+    // Do not sort if there is no or only one member,
+    // or if the skipSortSiblingMembers flag is set by outside Hierarchize function.
+    if ( memberList.size() <= 1 || getSkipSortSiblingMembers() ) {
+      return;
+    }
+    Member firstMember = memberList.get(0);
+    // Only sort if order key is a CaseInsensitiveString.
+    // Do not sort if order keys are not set or are numeric or dates.
+    if ( ! (firstMember.getOrderKey() instanceof RolapMemberBase.CaseInsensitiveString) ) {
+      return;
+    }
+    Comparator<Member> comparator = new SiblingMembersComparator();
+    memberList.sort( comparator );
+  }
+
+  static class SiblingMembersComparator implements Comparator<Member> {
+    SiblingMembersComparator() {}
+
+    public int compare( Member m1, Member m2 ) {
+      return Sorter.compareSiblingMembers( m1, m2 );
+    }
+  }
+
+  private static final ThreadLocal<Boolean> skipSortSiblingMembers =
+    ThreadLocal.withInitial( () -> Boolean.FALSE );
+
+  public static void setSkipSortSiblingMembers( boolean skip ) {
+    skipSortSiblingMembers.set( skip );
+  }
+
+  public static boolean getSkipSortSiblingMembers() {
+    return skipSortSiblingMembers.get();
   }
 
   /**
