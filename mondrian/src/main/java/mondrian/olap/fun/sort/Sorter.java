@@ -491,20 +491,18 @@ public class Sorter {
   }
 
   // PATCH: Add sortSiblings method for sorting member children
-  public static void sortSiblingMembers( List<Member> memberList ) {
-    // Do not sort if there is no or only one member,
-    // or if the skipSortSiblingMembers flag is set by outside Hierarchize function.
-    if ( memberList.size() <= 1 || getSkipSortSiblingMembers() ) {
+  public static void sortSiblingMembers( List<? extends Member> memberList ) {
+    // Do not sort if there is no or only one member
+    if ( memberList.size() <= 1 ) {
       return;
     }
     Member firstMember = memberList.get(0);
     // Only sort if order key is a CaseInsensitiveString.
     // Do not sort if order keys are not set or are numeric or dates.
-    if ( ! (firstMember.getOrderKey() instanceof RolapMemberBase.CaseInsensitiveString) ) {
-      return;
+    if ( firstMember.getOrderKey() instanceof RolapMemberBase.CaseInsensitiveString ) {
+      Comparator<Member> comparator = new SiblingMembersComparator();
+      memberList.sort( comparator );
     }
-    Comparator<Member> comparator = new SiblingMembersComparator();
-    memberList.sort( comparator );
   }
 
   static class SiblingMembersComparator implements Comparator<Member> {
@@ -515,15 +513,45 @@ public class Sorter {
     }
   }
 
-  private static final ThreadLocal<Boolean> skipSortSiblingMembers =
-    ThreadLocal.withInitial( () -> Boolean.FALSE );
-
-  public static void setSkipSortSiblingMembers( boolean skip ) {
-    skipSortSiblingMembers.set( skip );
+  // PATCH: Add sortParentChildMembers method for sorting children or several parents
+  public static void sortParentChildMembers( List<? extends Member> memberList ) {
+    // Do not sort if there is no or only one member.
+    if ( memberList.size() <= 1 ) {
+      return;
+    }
+    Member firstMember = memberList.get(0);
+    // Only sort if order key is a CaseInsensitiveString.
+    // Do not sort if order keys are not set or are numeric or dates.
+    if ( firstMember.getOrderKey() instanceof RolapMemberBase.CaseInsensitiveString ) {
+      Comparator<Member> comparator = new ParentChildMembersComparator();
+      memberList.sort( comparator );
+    }
   }
 
-  public static boolean getSkipSortSiblingMembers() {
-    return skipSortSiblingMembers.get();
+  static class ParentChildMembersComparator implements Comparator<Member> {
+    ParentChildMembersComparator() {}
+
+    public int compare( Member m1, Member m2 ) {
+      Member p1 = m1.getParentMember();
+      Member p2 = m2.getParentMember();
+      if ( p1 == null) {
+        if ( p2 == null ) {
+          // If both parents are null, compare siblings
+          return Sorter.compareSiblingMembers( m1, m2 );
+        }
+        // Null parent is less than any other parent
+        return -1;
+      } else if ( p2 == null ) {
+        // Null parent is less than any other parent
+        return 1;
+      } else if ( p1.equals( p2 ) ) {
+        // If parents are equal, compare siblings
+        return Sorter.compareSiblingMembers( m1, m2 );
+      } else {
+        // If parents are not equal, compare parents
+        return Sorter.compareSiblingMembers( p1, p2 );
+      }
+    }
   }
 
   /**
