@@ -567,6 +567,8 @@ public class RolapMemberBase
                 otherValue = ((CaseInsensitiveString) other).value;
             } else if (other instanceof String) {
                 otherValue = (String) other;
+            } else if (other == RolapUtil.sqlNullValue) {
+                return 1;
             } else {
                 otherValue = other.toString();
             }

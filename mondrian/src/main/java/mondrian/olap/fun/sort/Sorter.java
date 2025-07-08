@@ -492,17 +492,27 @@ public class Sorter {
 
   // PATCH: Add sortSiblings method for sorting member children
   public static void sortSiblingMembers( List<? extends Member> memberList ) {
-    // Do not sort if there is no or only one member
+    if ( shouldSortSiblingMembers( memberList ) ) {
+      memberList.sort( new SiblingMembersComparator() );
+    }
+  }
+
+  private static boolean shouldSortSiblingMembers( List<? extends Member> memberList ) {
+    // Do not sort if the list is empty or only with one member
     if ( memberList.size() <= 1 ) {
-      return;
+      return false;
     }
-    Member firstMember = memberList.get(0);
-    // Only sort if order key is a CaseInsensitiveString.
+    // Only sort if order key is a CaseInsensitiveString (the first members might be #null).
     // Do not sort if order keys are not set or are numeric or dates.
-    if ( firstMember.getOrderKey() instanceof RolapMemberBase.CaseInsensitiveString ) {
-      Comparator<Member> comparator = new SiblingMembersComparator();
-      memberList.sort( comparator );
+    for ( Member member : memberList ) {
+      if ( member.getOrderKey() instanceof RolapMemberBase.CaseInsensitiveString ) {
+        return true;
+      }
+      if ( member.getOrderKey() != RolapUtil.sqlNullValue ) {
+        return false;
+      }
     }
+    return false;
   }
 
   static class SiblingMembersComparator implements Comparator<Member> {
@@ -515,16 +525,8 @@ public class Sorter {
 
   // PATCH: Add sortParentChildMembers method for sorting children or several parents
   public static void sortParentChildMembers( List<? extends Member> memberList ) {
-    // Do not sort if there is no or only one member.
-    if ( memberList.size() <= 1 ) {
-      return;
-    }
-    Member firstMember = memberList.get(0);
-    // Only sort if order key is a CaseInsensitiveString.
-    // Do not sort if order keys are not set or are numeric or dates.
-    if ( firstMember.getOrderKey() instanceof RolapMemberBase.CaseInsensitiveString ) {
-      Comparator<Member> comparator = new ParentChildMembersComparator();
-      memberList.sort( comparator );
+    if ( shouldSortSiblingMembers( memberList ) ) {
+      memberList.sort( new ParentChildMembersComparator() );
     }
   }
 
@@ -1045,4 +1047,3 @@ public class Sorter {
     }
   }
 }
-
