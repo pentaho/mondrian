@@ -586,7 +586,11 @@ public class RolapMemberBase
 
     void setOrderKey(Comparable orderKey) {
         if (orderKey instanceof String) {
+            // PATCH: Convert String orderKey to CaseInsensitiveString
             this.orderKey = new CaseInsensitiveString((String) orderKey);
+        } else if (orderKey == null) {
+            // PATCH: Convert null orderKey to sqlNullValue to avoid defaulting it to key in getOrderKey.
+            this.orderKey = RolapUtil.sqlNullValue;
         } else {
             this.orderKey = orderKey;
         }
