@@ -812,7 +812,12 @@ public class Sorter {
     final Comparable k1 = m1.getOrderKey();
     final Comparable k2 = m2.getOrderKey();
     if ( ( k1 != null ) && ( k2 != null ) ) {
-      return k1.compareTo( k2 );
+      // PATCH: Avoid comparing to RolapUtil.sqlNullValue
+      if ( k2 == RolapUtil.sqlNullValue ) {
+        return k2 == k1 ? 0 : 1;
+      } else {
+        return k1.compareTo( k2 );
+      }
     } else {
       final int ordinal1 = m1.getOrdinal();
       final int ordinal2 = m2.getOrdinal();
