@@ -564,7 +564,9 @@ public class Sorter {
    * @see #hierarchizeTupleList(mondrian.calc.TupleList, boolean)
    */
   public static void hierarchizeMemberList(
-    List<Member> memberList,
+    // PATCH: Allow subtypes of Member
+    // List<Member> memberList,
+    List<? extends Member> memberList,
     boolean post ) {
     if ( memberList.size() <= 1 ) {
       return;

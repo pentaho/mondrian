@@ -15,7 +15,9 @@ package mondrian.rolap;
 import mondrian.olap.Access;
 import mondrian.olap.Id;
 import mondrian.olap.Member;
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.olap.fun.sort.Sorter;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
@@ -54,6 +56,8 @@ public class SmartMemberReader implements MemberReader {
 
     protected List<RolapMember> rootMembers;
 
+    private int hierarchizeMaxLevelMembers;
+
     SmartMemberReader(MemberReader source) {
         this(source, true);
     }
@@ -69,6 +73,7 @@ public class SmartMemberReader implements MemberReader {
                 + source.getClass()
                 + ") does not support cache-writeback");
         }
+        this.hierarchizeMaxLevelMembers = MondrianProperties.instance().HierarchizeMaxLevelMembers.get();
     }
     // implement MemberReader
     public RolapHierarchy getHierarchy() {
@@ -147,6 +152,10 @@ public class SmartMemberReader implements MemberReader {
             members =
                 source.getMembersInLevel(
                     level, constraint);
+            // PATCH: Hierarchize members before caching
+            if (hierarchizeMaxLevelMembers <= 0 || members.size() <= hierarchizeMaxLevelMembers) {
+                Sorter.hierarchizeMemberList(members, false);
+            }
             cacheHelper.putLevelMembersInCache(level, constraint, members);
             return members;
         }

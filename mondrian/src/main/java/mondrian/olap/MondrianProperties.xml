@@ -687,6 +687,18 @@ expression.  The default is false (only database ORDER BY is used).
         <Type>boolean</Type>
         <Default>false</Default>
     </PropertyDefinition>
+    <!-- PATCH: Add HierarchizeMaxLevelMembers property -->
+    <PropertyDefinition>
+        <Name>HierarchizeMaxLevelMembers</Name>
+        <Path>mondrian.rolap.hierarchizeMaxLevelMembers</Path>
+        <Description>
+Integer property that controls the maximum number of level members
+that will be hierarchized (to avoid too slow hierarchize of large hierarchy levels).
+The default is 0 (no limit).
+        </Description>
+        <Type>int</Type>
+        <Default>0</Default>
+    </PropertyDefinition>
     <PropertyDefinition>
         <Name>EnableExpCache</Name>
         <Path>mondrian.expCache.enable</Path>

@@ -1664,7 +1664,14 @@ public class FunUtil extends Util {
     }
     final List<Member> memberListClone = new ArrayList<Member>( memberList );
     tupleList = new UnaryTupleList( memberListClone );
-    return hierarchizeTupleList( tupleList, false );
+    // PATCH: Do not hierarchize level members each time as hierarchize will be done
+    // in SmartMemberReader getMembersInLevel before caching level members.
+    if ( level.getHierarchy() instanceof RolapHierarchy &&
+        ((RolapHierarchy) level.getHierarchy()).getMemberReader() instanceof mondrian.rolap.SmartMemberReader ) {
+      return tupleList;
+    } else {
+      return hierarchizeTupleList(tupleList, false);
+    }
   }
 
   static TupleList hierarchyMembers(

@@ -426,7 +426,8 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         rolapHierarchy.setMemberReader(memberReader);
     }
 
-    MemberReader getMemberReader() {
+    // PATCH: Make member reader public
+    public MemberReader getMemberReader() {
         return reader;
     }
 
