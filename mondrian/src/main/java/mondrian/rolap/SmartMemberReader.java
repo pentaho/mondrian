@@ -25,6 +25,8 @@ import mondrian.util.ConcatenableList;
 
 import java.util.*;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * <code>SmartMemberReader</code> implements {@link MemberReader} by keeping a
  * cache of members and their children. If a member is 'in cache', there is a
@@ -57,6 +59,10 @@ public class SmartMemberReader implements MemberReader {
     protected List<RolapMember> rootMembers;
 
     private int hierarchizeMaxLevelMembers;
+
+    // PATCH: Cache of members by unique key.
+    private Map<RolapLevel, Map<Object, RolapMember>> levelMembersByUniqueKeyCache =
+        new ConcurrentHashMap<RolapLevel, Map<Object, RolapMember>>();
 
     SmartMemberReader(MemberReader source) {
         this(source, true);
@@ -159,6 +165,22 @@ public class SmartMemberReader implements MemberReader {
             cacheHelper.putLevelMembersInCache(level, constraint, members);
             return members;
         }
+    }
+
+    // PATCH: Get a member by a unique key within a level. Store the cached mapping the first time it is called.
+    public RolapMember getLevelMemberByUniqueKey(RolapLevel level, Object key) {
+        Map<Object, RolapMember> levelMembersByUniqueKey = levelMembersByUniqueKeyCache.get(level);
+        if (levelMembersByUniqueKey == null) {
+            levelMembersByUniqueKey = new HashMap<Object, RolapMember>();
+            for (RolapMember member : getMembersInLevel(level)) {
+                Object uniqueKey = member.getKey();
+                if (uniqueKey != null && uniqueKey != RolapUtil.sqlNullValue) {
+                    levelMembersByUniqueKey.put(uniqueKey, member);
+                }
+            }
+            levelMembersByUniqueKeyCache.put(level, levelMembersByUniqueKey);
+        }
+        return levelMembersByUniqueKey.get(key);
     }
 
     public int getLevelMemberCount(RolapLevel level) {

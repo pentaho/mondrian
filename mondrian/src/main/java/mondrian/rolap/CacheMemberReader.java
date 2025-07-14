@@ -188,6 +188,17 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return getMembersInLevel(level);
     }
 
+    // PATCH: Get a member by a unique key within a level.
+    public RolapMember getLevelMemberByUniqueKey(RolapLevel level, Object key) {
+        int levelDepth = level.getDepth();
+        for (RolapMember member : members) {
+            if (member.getLevel().getDepth() == levelDepth && member.getKey().equals(key)) {
+                return member;
+            }
+        }
+        return null;
+    }
+
     public int getLevelMemberCount(RolapLevel level) {
         int count = 0;
         int levelDepth = level.getDepth();

@@ -570,6 +570,12 @@ public class RolapSchemaReader
         return members;
     }
 
+    // PATCH: Get a member by a unique key within a level.
+    public Member getLevelMemberByUniqueKey(Level level, Object key) {
+        final MemberReader memberReader = getMemberReader(level.getHierarchy());
+        return memberReader.getLevelMemberByUniqueKey((RolapLevel) level, key);
+    }
+
     public List<Member> getLevelMembers(Level level, Evaluator context) {
         TupleConstraint constraint =
             sqlConstraintFactory.getLevelMembersConstraint(

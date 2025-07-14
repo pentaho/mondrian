@@ -59,6 +59,11 @@ class DelegatingMemberReader implements MemberReader {
         return memberReader.getMembersInLevel(level);
     }
 
+    // PATCH: Get a member by a unique key within a level.
+    public RolapMember getLevelMemberByUniqueKey(RolapLevel level, Object key) {
+        return memberReader.getLevelMemberByUniqueKey(level, key);
+    }
+
     public void getMemberRange(
         RolapLevel level,
         RolapMember startMember,

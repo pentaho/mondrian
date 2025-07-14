@@ -135,6 +135,11 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
             level, constraint);
     }
 
+    // PATCH: Get a member by a unique key within a level.
+    public RolapMember getLevelMemberByUniqueKey(final RolapLevel level, final Object key) {
+        return source.getLevelMemberByUniqueKey(level, key);
+    }
+
     public RolapMember getMemberByKey(
         RolapLevel level, List<Comparable> keyValues)
     {

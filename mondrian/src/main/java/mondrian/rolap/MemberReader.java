@@ -179,6 +179,9 @@ interface MemberReader extends MemberSource {
     RolapMember getMemberByKey(
         RolapLevel level,
         List<Comparable> keyValues);
+
+    // PATCH: Get a member by a unique key within a level.
+    RolapMember getLevelMemberByUniqueKey(RolapLevel level, Object key);
 }
 
 // End MemberReader.java

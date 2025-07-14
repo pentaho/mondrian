@@ -389,6 +389,9 @@ public interface SchemaReader {
         Level level,
         boolean includeCalculated);
 
+    // PATCH: Get a member by a unique key within a level.
+    Member getLevelMemberByUniqueKey(Level level, Object key);
+
     /**
      * Returns the members of a level, optionally filtering out members which
      * are empty.

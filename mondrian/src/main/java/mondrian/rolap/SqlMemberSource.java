@@ -542,6 +542,17 @@ RME is this right
         return Util.cast(tupleList.slice(0));
     }
 
+    // PATCH: Get a member by a unique key within a level.
+    // This is a standard implementation without caching that typically will not be used.
+    public RolapMember getLevelMemberByUniqueKey(RolapLevel level, Object key) {
+        for (RolapMember member : getMembersInLevel(level)) {
+            if (member.getKey().equals(key)) {
+                return member;
+            }
+        }
+        return null;
+    }
+
     public MemberCache getMemberCache() {
         return cache;
     }

@@ -195,6 +195,11 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getLevelMembers(level, includeCalculated);
     }
 
+    // PATCH: Get a member by a unique key within a level.
+    public Member getLevelMemberByUniqueKey(Level level, Object key) {
+        return schemaReader.getLevelMemberByUniqueKey(level, key);
+    }
+
     public List<Level> getHierarchyLevels(Hierarchy hierarchy) {
         return schemaReader.getHierarchyLevels(hierarchy);
     }
