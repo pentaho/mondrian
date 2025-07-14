@@ -392,6 +392,9 @@ public interface SchemaReader {
     // PATCH: Get a member by a unique key within a level.
     Member getLevelMemberByUniqueKey(Level level, Object key);
 
+    // PATCH: Does a member have at least one child?
+    boolean hasMemberChildren(Member member);
+
     /**
      * Returns the members of a level, optionally filtering out members which
      * are empty.

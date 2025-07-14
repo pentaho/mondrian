@@ -182,6 +182,9 @@ interface MemberReader extends MemberSource {
 
     // PATCH: Get a member by a unique key within a level.
     RolapMember getLevelMemberByUniqueKey(RolapLevel level, Object key);
+
+    // PATCH: Does a member have at least one child?
+    boolean hasMemberChildren(RolapMember member);
 }
 
 // End MemberReader.java

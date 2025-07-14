@@ -200,6 +200,11 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return schemaReader.getLevelMemberByUniqueKey(level, key);
     }
 
+    // PATCH: Does a member have at least one child?
+    public boolean hasMemberChildren(Member member) {
+        return schemaReader.hasMemberChildren(member);
+    }
+
     public List<Level> getHierarchyLevels(Hierarchy hierarchy) {
         return schemaReader.getHierarchyLevels(hierarchy);
     }

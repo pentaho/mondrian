@@ -64,6 +64,11 @@ class DelegatingMemberReader implements MemberReader {
         return memberReader.getLevelMemberByUniqueKey(level, key);
     }
 
+    // PATCH: Does a member have at least one child?
+    public boolean hasMemberChildren(RolapMember member) {
+        return memberReader.hasMemberChildren(member);
+    }
+
     public void getMemberRange(
         RolapLevel level,
         RolapMember startMember,

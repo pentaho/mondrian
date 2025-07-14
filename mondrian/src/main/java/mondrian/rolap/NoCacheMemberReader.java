@@ -140,6 +140,11 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         return source.getLevelMemberByUniqueKey(level, key);
     }
 
+    // PATCH: Does a member have at least one child?
+    public boolean hasMemberChildren(final RolapMember member) {
+        return source.hasMemberChildren(member);
+    }
+
     public RolapMember getMemberByKey(
         RolapLevel level, List<Comparable> keyValues)
     {

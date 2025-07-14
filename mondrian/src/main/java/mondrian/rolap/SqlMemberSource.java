@@ -553,6 +553,14 @@ RME is this right
         return null;
     }
 
+    // PATCH: Does a member have at least one child?
+    // This is a standard implementation without caching that typically will not be used.
+    public boolean hasMemberChildren(RolapMember member) {
+        List<RolapMember> children = new ArrayList<RolapMember>();
+        getMemberChildren(member, children);
+        return !children.isEmpty();
+    }
+
     public MemberCache getMemberCache() {
         return cache;
     }

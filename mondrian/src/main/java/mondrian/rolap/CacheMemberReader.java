@@ -199,6 +199,16 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return null;
     }
 
+    // PATCH: Does a member have at least one child?
+    public boolean hasMemberChildren(RolapMember member) {
+        for (RolapMember child : members) {
+            if (child.getKey() != RolapUtil.sqlNullValue && child.getParentMember() == member) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public int getLevelMemberCount(RolapLevel level) {
         int count = 0;
         int levelDepth = level.getDepth();

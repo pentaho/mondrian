@@ -576,6 +576,12 @@ public class RolapSchemaReader
         return memberReader.getLevelMemberByUniqueKey((RolapLevel) level, key);
     }
 
+    // PATCH: Does a member have at least one child?
+    public boolean hasMemberChildren(Member member) {
+        final MemberReader memberReader = getMemberReader(member.getHierarchy());
+        return memberReader.hasMemberChildren((RolapMember) member);
+    }
+
     public List<Member> getLevelMembers(Level level, Evaluator context) {
         TupleConstraint constraint =
             sqlConstraintFactory.getLevelMembersConstraint(

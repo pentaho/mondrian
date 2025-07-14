@@ -64,6 +64,10 @@ public class SmartMemberReader implements MemberReader {
     private Map<RolapLevel, Map<Object, RolapMember>> levelMembersByUniqueKeyCache =
         new ConcurrentHashMap<RolapLevel, Map<Object, RolapMember>>();
 
+    // PATCH: Cache of level member unique names which have children.
+    private Map<RolapLevel, Set<String>> levelMemberUniqueNamesWithChildrenCache =
+        new ConcurrentHashMap<RolapLevel, Set<String>>();
+
     SmartMemberReader(MemberReader source) {
         this(source, true);
     }
@@ -181,6 +185,26 @@ public class SmartMemberReader implements MemberReader {
             levelMembersByUniqueKeyCache.put(level, levelMembersByUniqueKey);
         }
         return levelMembersByUniqueKey.get(key);
+    }
+
+    // PATCH: Does a member have at least one child?
+    public boolean hasMemberChildren(RolapMember member) {
+        RolapLevel level = member.getLevel();
+        Set<String> parentUniqueNames = levelMemberUniqueNamesWithChildrenCache.get(level);
+        if (parentUniqueNames == null) {
+            RolapLevel childLevel = (RolapLevel) level.getChildLevel();
+            if (childLevel == null) return false;
+            parentUniqueNames = new HashSet<String>();
+            for (RolapMember childMember : getMembersInLevel(childLevel)) {
+                if (childMember.getKey() == RolapUtil.sqlNullValue) continue;
+                RolapMember parent = childMember.getParentMember();
+                if (parent != null && !parent.isNull() && parent.getKey() != RolapUtil.sqlNullValue) {
+                    parentUniqueNames.add(parent.getUniqueName());
+                }
+            }
+            levelMemberUniqueNamesWithChildrenCache.put(level, parentUniqueNames);
+        }
+        return parentUniqueNames.contains(member.getUniqueName());
     }
 
     public int getLevelMemberCount(RolapLevel level) {
