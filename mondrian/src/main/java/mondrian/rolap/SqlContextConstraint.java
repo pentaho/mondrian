@@ -152,7 +152,13 @@ public class SqlContextConstraint
             }
         }
         if (baseCubes.isEmpty()) {
-            return false;
+            // PATCH: Add the default measure if no stored measures found from the selected calculated measures
+            Member defaultMeasure = query.getCube().getDimensions()[0].getHierarchy().getDefaultMember();
+            if (defaultMeasure instanceof RolapStoredMeasure) {
+                addMeasure((RolapStoredMeasure) defaultMeasure, baseCubes, baseCubeList);
+            } else {
+                return false;
+            }
         }
         return true;
     }
