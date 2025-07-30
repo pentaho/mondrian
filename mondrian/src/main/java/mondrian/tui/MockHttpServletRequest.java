@@ -18,8 +18,23 @@ import java.security.Principal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.ServletConnection;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.AsyncContext;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Part;
+import jakarta.servlet.http.HttpUpgradeHandler;
+
 
 /**
  * Partial implementation of the {@link HttpServletRequest} where just
@@ -92,6 +107,21 @@ public class MockHttpServletRequest implements HttpServletRequest {
 
         public int read() throws IOException {
             return stream.read();
+        }
+
+        @Override
+        public boolean isFinished() {
+            return false;
+        }
+
+        @Override
+        public boolean isReady() {
+            return false;
+        }
+
+        @Override
+        public void setReadListener( ReadListener readListener ) {
+
         }
     }
 
@@ -208,7 +238,12 @@ public class MockHttpServletRequest implements HttpServletRequest {
      *
      */
     public int getContentLength() {
-        return getIntHeader("Content-Length");
+        return getIntHeader( "Content-Length" );
+    }
+
+    @Override
+    public long getContentLengthLong() {
+        return 0;
     }
 
     /**
@@ -436,6 +471,55 @@ public class MockHttpServletRequest implements HttpServletRequest {
         return localPort;
     }
 
+    @Override
+    public ServletContext getServletContext() {
+        return null;
+    }
+
+    @Override
+    public AsyncContext startAsync() throws IllegalStateException {
+        return null;
+    }
+    @Override
+    public ServletConnection getServletConnection() {
+        return null;
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        return null;
+    }
+
+    @Override
+    public String getRequestId() {
+        return null;
+    }
+
+    @Override
+    public AsyncContext startAsync( ServletRequest servletRequest, ServletResponse servletResponse ) throws IllegalStateException {
+        return null;
+    }
+
+    @Override
+    public boolean isAsyncStarted() {
+        return false;
+    }
+
+    @Override
+    public boolean isAsyncSupported() {
+        return false;
+    }
+
+    @Override
+    public AsyncContext getAsyncContext() {
+        return null;
+    }
+
+    @Override
+    public DispatcherType getDispatcherType() {
+        return null;
+    }
+
     /**
      * Returns the name of the authentication scheme used to protect the
      * servlet, for example, "BASIC" or "SSL," or null if the servlet was not
@@ -648,6 +732,11 @@ public class MockHttpServletRequest implements HttpServletRequest {
         return session;
     }
 
+    @Override
+    public String changeSessionId() {
+        return "";
+    }
+
     /**
      * Checks whether the requested session ID is still valid.
      *
@@ -677,6 +766,36 @@ public class MockHttpServletRequest implements HttpServletRequest {
     public boolean isRequestedSessionIdFromUrl() {
         // deprecated as of version 2.1 of Servlet API.
         return isRequestedSessionIdFromURL();
+    }
+
+    @Override
+    public boolean authenticate( HttpServletResponse httpServletResponse ) throws IOException, ServletException {
+        return false;
+    }
+
+    @Override
+    public void login( String s, String s1 ) throws ServletException {
+
+    }
+
+    @Override
+    public void logout() throws ServletException {
+
+    }
+
+    @Override
+    public Collection<Part> getParts() throws IOException, ServletException {
+        return List.of();
+    }
+
+    @Override
+    public Part getPart( String s ) throws IOException, ServletException {
+        return null;
+    }
+
+    @Override
+    public <T extends HttpUpgradeHandler> T upgrade( Class<T> aClass ) throws IOException, ServletException {
+        return null;
     }
 
     /////////////////////////////////////////////////////////////////////////
