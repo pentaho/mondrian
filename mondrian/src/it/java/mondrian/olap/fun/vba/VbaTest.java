@@ -1062,9 +1062,16 @@ public class VbaTest extends TestCase {
             1,
             Vba.inStr("the quick brown fox jumps over the lazy dog", "the"));
         assertEquals(
+            1,
+            Vba.inStr("the quick brown fox jumps over the lazy dog", "THE"));
+        assertEquals(
             32,
             Vba.inStr(
                 16, "the quick brown fox jumps over the lazy dog", "the"));
+        assertEquals(
+            32,
+            Vba.inStr(
+                16, "the quick brown fox jumps over the lazy dog", "THE"));
         assertEquals(
             0,
             Vba.inStr(

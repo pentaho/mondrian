@@ -1908,9 +1908,9 @@ public class Vba {
                 "start must be -1 or a location in the string to start");
         }
         if (start != -1) {
-            return stringCheck.indexOf(stringMatch, start - 1) + 1;
+            return lCase(stringCheck).indexOf(lCase(stringMatch), start - 1) + 1;
         } else {
-            return stringCheck.indexOf(stringMatch) + 1;
+            return lCase(stringCheck).indexOf(lCase(stringMatch)) + 1;
         }
     }
 
