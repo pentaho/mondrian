@@ -69,7 +69,7 @@
 
     <java classpath="${classpath}"
         classname="mondrian.util.PropertyUtil"
-        fork="no">
+        fork="true">
         <arg value="${java.dir}/mondrian/olap"/>
         <arg value="${generated.java.dir}/mondrian/olap"/>
       </java>
