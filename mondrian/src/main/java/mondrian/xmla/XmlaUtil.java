@@ -26,6 +26,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
@@ -141,6 +142,9 @@ public class XmlaUtil implements XmlaConstants {
   public static void element2Text( Element elem, final StringWriter writer ) throws XmlaException {
     try {
       TransformerFactory factory = TransformerFactory.newInstance();
+      factory.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
+      factory.setAttribute( XMLConstants.ACCESS_EXTERNAL_DTD, "" );
+      factory.setAttribute( XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "" );
       Transformer transformer = factory.newTransformer();
       transformer.transform( new DOMSource( elem ), new StreamResult( writer ) );
     } catch ( Exception e ) {
