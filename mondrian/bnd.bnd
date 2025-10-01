@@ -1,0 +1,5 @@
+Bundle-SymbolicName: pentaho.mondrian.core
+-privatepackage: \
+	mondrian.calc.impl,\
+	mondrian.xmla.impl
+Export-Package: mondrian.*

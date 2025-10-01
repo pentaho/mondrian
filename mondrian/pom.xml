@@ -269,6 +269,28 @@
         </executions>
       </plugin>
       <plugin>
+       <groupId>biz.aQute.bnd</groupId>
+       <artifactId>bnd-maven-plugin</artifactId>
+       <version>6.1.0</version>
+         <executions>
+           <execution>
+             <id>bnd-process</id>
+             <goals>
+               <goal>bnd-process</goal>
+             </goals>
+           </execution>
+         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+            <archive>
+                <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+            </archive>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>xml-maven-plugin</artifactId>
         <version>1.0.1</version>
