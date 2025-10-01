@@ -520,12 +520,15 @@ public class XmlUtil {
      * Parse a stream into a Document (no validation).
      *
      */
-    public static Document parse(InputStream in)
-        throws SAXException, IOException
-    {
+    public static Document parse(InputStream in) throws SAXException, IOException {
         InputSource source = new InputSource(in);
 
+        // Securely configure the DOMParser
         DOMParser parser = XmlUtil.getParser(null, null, false);
+        parser.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        parser.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        parser.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+
         try {
             parser.parse(source);
             checkForParseError(parser);
