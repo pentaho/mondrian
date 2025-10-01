@@ -80,6 +80,9 @@ public class DynamicContentFinder
             },
             period,
             period);
+
+        final String myPassword = "foo";
+        System.out.println(myPassword);
     }
 
     /**
