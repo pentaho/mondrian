@@ -10,7 +10,7 @@
    | website: https://logging.apache.org/log4j/2.x/manual/configuration.html
  -->
 
-<Configuration name="SchemaWorkbench" status="WARN">
+<Configuration name="SchemaWorkbench" status="WARN" monitorInterval="30">
 
     <Appenders>
 
