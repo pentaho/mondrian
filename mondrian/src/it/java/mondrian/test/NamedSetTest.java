@@ -180,11 +180,41 @@ public class NamedSetTest extends FoodMartTestCase {
             + "   [ChardonnayChablis] ON COLUMNS,\n"
             + "   {Measures.[Unit Sales]} ON ROWS\n"
             + "FROM Sales",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "Axis #2:\n"
-            + "{[Measures].[Unit Sales]}\n");
+            "Axis #0:\n" +
+                    "{}\n" +
+                    "Axis #1:\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Good].[Good Chablis Wine]}\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Good].[Good Chardonnay]}\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Good].[Good Chardonnay Wine]}\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl].[Pearl Chablis Wine]}\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl].[Pearl Chardonnay]}\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl].[Pearl Chardonnay Wine]}\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Chablis Wine]}\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Chardonnay]}\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth].[Portsmouth Chardonnay Wine]}\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure].[Top Measure Chablis Wine]}\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure].[Top Measure Chardonnay]}\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure].[Top Measure Chardonnay Wine]}\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus].[Walrus Chablis Wine]}\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus].[Walrus Chardonnay]}\n" +
+                    "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus].[Walrus Chardonnay Wine]}\n" +
+                    "Axis #2:\n" +
+                    "{[Measures].[Unit Sales]}\n" +
+                    "Row #0: 163\n" +
+                    "Row #0: 192\n" +
+                    "Row #0: 146\n" +
+                    "Row #0: 209\n" +
+                    "Row #0: 189\n" +
+                    "Row #0: 210\n" +
+                    "Row #0: 136\n" +
+                    "Row #0: 170\n" +
+                    "Row #0: 214\n" +
+                    "Row #0: 140\n" +
+                    "Row #0: 164\n" +
+                    "Row #0: 129\n" +
+                    "Row #0: 185\n" +
+                    "Row #0: 173\n" +
+                    "Row #0: 175\n");
         assertQueryReturns(
             "WITH SET [BeerMilk] AS\n"
             + "   'Filter([Product].Members, (InStr(1, [Product].CurrentMember.Name, \"Beer\") <> 0) OR (InStr(1, LCase([Product].CurrentMember.Name), \"milk\") <> 0))'\n"
