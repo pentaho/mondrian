@@ -85,7 +85,7 @@
     <repository>
       <id>pentaho-public</id>
       <name>Pentaho Public</name>
-      <url>https://repo.orl.eng.hitachivantara.com/artifactory/pnt-mvn/</url>
+      <url>https://hitachiedge1.jfrog.io/artifactory/pnt-mvn/</url>
       <releases>
         <enabled>true</enabled>
         <updatePolicy>daily</updatePolicy>
@@ -101,7 +101,7 @@
     <pluginRepository>
       <id>pentaho-public-plugins</id>
       <name>Pentaho Public Plugins</name>
-      <url>https://repo.orl.eng.hitachivantara.com/artifactory/pnt-mvn/</url>
+      <url>https://hitachiedge1.jfrog.io/artifactory/pnt-mvn/</url>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
