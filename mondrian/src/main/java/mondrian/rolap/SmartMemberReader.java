@@ -363,13 +363,25 @@ public class SmartMemberReader implements MemberReader {
     {
         assert startMember != null;
         assert endMember != null;
-        assert startMember.getLevel() == endMember.getLevel();
+        assert startMember.isNull() || endMember.isNull() || startMember.getLevel() == endMember.getLevel();
 
-        if (compare(startMember, endMember, false) > 0) {
+        if (compare(startMember, endMember, false) > 0 || (startMember.isNull() && endMember.isNull())) {
             return;
         }
-        list.add(startMember);
+        if (!startMember.isNull()) {
+            list.add(startMember);
+        }
         if (startMember.equals(endMember)) {
+            return;
+        }
+
+        if (startMember.isNull()) {
+            SiblingIterator siblings = new SiblingIterator(this, endMember);
+            while (siblings.hasPrevious()) {
+                list.add(siblings.previousMember());
+            }
+            Collections.reverse(list);
+            list.add(endMember);
             return;
         }
         SiblingIterator siblings = new SiblingIterator(this, startMember);
@@ -380,9 +392,11 @@ public class SmartMemberReader implements MemberReader {
                 return;
             }
         }
-        throw Util.newInternal(
-            "sibling iterator did not hit end point, start="
-            + startMember + ", end=" + endMember);
+        if (!endMember.isNull()) {
+            throw Util.newInternal(
+                    "sibling iterator did not hit end point, start="
+                            + startMember + ", end=" + endMember);
+        }
     }
 
     public int getMemberCount() {
@@ -390,74 +404,72 @@ public class SmartMemberReader implements MemberReader {
     }
 
     public int compare(
-        RolapMember m1,
-        RolapMember m2,
-        boolean siblingsAreEqual)
+            final RolapMember m1,
+            final RolapMember m2,
+            final boolean siblingsAreEqual)
     {
-        if (m1.equals(m2)) {
+        if (Util.equals(m1, m2)) {
             return 0;
         }
+        if (m1.isNull() || m2.isNull()) {
+            return -1;
+        }
+
         if (Util.equals(m1.getParentMember(), m2.getParentMember())) {
-            // including case where both parents are null
-            if (siblingsAreEqual) {
-                return 0;
-            } else if (m1.getParentMember() == null) {
-                // at this point we know that both parent members are null.
-                int pos1 = -1, pos2 = -1;
-                List<RolapMember> siblingList = getRootMembers();
-                for (int i = 0, n = siblingList.size(); i < n; i++) {
-                    RolapMember child = siblingList.get(i);
-                    if (child.equals(m1)) {
-                        pos1 = i;
-                    }
-                    if (child.equals(m2)) {
-                        pos2 = i;
-                    }
-                }
-                if (pos1 == -1) {
-                    throw Util.newInternal(m1 + " not found among siblings");
-                }
-                if (pos2 == -1) {
-                    throw Util.newInternal(m2 + " not found among siblings");
-                }
-                Util.assertTrue(pos1 != pos2);
-                return pos1 < pos2 ? -1 : 1;
-            } else {
-                List<RolapMember> children = new ArrayList<RolapMember>();
-                getMemberChildren(m1.getParentMember(), children);
-                int pos1 = -1, pos2 = -1;
-                for (int i = 0, n = children.size(); i < n; i++) {
-                    RolapMember child = children.get(i);
-                    if (child.equals(m1)) {
-                        pos1 = i;
-                    }
-                    if (child.equals(m2)) {
-                        pos2 = i;
-                    }
-                }
-                if (pos1 == -1) {
-                    throw Util.newInternal(m1 + " not found among siblings");
-                }
-                if (pos2 == -1) {
-                    throw Util.newInternal(m2 + " not found among siblings");
-                }
-                Util.assertTrue(pos1 != pos2);
-                return pos1 < pos2 ? -1 : 1;
+            return compareSameParent(m1, m2, siblingsAreEqual);
+        }
+
+        return compareDifferentLevels(m1, m2);
+    }
+
+    private int compareSameParent(RolapMember m1, RolapMember m2, boolean siblingsAreEqual) {
+        if (siblingsAreEqual) {
+            return 0;
+        }
+
+        List<RolapMember> peerMembers;
+        if (m1.getParentMember() == null) {
+            peerMembers = getRootMembers();
+        } else {
+            peerMembers = new ArrayList<>();
+            getMemberChildren(m1.getParentMember(), peerMembers);
+        }
+
+        int pos1 = -1, pos2 = -1;
+        for (int i = 0; i < peerMembers.size(); i++) {
+            RolapMember child = peerMembers.get(i);
+            if (child.equals(m1)) {
+                pos1 = i;
+            }
+            if (child.equals(m2)) {
+                pos2 = i;
             }
         }
-        int levelDepth1 = m1.getLevel().getDepth();
-        int levelDepth2 = m2.getLevel().getDepth();
-        if (levelDepth1 < levelDepth2) {
-            final int c = compare(m1, m2.getParentMember(), false);
-            return (c == 0) ? -1 : c;
 
-        } else if (levelDepth1 > levelDepth2) {
-            final int c = compare(m1.getParentMember(), m2, false);
-            return (c == 0) ? 1 : c;
-
-        } else {
-            return compare(m1.getParentMember(), m2.getParentMember(), false);
+        if (pos1 == -1) {
+            throw Util.newInternal(m1 + " not found among siblings");
         }
+        if (pos2 == -1) {
+            throw Util.newInternal(m2 + " not found among siblings");
+        }
+        Util.assertTrue(pos1 != pos2);
+        return Integer.compare(pos1, pos2);
+    }
+
+
+    private int compareDifferentLevels(RolapMember m1, RolapMember m2) {
+        int depth1 = m1.getLevel().getDepth();
+        int depth2 = m2.getLevel().getDepth();
+
+        if (depth1 < depth2) {
+            int c = compare(m1, m2.getParentMember(), false);
+            return (c == 0) ? -1 : c;
+        }
+        if (depth1 > depth2) {
+            int c = compare(m1.getParentMember(), m2, false);
+            return (c == 0) ? 1 : c;
+        }
+        return compare(m1.getParentMember(), m2.getParentMember(), false);
     }
 
     /**
@@ -500,8 +512,8 @@ public class SmartMemberReader implements MemberReader {
 
         boolean hasNext() {
             return (this.position < this.siblings.size() - 1)
-                || (parentIterator != null)
-                && parentIterator.hasNext();
+                    || (parentIterator != null)
+                    && parentIterator.hasNext();
         }
 
         Object next() {

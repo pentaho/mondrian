@@ -278,9 +278,10 @@ class CacheMemberReader implements MemberReader, MemberCache {
     {
         assert startMember != null;
         assert endMember != null;
-        assert startMember.getLevel() == endMember.getLevel();
-        final int endOrdinal = endMember.getOrdinal();
-        for (int i = startMember.getOrdinal(); i <= endOrdinal; i++) {
+        assert startMember.isNull() || endMember.isNull() || startMember.getLevel() == endMember.getLevel();
+        final int startOrdinal = startMember.isNull() ? 0 : startMember.getOrdinal();
+        final int endOrdinal = endMember.isNull() ? startOrdinal : endMember.getOrdinal();
+        for (int i = startOrdinal; i <= endOrdinal; i++) {
             if (members.get(i).getLevel() == endMember.getLevel()) {
                 list.add(members.get(i));
             }
