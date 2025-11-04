@@ -128,7 +128,7 @@ class CaseTestFunDef extends FunDefBase {
                 {
                     // PATCH: Change return type to generic Value type
                     returnType = Category.Value;
-                    if (!validator.canConvert(j, args[j - 1], returnType, conversions)) {
+                    if (!validator.canConvert(j - 1, args[j - 1], returnType, conversions)) {
                         mismatchingArgs++;
                     }
                 }
@@ -139,7 +139,7 @@ class CaseTestFunDef extends FunDefBase {
                 {
                     // PATCH: Change return type to generic Value type
                     returnType = Category.Value;
-                    if (!validator.canConvert(j, args[j - 1], returnType, conversions)) {
+                    if (!validator.canConvert(j - 1, args[j - 1], returnType, conversions)) {
                         mismatchingArgs++;
                     }
                 }
