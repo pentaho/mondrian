@@ -610,9 +610,9 @@ public abstract class LinReg extends FunDefBase {
             case Slope:
                 return value.getSlope();
             case Variance:
-                return value.getVariance();
+                return accuracy(value).getVariance();
             case R2:
-                return value.getRSquared();
+                return accuracy(value).getRSquared();
             default:
             case Point:
                 throw Util.newInternal("unexpected value " + regType);
