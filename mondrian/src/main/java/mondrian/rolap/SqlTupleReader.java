@@ -34,6 +34,7 @@ import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.MemberListCrossJoinArg;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
+import mondrian.rolap.RolapNativeTopCount;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.monitor.SqlStatementEvent;
@@ -1209,11 +1210,14 @@ public class SqlTupleReader implements TupleReader {
     Evaluator evaluator = getEvaluator( constraint );
     AggStar aggStar = chooseAggStar( constraint, evaluator, baseCube );
 
-    // PATCH: Add constraints at first to ensure that level tables are added last
+    // PATCH: Apply constraints first so that level tables are added last.
+    // Exclude TopCountConstraint because it adds a SUM(...) expression to the SELECT list,
+    // which must come after the level columns to preserve column ordering.
     boolean prependConstraint = false;
     SqlContextConstraint sqlContextConstraint = constraint instanceof SqlContextConstraint ?
       (SqlContextConstraint) constraint : null;
-    if (sqlContextConstraint != null && sqlContextConstraint.isJoinRequired()) {
+    if (sqlContextConstraint != null && sqlContextConstraint.isJoinRequired()
+        && !(sqlContextConstraint instanceof RolapNativeTopCount.TopCountConstraint)) {
       if(aggStar != null) {
         aggStar.getFactTable().addToFrom(sqlQuery, false, false);
         prependConstraint = true;
