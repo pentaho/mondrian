@@ -343,7 +343,10 @@ public class JavaFunDef extends FunDefBase {
             Class<?>[] parameterTypes = null;
             for (int i = 0; i < args.length; i++) {
                 args[i] = calcs[i].evaluate(evaluator);
-                if (args[i] == null) {
+                // PATCH: Handle null values returned by nested function calls.
+                // The original code only checked for Java null, but MDX functions
+                // may return the sentinel nullValue object to represent missing data.
+                if (args[i] == null || args[i] == nullValue) {
                     return nullValue;
                 // PATCH: Cast BigDecimal to double if method has double parameter
                 } else if (args[i] instanceof java.math.BigDecimal) {
