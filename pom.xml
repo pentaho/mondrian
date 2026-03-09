@@ -59,7 +59,7 @@
   <repositories>
     <repository>
       <id>lib-repo</id>
-      <url>file://${session.executionRootDirectory}/lib-repo</url>
+      <url>file://${maven.multiModuleProjectDirectory}/lib-repo</url>
     </repository>
   </repositories>
 
