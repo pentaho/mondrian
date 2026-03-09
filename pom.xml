@@ -2,11 +2,6 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.pentaho</groupId>
-    <artifactId>pentaho-ce-jar-parent-pom</artifactId>
-    <version>9.3.0.0-SNAPSHOT</version>
-  </parent>
   <groupId>pentaho</groupId>
   <artifactId>pentaho-mondrian-parent-pom</artifactId>
   <version>9.3.0.0-SNAPSHOT</version>
@@ -50,7 +45,24 @@
     <commons-lang3.version>3.17.0</commons-lang3.version>
     <commons-vfs2.version>2.10.0</commons-vfs2.version>
     <xmlunit.version>1.1</xmlunit.version>
+    <commons-logging.version>1.2</commons-logging.version>
+    <dom4j.version>2.1.1</dom4j.version>
+    <xercesImpl.version>2.12.0</xercesImpl.version>
+    <xml-apis.version>1.4.01</xml-apis.version>
+    <log4j.version>2.17.1</log4j.version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <source.jdk.version>1.8</source.jdk.version>
+    <target.jdk.version>1.8</target.jdk.version>
+    <project.build.debug>true</project.build.debug>
   </properties>
+  <repositories>
+    <repository>
+      <id>lib-repo</id>
+      <url>file://${session.executionRootDirectory}/lib-repo</url>
+    </repository>
+  </repositories>
+
   <profiles>
     <profile>
       <id>mondrian</id>
@@ -61,54 +73,7 @@
         <module>mondrian</module>
       </modules>
     </profile>
-    <profile>
-      <id>workbench</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <modules>
-        <module>workbench</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>assemblies</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <modules>
-        <module>assemblies</module>
-      </modules>
-    </profile>
   </profiles>
 
-  <repositories>
-    <repository>
-      <id>pentaho-public</id>
-      <name>Pentaho Public</name>
-      <url>https://hitachiedge1.jfrog.io/artifactory/pnt-mvn/</url>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>daily</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>interval:15</updatePolicy>
-      </snapshots>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>pentaho-public-plugins</id>
-      <name>Pentaho Public Plugins</name>
-      <url>https://hitachiedge1.jfrog.io/artifactory/pnt-mvn/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <releases>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-    </pluginRepository>
-  </pluginRepositories>
 
 </project>
