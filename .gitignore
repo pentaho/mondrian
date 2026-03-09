@@ -8,3 +8,9 @@ mondrian.*properties
 .settings
 .classpath
 .idea
+.rvmrc
+mise.local.toml
+CLAUDE.local.md
+.claude
+.vscode
+.DS_Store
