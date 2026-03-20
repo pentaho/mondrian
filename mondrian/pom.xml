@@ -3,15 +3,15 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>pentaho</groupId>
-    <artifactId>pentaho-mondrian-parent-pom</artifactId>
-    <version>9.3.0.0-SNAPSHOT</version>
+    <groupId>mondrian-olap</groupId>
+    <artifactId>mondrian-parent-pom</artifactId>
+    <version>${mondrian.version}</version>
   </parent>
-  <artifactId>mondrian</artifactId>
-  <version>9.3.0.0-SNAPSHOT</version>
-  <name>Pentaho Community Edition Project: ${project.artifactId}</name>
+  <artifactId>mondrian-olap-java</artifactId>
+  <version>${mondrian.version}</version>
+  <name>Mondrian OLAP Engine</name>
   <description>Mondrian OLAP Engine</description>
-  <url>http://mondrian.pentaho.com</url>
+  <url>https://github.com/rsim/mondrian-olap-java</url>
   <properties>
     <project.version.minor>000</project.version.minor>
     <driver.version>${project.version}</driver.version>
@@ -19,10 +19,6 @@
     <schema.version>3</schema.version>
     <driver.name>Mondrian olap4j driver</driver.name>
     <driver.version.minor>${project.version.minor}</driver.version.minor>
-    <vendor>Pentaho</vendor>
-    <!-- PATCH: Replace Guava with Caffeine -->
-    <!-- <guava.version>17.0</guava.version> -->
-    <caffeine.version>2.9.3</caffeine.version>
     <driver.version.major>${project.version.major}</driver.version.major>
     <maven-failsafe-plugin.argLine>-Duser.language=en -Duser.country=US</maven-failsafe-plugin.argLine>
   </properties>
@@ -42,12 +38,6 @@
       <artifactId>commons-dbcp</artifactId>
       <version>${commons-dbcp.version}</version>
     </dependency>
-    <!-- PATCH: Use newer commons-lang3 -->
-    <!-- <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>${commons-lang.version}</version>
-    </dependency> -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
@@ -63,12 +53,6 @@
       <artifactId>commons-logging</artifactId>
       <version>${commons-logging.version}</version>
     </dependency>
-    <!-- PATCH: Replace Guava with Caffeine -->
-    <!-- <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>${guava.version}</version>
-    </dependency> -->
     <dependency>
       <groupId>com.github.ben-manes.caffeine</groupId>
       <artifactId>caffeine</artifactId>

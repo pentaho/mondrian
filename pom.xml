@@ -2,13 +2,13 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>pentaho</groupId>
-  <artifactId>pentaho-mondrian-parent-pom</artifactId>
-  <version>9.3.0.0-SNAPSHOT</version>
+  <groupId>mondrian-olap</groupId>
+  <artifactId>mondrian-parent-pom</artifactId>
+  <version>${mondrian.version}</version>
   <packaging>pom</packaging>
-  <name>Pentaho Mondrian Parent POM</name>
-  <description>Container pom for mondrian</description>
-  <url>http://www.pentaho.com</url>
+  <name>Mondrian Parent POM</name>
+  <description>Container pom for Mondrian</description>
+  <url>https://github.com/rsim/mondrian-olap-java</url>
   <licenses>
     <license>
       <name>Eclipse Public License (EPL), Version 1.0</name>
@@ -17,11 +17,12 @@
     </license>
   </licenses>
   <scm>
-    <connection>scm:git:git@github.com:pentaho/mondrian.git</connection>
-    <developerConnection>scm:git:git@github.com:pentaho/mondrian.git</developerConnection>
-    <url>scm:git:git@github.com:pentaho/mondrian.git</url>
+    <connection>scm:git:git@github.com:rsim/mondrian-olap-java.git</connection>
+    <developerConnection>scm:git:git@github.com:rsim/mondrian-olap-java.git</developerConnection>
+    <url>scm:git:git@github.com:rsim/mondrian-olap-java.git</url>
   </scm>
   <properties>
+    <mondrian.version>1.4.0-SNAPSHOT</mondrian.version>
     <license.licenseName>epl_only_v1</license.licenseName>
 
     <olap4j.version>1.2.0</olap4j.version>
@@ -50,6 +51,8 @@
     <xercesImpl.version>2.12.0</xercesImpl.version>
     <xml-apis.version>1.4.01</xml-apis.version>
     <log4j.version>2.17.1</log4j.version>
+    <caffeine.version>2.9.3</caffeine.version>
+
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <source.jdk.version>1.8</source.jdk.version>
