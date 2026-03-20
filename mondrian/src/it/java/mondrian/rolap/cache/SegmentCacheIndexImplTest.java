@@ -18,7 +18,8 @@ import mondrian.test.FoodMartTestCase;
 public class SegmentCacheIndexImplTest extends FoodMartTestCase {
     public void testNoHeaderOnLoad() {
         final SegmentCacheIndexImpl index =
-            new SegmentCacheIndexImpl(Thread.currentThread());
+            new SegmentCacheIndexImpl(
+                new Thread[]{Thread.currentThread()});
 
         final SegmentHeader header = mock(SegmentHeader.class);
         final SegmentBody body = mock(SegmentBody.class);
