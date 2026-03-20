@@ -1,0 +1,10 @@
+[tools]
+java = "temurin-11"
+ruby = "jruby-9.4.14.0"
+
+[tasks.package]
+run = "mvn package"
+
+[tasks.test_java]
+description = "Run integration tests with Docker MySQL"
+run = "mvn -DrunITs install -Djava.locale.providers=COMPAT,SPI"
