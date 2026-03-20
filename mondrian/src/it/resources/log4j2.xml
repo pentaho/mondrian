@@ -57,10 +57,10 @@
     <Loggers>
         <Logger name="org.apache" level="info" />
         <Logger name="mondrian" level="info" />
-        <Logger name="mondrian.mdx" level="debug">
+        <Logger name="mondrian.mdx" level="info">
             <appender-ref ref="MDXLOG"/>
         </Logger>
-        <Logger name="mondrian.sql" level="debug">
+        <Logger name="mondrian.sql" level="info">
             <appender-ref ref="SQLLOG"/>
         </Logger>
         <Root level="info">
