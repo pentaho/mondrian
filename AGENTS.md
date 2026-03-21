@@ -63,7 +63,32 @@ mondrian-olap-java is a fork of the Mondrian OLAP Java engine, maintained to pro
 
 ### Testing
 
-- After making changes, build the JAR, copy it to the mondrian-olap gem, and run the gem's test suite.
+This repository includes JRuby-based integration tests using the mondrian-olap gem to test the built Mondrian JAR against a FoodMart database.
+When modifying existing Mondrian Java classes or adding new functionality then use JRuby tests instead of modifying legacy Java tests.
+
+#### Setup
+
+1. Build the Mondrian JAR: `mvn package`
+2. Install gems: `bundle install`
+3. Create the FoodMart database and user (default user/password: `foodmart`/`foodmart`, database: `foodmart`)
+4. Load FoodMart data: `rake db:load_foodmart`
+
+#### Running Tests
+
+- Run all tests (default MySQL): `rake test`
+- Run with a specific database: `rake test:mysql`, `rake test:postgresql`, `rake test:oracle`, `rake test:sqlserver`
+- Run a single test file: `ruby -Itest test/connection_test.rb`
+
+#### Environment Variables
+
+- `MONDRIAN_DRIVER` - Database driver (`mysql`, `postgresql`, `oracle`, `sqlserver`). Default: `mysql`
+- `DATABASE_HOST` - Database hostname. Default: `localhost`
+- `DATABASE_PORT` - Database port. Default: driver-specific
+- `DATABASE_USER` - Database username. Default: `foodmart`
+- `DATABASE_PASSWORD` - Database password. Default: `foodmart`
+- `DATABASE_NAME` - Database name. Default: `foodmart`
+- Override any DATABASE_* environment variable with driver specific version using "#{MONDRIAN_DRIVER}_DATABASE_*" variable.
+- `MONDRIAN_OLAP_PATH` - Path to local mondrian-olap gem (e.g. `../mondrian-olap`). If not set, uses git master branch.
 
 ## Technology Stack
 
@@ -100,7 +125,26 @@ mondrian-olap-java is a fork of the Mondrian OLAP Java engine, maintained to pro
 - Notable fork patches include: replacing Guava with Caffeine, upgrading commons-lang to commons-lang3, removing Pentaho maven repository dependency, and various bug fixes for member retrieval and SQL generation.
 - Dependencies not available in public Maven repositories are stored in `lib-repo/`.
 
+### Testing using JRuby and Minitest
+
+- Use Minitest for JRuby-based testing with the minitest-hooks gem for lifecycle hooks.
+- Use Minitest Spec-style syntax with `describe` and `it` blocks. Nest `describe` blocks for logical grouping.
+- Use `before` and `after` hooks for per-test setup and teardown.
+- Use `before(:all)` and `after(:all)` hooks (from minitest-hooks) for expensive setup shared across all tests
+  in a `describe` block, such as establishing database connections or defining schemas.
+- Use standard Minitest assertions: `assert_equal`, `assert_nil`, `assert_empty`, `assert_kind_of`, `assert_match`.
+- Use `assert_raises` with a block for exception testing, for example,
+  `error = assert_raises(Mondrian::OLAP::Error) { action }`.
+- Use `refute` and `refute_nil` for negation assertions.
+- Prefer `assert_equal true, method?` and `assert_equal false, method?` for boolean methods
+  instead of simple `assert` and `refute` assertions.
+- Use instance variables (`@olap`, `@schema`, `@cube`) for shared state between hooks and tests.
+- Conditionally skip tests for specific database drivers using `unless` guards, for example,
+  `unless %w(oracle).include?(MONDRIAN_DRIVER)`.
+- Test files are located in `test/` directory and follow the naming pattern `*_test.rb`.
+- Test helper and database configuration are in `test/test_helper.rb`.
+
 ### mise
 
-- mise may be used to manage Java versions.
+- mise may be used to manage Ruby and Java versions.
 - If mise is available then prefix java, mvn, ruby, rake calls with `mise exec --` to initialize the correct environment.

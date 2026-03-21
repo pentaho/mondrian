@@ -1,0 +1,291 @@
+AllCops:
+  TargetRubyVersion: 2.6
+  DisabledByDefault: true
+
+# Prefer &&/|| over and/or.
+Style/AndOr:
+  Enabled: true
+
+Performance/CollectionLiteralInLoop:
+  Enabled: true
+
+# Align `when` with `case`.
+Layout/CaseIndentation:
+  Enabled: true
+  # align with the final end as case expression result might be assigned to a variable
+  EnforcedStyle: end
+
+# Align comments with method definitions.
+Layout/CommentIndentation:
+  Enabled: true
+
+# No extra empty lines.
+Layout/EmptyLines:
+  Enabled: true
+
+# Enforces empty line after guard clause.
+Layout/EmptyLineAfterGuardClause:
+  Enabled: true
+
+# In a regular class definition, no empty lines around the body.
+# Style/EmptyLinesAroundClassBody:
+#   Enabled: true
+
+# In a regular module definition, no empty lines around the body.
+# Style/EmptyLinesAroundModuleBody:
+#   Enabled: true
+
+# Use Ruby >= 1.9 syntax for hashes. Prefer { a: :b } over { :a => :b }.
+Style/HashSyntax:
+  Enabled: true
+  Exclude:
+    - 'Rakefile'
+    - '**/*.rake'
+    - '**/rake_tasks.rb'
+
+# Method definitions after `private` or `protected` isolated calls need one
+# extra level of indentation.
+Layout/IndentationConsistency:
+  Enabled: true
+  # EnforcedStyle: rails
+  EnforcedStyle: normal
+
+# Two spaces, no tabs (for indentation).
+Layout/IndentationWidth:
+  Enabled: true
+
+Layout/SpaceAfterColon:
+  Enabled: true
+
+Layout/SpaceAfterComma:
+  Enabled: true
+
+Layout/SpaceAroundEqualsInParameterDefault:
+  Enabled: true
+
+Layout/SpaceAroundKeyword:
+  Enabled: true
+
+Layout/SpaceAroundOperators:
+  Enabled: true
+
+Layout/SpaceBeforeFirstArg:
+  Enabled: true
+
+# Defining a method with parameters needs parentheses.
+Style/MethodDefParentheses:
+  Enabled: true
+
+# Use `foo {}` not `foo{}`.
+Layout/SpaceBeforeBlockBraces:
+  Enabled: true
+
+# Use `foo { bar }` not `foo {bar}`.
+Layout/SpaceInsideBlockBraces:
+  Enabled: true
+
+# Use `{a: 1}` not `{ a:1 }`.
+Layout/SpaceInsideHashLiteralBraces:
+  Enabled: true
+  EnforcedStyle: no_space
+
+Layout/SpaceInsideParens:
+  Enabled: true
+
+# Check quotes usage according to lint rule below.
+# Style/StringLiterals:
+#   Enabled: true
+#   EnforcedStyle: double_quotes
+
+# Detect hard tabs, no hard tabs.
+Layout/IndentationStyle:
+  Enabled: true
+  EnforcedStyle: spaces
+  SupportedStyles:
+    - spaces
+
+# Blank lines should not have any spaces.
+Layout/TrailingEmptyLines:
+  Enabled: true
+
+# No trailing whitespace.
+Layout/TrailingWhitespace:
+  Enabled: true
+
+# Use quotes for string literals when they are enough.
+Style/RedundantPercentQ:
+  Enabled: true
+
+# Align `end` with the matching keyword or starting expression except for
+# assignments, where it should be aligned with the LHS.
+Layout/EndAlignment:
+  Enabled: true
+  EnforcedStyleAlignWith: variable
+
+# Only non-default linter behavior is listed here.
+
+# Check for mistyped shorthand assignments.
+Lint/AmbiguousAssignment:
+  Enabled: true
+
+# Allow lack of parentheses in method calls with block arguments.
+Lint/AmbiguousBlockAssociation:
+  Enabled: false
+
+# Allow lack of parentheses in method calls with splat operator before the argument.
+Lint/AmbiguousOperator:
+  Enabled: false
+
+# Allow lack of parentheses for expressions with multiple operators with different precedence.
+Lint/AmbiguousOperatorPrecedence:
+  Enabled: false
+
+# Forbid the use of ambiguous range: - 1..10-1
+Lint/AmbiguousRange:
+  Enabled: true
+
+# Allow ambiguous regexp literals, e.g. - address.scan /re/
+Lint/AmbiguousRegexpLiteral:
+  Enabled: false
+
+# Allow assignment in condition, we use this a lot.
+Lint/AssignmentInCondition:
+  Enabled: false
+
+# Allow usage of boolean name symbols - :true and :false. In our case it is used in APIs.
+Lint/BooleanSymbol:
+  Enabled: false
+
+# Allow. We use these in tests and patching
+Lint/ConstantDefinitionInBlock:
+  Enabled: false
+
+# Catch accidents like "rescue => StandardError"
+Lint/ConstantOverwrittenInRescue:
+  Enabled: true
+
+# Check for conditions with identical branches
+Lint/DuplicateBranch:
+  Enabled: true
+  # Can ignore branches that return constant values like in a switch with else
+  # IgnoreConstantBranches: true
+  # IgnoreLiteralBranches: true
+
+Lint/DuplicateMagicComment:
+  Enabled: true
+
+# Similar to DuplicateCaseCondition. Requires Ruby 2.7
+Lint/DuplicateMatchPattern:
+  Enabled: false
+
+# Check for duplicates in regexp character classes: /[abbc]/
+Lint/DuplicateRegexpCharacterClassElement:
+  Enabled: true
+
+# Empty blocks are normally an oversight. A comment should be provided if they are needed.
+# A block with a comment inside is not considered empty.
+Lint/EmptyBlock:
+  Enabled: true
+  AllowComments: true
+
+# Checks for classes and metaclasses without a body. Comments count as body.
+Lint/EmptyClass:
+  Enabled: true
+  AllowComments: true
+
+# Requires Ruby 2.7. Checks for the presence of in pattern branches without a body.
+Lint/EmptyInPattern:
+  Enabled: false
+
+# Checks for the ordering of a method call where the receiver of the call is a HEREDOC.
+Lint/HeredocMethodCallPosition:
+  Enabled: true
+
+# Applicable in Ruby 3
+Lint/IncompatibleIoSelectWithFiberScheduler:
+  Enabled: false
+
+# Applicable in Ruby 3 where it is deprecated
+Lint/LambdaWithoutLiteralBlock:
+  Enabled: false
+
+Lint/NoReturnInBeginEndBlocks:
+  Enabled: true
+
+Lint/NonAtomicFileOperation:
+  Enabled: true
+
+Lint/NumberedParameterAssignment:
+  Enabled: true
+
+Lint/OrAssignmentToConstant:
+  Enabled: true
+
+# Relevant in Ruby 3
+Lint/RedundantDirGlobSort:
+  Enabled: false
+
+# Requires Ruby 3.1
+Lint/RefinementImportMethods:
+  Enabled: false
+
+Lint/RequireRelativeSelfPath:
+  Enabled: true
+
+Lint/SymbolConversion:
+  Enabled: true
+
+Lint/TripleQuotes:
+  Enabled: true
+
+Lint/UnexpectedBlockArity:
+  Enabled: true
+
+Lint/UselessRescue:
+  Enabled: true
+
+Lint/NoToUnsafeH:
+  Enabled: true
+
+#################### Metrics ###############################
+
+Metrics/BlockLength:
+  Enabled: true
+  Max: 30
+  Exclude:
+    - 'test/**/*.rb'
+
+Metrics/BlockNesting:
+  Enabled: true
+  Max: 3
+
+Metrics/ClassLength:
+  Enabled: true
+  Max: 300
+  Exclude:
+    - 'test/**/*.rb'
+
+# Avoid complex methods.
+Metrics/CyclomaticComplexity:
+  Enabled: true
+  Max: 10
+
+Layout/LineLength:
+  Enabled: true
+  Max: 130
+
+Metrics/MethodLength:
+  Enabled: true
+  Max: 30
+  Exclude:
+    - 'test/**/*.rb'
+
+Metrics/ModuleLength:
+  Enabled: true
+  Max: 300
+  Exclude:
+    - 'test/**/*.rb'
+
+Metrics/ParameterLists:
+  Enabled: true
+  Max: 5
