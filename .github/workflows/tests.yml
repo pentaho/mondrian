@@ -87,12 +87,16 @@ jobs:
         with:
           ruby-version: 'jruby-${{ env.JRUBY_VERSION }}'
           bundler-cache: true
-      - name: Setup databases and run tests
+      - name: Setup databases
         run: |
           for driver in mysql postgresql oracle sqlserver clickhouse; do
             echo "==> Setting up $driver"
             MONDRIAN_DRIVER=$driver bundle exec rake db:create_foodmart
             MONDRIAN_DRIVER=$driver bundle exec rake db:load_foodmart
+          done
+      - name: Run tests
+        run: |
+          for driver in mysql postgresql oracle sqlserver clickhouse; do
             echo "==> Testing $driver"
             MONDRIAN_DRIVER=$driver bundle exec rake test
           done
@@ -149,5 +153,5 @@ jobs:
         run: |
           bundle exec rake db:create_foodmart
           bundle exec rake db:load_foodmart
-      - name: Run Tests
+      - name: Run tests
         run: bundle exec rake test:sqlserver
