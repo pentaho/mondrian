@@ -95,11 +95,13 @@ module DatabaseAdmin
         "IF DB_ID('#{DATABASE_NAME}') IS NULL CREATE DATABASE #{DATABASE_NAME}"
       ]
     when 'clickhouse'
-      [
-        "CREATE DATABASE IF NOT EXISTS #{DATABASE_NAME}",
-        "CREATE USER IF NOT EXISTS #{DATABASE_USER} IDENTIFIED BY '#{DATABASE_PASSWORD}'",
-        "GRANT ALL ON #{DATABASE_NAME}.* TO #{DATABASE_USER}"
-      ]
+      sql = ["CREATE DATABASE IF NOT EXISTS #{DATABASE_NAME}"]
+      # The 'default' user is built-in and cannot be modified via SQL
+      unless DATABASE_USER == 'default'
+        sql << "CREATE USER IF NOT EXISTS #{DATABASE_USER} IDENTIFIED BY '#{DATABASE_PASSWORD}'"
+        sql << "GRANT ALL ON #{DATABASE_NAME}.* TO #{DATABASE_USER}"
+      end
+      sql
     end
   end
 
@@ -136,10 +138,9 @@ module DatabaseAdmin
         "IF EXISTS (SELECT * FROM sys.server_principals WHERE name = '#{DATABASE_USER}') DROP LOGIN #{DATABASE_USER}"
       ]
     when 'clickhouse'
-      [
-        "DROP DATABASE IF EXISTS #{DATABASE_NAME}",
-        "DROP USER IF EXISTS #{DATABASE_USER}"
-      ]
+      sql = ["DROP DATABASE IF EXISTS #{DATABASE_NAME}"]
+      sql << "DROP USER IF EXISTS #{DATABASE_USER}" unless DATABASE_USER == 'default'
+      sql
     end
   end
 

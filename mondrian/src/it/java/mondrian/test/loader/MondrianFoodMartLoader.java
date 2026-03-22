@@ -394,6 +394,14 @@ public class MondrianFoodMartLoader {
             indexes = false;
         }
 
+        // PATCH: ClickHouse does not support CREATE UNIQUE INDEX
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.CLICKHOUSE
+            && indexes)
+        {
+            System.out.println("ClickHouse engine detected: ignoring indexes");
+            indexes = false;
+        }
+
         if (outputBatchSize == -1) {
             // No explicit batch size was set by user, so assign a good
             // default now
@@ -1205,10 +1213,11 @@ public class MondrianFoodMartLoader {
             switch (dialect.getDatabaseProduct()) {
             case LUCIDDB:
             case NEOVIEW:
+            case CLICKHOUSE:
                 // LucidDB doesn't perform well with single-row inserts,
                 // and its JDBC driver doesn't support batch writes,
                 // so collapse the batch into one big multi-row insert.
-                // Similarly Neoview.
+                // Similarly Neoview and ClickHouse.
                 String VALUES_TOKEN = "VALUES";
                 StringBuilder sb = new StringBuilder(sqls.get(0));
                 for (int i = 1; i < sqls.size(); i++) {
@@ -2734,7 +2743,16 @@ public class MondrianFoodMartLoader {
                     // We're going to load the data without [re]creating
                     // the table, so let's remove the data.
                     try {
-                        executeDDL("DELETE FROM " + quoteId(schema, name));
+                        // PATCH: ClickHouse does not support DELETE FROM
+                        if (dialect.getDatabaseProduct()
+                            == Dialect.DatabaseProduct.CLICKHOUSE)
+                        {
+                            executeDDL(
+                                "TRUNCATE TABLE " + quoteId(schema, name));
+                        } else {
+                            executeDDL(
+                                "DELETE FROM " + quoteId(schema, name));
+                        }
                     } catch (SQLException e) {
                         throw MondrianResource.instance().CreateTableFailed.ex(
                             name, e);
@@ -2766,10 +2784,23 @@ public class MondrianFoodMartLoader {
                     buf.append(",");
                 }
                 buf.append(nl);
-                buf.append("    ").append(quoteId(column.name)).append(" ")
-                    .append(column.typeName);
-                if (!column.constraint.equals("")) {
-                    buf.append(" ").append(column.constraint);
+                buf.append("    ").append(quoteId(column.name)).append(" ");
+                if (dialect.getDatabaseProduct()
+                    == Dialect.DatabaseProduct.CLICKHOUSE)
+                {
+                    // PATCH: ClickHouse columns are non-nullable by default;
+                    // nullable columns need Nullable() wrapper
+                    if (column.constraint.equals("")) {
+                        buf.append("Nullable(")
+                            .append(column.typeName).append(")");
+                    } else {
+                        buf.append(column.typeName);
+                    }
+                } else {
+                    buf.append(column.typeName);
+                    if (!column.constraint.equals("")) {
+                        buf.append(" ").append(column.constraint);
+                    }
                 }
             }
 
@@ -2800,6 +2831,11 @@ public class MondrianFoodMartLoader {
             case NEOVIEW:
                 // no unique keys defined
                 buf.append(" NO PARTITION");
+                break;
+            case CLICKHOUSE:
+                // PATCH: ClickHouse requires an ENGINE clause
+                buf.append(" ENGINE = MergeTree() ORDER BY tuple()");
+                break;
             }
 
             final String ddl = buf.toString();
@@ -2992,14 +3028,18 @@ public class MondrianFoodMartLoader {
         /*
          * Output for a String, managing embedded quotes
          */
-        } else if (columnType.startsWith("VARCHAR")) {
+        } else if (columnType.startsWith("VARCHAR")
+            || columnType.equals("String"))
+        {
             return embedQuotes((String) obj);
 
         /*
          * Output for a TIMESTAMP
          */
         } else {
-            if (columnType.startsWith("TIMESTAMP")) {
+            if (columnType.startsWith("TIMESTAMP")
+                || columnType.equals("DateTime"))
+            {
                 Timestamp ts = (Timestamp) obj;
 
                 // REVIEW jvs 26-Nov-2006:  Is it safe to replace
@@ -3010,6 +3050,11 @@ public class MondrianFoodMartLoader {
                 case LUCIDDB:
                 case NEOVIEW:
                     return "TIMESTAMP '" + ts + "'";
+                case CLICKHOUSE:
+                    // PATCH: ClickHouse DateTime does not support
+                    // fractional seconds
+                    return "'"
+                        + ts.toString().replaceAll("\\.\\d+", "") + "'";
                 default:
                     return "'" + ts + "'";
                 }
@@ -3115,12 +3160,19 @@ public class MondrianFoodMartLoader {
          * Output for a TIMESTAMP
          */
         final Dialect.DatabaseProduct product = dialect.getDatabaseProduct();
-        if (columnType.startsWith("TIMESTAMP")) {
+        if (columnType.startsWith("TIMESTAMP")
+            || columnType.equals("DateTime"))
+        {
             switch (product) {
             case ORACLE:
             case LUCIDDB:
             case NEOVIEW:
                 return "TIMESTAMP " + columnValue;
+            case CLICKHOUSE:
+                // PATCH: ClickHouse DateTime does not support
+                // fractional seconds; strip e.g. ".0" from
+                // '1946-08-15 00:00:00.0'
+                return columnValue.replaceAll("\\.\\d+", "");
             }
 
         /*
@@ -3156,6 +3208,7 @@ public class MondrianFoodMartLoader {
             case VECTORWISE:
             case VERTICA:
             case INFORMIX:
+            case CLICKHOUSE:
                 if (trimmedValue.equals("true")) {
                     return "1";
                 } else if (trimmedValue.equals("false")) {
@@ -3307,12 +3360,21 @@ public class MondrianFoodMartLoader {
             if (this == Integer
                 || this == Currency
                 || this == Smallint
-                || this == Varchar30
-                || this == Varchar60
-                || this == Varchar255
                 || this == Real)
             {
                 return name;
+            }
+            if (this == Varchar30
+                || this == Varchar60
+                || this == Varchar255)
+            {
+                switch (dialect.getDatabaseProduct()) {
+                case CLICKHOUSE:
+                    // PATCH: ClickHouse does not support VARCHAR
+                    return "String";
+                default:
+                    return name;
+                }
             }
             if (this == Boolean) {
                 switch (dialect.getDatabaseProduct()) {
@@ -3321,6 +3383,7 @@ public class MondrianFoodMartLoader {
                 case LUCIDDB:
                 case NETEZZA:
                 case HSQLDB:
+                case CLICKHOUSE:
                     return name;
                 case MARIADB:
                 case MYSQL:
@@ -3360,6 +3423,9 @@ public class MondrianFoodMartLoader {
                 case INFOBRIGHT:
                 case SYBASE:
                     return "DATETIME";
+                case CLICKHOUSE:
+                    // PATCH: ClickHouse uses DateTime instead of TIMESTAMP
+                    return "DateTime";
                 case INGRES:
                     return "INGRESDATE";
                 case INFORMIX:
