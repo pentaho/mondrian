@@ -76,12 +76,12 @@ When modifying existing Mondrian Java classes or adding new functionality then u
 #### Running Tests
 
 - Run all tests (default MySQL): `rake test`
-- Run with a specific database: `rake test:mysql`, `rake test:postgresql`, `rake test:oracle`, `rake test:sqlserver`
+- Run with a specific database: `rake test:mysql`, `rake test:postgresql`, `rake test:oracle`, `rake test:sqlserver`, `rake test:clickhouse`
 - Run a single test file: `ruby -Itest test/connection_test.rb`
 
 #### Environment Variables
 
-- `MONDRIAN_DRIVER` - Database driver (`mysql`, `postgresql`, `oracle`, `sqlserver`). Default: `mysql`
+- `MONDRIAN_DRIVER` - Database driver (`mysql`, `postgresql`, `oracle`, `sqlserver`, `clickhouse`). Default: `mysql`
 - `DATABASE_HOST` - Database hostname. Default: `localhost`
 - `DATABASE_PORT` - Database port. Default: driver-specific
 - `DATABASE_USER` - Database username. Default: `foodmart`

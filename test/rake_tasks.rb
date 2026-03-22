@@ -9,7 +9,7 @@ Rake::TestTask.new(:test) do |t|
 end
 
 namespace :test do
-  %w(mysql postgresql oracle sqlserver).each do |driver|
+  %w(mysql postgresql oracle sqlserver clickhouse).each do |driver|
     desc "Run tests with #{driver} driver"
     task driver do
       ENV['MONDRIAN_DRIVER'] = driver
