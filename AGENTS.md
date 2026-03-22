@@ -87,10 +87,10 @@ When modifying existing Mondrian Java classes or adding new functionality then u
 - `DATABASE_USER` - Database username. Default: `foodmart`
 - `DATABASE_PASSWORD` - Database password. Default: `foodmart`
 - `DATABASE_NAME` - Database name. Default: `foodmart`
-- Override any DATABASE_* environment variable with driver specific version using `{MONDRIAN_DRIVER}_DATABASE_*` variable.
+- Override any `DATABASE_*` environment variable with a driver-specific version using `${MONDRIAN_DRIVER}_DATABASE_*` (e.g. `MYSQL_DATABASE_HOST`, `POSTGRESQL_DATABASE_HOST`).
 - `MONDRIAN_OLAP_PATH` - Path to local mondrian-olap gem (e.g. `../mondrian-olap`). If not set, uses git master branch.
-- `{MONDRIAN_DRIVER}_ADMIN_USER` - Admin username for database creation/drop. Default: driver-specific (`root`, `postgres`, `system`, `sa`, `default`).
-- `{MONDRIAN_DRIVER}_ADMIN_PASSWORD` - Admin password for database creation/drop. Default: driver-specific.
+- `${MONDRIAN_DRIVER}_ADMIN_USER` - Admin username for database creation/drop (e.g. `MYSQL_ADMIN_USER`, `POSTGRESQL_ADMIN_USER`). Default: driver-specific (`root`, `postgres`, `system`, `sa`, `default`).
+- `${MONDRIAN_DRIVER}_ADMIN_PASSWORD` - Admin password for database creation/drop (e.g. `MYSQL_ADMIN_PASSWORD`, `POSTGRESQL_ADMIN_PASSWORD`). Default: driver-specific.
 
 ## Technology Stack
 
