@@ -107,6 +107,7 @@ jobs:
       JRUBY_VERSION: 9.4.14.0
       JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
       MONDRIAN_DRIVER: sqlserver
+      SQLSERVER_ADMIN_PASSWORD: Password12!
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
