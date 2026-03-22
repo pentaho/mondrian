@@ -6,9 +6,6 @@ AllCops:
 Style/AndOr:
   Enabled: true
 
-Performance/CollectionLiteralInLoop:
-  Enabled: true
-
 # Align `when` with `case`.
 Layout/CaseIndentation:
   Enabled: true
@@ -242,9 +239,6 @@ Lint/UnexpectedBlockArity:
   Enabled: true
 
 Lint/UselessRescue:
-  Enabled: true
-
-Lint/NoToUnsafeH:
   Enabled: true
 
 #################### Metrics ###############################

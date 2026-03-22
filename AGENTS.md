@@ -70,25 +70,27 @@ When modifying existing Mondrian Java classes or adding new functionality then u
 
 1. Build the Mondrian JAR: `mvn package`
 2. Install gems: `bundle install`
-3. Create the FoodMart database and user (default user/password: `foodmart`/`foodmart`, database: `foodmart`)
+3. Create the FoodMart database and user: `rake db:create_foodmart` (default user/password: `foodmart`/`foodmart`, database: `foodmart`)
 4. Load FoodMart data: `rake db:load_foodmart`
 
 #### Running Tests
 
 - Run all tests (default MySQL): `rake test`
-- Run with a specific database: `rake test:mysql`, `rake test:postgresql`, `rake test:oracle`, `rake test:sqlserver`
+- Run with a specific database: `rake test:mysql`, `rake test:postgresql`, `rake test:oracle`, `rake test:sqlserver`, `rake test:clickhouse`
 - Run a single test file: `ruby -Itest test/connection_test.rb`
 
 #### Environment Variables
 
-- `MONDRIAN_DRIVER` - Database driver (`mysql`, `postgresql`, `oracle`, `sqlserver`). Default: `mysql`
+- `MONDRIAN_DRIVER` - Database driver (`mysql`, `postgresql`, `oracle`, `sqlserver`, `clickhouse`). Default: `mysql`
 - `DATABASE_HOST` - Database hostname. Default: `localhost`
 - `DATABASE_PORT` - Database port. Default: driver-specific
 - `DATABASE_USER` - Database username. Default: `foodmart`
 - `DATABASE_PASSWORD` - Database password. Default: `foodmart`
 - `DATABASE_NAME` - Database name. Default: `foodmart`
-- Override any DATABASE_* environment variable with driver specific version using "#{MONDRIAN_DRIVER}_DATABASE_*" variable.
+- Override any `DATABASE_*` environment variable with a driver-specific version using `${MONDRIAN_DRIVER}_DATABASE_*` (e.g. `MYSQL_DATABASE_HOST`, `POSTGRESQL_DATABASE_HOST`).
 - `MONDRIAN_OLAP_PATH` - Path to local mondrian-olap gem (e.g. `../mondrian-olap`). If not set, uses git master branch.
+- `${MONDRIAN_DRIVER}_ADMIN_USER` - Admin username for database creation/drop (e.g. `MYSQL_ADMIN_USER`, `POSTGRESQL_ADMIN_USER`). Default: driver-specific (`root`, `postgres`, `system`, `sa`, `default`).
+- `${MONDRIAN_DRIVER}_ADMIN_PASSWORD` - Admin password for database creation/drop (e.g. `MYSQL_ADMIN_PASSWORD`, `POSTGRESQL_ADMIN_PASSWORD`). Default: driver-specific.
 
 ## Technology Stack
 

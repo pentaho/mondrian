@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>mondrian-olap</groupId>
   <artifactId>mondrian-parent-pom</artifactId>
-  <version>${mondrian.version}</version>
+  <version>${revision}</version>
   <packaging>pom</packaging>
   <name>Mondrian Parent POM</name>
   <description>Container pom for Mondrian</description>
@@ -22,7 +22,7 @@
     <url>scm:git:git@github.com:rsim/mondrian-olap-java.git</url>
   </scm>
   <properties>
-    <mondrian.version>1.4.0-SNAPSHOT</mondrian.version>
+    <revision>1.4.0-SNAPSHOT</revision>
     <license.licenseName>epl_only_v1</license.licenseName>
 
     <olap4j.version>1.2.0</olap4j.version>
@@ -53,12 +53,16 @@
     <log4j.version>2.17.1</log4j.version>
     <caffeine.version>2.9.3</caffeine.version>
 
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>8</maven.compiler.release>
     <source.jdk.version>1.8</source.jdk.version>
     <target.jdk.version>1.8</target.jdk.version>
-    <release.jdk.version>1.8</release.jdk.version>
+    <release.jdk.version>8</release.jdk.version>
     <project.build.debug>true</project.build.debug>
+    <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
+    <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
+    <maven-failsafe-plugin.version>3.5.5</maven-failsafe-plugin.version>
+    <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
   </properties>
   <repositories>
     <repository>

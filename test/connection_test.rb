@@ -5,7 +5,7 @@ require_relative "test_helper"
 describe "Connection" do
   describe "create" do
     before do
-      @olap = Mondrian::OLAP::Connection.new(CONNECTION_PARAMS)
+      new_olap_connection
     end
 
     it "should not be connected before connection" do
@@ -19,7 +19,7 @@ describe "Connection" do
 
   describe "properties" do
     before(:all) do
-      @olap = Mondrian::OLAP::Connection.create(CONNECTION_PARAMS)
+      create_olap_connection
     end
 
     it "should be connected" do
@@ -44,7 +44,7 @@ describe "Connection" do
 
   describe "close" do
     before(:all) do
-      @olap = Mondrian::OLAP::Connection.create(CONNECTION_PARAMS)
+      create_olap_connection
     end
 
     it "should not be connected after close" do

@@ -70,7 +70,7 @@
 
     <java classpath="${classpath}"
         classname="mondrian.util.PropertyUtil"
-        fork="no">
+        fork="yes">
         <arg value="${java.dir}/mondrian/olap"/>
         <arg value="${generated.java.dir}/mondrian/olap"/>
       </java>
@@ -83,7 +83,9 @@
         input="${java.dir}/mondrian/olap/Parser.cup"
 
         expect="63"
-        interface="true"/>
+        interface="true"
+        warn="false"
+        summary="false"/>
     <move file="${java.dir}/mondrian/olap/Parser.java" todir="${generated.java.dir}/mondrian/olap"/>
     <move file="${java.dir}/mondrian/olap/ParserSym.java" todir="${generated.java.dir}/mondrian/olap"/>
     <!-- New parser. -->

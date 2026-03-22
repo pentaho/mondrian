@@ -9,7 +9,7 @@ Rake::TestTask.new(:test) do |t|
 end
 
 namespace :test do
-  %w(mysql postgresql oracle sqlserver).each do |driver|
+  %w(mysql postgresql oracle sqlserver clickhouse).each do |driver|
     desc "Run tests with #{driver} driver"
     task driver do
       ENV['MONDRIAN_DRIVER'] = driver
@@ -19,10 +19,6 @@ namespace :test do
   end
 end
 
-def mvn_cmd
-  @mvn_cmd ||= system("which mise > /dev/null 2>&1") ? "mise exec -- mvn" : "mvn"
-end
-
 desc "Build Mondrian JAR with Maven"
 task :package do
   system("mvn package")
@@ -30,10 +26,31 @@ end
 
 desc "Compile Mondrian Java test classes"
 task :compile_java_tests do
-  system("mvn -f mondrian/pom.xml test-compile -q 2>/dev/null") || raise("Maven test-compile failed")
+  null_device = Gem.win_platform? ? "NUL" : "/dev/null"
+  system("mvn -f mondrian/pom.xml test-compile -q 2>#{null_device}") || raise("Maven test-compile failed")
 end
 
 namespace :db do
+  desc "Create FoodMart database and user"
+  task :create_foodmart do
+    require_relative "support/database_setup"
+    require_relative "support/database_admin"
+
+    puts "==> Creating FoodMart database and user on #{MONDRIAN_DRIVER}..."
+    DatabaseAdmin.create_foodmart!
+    puts "==> Done."
+  end
+
+  desc "Drop FoodMart database and user"
+  task :drop_foodmart do
+    require_relative "support/database_setup"
+    require_relative "support/database_admin"
+
+    puts "==> Dropping FoodMart database and user on #{MONDRIAN_DRIVER}..."
+    DatabaseAdmin.drop_foodmart!
+    puts "==> Done."
+  end
+
   desc "Load FoodMart data into database using MondrianFoodMartLoader"
   task :load_foodmart => :compile_java_tests do
     require_relative "support/database_setup"
@@ -43,8 +60,10 @@ namespace :db do
     $CLASSPATH << File.join(PROJECT_ROOT, "mondrian/src/it/resources")
 
     # Configure Log4j to use the test log4j2.xml so output appears on the console
-    log4j_config = File.join(PROJECT_ROOT, "mondrian/src/it/resources/log4j2.xml")
-    Java::JavaLang::System.setProperty("log4j2.configurationFile", log4j_config)
+    unless ENV['CI']
+      log4j_config = File.join(PROJECT_ROOT, "mondrian/src/it/resources/log4j2.xml")
+      Java::JavaLang::System.setProperty("log4j2.configurationFile", log4j_config)
+    end
 
     args = [
       "-verbose", "-tables", "-data", "-indexes",

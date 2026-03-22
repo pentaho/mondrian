@@ -1,0 +1,159 @@
+name: Tests
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+env:
+  JAVA_OPTS: -Xmx2048m
+  JRUBY_OPTS: -W0
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        JAVA_VERSION: [8, 11, 17, 21, 25]
+        MONDRIAN_DRIVER: [mysql, postgresql, oracle, sqlserver, clickhouse]
+    env:
+      JRUBY_VERSION: 9.4.14.0
+      JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
+      MONDRIAN_DRIVER: ${{ matrix.MONDRIAN_DRIVER }}
+      ORACLE_HOME: /u01/app/oracle/product/11.2.0/xe
+      NLS_LANG: AMERICAN_AMERICA.AL32UTF8
+      ORACLE_SID: XE
+      ORACLE_DATABASE_NAME: XE
+      ORACLE_ADMIN_PASSWORD: github
+      MYSQL_ADMIN_PASSWORD: root
+      SQLSERVER_ADMIN_PASSWORD: Password12!
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies (Ubuntu)
+        # following sudo rm... line is workaround for https://github.com/actions/runner-images/issues/9733
+        run: |
+          sudo rm /etc/apt/sources.list.d/microsoft-prod.list
+          sudo apt-get update
+          sudo apt-get install -y haveged
+      - name: Output CPU information
+        run: |
+          lscpu
+          free
+      - name: Set JAVA home
+        run: echo "JAVA_HOME=$JAVA_HOME_${{ matrix.JAVA_VERSION }}_X64" >> $GITHUB_ENV
+      - name: Output JAVA version
+        run: $JAVA_HOME/bin/java -version
+      - name: Setup MySQL8
+        if: matrix.MONDRIAN_DRIVER == 'mysql'
+        uses: mirromutth/mysql-action@de1fba8b3f90ce8db80f663a7043be3cf3231248 #v1.1
+        with:
+          character set server: 'utf8'
+          collation server: 'utf8_general_ci'
+          mysql version: '8.0.28'
+          mysql root password: ${{ env.MYSQL_ADMIN_PASSWORD }}
+      - name: Start PostgreSQL
+        if: matrix.MONDRIAN_DRIVER == 'postgresql'
+        run: |
+          sudo cp -f .github/workflows/postgresql/pg_hba.conf /etc/postgresql/16/main/pg_hba.conf
+          sudo systemctl start postgresql.service
+          pg_isready
+      - name: Install Oracle
+        if: matrix.MONDRIAN_DRIVER == 'oracle'
+        run: |
+          .github/workflows/oracle/download.sh
+          .github/workflows/oracle/install.sh
+      - name: Copy Oracle JDBC driver
+        if: matrix.MONDRIAN_DRIVER == 'oracle'
+        run: cp $ORACLE_HOME/jdbc/lib/ojdbc6.jar test/support/jars/
+      - name: Install a SQL Server
+        if: matrix.MONDRIAN_DRIVER == 'sqlserver'
+        uses: potatoqualitee/mssqlsuite@410e5bb088db9593643dc560d30d54ffe0e78ead #v1.8
+        with:
+          install: sqlengine, sqlclient
+          sa-password: ${{ env.SQLSERVER_ADMIN_PASSWORD }}
+      - name: Download SQL Server JDBC driver
+        if: matrix.MONDRIAN_DRIVER == 'sqlserver'
+        run: .github/workflows/sqlserver/download.sh
+      - name: Download ClickHouse JDBC driver
+        if: matrix.MONDRIAN_DRIVER == 'clickhouse'
+        run: .github/workflows/clickhouse/download.sh
+      - name: Start ClickHouse
+        if: matrix.MONDRIAN_DRIVER == 'clickhouse'
+        run: .github/workflows/clickhouse/docker.sh
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Build Mondrian JAR
+        run: mvn package -q
+      - name: Setup Ruby and install gems
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 'jruby-${{ env.JRUBY_VERSION }}'
+          bundler-cache: true
+      - name: Setup database
+        run: |
+          bundle exec rake db:create_foodmart
+          bundle exec rake db:load_foodmart
+      - name: Run tests
+        run: bundle exec rake test
+
+  windows-test:
+    runs-on: windows-2025
+    strategy:
+      fail-fast: false
+      matrix:
+        JAVA_VERSION: [8, 11, 17, 21, 25]
+    env:
+      JRUBY_VERSION: 9.4.14.0
+      JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
+      MONDRIAN_DRIVER: sqlserver
+      SQLSERVER_ADMIN_PASSWORD: Password12!
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Output System information
+        run: systeminfo
+      - name: Set JAVA home
+        run: |
+          $javaEnvVarName = "JAVA_HOME_${env:JAVA_VERSION}_X64"
+          $env:JAVA_HOME = (Get-Item -Path Env:$javaEnvVarName).Value
+          $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+          echo "JAVA_HOME=$env:JAVA_HOME" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "PATH=$env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Output JAVA version
+        run: java -version
+      - name: Setup SQL Server
+        uses: potatoqualitee/mssqlsuite@410e5bb088db9593643dc560d30d54ffe0e78ead #v1.8
+        with:
+          install: sqlengine
+          sa-password: ${{ env.SQLSERVER_ADMIN_PASSWORD }}
+      - name: Download SQL Server JDBC driver
+        run: |
+          Invoke-WebRequest -Uri "https://download.microsoft.com/download/4/D/C/4DCD85FA-0041-4D2E-8DD9-833C1873978C/sqljdbc_7.2.1.0_enu.exe" -OutFile "sqljdbc_7.2.1.0_enu.exe"
+          7z x sqljdbc_7.2.1.0_enu.exe -y > $null
+          Copy-Item -Path "sqljdbc_7.2\enu\mssql-jdbc-7.2.1.jre8.jar" -Destination "test\support\jars\"
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Build Mondrian JAR
+        run: mvn package -q
+      - name: Setup Ruby and install gems
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 'jruby-${{ env.JRUBY_VERSION }}'
+          bundler-cache: true
+      - name: Setup database
+        run: |
+          bundle exec rake db:create_foodmart
+          bundle exec rake db:load_foodmart
+      - name: Run tests
+        run: bundle exec rake test:sqlserver
