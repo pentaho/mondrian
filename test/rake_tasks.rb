@@ -26,7 +26,8 @@ end
 
 desc "Compile Mondrian Java test classes"
 task :compile_java_tests do
-  system("mvn -f mondrian/pom.xml test-compile -q 2>/dev/null") || raise("Maven test-compile failed")
+  null_device = Gem.win_platform? ? "NUL" : "/dev/null"
+  system("mvn -f mondrian/pom.xml test-compile -q 2>#{null_device}") || raise("Maven test-compile failed")
 end
 
 namespace :db do
