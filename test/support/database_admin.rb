@@ -76,6 +76,8 @@ module DatabaseAdmin
     when 'clickhouse'
       port = DATABASE_PORT || '8123'
       "jdbc:clickhouse://#{DATABASE_HOST}:#{port}/default"
+    else
+      raise ArgumentError, "Unsupported database driver: #{MONDRIAN_DRIVER}"
     end
   end
 
