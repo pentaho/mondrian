@@ -59,8 +59,10 @@ namespace :db do
     $CLASSPATH << File.join(PROJECT_ROOT, "mondrian/src/it/resources")
 
     # Configure Log4j to use the test log4j2.xml so output appears on the console
-    log4j_config = File.join(PROJECT_ROOT, "mondrian/src/it/resources/log4j2.xml")
-    Java::JavaLang::System.setProperty("log4j2.configurationFile", log4j_config)
+    unless ENV['CI']
+      log4j_config = File.join(PROJECT_ROOT, "mondrian/src/it/resources/log4j2.xml")
+      Java::JavaLang::System.setProperty("log4j2.configurationFile", log4j_config)
+    end
 
     args = [
       "-verbose", "-tables", "-data", "-indexes",
