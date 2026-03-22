@@ -84,7 +84,8 @@
 
         expect="63"
         interface="true"
-        warn="false"/>
+        warn="false"
+        summary="false"/>
     <move file="${java.dir}/mondrian/olap/Parser.java" todir="${generated.java.dir}/mondrian/olap"/>
     <move file="${java.dir}/mondrian/olap/ParserSym.java" todir="${generated.java.dir}/mondrian/olap"/>
     <!-- New parser. -->

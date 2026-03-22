@@ -5,10 +5,10 @@
   <parent>
     <groupId>mondrian-olap</groupId>
     <artifactId>mondrian-parent-pom</artifactId>
-    <version>${mondrian.version}</version>
+    <version>${revision}</version>
   </parent>
   <artifactId>mondrian-olap-java</artifactId>
-  <version>${mondrian.version}</version>
+  <version>${revision}</version>
   <name>Mondrian OLAP Engine</name>
   <description>Mondrian OLAP Engine</description>
   <url>https://github.com/rsim/mondrian-olap-java</url>
@@ -180,6 +180,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-clean-plugin</artifactId>
+        <version>${maven-clean-plugin.version}</version>
         <configuration>
           <filesets>
             <fileset>
@@ -226,6 +227,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
+        <version>${build-helper-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>add-source</id>
@@ -324,12 +326,14 @@
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
         <configuration>
           <skipTests>true</skipTests>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven-failsafe-plugin.version}</version>
         <executions>
           <execution>
             <id>integration-test</id>
