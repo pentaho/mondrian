@@ -158,7 +158,20 @@ module DatabaseAdmin
     # JDBC driver JARs into its own classloader which DriverManager cannot see.
     driver = java.lang.Class.forName(JDBC_DRIVER, true, JRuby.runtime.jruby_class_loader)
       .getDeclaredConstructor.newInstance
-    connection = driver.connect(jdbc_url, props)
+
+    # Retry on transient connection errors (e.g. Oracle network adapter failures on CI)
+    retries = 0
+    begin
+      connection = driver.connect(jdbc_url, props)
+    rescue Java::JavaSql::SQLException => e
+      if retries < 3 && e.message =~ /Network Adapter|IO Error|Connection refused/i
+        retries += 1
+        puts "  Connection failed (#{e.message.strip}), retry #{retries}/3 in 5s..."
+        sleep 5
+        retry
+      end
+      raise
+    end
     connection.auto_commit = true
 
     statements.each do |sql|
