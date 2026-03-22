@@ -30,6 +30,26 @@ task :compile_java_tests do
 end
 
 namespace :db do
+  desc "Create FoodMart database and user"
+  task :create_foodmart do
+    require_relative "support/database_setup"
+    require_relative "support/database_admin"
+
+    puts "==> Creating FoodMart database and user on #{MONDRIAN_DRIVER}..."
+    DatabaseAdmin.create_foodmart!
+    puts "==> Done."
+  end
+
+  desc "Drop FoodMart database and user"
+  task :drop_foodmart do
+    require_relative "support/database_setup"
+    require_relative "support/database_admin"
+
+    puts "==> Dropping FoodMart database and user on #{MONDRIAN_DRIVER}..."
+    DatabaseAdmin.drop_foodmart!
+    puts "==> Done."
+  end
+
   desc "Load FoodMart data into database using MondrianFoodMartLoader"
   task :load_foodmart => :compile_java_tests do
     require_relative "support/database_setup"

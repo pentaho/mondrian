@@ -70,7 +70,7 @@ When modifying existing Mondrian Java classes or adding new functionality then u
 
 1. Build the Mondrian JAR: `mvn package`
 2. Install gems: `bundle install`
-3. Create the FoodMart database and user (default user/password: `foodmart`/`foodmart`, database: `foodmart`)
+3. Create the FoodMart database and user: `rake db:create_foodmart` (default user/password: `foodmart`/`foodmart`, database: `foodmart`)
 4. Load FoodMart data: `rake db:load_foodmart`
 
 #### Running Tests
@@ -87,8 +87,10 @@ When modifying existing Mondrian Java classes or adding new functionality then u
 - `DATABASE_USER` - Database username. Default: `foodmart`
 - `DATABASE_PASSWORD` - Database password. Default: `foodmart`
 - `DATABASE_NAME` - Database name. Default: `foodmart`
-- Override any DATABASE_* environment variable with driver specific version using "#{MONDRIAN_DRIVER}_DATABASE_*" variable.
+- Override any DATABASE_* environment variable with driver specific version using `{MONDRIAN_DRIVER}_DATABASE_*` variable.
 - `MONDRIAN_OLAP_PATH` - Path to local mondrian-olap gem (e.g. `../mondrian-olap`). If not set, uses git master branch.
+- `{MONDRIAN_DRIVER}_ADMIN_USER` - Admin username for database creation/drop. Default: driver-specific (`root`, `postgres`, `system`, `sa`, `default`).
+- `{MONDRIAN_DRIVER}_ADMIN_PASSWORD` - Admin password for database creation/drop. Default: driver-specific.
 
 ## Technology Stack
 
