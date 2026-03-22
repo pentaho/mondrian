@@ -57,7 +57,7 @@
     <maven.compiler.release>8</maven.compiler.release>
     <source.jdk.version>1.8</source.jdk.version>
     <target.jdk.version>1.8</target.jdk.version>
-    <release.jdk.version>1.8</release.jdk.version>
+    <release.jdk.version>8</release.jdk.version>
     <project.build.debug>true</project.build.debug>
     <maven-clean-plugin.version>3.2.0</maven-clean-plugin.version>
     <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
