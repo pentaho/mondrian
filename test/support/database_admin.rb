@@ -3,14 +3,34 @@
 module DatabaseAdmin
   # Default admin credentials per driver
   ADMIN_DEFAULTS = {
-    'mysql'      => { user: 'root',     password: '' },
-    'postgresql' => { user: 'postgres', password: 'postgres' },
-    'oracle'     => { user: 'system',   password: 'manager' },
-    'sqlserver'  => { user: 'sa',       password: 'Password12!' },
-    'clickhouse' => { user: 'default',  password: '' }
+    'mysql'      => {user: 'root',     password: ''},
+    'postgresql' => {user: 'postgres', password: 'postgres'},
+    'oracle'     => {user: 'system',   password: 'manager'},
+    'sqlserver'  => {user: 'sa',       password: 'Password12!'},
+    'clickhouse' => {user: 'default',  password: ''}
   }.freeze
 
   module_function
+
+  # Escape and wrap a string for safe use as a SQL string literal.
+  # Doubles any embedded single quotes and surrounds with single quotes.
+  def quote(value)
+    "'#{value.to_s.gsub("'", "''")}'"
+  end
+
+  # Quote a SQL identifier (database name, user name, etc.) using
+  # database-specific quoting conventions.
+  def quote_name(name)
+    case MONDRIAN_DRIVER
+    when 'mysql'
+      "`#{name.to_s.gsub('`', '``')}`"
+    when 'sqlserver'
+      "[#{name.to_s.gsub(']', ']]')}]"
+    else
+      # PostgreSQL, Oracle, ClickHouse use double-quoted identifiers
+      "\"#{name.to_s.gsub('"', '""')}\""
+    end
+  end
 
   def create_foodmart!
     execute_sql(admin_jdbc_url, admin_user, admin_password, create_sql)
@@ -71,35 +91,35 @@ module DatabaseAdmin
     case MONDRIAN_DRIVER
     when 'mysql'
       [
-        "CREATE DATABASE IF NOT EXISTS `#{DATABASE_NAME}` DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci",
-        "CREATE USER IF NOT EXISTS '#{DATABASE_USER}'@'%' IDENTIFIED BY '#{DATABASE_PASSWORD}'",
-        "GRANT ALL PRIVILEGES ON `#{DATABASE_NAME}`.* TO '#{DATABASE_USER}'@'%'"
+        "CREATE DATABASE IF NOT EXISTS #{quote_name(DATABASE_NAME)} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci",
+        "CREATE USER IF NOT EXISTS #{quote(DATABASE_USER)}@'%' IDENTIFIED BY #{quote(DATABASE_PASSWORD)}",
+        "GRANT ALL PRIVILEGES ON #{quote_name(DATABASE_NAME)}.* TO #{quote(DATABASE_USER)}@'%'"
       ]
     when 'postgresql'
       [
-        "DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '#{DATABASE_USER}') " \
-          "THEN CREATE ROLE #{DATABASE_USER} PASSWORD '#{DATABASE_PASSWORD}' LOGIN CREATEDB; END IF; END $$",
-        "CREATE DATABASE #{DATABASE_NAME}",
-        "ALTER DATABASE #{DATABASE_NAME} OWNER TO #{DATABASE_USER}"
+        "DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = #{quote(DATABASE_USER)}) " \
+          "THEN CREATE ROLE #{quote_name(DATABASE_USER)} PASSWORD #{quote(DATABASE_PASSWORD)} LOGIN CREATEDB; END IF; END $$",
+        "CREATE DATABASE #{quote_name(DATABASE_NAME)}",
+        "ALTER DATABASE #{quote_name(DATABASE_NAME)} OWNER TO #{quote_name(DATABASE_USER)}"
       ]
     when 'oracle'
       [
-        "CREATE USER #{DATABASE_USER} IDENTIFIED BY #{DATABASE_PASSWORD} DEFAULT TABLESPACE users",
-        "GRANT CONNECT, RESOURCE TO #{DATABASE_USER}",
-        "ALTER USER #{DATABASE_USER} QUOTA UNLIMITED ON users"
+        "CREATE USER #{quote_name(DATABASE_USER)} IDENTIFIED BY #{DATABASE_PASSWORD} DEFAULT TABLESPACE users",
+        "GRANT CONNECT, RESOURCE TO #{quote_name(DATABASE_USER)}",
+        "ALTER USER #{quote_name(DATABASE_USER)} QUOTA UNLIMITED ON users"
       ]
     when 'sqlserver'
       [
-        "IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = '#{DATABASE_USER}') " \
-          "CREATE LOGIN #{DATABASE_USER} WITH PASSWORD = '#{DATABASE_PASSWORD}', CHECK_POLICY = OFF",
-        "IF DB_ID('#{DATABASE_NAME}') IS NULL CREATE DATABASE #{DATABASE_NAME}"
+        "IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = #{quote(DATABASE_USER)}) " \
+          "CREATE LOGIN #{quote_name(DATABASE_USER)} WITH PASSWORD = #{quote(DATABASE_PASSWORD)}, CHECK_POLICY = OFF",
+        "IF DB_ID(#{quote(DATABASE_NAME)}) IS NULL CREATE DATABASE #{quote_name(DATABASE_NAME)}"
       ]
     when 'clickhouse'
-      sql = ["CREATE DATABASE IF NOT EXISTS #{DATABASE_NAME}"]
+      sql = ["CREATE DATABASE IF NOT EXISTS #{quote_name(DATABASE_NAME)}"]
       # The 'default' user is built-in and cannot be modified via SQL
       unless DATABASE_USER == 'default'
-        sql << "CREATE USER IF NOT EXISTS #{DATABASE_USER} IDENTIFIED BY '#{DATABASE_PASSWORD}'"
-        sql << "GRANT ALL ON #{DATABASE_NAME}.* TO #{DATABASE_USER}"
+        sql << "CREATE USER IF NOT EXISTS #{quote_name(DATABASE_USER)} IDENTIFIED BY #{quote(DATABASE_PASSWORD)}"
+        sql << "GRANT ALL ON #{quote_name(DATABASE_NAME)}.* TO #{quote_name(DATABASE_USER)}"
       end
       sql
     end
@@ -110,9 +130,9 @@ module DatabaseAdmin
     return unless MONDRIAN_DRIVER == 'sqlserver'
 
     [
-      "IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = '#{DATABASE_USER}') " \
-        "CREATE USER #{DATABASE_USER} FOR LOGIN #{DATABASE_USER}",
-      "ALTER ROLE db_owner ADD MEMBER #{DATABASE_USER}"
+      "IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = #{quote(DATABASE_USER)}) " \
+        "CREATE USER #{quote_name(DATABASE_USER)} FOR LOGIN #{quote_name(DATABASE_USER)}",
+      "ALTER ROLE db_owner ADD MEMBER #{quote_name(DATABASE_USER)}"
     ]
   end
 
@@ -120,26 +140,27 @@ module DatabaseAdmin
     case MONDRIAN_DRIVER
     when 'mysql'
       [
-        "DROP DATABASE IF EXISTS `#{DATABASE_NAME}`",
-        "DROP USER IF EXISTS '#{DATABASE_USER}'@'%'"
+        "DROP DATABASE IF EXISTS #{quote_name(DATABASE_NAME)}",
+        "DROP USER IF EXISTS #{quote(DATABASE_USER)}@'%'"
       ]
     when 'postgresql'
       [
-        "DROP DATABASE IF EXISTS #{DATABASE_NAME}",
-        "DROP ROLE IF EXISTS #{DATABASE_USER}"
+        "DROP DATABASE IF EXISTS #{quote_name(DATABASE_NAME)}",
+        "DROP ROLE IF EXISTS #{quote_name(DATABASE_USER)}"
       ]
     when 'oracle'
       [
-        "DROP USER #{DATABASE_USER} CASCADE"
+        "DROP USER #{quote_name(DATABASE_USER)} CASCADE"
       ]
     when 'sqlserver'
       [
-        "IF DB_ID('#{DATABASE_NAME}') IS NOT NULL DROP DATABASE #{DATABASE_NAME}",
-        "IF EXISTS (SELECT * FROM sys.server_principals WHERE name = '#{DATABASE_USER}') DROP LOGIN #{DATABASE_USER}"
+        "IF DB_ID(#{quote(DATABASE_NAME)}) IS NOT NULL DROP DATABASE #{quote_name(DATABASE_NAME)}",
+        "IF EXISTS (SELECT * FROM sys.server_principals WHERE name = #{quote(DATABASE_USER)}) " \
+          "DROP LOGIN #{quote_name(DATABASE_USER)}"
       ]
     when 'clickhouse'
-      sql = ["DROP DATABASE IF EXISTS #{DATABASE_NAME}"]
-      sql << "DROP USER IF EXISTS #{DATABASE_USER}" unless DATABASE_USER == 'default'
+      sql = ["DROP DATABASE IF EXISTS #{quote_name(DATABASE_NAME)}"]
+      sql << "DROP USER IF EXISTS #{quote_name(DATABASE_USER)}" unless DATABASE_USER == 'default'
       sql
     end
   end
@@ -176,14 +197,17 @@ module DatabaseAdmin
 
     statements.each do |sql|
       puts "  SQL: #{sql}"
+      stmt = connection.create_statement
       begin
-        connection.create_statement.execute(sql)
+        stmt.execute(sql)
       rescue Java::JavaSql::SQLException => e
         if already_exists_or_not_found?(e)
           puts "  (skipped: #{e.message.strip})"
         else
           raise
         end
+      ensure
+        stmt&.close
       end
     end
   ensure
