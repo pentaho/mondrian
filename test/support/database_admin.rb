@@ -26,8 +26,11 @@ module DatabaseAdmin
       "`#{name.to_s.gsub('`', '``')}`"
     when 'sqlserver'
       "[#{name.to_s.gsub(']', ']]')}]"
+    when 'oracle'
+      # Oracle identifiers are uppercase by default
+      "\"#{name.to_s.upcase.gsub('"', '""')}\""
     else
-      # PostgreSQL, Oracle, ClickHouse use double-quoted identifiers
+      # PostgreSQL, ClickHouse use double-quoted identifiers
       "\"#{name.to_s.gsub('"', '""')}\""
     end
   end
@@ -106,7 +109,7 @@ module DatabaseAdmin
       ]
     when 'oracle'
       [
-        "CREATE USER #{quote_name(DATABASE_USER)} IDENTIFIED BY #{DATABASE_PASSWORD} DEFAULT TABLESPACE users",
+        "CREATE USER #{quote_name(DATABASE_USER)} IDENTIFIED BY #{DATABASE_PASSWORD.to_s.inspect} DEFAULT TABLESPACE users",
         "GRANT CONNECT, RESOURCE TO #{quote_name(DATABASE_USER)}",
         "ALTER USER #{quote_name(DATABASE_USER)} QUOTA UNLIMITED ON users"
       ]
