@@ -19,10 +19,6 @@ namespace :test do
   end
 end
 
-def mvn_cmd
-  @mvn_cmd ||= system("which mise > /dev/null 2>&1") ? "mise exec -- mvn" : "mvn"
-end
-
 desc "Build Mondrian JAR with Maven"
 task :package do
   system("mvn package")
