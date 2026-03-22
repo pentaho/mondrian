@@ -15,4 +15,12 @@ class Minitest::Spec
     actual_normalized = actual.gsub(/>\s*\n\s*/, '> ').gsub(/\s+/, ' ').strip
     assert_equal expected_normalized, actual_normalized, msg
   end
+
+  def new_olap_connection
+    @olap = Mondrian::OLAP::Connection.new(CONNECTION_PARAMS)
+  end
+
+  def create_olap_connection
+    @olap = Mondrian::OLAP::Connection.create(CONNECTION_PARAMS)
+  end
 end
