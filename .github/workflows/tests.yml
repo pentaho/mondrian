@@ -22,7 +22,6 @@ jobs:
       JRUBY_VERSION: 9.4.14.0
       JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
       MONDRIAN_DRIVER: ${{ matrix.MONDRIAN_DRIVER }}
-      ORACLE_FILE: oracle11g/xe/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
       ORACLE_HOME: /u01/app/oracle/product/11.2.0/xe
       NLS_LANG: AMERICAN_AMERICA.AL32UTF8
       ORACLE_SID: XE
