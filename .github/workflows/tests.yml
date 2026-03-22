@@ -17,9 +17,11 @@ jobs:
       fail-fast: false
       matrix:
         JAVA_VERSION: [8, 11, 17, 21, 25]
+        MONDRIAN_DRIVER: [mysql, postgresql, oracle, sqlserver, clickhouse]
     env:
       JRUBY_VERSION: 9.4.14.0
       JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
+      MONDRIAN_DRIVER: ${{ matrix.MONDRIAN_DRIVER }}
       ORACLE_FILE: oracle11g/xe/oracle-xe-11.2.0-1.0.x86_64.rpm.zip
       ORACLE_HOME: /u01/app/oracle/product/11.2.0/xe
       NLS_LANG: AMERICAN_AMERICA.AL32UTF8
@@ -46,6 +48,7 @@ jobs:
       - name: Output JAVA version
         run: $JAVA_HOME/bin/java -version
       - name: Setup MySQL8
+        if: matrix.MONDRIAN_DRIVER == 'mysql'
         uses: mirromutth/mysql-action@de1fba8b3f90ce8db80f663a7043be3cf3231248 #v1.1
         with:
           character set server: 'utf8'
@@ -53,26 +56,33 @@ jobs:
           mysql version: '8.0.28'
           mysql root password: ${{ env.MYSQL_ADMIN_PASSWORD }}
       - name: Start PostgreSQL
+        if: matrix.MONDRIAN_DRIVER == 'postgresql'
         run: |
           sudo cp -f .github/workflows/postgresql/pg_hba.conf /etc/postgresql/16/main/pg_hba.conf
           sudo systemctl start postgresql.service
           pg_isready
       - name: Install Oracle
+        if: matrix.MONDRIAN_DRIVER == 'oracle'
         run: |
           .github/workflows/oracle/download.sh
           .github/workflows/oracle/install.sh
       - name: Copy Oracle JDBC driver
+        if: matrix.MONDRIAN_DRIVER == 'oracle'
         run: cp $ORACLE_HOME/jdbc/lib/ojdbc6.jar test/support/jars/
       - name: Install a SQL Server
+        if: matrix.MONDRIAN_DRIVER == 'sqlserver'
         uses: potatoqualitee/mssqlsuite@410e5bb088db9593643dc560d30d54ffe0e78ead #v1.8
         with:
           install: sqlengine, sqlclient
           sa-password: ${{ env.SQLSERVER_ADMIN_PASSWORD }}
       - name: Download SQL Server JDBC driver
+        if: matrix.MONDRIAN_DRIVER == 'sqlserver'
         run: .github/workflows/sqlserver/download.sh
       - name: Download ClickHouse JDBC driver
+        if: matrix.MONDRIAN_DRIVER == 'clickhouse'
         run: .github/workflows/clickhouse/download.sh
       - name: Start ClickHouse
+        if: matrix.MONDRIAN_DRIVER == 'clickhouse'
         run: .github/workflows/clickhouse/docker.sh
       - name: Cache Maven repository
         uses: actions/cache@v4
@@ -87,19 +97,12 @@ jobs:
         with:
           ruby-version: 'jruby-${{ env.JRUBY_VERSION }}'
           bundler-cache: true
-      - name: Setup databases
+      - name: Setup database
         run: |
-          for driver in mysql postgresql oracle sqlserver clickhouse; do
-            echo "==> Setting up $driver"
-            MONDRIAN_DRIVER=$driver bundle exec rake db:create_foodmart
-            MONDRIAN_DRIVER=$driver bundle exec rake db:load_foodmart
-          done
+          bundle exec rake db:create_foodmart
+          bundle exec rake db:load_foodmart
       - name: Run tests
-        run: |
-          for driver in mysql postgresql oracle sqlserver clickhouse; do
-            echo "==> Testing $driver"
-            MONDRIAN_DRIVER=$driver bundle exec rake test
-          done
+        run: bundle exec rake test
 
   windows-test:
     runs-on: windows-2025
