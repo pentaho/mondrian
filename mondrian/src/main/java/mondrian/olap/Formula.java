@@ -574,19 +574,25 @@ public class Formula extends QueryPart {
          * This check is required to avoid infinite recursion
          */
         private boolean hasCyclicReference(Exp expr) {
-            List<MemberExpr> expList = new ArrayList<MemberExpr>();
-            return hasCyclicReference(expr, expList);
+            List<Member> memberList = new ArrayList<Member>();
+            return hasCyclicReference(expr, memberList);
         }
 
-        private boolean hasCyclicReference(Exp expr, List<MemberExpr> expList) {
+        // PATCH: Track Member objects instead of MemberExpr objects
+        // to detect cycles, because accept(validator) may create new
+        // MemberExpr instances wrapping the same Member, and MemberExpr
+        // uses identity equality.
+        private boolean hasCyclicReference(
+            Exp expr, List<Member> memberList)
+        {
             if (expr instanceof MemberExpr) {
                 MemberExpr memberExpr = (MemberExpr) expr;
-                if (expList.contains(expr)) {
+                Member member = memberExpr.getMember();
+                if (memberList.contains(member)) {
                     return true;
                 }
-                expList.add(memberExpr);
-                Member member = memberExpr.getMember();
                 if (member instanceof RolapCalculatedMember) {
+                    memberList.add(member);
                     RolapCalculatedMember calculatedMember =
                         (RolapCalculatedMember) member;
                     // PATCH: Catch exception while validating formula
@@ -594,7 +600,7 @@ public class Formula extends QueryPart {
                     try {
                         Exp exp1 =
                             calculatedMember.getExpression().accept(validator);
-                        return hasCyclicReference(exp1, expList);
+                        return hasCyclicReference(exp1, memberList);
                     } catch (MondrianException e) {
                         return false;
                     }
@@ -605,7 +611,7 @@ public class Formula extends QueryPart {
                 Exp[] exps = funCall.getArgs();
                 for (int i = 0; i < exps.length; i++) {
                     if (hasCyclicReference(
-                            exps[i], cloneForEachBranch(expList)))
+                            exps[i], cloneForEachBranch(memberList)))
                     {
                         return true;
                     }
@@ -614,9 +620,9 @@ public class Formula extends QueryPart {
             return false;
         }
 
-        private List<MemberExpr> cloneForEachBranch(List<MemberExpr> expList) {
-            ArrayList<MemberExpr> list = new ArrayList<MemberExpr>();
-            list.addAll(expList);
+        private List<Member> cloneForEachBranch(List<Member> memberList) {
+            ArrayList<Member> list = new ArrayList<Member>();
+            list.addAll(memberList);
             return list;
         }
 
