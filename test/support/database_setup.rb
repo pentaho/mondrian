@@ -5,14 +5,14 @@ require 'bundler/setup'
 # Autoload JDBC drivers
 Java::JavaLang::System.setProperty('jdbc.driver.autoload', 'true')
 
-MONDRIAN_DRIVER   = ENV['MONDRIAN_DRIVER']   || 'mysql'
+MONDRIAN_DRIVER = ENV['MONDRIAN_DRIVER'] || 'mysql'
 env_prefix = MONDRIAN_DRIVER.upcase
 
-DATABASE_HOST     = ENV["#{env_prefix}_DATABASE_HOST"]     || ENV['DATABASE_HOST']     || 'localhost'
+DATABASE_HOST     = ENV["#{env_prefix}_DATABASE_HOST"]     || ENV['DATABASE_HOST'] || 'localhost'
 DATABASE_PORT     = ENV["#{env_prefix}_DATABASE_PORT"]     || ENV['DATABASE_PORT']
-DATABASE_USER     = ENV["#{env_prefix}_DATABASE_USER"]     || ENV['DATABASE_USER']     || 'foodmart'
+DATABASE_USER     = ENV["#{env_prefix}_DATABASE_USER"]     || ENV['DATABASE_USER'] || 'foodmart'
 DATABASE_PASSWORD = ENV["#{env_prefix}_DATABASE_PASSWORD"] || ENV['DATABASE_PASSWORD'] || 'foodmart'
-DATABASE_NAME     = ENV["#{env_prefix}_DATABASE_NAME"]     || ENV['DATABASE_NAME']     || 'foodmart'
+DATABASE_NAME     = ENV["#{env_prefix}_DATABASE_NAME"]     || ENV['DATABASE_NAME'] || 'foodmart'
 DATABASE_INSTANCE = ENV["#{env_prefix}_DATABASE_INSTANCE"] || ENV['DATABASE_INSTANCE']
 
 JDBC_DRIVER = case MONDRIAN_DRIVER
@@ -88,5 +88,5 @@ CONNECTION_PARAMS = {
 
 case MONDRIAN_DRIVER
 when 'mysql'
-  CONNECTION_PARAMS[:properties] = { useSSL: false, serverTimezone: 'UTC', allowPublicKeyRetrieval: true }
+  CONNECTION_PARAMS[:properties] = {useSSL: false, serverTimezone: 'UTC', allowPublicKeyRetrieval: true}
 end
