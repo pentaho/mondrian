@@ -7,7 +7,7 @@ describe "Formula" do
     foodmart_xml = File.read(CATALOG_FILE)
     modified_xml = foodmart_xml.sub('</Cube>', "#{members_xml}</Cube>")
     Mondrian::OLAP::Connection.create(
-      CONNECTION_PARAMS.reject { |k, _| k == :catalog }.merge(catalog_content: modified_xml)
+      CONNECTION_PARAMS.except(:catalog).merge(catalog_content: modified_xml)
     )
   end
 
