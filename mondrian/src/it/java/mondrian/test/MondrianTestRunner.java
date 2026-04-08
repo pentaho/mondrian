@@ -18,7 +18,7 @@ package mondrian.test;
 
 import junit.framework.Test;
 import junit.framework.TestResult;
-import junit.runner.*;
+import junit.runner.BaseTestRunner;
 
 import java.io.PrintStream;
 import java.util.Timer;
@@ -55,14 +55,6 @@ public class MondrianTestRunner extends BaseTestRunner {
      */
     public MondrianTestRunner(MondrianResultPrinter printer) {
         fPrinter = printer;
-    }
-
-    /**
-     * Always use the StandardTestSuiteLoader. Overridden from
-     * BaseTestRunner.
-     */
-    public TestSuiteLoader getLoader() {
-        return new StandardTestSuiteLoader();
     }
 
     public void testFailed(int status, Test test, Throwable t) {

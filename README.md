@@ -18,9 +18,21 @@ A fork of the Mondrian OLAP Java engine, maintained to provide the core Java lib
 2. The output JAR is produced in `mondrian/target/`
 3. After building, the JAR files should be copied to the mondrian-olap gem's `lib/mondrian/jars/` directory
 
-## Testing
+## Testing for mondrian-olap
 
 After making changes, build the JAR, copy it to the mondrian-olap gem, and run the gem's test suite.
+
+## Testing in this repository
+
+    # Run the Ruby tests
+    mise run test
+
+    # Run the original Java test suite
+    mise run test_java
+
+    # Run a single Java test
+    mise run single_java_test NativeFilterMatchingTest
+
 
 ## Fork-Specific Patches
 

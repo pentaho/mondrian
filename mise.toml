@@ -14,3 +14,49 @@ run = "mvn -DrunITs install -Djava.locale.providers=COMPAT,SPI"
 description = "Run JRuby Minitest tests"
 run = "rake test"
 depends = ["package"]
+
+[tasks.single_java_test]
+description = "Run a single Java test (e.g., mise run single_java_test NativeFilterMatchingTest)"
+run = """
+#!/bin/bash
+set -euo pipefail
+
+if [ $# -eq 0 ]; then
+  echo "Usage: mise run java_test <TestClassName>" >&2
+  exit 1
+fi
+
+DRIVER="${MONDRIAN_DRIVER:-mysql}"
+HOST="${DATABASE_HOST:-localhost}"
+USER="${DATABASE_USER:-foodmart}"
+PASS="${DATABASE_PASSWORD:-foodmart}"
+DB="${DATABASE_NAME:-foodmart}"
+
+case "$DRIVER" in
+  mysql)
+    PORT="${DATABASE_PORT:-3306}"
+    URL="jdbc:mysql://$HOST:$PORT/$DB?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+    DRIVERS="com.mysql.cj.jdbc.Driver"
+    ;;
+  postgresql)
+    PORT="${DATABASE_PORT:-5432}"
+    URL="jdbc:postgresql://$HOST:$PORT/$DB"
+    DRIVERS="org.postgresql.Driver"
+    ;;
+  *)
+    echo "Unsupported driver: $DRIVER" >&2
+    exit 1
+    ;;
+esac
+
+TEST_NAME="$1"
+shift
+
+mvn test -pl mondrian \
+  -Dtest="$TEST_NAME" \
+  -Dmondrian.foodmart.jdbcURL="$URL" \
+  -Dmondrian.foodmart.jdbcUser="$USER" \
+  -Dmondrian.foodmart.jdbcPassword="$PASS" \
+  -Dmondrian.jdbcDrivers="$DRIVERS" \
+  "$@"
+"""
