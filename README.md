@@ -25,13 +25,13 @@ After making changes, build the JAR, copy it to the mondrian-olap gem, and run t
 ## Testing in this repository
 
     # Run the Ruby tests
-    mise run test
+    mise test
 
-    # Run the original Java test suite
-    mise run test_java
+    # Run all Java tests
+    mise java_test
 
     # Run a single Java test
-    mise run single_java_test NativeFilterMatchingTest
+    mise java_test NativeFilterMatchingTest
 
 
 ## Fork-Specific Patches
