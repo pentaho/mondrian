@@ -498,6 +498,32 @@ public class Formula extends QueryPart {
             return null;
         }
 
+        // If the expression is a function that implements FormatAwareFunDef
+        // (directly on the FunDef, or via a wrapped UDF), let it control
+        // which argument's format to use.
+        if (exp instanceof ResolvedFunCall) {
+            ResolvedFunCall call = (ResolvedFunCall) exp;
+            FormatAwareFunDef formatAware = call.getFormatAwareFunDef();
+            if (formatAware != null) {
+                int index = formatAware.getFormatExpIndex(call.getArgs());
+                if (index == -1) {
+                    // Function explicitly opts out of format inheritance
+                    return null;
+                }
+                if (index != FormatAwareFunDef.NOT_PARTICIPATING
+                    && index >= 0 && index < call.getArgCount())
+                {
+                    try {
+                        call.getArg(index).accept(
+                            new FormatFinder(validator));
+                    } catch (FoundOne foundOne) {
+                        return foundOne.exp;
+                    }
+                }
+                // NOT_PARTICIPATING: fall through to default behavior
+            }
+        }
+
         // Burrow into the expression. If we find a member, use its format
         // string.
         try {
