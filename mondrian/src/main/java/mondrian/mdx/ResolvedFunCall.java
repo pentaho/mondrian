@@ -125,6 +125,20 @@ public final class ResolvedFunCall extends ExpBase implements FunCall {
         return funDef;
     }
 
+    /**
+     * Returns a {@link FormatAwareFunDef} if the underlying function
+     * implements it, or null otherwise. The caller should check the
+     * return value of {@link FormatAwareFunDef#getFormatExpIndex} for
+     * {@link FormatAwareFunDef#NOT_PARTICIPATING} to determine if the
+     * function actually opts in.
+     */
+    public FormatAwareFunDef getFormatAwareFunDef() {
+        if (funDef instanceof FormatAwareFunDef) {
+            return (FormatAwareFunDef) funDef;
+        }
+        return null;
+    }
+
     public final int getCategory() {
         return funDef.getReturnCategory();
     }
