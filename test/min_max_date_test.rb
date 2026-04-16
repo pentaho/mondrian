@@ -52,6 +52,17 @@ describe "Min and Max with date expressions" do
     assert_equal Date.new(2020, 12, 15), Date.parse(result.values[0].to_s)
   end
 
+  it "should return the earliest date from Min with Filter" do
+    result = @olap.from('Sales').
+      with_member('[Measures].[Test Date]').as(date_measure_expression).
+      with_member('[Measures].[Min Date]').as(
+        "Min(Filter([Customers].[USA].Children, [Measures].[Unit Sales] > 0), [Measures].[Test Date])"
+      ).
+      columns('[Measures].[Min Date]').execute
+    assert_kind_of java.util.Date, result.values[0]
+    assert_equal Date.new(2020, 1, 15), Date.parse(result.values[0].to_s)
+  end
+
   it "should skip null date values and return extreme of non-null" do
     # Only CA and OR get dates, WA is null
     partial_date_expression =
@@ -78,8 +89,12 @@ describe "Min and Max with date expressions" do
       with_member('[Measures].[Max Date]').as(
         "Max([Customers].[USA].Children, [Measures].[Test Date])"
       ).
-      columns('[Measures].[Max Date]').execute
+      with_member('[Measures].[Min Date]').as(
+        "Min([Customers].[USA].Children, [Measures].[Test Date])"
+      ).
+      columns('[Measures].[Max Date]', '[Measures].[Min Date]').execute
     assert_nil result.values[0]
+    assert_nil result.values[1]
   end
 
   it "should return date from single-element set" do
@@ -96,14 +111,18 @@ describe "Min and Max with date expressions" do
     assert_equal Date.new(2020, 6, 15), Date.parse(result.values[1].to_s)
   end
 
-  it "should return nil from Max with empty set" do
+  it "should return nil from Max and Min with empty set" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as("DateSerial(2020, 1, 15)").
       with_member('[Measures].[Max Date]').as(
         "Max(Filter([Customers].[USA].Children, 1=2), [Measures].[Test Date])"
       ).
-      columns('[Measures].[Max Date]').execute
+      with_member('[Measures].[Min Date]').as(
+        "Min(Filter([Customers].[USA].Children, 1=2), [Measures].[Test Date])"
+      ).
+      columns('[Measures].[Max Date]', '[Measures].[Min Date]').execute
     assert_nil result.values[0]
+    assert_nil result.values[1]
   end
 
   it "should inherit date format from value expression, not from Filter condition" do
@@ -112,9 +131,13 @@ describe "Min and Max with date expressions" do
       with_member('[Measures].[Max Date]').as(
         "Max(Filter([Customers].[USA].Children, [Measures].[Unit Sales] > 0), [Measures].[Test Date])"
       ).
-      columns('[Measures].[Max Date]').execute
+      with_member('[Measures].[Min Date]').as(
+        "Min(Filter([Customers].[USA].Children, [Measures].[Unit Sales] > 0), [Measures].[Test Date])"
+      ).
+      columns('[Measures].[Max Date]', '[Measures].[Min Date]').execute
     # Should be formatted as date (from Test Date's format), not as number (from Unit Sales' format)
     assert_equal '15.12.2020', result.formatted_values[0]
+    assert_equal '15.01.2020', result.formatted_values[1]
   end
 
   it "should still work with numeric expressions" do
@@ -178,6 +201,50 @@ describe "Min and Max with date expressions" do
     assert_kind_of Numeric, result.values[0]
   end
 
+  it "should return correct numeric values for 1-arg form over real set" do
+    result = @olap.from('Sales').
+      with_member('[Measures].[Max Sales]').as(
+        "Max([Customers].[USA].Children)"
+      ).
+      with_member('[Measures].[Min Sales]').as(
+        "Min([Customers].[USA].Children)"
+      ).
+      columns('[Measures].[Max Sales]', '[Measures].[Min Sales]', '[Measures].[Unit Sales]').
+      rows('[Customers].[USA]').execute
+    max_val = result.values[0][0]
+    min_val = result.values[0][1]
+    total = result.values[0][2]
+    assert_kind_of Numeric, max_val
+    assert_kind_of Numeric, min_val
+    assert_operator max_val, :>, min_val
+    assert_operator max_val, :<=, total
+  end
+
+  it "should return correct numeric values with Filter" do
+    result = @olap.from('Sales').
+      with_member('[Measures].[Max Sales]').as(
+        "Max(Filter([Customers].[USA].Children, [Measures].[Unit Sales] > 0), [Measures].[Unit Sales])"
+      ).
+      with_member('[Measures].[Min Sales]').as(
+        "Min(Filter([Customers].[USA].Children, [Measures].[Unit Sales] > 0), [Measures].[Unit Sales])"
+      ).
+      columns('[Measures].[Max Sales]', '[Measures].[Min Sales]').execute
+    assert_kind_of Numeric, result.values[0]
+    assert_kind_of Numeric, result.values[1]
+    assert_operator result.values[0], :>, result.values[1]
+  end
+
+  it "should inherit numeric format from value expression when Filter is involved" do
+    result = @olap.from('Sales').
+      with_member('[Measures].[custom]').as('[Measures].[Store Sales]', format_string: '#,##0.0000').
+      with_member('[Measures].[Max Custom]').as(
+        "Max(Filter([Customers].[USA].Children, [Measures].[Unit Sales] > 0), [Measures].[custom])"
+      ).
+      columns('[Measures].[Max Custom]').execute
+    # Should inherit #,##0.0000 format from [custom], not default format from [Unit Sales] in Filter
+    assert_match(/\d+\.\d{4}/, result.formatted_values[0])
+  end
+
   it "should work inside IIf with date Min/Max and null fallback" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
@@ -204,20 +271,48 @@ describe "Min and Max with date expressions" do
     assert_equal Date.new(2020, 12, 15), Date.parse(result.values[0].to_s)
   end
 
+  it "should return correct dates across multiple rows with 2-arg form" do
+    result = @olap.from('Sales').
+      with_member('[Measures].[Test Date]').as(date_measure_expression).
+      with_member('[Measures].[Max Date]').as(
+        "Max({[Customers].CurrentMember}, [Measures].[Test Date])"
+      ).
+      with_member('[Measures].[Min Date]').as(
+        "Min({[Customers].CurrentMember}, [Measures].[Test Date])"
+      ).
+      columns('[Measures].[Max Date]', '[Measures].[Min Date]').
+      rows('[Customers].[USA].Children').execute
+    # Each row evaluates Max/Min over a single-member set, so both return that member's date.
+    # Verifies evaluator savepoint/restore works correctly across row iterations.
+    result.values.each do |row|
+      assert_kind_of java.util.Date, row[0]
+      assert_kind_of java.util.Date, row[1]
+      assert_equal row[0].to_s, row[1].to_s
+    end
+    dates = result.values.map { |row| Date.parse(row[0].to_s) }.sort
+    assert_equal [Date.new(2020, 1, 15), Date.new(2020, 6, 15), Date.new(2020, 12, 15)], dates
+  end
+
   it "should support 1-arg form with date measure as set member" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
-      with_member('[Measures].[result]').as(
+      with_member('[Measures].[max result]').as(
         "Max({[Measures].[Test Date]})"
       ).
-      columns('[Measures].[result]').
+      with_member('[Measures].[min result]').as(
+        "Min({[Measures].[Test Date]})"
+      ).
+      columns('[Measures].[max result]', '[Measures].[min result]').
       rows('[Customers].[USA].Children').execute
-    # Each row gets Max of a single-element set containing the date measure
-    result.values.flatten.each do |v|
-      assert_kind_of java.util.Date, v
+    # Each row gets Max/Min of a single-element set — both return the same date
+    result.values.each do |row|
+      row.each do |v|
+        assert_kind_of java.util.Date, v
+      end
+      assert_equal row[0].to_s, row[1].to_s
     end
     # CA = Jan, OR = Jun, WA = Dec
-    dates = result.values.flatten.map { |v| Date.parse(v.to_s) }
+    dates = result.values.map { |row| Date.parse(row[0].to_s) }
     assert_includes dates, Date.new(2020, 1, 15)
     assert_includes dates, Date.new(2020, 12, 15)
   end
@@ -256,39 +351,52 @@ describe "Min and Max with date expressions" do
         "Max([Customers].[USA].Children, [Measures].[Test Date])"
       ).
       with_member('[Measures].[Test Date 2]').as(date_measure_expression, format_string: 'yyyy-mm-dd').
-      with_member('[Measures].[Max 2]').as(
-        "Max([Customers].[USA].Children, [Measures].[Test Date 2])"
+      with_member('[Measures].[Min 2]').as(
+        "Min([Customers].[USA].Children, [Measures].[Test Date 2])"
       ).
-      columns('[Measures].[Max 1]', '[Measures].[Max 2]').execute
-    # Max 1 should use dd.mm.yyyy, Max 2 should use yyyy-mm-dd
+      columns('[Measures].[Max 1]', '[Measures].[Min 2]').execute
+    # Max 1 should use dd.mm.yyyy from Test Date, Min 2 should use yyyy-mm-dd from Test Date 2
     assert_equal '15.12.2020', result.formatted_values[0]
-    assert_equal '2020-12-15', result.formatted_values[1]
+    assert_equal '2020-01-15', result.formatted_values[1]
   end
 
   it "should work inside CoalesceEmpty" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
-      with_member('[Measures].[result]').as(
+      with_member('[Measures].[max result]').as(
         "CoalesceEmpty(" \
         "Max(Filter([Customers].[USA].Children, 1=2), [Measures].[Test Date]), " \
         "DateSerial(1970, 1, 1))"
       ).
-      columns('[Measures].[result]').execute
-    # Max over empty set returns null, CoalesceEmpty falls back to DateSerial
+      with_member('[Measures].[min result]').as(
+        "CoalesceEmpty(" \
+        "Min(Filter([Customers].[USA].Children, 1=2), [Measures].[Test Date]), " \
+        "DateSerial(1970, 1, 1))"
+      ).
+      columns('[Measures].[max result]', '[Measures].[min result]').execute
+    # Max/Min over empty set returns null, CoalesceEmpty falls back to DateSerial
     assert_kind_of java.util.Date, result.values[0]
+    assert_kind_of java.util.Date, result.values[1]
     assert_equal Date.new(1970, 1, 1), Date.parse(result.values[0].to_s)
+    assert_equal Date.new(1970, 1, 1), Date.parse(result.values[1].to_s)
   end
 
   it "should work with CrossJoin producing tuples" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
-      with_member('[Measures].[result]').as(
+      with_member('[Measures].[max result]').as(
         "Max(CrossJoin({[Customers].[USA].[CA], [Customers].[USA].[WA]}, " \
         "{[Gender].[All Gender]}), [Measures].[Test Date])"
       ).
-      columns('[Measures].[result]').execute
+      with_member('[Measures].[min result]').as(
+        "Min(CrossJoin({[Customers].[USA].[CA], [Customers].[USA].[WA]}, " \
+        "{[Gender].[All Gender]}), [Measures].[Test Date])"
+      ).
+      columns('[Measures].[max result]', '[Measures].[min result]').execute
     assert_kind_of java.util.Date, result.values[0]
+    assert_kind_of java.util.Date, result.values[1]
     assert_equal Date.new(2020, 12, 15), Date.parse(result.values[0].to_s)
+    assert_equal Date.new(2020, 1, 15), Date.parse(result.values[1].to_s)
   end
 
   # Pre-existing Mondrian limitations: IIf and comparison operators lack
