@@ -118,7 +118,9 @@ public class UdfResolver implements Resolver {
      * Adapter which converts a {@link UserDefinedFunction} into a
      * {@link FunDef}.
      */
-    private class UdfFunDef extends FunDefBase {
+    private class UdfFunDef extends FunDefBase
+        implements FormatAwareFunDef
+    {
         private Type returnType;
 
         public UdfFunDef(int[] parameterCategories, Type returnType) {
@@ -127,6 +129,14 @@ public class UdfResolver implements Resolver {
                 TypeUtil.typeToCategory(returnType),
                 parameterCategories);
             this.returnType = returnType;
+        }
+
+        public int getFormatExpIndex(Exp[] args) {
+            if (udf instanceof FormatAwareFunDef) {
+                return ((FormatAwareFunDef) udf)
+                    .getFormatExpIndex(args);
+            }
+            return NOT_PARTICIPATING;
         }
 
         public Type getResultType(Validator validator, Exp[] args) {
