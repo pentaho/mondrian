@@ -7,9 +7,13 @@ require 'minitest/reporters'
 require 'minitest/hooks/default'
 require 'pry'
 
+require_relative 'support/query_helper'
+
 Minitest::Reporters.use! Minitest::Reporters::DefaultReporter.new(color: true)
 
 class Minitest::Spec
+  include QueryHelper
+
   def assert_like(expected, actual, msg = nil)
     expected_normalized = expected.gsub(/>\s*\n\s*/, '> ').gsub(/\s+/, ' ').strip
     actual_normalized = actual.gsub(/>\s*\n\s*/, '> ').gsub(/\s+/, ' ').strip
