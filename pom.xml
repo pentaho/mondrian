@@ -29,9 +29,10 @@
     <eigenbase-properties.version>1.1.2</eigenbase-properties.version>
     <commons-io.version>2.18.0</commons-io.version>
     <mysql-connector-java.version>8.0.27</mysql-connector-java.version>
+    <postgresql.version>42.7.5</postgresql.version>
     <olap4j-tck.version>1.0.1.539</olap4j-tck.version>
     <eigenbase-resgen.version>1.3.1</eigenbase-resgen.version>
-    <junit.version>3.8.1</junit.version>
+    <junit-vintage-engine.version>5.11.4</junit-vintage-engine.version>
     <commons-pool.version>1.2</commons-pool.version>
     <validation-api.version>1.0.0.GA</validation-api.version>
     <commons-collections.version>3.2.2</commons-collections.version>

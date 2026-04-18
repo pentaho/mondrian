@@ -90,7 +90,7 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
       - name: Build Mondrian JAR
-        run: mvn package -q
+        run: mvn package -q -DskipTests
       - name: Setup Ruby and install gems
         uses: ruby/setup-ruby@v1
         with:
@@ -145,7 +145,7 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
       - name: Build Mondrian JAR
-        run: mvn package -q
+        run: mvn package -q -DskipTests
       - name: Setup Ruby and install gems
         uses: ruby/setup-ruby@v1
         with:

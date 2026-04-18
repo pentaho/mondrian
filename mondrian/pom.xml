@@ -20,7 +20,7 @@
     <driver.name>Mondrian olap4j driver</driver.name>
     <driver.version.minor>${project.version.minor}</driver.version.minor>
     <driver.version.major>${project.version.major}</driver.version.major>
-    <maven-failsafe-plugin.argLine>-Duser.language=en -Duser.country=US</maven-failsafe-plugin.argLine>
+    <maven-surefire-plugin.argLine>-Duser.language=en -Duser.country=US</maven-surefire-plugin.argLine>
   </properties>
   <dependencies>
     <dependency>
@@ -142,9 +142,9 @@
       <version>${jsp-api.version}</version>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>${junit-vintage-engine.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -173,6 +173,12 @@
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
       <version>${mysql-connector-java.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>${postgresql.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -328,30 +334,23 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${maven-surefire-plugin.version}</version>
         <configuration>
-          <skipTests>true</skipTests>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${maven-failsafe-plugin.version}</version>
-        <executions>
-          <execution>
-            <id>integration-test</id>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-          </execution>
-        </executions>
-
-        <configuration>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <includes>
-            <include>Main.java</include>
+            <include>**/Main.java</include>
           </includes>
+          <argLine>${maven-surefire-plugin.argLine}</argLine>
           <systemPropertyVariables>
             <mondrian.foodmart.jdbcURL>${mondrian.foodmart.jdbcURL}</mondrian.foodmart.jdbcURL>
             <mondrian.foodmart.jdbcUser>${mondrian.foodmart.jdbcUser}</mondrian.foodmart.jdbcUser>
             <mondrian.foodmart.jdbcPassword>${mondrian.foodmart.jdbcPassword}</mondrian.foodmart.jdbcPassword>
           </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven-failsafe-plugin.version}</version>
+        <configuration>
+          <skipTests>true</skipTests>
         </configuration>
       </plugin>
     </plugins>
@@ -406,7 +405,7 @@
             <executions>
               <execution>
                 <id>start</id>
-                <phase>pre-integration-test</phase>
+                <phase>process-test-classes</phase>
                 <goals>
                   <goal>stop</goal>
                   <goal>start</goal>
@@ -414,7 +413,7 @@
               </execution>
               <execution>
                 <id>stop</id>
-                <phase>post-integration-test</phase>
+                <phase>prepare-package</phase>
                 <goals>
                   <goal>stop</goal>
                   <goal>remove</goal>
@@ -475,7 +474,7 @@
             <executions>
               <execution>
                 <id>create-foodmart</id>
-                <phase>pre-integration-test</phase>
+                <phase>process-test-classes</phase>
                 <goals>
                   <goal>execute</goal>
                 </goals>
@@ -494,7 +493,7 @@
               </execution>
               <execution>
                 <id>create-steelwheels</id>
-                <phase>pre-integration-test</phase>
+                <phase>process-test-classes</phase>
                 <goals>
                   <goal>execute</goal>
                 </goals>
@@ -558,7 +557,7 @@
             <version>1.5.0</version>
             <executions>
               <execution>
-                <phase>pre-integration-test</phase>
+                <phase>process-test-classes</phase>
                 <goals>
                   <goal>java</goal>
                 </goals>
