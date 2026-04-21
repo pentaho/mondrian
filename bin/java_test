@@ -1,0 +1,39 @@
+#!/bin/bash
+set -euo pipefail
+
+DRIVER="${MONDRIAN_DRIVER:-mysql}"
+HOST="${DATABASE_HOST:-localhost}"
+USER="${DATABASE_USER:-foodmart}"
+PASS="${DATABASE_PASSWORD:-foodmart}"
+DB="${DATABASE_NAME:-foodmart}"
+
+case "$DRIVER" in
+  mysql)
+    PORT="${DATABASE_PORT:-3306}"
+    URL="jdbc:mysql://$HOST:$PORT/$DB?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+    DRIVERS="com.mysql.cj.jdbc.Driver"
+    ;;
+  postgresql)
+    PORT="${DATABASE_PORT:-5432}"
+    URL="jdbc:postgresql://$HOST:$PORT/$DB"
+    DRIVERS="org.postgresql.Driver"
+    ;;
+  *)
+    echo "Unsupported driver: $DRIVER" >&2
+    exit 1
+    ;;
+esac
+
+if [ $# -gt 0 ]; then
+  TEST_NAME="$1"
+  shift
+  mvn test -pl mondrian \
+    -Dtest="$TEST_NAME" \
+    -Dmondrian.foodmart.jdbcURL="$URL" \
+    -Dmondrian.foodmart.jdbcUser="$USER" \
+    -Dmondrian.foodmart.jdbcPassword="$PASS" \
+    -Dmondrian.jdbcDrivers="$DRIVERS" \
+    "$@"
+else
+  mvn -DrunITs install -Djava.locale.providers=COMPAT,SPI
+fi
