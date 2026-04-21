@@ -4,7 +4,7 @@ ruby = "jruby-9.4.14.0"
 maven = "3.9"
 
 [tasks.package]
-run = "mvn package"
+run = "mvn package -DskipTests"
 
 [tasks.test]
 description = "Run JRuby Minitest tests"
