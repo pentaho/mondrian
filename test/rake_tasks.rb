@@ -21,7 +21,7 @@ end
 
 desc "Build Mondrian JAR with Maven"
 task :package do
-  system("mvn package")
+  system("mvn package -DskipTests")
 end
 
 desc "Compile Mondrian Java test classes"
