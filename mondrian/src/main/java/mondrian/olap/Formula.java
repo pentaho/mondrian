@@ -519,6 +519,13 @@ public class Formula extends QueryPart {
                     } catch (FoundOne foundOne) {
                         return foundOne.exp;
                     }
+                    // Function explicitly participated in format inference
+                    // and selected a specific argument. If no format was
+                    // found there, do not fall through to scanning the whole
+                    // expression — that risks picking up a format from an
+                    // unrelated part (e.g., a measure inside a Filter
+                    // predicate) and defeats the purpose of the opt-in.
+                    return null;
                 }
                 // NOT_PARTICIPATING: fall through to default behavior
             }

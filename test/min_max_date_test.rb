@@ -125,6 +125,49 @@ describe "Min and Max with date expressions" do
     assert_nil result.values[1]
   end
 
+  it "should not leak format from Filter predicate when numeric value expression has no format member" do
+    result = @olap.from('Sales').
+      with_member('[Measures].[Formatted]').as('[Measures].[Unit Sales]', format_string: '$#,##0.0000').
+      with_member('[Measures].[max result]').as(
+        "Max(Filter([Customers].[USA].Children, [Measures].[Formatted] > 0), 42.5)"
+      ).
+      with_member('[Measures].[min result]').as(
+        "Min(Filter([Customers].[USA].Children, [Measures].[Formatted] > 0), 42.5)"
+      ).
+      columns('[Measures].[max result]', '[Measures].[min result]').execute
+    # The value expression is a literal — no format-bearing member to inherit.
+    # FormatAwareFunDef explicitly picked arg 1 for format inference; when no
+    # format is found there, the result must use default formatting rather than
+    # falling back to the Filter predicate.
+    # With the leak: "$42.5000" (picked up $#,##0.0000 from [Formatted] in Filter).
+    # Correct: default numeric format (#,##0) rounds 42.5 to "43".
+    assert_equal '43', result.formatted_values[0]
+    assert_equal '43', result.formatted_values[1]
+  end
+
+  it "should not leak format from Filter predicate when date value expression has no format member" do
+    # MDX has no date literal syntax; DateSerial(...) is the closest equivalent
+    # and, like a numeric literal, contains no MemberExpr for FormatFinder.
+    result = @olap.from('Sales').
+      with_member('[Measures].[Formatted]').as('[Measures].[Unit Sales]', format_string: '$#,##0.0000').
+      with_member('[Measures].[max result]').as(
+        "Max(Filter([Customers].[USA].Children, [Measures].[Formatted] > 0), DateSerial(2020, 6, 15))"
+      ).
+      with_member('[Measures].[min result]').as(
+        "Min(Filter([Customers].[USA].Children, [Measures].[Formatted] > 0), DateSerial(2020, 6, 15))"
+      ).
+      columns('[Measures].[max result]', '[Measures].[min result]').execute
+    # Underlying value is a Date — preserved regardless of format inference.
+    assert_kind_of java.util.Date, result.values[0]
+    assert_kind_of java.util.Date, result.values[1]
+    # With the leak: "$43,998.0000". Correct: default numeric format renders
+    # the Date's serial number as "43,998". The calculated member is statically
+    # typed as Numeric, so without an explicit date format_string the default
+    # numeric format is applied — this is pre-existing Mondrian behavior.
+    assert_equal '43,998', result.formatted_values[0]
+    assert_equal '43,998', result.formatted_values[1]
+  end
+
   it "should inherit date format from value expression, not from Filter condition" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression, format_string: 'dd.mm.yyyy').
