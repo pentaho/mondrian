@@ -74,10 +74,13 @@ class MinMaxFunDef extends AbstractAggregateFunDef
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc =
             compiler.compileList(call.getArg(0));
-        // compileScalar(arg, false) avoids numeric type coercion that would
-        // convert Date values to numbers when Filter is involved. The numeric
-        // path is unaffected because evaluateSet coerces Numbers via
-        // doubleValue() at runtime.
+        // specific=false returns a generic Calc instead of a DoubleCalc.
+        // Required for Date support: Mondrian statically types every calculated
+        // member as Numeric regardless of runtime return type, so a Date-returning
+        // calc reaches here with NumericType. compileDouble would wrap it in a
+        // DoubleCalc whose evaluate() routes through evaluateDouble(), which
+        // throws "Expected NUMERIC" on a Date. The generic Calc hands the raw
+        // value to extremeValue for instanceof-based dispatch.
         final Calc calc =
             call.getArgCount() > 1
             ? compiler.compileScalar(call.getArg(1), false)
