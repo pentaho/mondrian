@@ -242,7 +242,7 @@ describe "Min and Max with date expressions" do
       ).
       columns('[Measures].[Max Custom]').execute
     # Should inherit #,##0.0000 format from [custom], not default format from [Unit Sales] in Filter
-    assert_match(/\d+\.\d{4}/, result.formatted_values[0])
+    assert_match(/\A[\d,]+\.\d{4}\z/, result.formatted_values[0])
   end
 
   it "should work inside IIf with date Min/Max and null fallback" do
@@ -326,10 +326,10 @@ describe "Min and Max with date expressions" do
       columns('[Measures].[result]').
       rows('[Customers].[USA].[CA]').execute
     # Should inherit #,##0.0000 format from the measure in the set
-    assert_match(/\d+\.\d{4}/, result.formatted_values[0][0])
+    assert_match(/\A[\d,]+\.\d{4}\z/, result.formatted_values[0][0])
   end
 
-  it "should return date value for 1-arg form but format as numeric by default" do
+  it "should return date value for 1-arg form and inherit date format from source measure" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression, format_string: 'yyyy-mm-dd').
       with_member('[Measures].[result]').as(
@@ -337,11 +337,9 @@ describe "Min and Max with date expressions" do
       ).
       columns('[Measures].[result]').
       rows('[Customers].[USA].[WA]').execute
-    # The value is a Date
     assert_kind_of java.util.Date, result.values[0][0]
-    # But the 1-arg form (Category.Numeric) defaults to numeric formatting;
-    # explicit FORMAT_STRING is needed for date display
-    assert_match(/[\d,]+/, result.formatted_values[0][0])
+    # Output format should match the input: date in, date out.
+    assert_match(/\A\d{4}-\d{2}-\d{2}\z/, result.formatted_values[0][0])
   end
 
   it "should not bleed format strings between multiple date measures" do

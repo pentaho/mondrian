@@ -42,14 +42,14 @@ class MinMaxFunDef extends AbstractAggregateFunDef
     static final ReflectiveMultiResolver MinResolver =
         new MinMaxResolverImpl(
             "Min",
-            "Min(<Set>[, <Numeric Expression>])",
+            "Min(<Set>[, <Expression>])",
             "Returns the minimum value of a numeric or date expression "
                 + "evaluated over a set.");
 
     static final MultiResolver MaxResolver =
         new MinMaxResolverImpl(
             "Max",
-            "Max(<Set>[, <Numeric Expression>])",
+            "Max(<Set>[, <Expression>])",
             "Returns the maximum value of a numeric or date expression "
                 + "evaluated over a set.");
 
