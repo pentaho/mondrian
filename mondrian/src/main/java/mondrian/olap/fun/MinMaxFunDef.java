@@ -213,8 +213,11 @@ class MinMaxFunDef extends AbstractAggregateFunDef
      */
     private static class MinMaxResolverImpl extends ReflectiveMultiResolver {
         MinMaxResolverImpl(String name, String signature, String description) {
+            // Signatures drive FunInfo introspection (XMLA MDSCHEMA_FUNCTIONS,
+            // CmdRunner help). Runtime resolution is handled by the overridden
+            // resolve() method below, which bypasses the signatures array.
             super(name, signature, description,
-                new String[]{"fnx"},
+                new String[]{"fnx", "fnxn", "fDxD"},
                 MinMaxFunDef.class);
         }
 
