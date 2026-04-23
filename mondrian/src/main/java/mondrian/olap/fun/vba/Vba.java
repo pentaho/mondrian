@@ -466,9 +466,10 @@ public class Vba {
     @Description(
         "Returns a Variant (Integer) containing the specified part of a given "
         + "date.")
-    public static int datePart(String interval, Date date) {
+    // PATCH: Accept Object date to support Numeric-typed date expressions.
+    public static int datePart(String interval, Object date) {
         return _datePart(
-            interval, date, Calendar.SUNDAY,
+            interval, castToDate(date), Calendar.SUNDAY,
             FirstWeekOfYear.vbFirstJan1);
     }
 
@@ -477,9 +478,10 @@ public class Vba {
     @Description(
         "Returns a Variant (Integer) containing the specified part of a given "
         + "date.")
-    public static int datePart(String interval, Date date, int firstDayOfWeek) {
+    // PATCH: Accept Object date to support Numeric-typed date expressions.
+    public static int datePart(String interval, Object date, int firstDayOfWeek) {
         return _datePart(
-            interval, date, firstDayOfWeek,
+            interval, castToDate(date), firstDayOfWeek,
             FirstWeekOfYear.vbFirstJan1);
     }
 
@@ -488,12 +490,13 @@ public class Vba {
     @Description(
         "Returns a Variant (Integer) containing the specified part of a given "
         + "date.")
+    // PATCH: Accept Object date to support Numeric-typed date expressions.
     public static int datePart(
-        String interval, Date date, int firstDayOfWeek,
+        String interval, Object date, int firstDayOfWeek,
         int firstWeekOfYear)
     {
         return _datePart(
-            interval, date, firstDayOfWeek,
+            interval, castToDate(date), firstDayOfWeek,
             FirstWeekOfYear.values()[firstWeekOfYear]);
     }
 

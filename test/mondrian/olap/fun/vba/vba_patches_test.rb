@@ -223,4 +223,66 @@ describe "Vba patches" do
       assert_non_date_raises %q{DateDiff("d", <Date>, <Date>, 1, 1)}
     end
   end
+
+  describe "DatePart with Object date" do
+    # 2-arg overload: DatePart(interval, date). Each interval has its
+    # own extraction path in the Calendar code — cover them all.
+    [
+      %q{DatePart("yyyy", <Date>)},
+      %q{DatePart("q", <Date>)},
+      %q{DatePart("m", <Date>)},
+      %q{DatePart("y", <Date>)},    # day of year
+      %q{DatePart("d", <Date>)},    # day of month
+      %q{DatePart("w", <Date>)},    # weekday
+      %q{DatePart("ww", <Date>)},   # week of year
+      %q{DatePart("h", <Date>)},
+      %q{DatePart("n", <Date>)},
+      %q{DatePart("s", <Date>)},
+    ].each do |template|
+      it "2-arg: calc-member path matches Date-literal path: #{template}" do
+        assert_behavior_preserved template
+      end
+    end
+
+    # 3-arg overload: firstDayOfWeek only affects "w" and "ww".
+    [
+      %q{DatePart("w", <Date>, 1)},     # Sunday first
+      %q{DatePart("w", <Date>, 2)},     # Monday first
+      %q{DatePart("ww", <Date>, 1)},
+      %q{DatePart("ww", <Date>, 2)},
+      %q{DatePart("yyyy", <Date>, 2)},  # firstDayOfWeek ignored for non-week intervals
+    ].each do |template|
+      it "3-arg: calc-member path matches Date-literal path: #{template}" do
+        assert_behavior_preserved template
+      end
+    end
+
+    # 4-arg overload: firstWeekOfYear only affects "w" and "ww".
+    [
+      %q{DatePart("ww", <Date>, 1, 1)},  # vbFirstJan1
+      %q{DatePart("ww", <Date>, 1, 2)},  # vbFirstFourDays
+      %q{DatePart("ww", <Date>, 2, 2)},
+      %q{DatePart("d", <Date>, 1, 1)},   # both args ignored for non-week intervals
+    ].each do |template|
+      it "4-arg: calc-member path matches Date-literal path: #{template}" do
+        assert_behavior_preserved template
+      end
+    end
+
+    it "returns null when the date expression is null (2-arg)" do
+      assert_null_date_returns_null %q{DatePart("d", <Date>)}
+    end
+
+    it "raises when the date expression is non-Date (2-arg)" do
+      assert_non_date_raises %q{DatePart("d", <Date>)}
+    end
+
+    it "raises when the date expression is non-Date (3-arg)" do
+      assert_non_date_raises %q{DatePart("w", <Date>, 2)}
+    end
+
+    it "raises when the date expression is non-Date (4-arg)" do
+      assert_non_date_raises %q{DatePart("ww", <Date>, 2, 2)}
+    end
+  end
 end
