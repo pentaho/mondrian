@@ -105,6 +105,24 @@ public class Vba {
         }
     }
 
+    // PATCH: Coerce an Object argument to Date. VBA date functions
+    // (DateAdd, DateDiff, DatePart, Day, Month, Year, Hour, Minute,
+    // Second, Weekday, DateValue, TimeValue) accept Object instead of
+    // Date so that calculated members — which Mondrian's validator
+    // always types as Numeric regardless of runtime return type — can
+    // be passed as date arguments.
+    public static Date castToDate(Object expression) {
+        if (expression instanceof Date) {
+            return (Date) expression;
+        } else if (expression == null) {
+            return null;
+        } else {
+            throw new InvalidArgumentException(
+                "Invalid parameter. Parameter " + expression
+                + " must be of type Date");
+        }
+    }
+
     @FunctionName("CDbl")
     @Signature("CDbl(expression)")
     @Description(
@@ -346,7 +364,9 @@ public class Vba {
     @Description(
         "Returns a Variant (Date) containing a date to which a specified time "
         + "interval has been added.")
-    public static Date dateAdd(String intervalName, double number, Date date) {
+    // PATCH: Accept Object date to support Numeric-typed date expressions
+    // (e.g. calculated members). See castToDate.
+    public static Date dateAdd(String intervalName, double number, Object date) {
         Interval interval = Interval.valueOf(intervalName);
         final double floor = Math.floor(number);
 
@@ -354,13 +374,13 @@ public class Vba {
         // different results in different locales: it depends whether the
         // initial date and the final date are in DST.
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
+        calendar.setTime(castToDate(date));
         if (floor != number) {
             final double ceil = Math.ceil(number);
             interval.add(calendar, (int) ceil);
             final long ceilMillis = calendar.getTimeInMillis();
 
-            calendar.setTime(date);
+            calendar.setTime(castToDate(date));
             interval.add(calendar, (int) floor);
             final long floorMillis = calendar.getTimeInMillis();
 
