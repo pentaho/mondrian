@@ -440,8 +440,28 @@ describe "Min and Max with date expressions" do
     assert_equal Date.new(2020, 1, 15), Date.parse(result.values[1].to_s)
   end
 
-  # Pre-existing Mondrian limitations: IIf and comparison operators lack
-  # DateTime signatures. Not caused by the Min/Max date support changes.
+  it "should work as argument to VBA date functions" do
+    # VBA functions like DateDiff call compileDateTime(), which casts to
+    # DateTimeCalc. Without AbstractDateTimeCalc this would ClassCastException.
+    # Use DateSerial directly (statically typed DateTime) so the resolver
+    # picks the DateTime signature for Min/Max.
+    result = @olap.from('Sales').
+      with_member('[Measures].[result]').as(
+        "DateDiff(\"d\", " \
+        "Min([Customers].[USA].Children, DateSerial(2020, 1, 15)), " \
+        "Max([Customers].[USA].Children, DateSerial(2020, 12, 15)))"
+      ).
+      columns('[Measures].[result]').execute
+    # All members evaluate to the same date in each Min/Max, so diff = 335 days
+    assert_kind_of Numeric, result.values[0]
+    assert_equal 335, result.values[0].to_i
+  end
+
+  # Mondrian limitation: calculated members are always statically typed as
+  # Numeric regardless of their runtime return type. The validator resolves
+  # types bottom-up, so outer functions see <Numeric Expression> even when
+  # the value is a Date at runtime. This limits composability with functions
+  # that require DateTime arguments or signatures.
 
   it "should not support IIf with date branches on both sides (no DateTime IIf signature)" do
     assert_raises(Mondrian::OLAP::Error) do
@@ -456,7 +476,7 @@ describe "Min and Max with date expressions" do
     end
   end
 
-  it "should not support comparison operators with date Min/Max result (no DateTime comparison signature)" do
+  it "should not support comparison operators with date Min/Max result" do
     assert_raises(Mondrian::OLAP::Error) do
       @olap.from('Sales').
         with_member('[Measures].[Test Date]').as(date_measure_expression).
@@ -466,4 +486,33 @@ describe "Min and Max with date expressions" do
         columns('[Measures].[result]').execute
     end
   end
+
+  it "should not support VBA date functions when value expression is a calculated member" do
+    # Min/Max resolves as Numeric because [Test Date] is a calculated member
+    # (always Numeric in Mondrian's type system), so DateDiff sees
+    # <String>, <Numeric>, <Numeric> instead of <String>, <DateTime>, <DateTime>.
+    assert_raises(Mondrian::OLAP::Error) do
+      @olap.from('Sales').
+        with_member('[Measures].[Test Date]').as(date_measure_expression).
+        with_member('[Measures].[result]').as(
+          "DateDiff(\"d\", " \
+          "Min([Customers].[USA].Children, [Measures].[Test Date]), " \
+          "Max([Customers].[USA].Children, [Measures].[Test Date]))"
+        ).
+        columns('[Measures].[result]').execute
+    end
+  end
+
+  it "should not support DateAdd when value expression is a calculated member" do
+    assert_raises(Mondrian::OLAP::Error) do
+      @olap.from('Sales').
+        with_member('[Measures].[Test Date]').as(date_measure_expression).
+        with_member('[Measures].[result]').as(
+          "DateAdd(\"d\", 30, " \
+          "Max([Customers].[USA].Children, [Measures].[Test Date]))"
+        ).
+        columns('[Measures].[result]').execute
+    end
+  end
+
 end

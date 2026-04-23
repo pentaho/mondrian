@@ -11,7 +11,7 @@
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractCalc;
+import mondrian.calc.impl.AbstractDateTimeCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
@@ -129,7 +129,18 @@ class MinMaxFunDef extends AbstractAggregateFunDef
             };
         }
         // Non-numeric return type (2-arg with DateTime expr).
-        return new AbstractCalc(call, new Calc[] {listCalc, calc}) {
+        // Must implement DateTimeCalc so that compileDateTime() callers
+        // (e.g., VBA DateDiff via JavaFunDef) can cast without
+        // ClassCastException. Only reachable when the value expression
+        // is statically typed DateTime (e.g., DateSerial literal), not
+        // when it is a calculated member (always typed Numeric).
+        return new AbstractDateTimeCalc(call, new Calc[] {listCalc, calc}) {
+            public java.util.Date evaluateDateTime(Evaluator evaluator) {
+                Object result = evaluate(evaluator);
+                return result instanceof java.util.Date
+                    ? (java.util.Date) result : null;
+            }
+
             public Object evaluate(Evaluator evaluator) {
                 evaluator.getTiming().markStart(TIMING_NAME);
                 final int savepoint = evaluator.savepoint();
