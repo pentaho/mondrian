@@ -507,12 +507,10 @@ public class Formula extends QueryPart {
             if (formatAware != null) {
                 int index = formatAware.getFormatExpIndex(call.getArgs());
                 if (index == -1) {
-                    // Function explicitly opts out of format inheritance
+                    // Function explicitly opts out of format inheritance.
                     return null;
                 }
-                if (index != FormatAwareFunDef.NOT_PARTICIPATING
-                    && index >= 0 && index < call.getArgCount())
-                {
+                if (index >= 0 && index < call.getArgCount()) {
                     try {
                         call.getArg(index).accept(
                             new FormatFinder(validator));
@@ -527,7 +525,11 @@ public class Formula extends QueryPart {
                     // predicate) and defeats the purpose of the opt-in.
                     return null;
                 }
-                // NOT_PARTICIPATING: fall through to default behavior
+                // NOT_PARTICIPATING: the function declines to participate —
+                // fall through to the default depth-first scan below.
+                assert index == FormatAwareFunDef.NOT_PARTICIPATING
+                    : "Unexpected FormatAwareFunDef.getFormatExpIndex() "
+                    + "result: " + index;
             }
         }
 
