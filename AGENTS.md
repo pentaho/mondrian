@@ -49,9 +49,11 @@ mondrian-olap-java is a fork of the Mondrian OLAP Java engine, maintained to pro
 
 ### Building
 
-1. Build the project with Maven: `mvn package` (or `mise run package` if mise is configured).
+1. Build the project: `mise run package` (runs `mvn package -DskipTests`).
 2. The output JAR is produced in `mondrian/target/`.
 3. After building, the JAR files should be copied to the mondrian-olap gem's `lib/mondrian/jars/` directory.
+
+> Note: bare `mvn package` runs the legacy Java test suite, which requires a preloaded FoodMart database. Use `mise run package` for a fast test-skipping build, or `mise run java_test` to explicitly run the legacy Java tests.
 
 ### Making Changes
 
@@ -68,7 +70,7 @@ When modifying existing Mondrian Java classes or adding new functionality then u
 
 #### Setup
 
-1. Build the Mondrian JAR: `mvn package`
+1. Build the Mondrian JAR: `mise run package`
 2. Install gems: `bundle install`
 3. Create the FoodMart database and user: `rake db:create_foodmart` (default user/password: `foodmart`/`foodmart`, database: `foodmart`)
 4. Load FoodMart data: `rake db:load_foodmart`
