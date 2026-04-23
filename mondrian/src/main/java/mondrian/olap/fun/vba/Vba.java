@@ -405,9 +405,10 @@ public class Vba {
     @Description(
         "Returns a Variant (Long) specifying the number of time intervals "
         + "between two specified dates.")
-    public static long dateDiff(String interval, Date date1, Date date2) {
+    // PATCH: Accept Object dates to support Numeric-typed date expressions.
+    public static long dateDiff(String interval, Object date1, Object date2) {
         return _dateDiff(
-            interval, date1, date2, Calendar.SUNDAY,
+            interval, castToDate(date1), castToDate(date2), Calendar.SUNDAY,
             FirstWeekOfYear.vbFirstJan1);
     }
 
@@ -417,11 +418,12 @@ public class Vba {
     @Description(
         "Returns a Variant (Long) specifying the number of time intervals "
         + "between two specified dates.")
+    // PATCH: Accept Object dates to support Numeric-typed date expressions.
     public static long dateDiff(
-        String interval, Date date1, Date date2, int firstDayOfWeek)
+        String interval, Object date1, Object date2, int firstDayOfWeek)
     {
         return _dateDiff(
-            interval, date1, date2, firstDayOfWeek,
+            interval, castToDate(date1), castToDate(date2), firstDayOfWeek,
             FirstWeekOfYear.vbFirstJan1);
     }
 
@@ -431,12 +433,13 @@ public class Vba {
     @Description(
         "Returns a Variant (Long) specifying the number of time intervals "
         + "between two specified dates.")
+    // PATCH: Accept Object dates to support Numeric-typed date expressions.
     public static long dateDiff(
-        String interval, Date date1, Date date2,
+        String interval, Object date1, Object date2,
         int firstDayOfWeek, int firstWeekOfYear)
     {
         return _dateDiff(
-            interval, date1, date2, firstDayOfWeek,
+            interval, castToDate(date1), castToDate(date2), firstDayOfWeek,
             FirstWeekOfYear.values()[firstWeekOfYear]);
     }
 
