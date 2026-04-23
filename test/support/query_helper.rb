@@ -51,13 +51,9 @@ module QueryHelper
   end
 
   # Assert that executing MDX raises a Mondrian error matching the pattern.
-  # Pattern can be a Regexp or a String (substring match).
+  # Pattern can be a Regexp or a String (substring match); assert_match handles both.
   def assert_query_raises(olap, mdx, pattern)
     error = assert_raises(Mondrian::OLAP::Error) { olap.execute(mdx) }
-    if pattern.is_a?(Regexp)
-      assert_match pattern, error.message
-    else
-      assert error.message.include?(pattern), "Expected error containing '#{pattern}', got: #{error.message}"
-    end
+    assert_match pattern, error.message
   end
 end
