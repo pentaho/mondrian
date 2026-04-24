@@ -350,4 +350,54 @@ describe "Vba patches" do
       assert_non_date_raises %q{Weekday(<Date>, 2)}
     end
   end
+
+  # Int(x) should return floor(x), not trunc(x). Stock Mondrian was
+  # buggy for -1 < x < 0: truncation gives 0, but floor is -1.
+  # https://jira.pentaho.com/browse/MONDRIAN-2730
+  describe "Int MONDRIAN-2730 floor-for-small-negatives" do
+    def int_of(number_expr)
+      execute_result <<~MDX
+        WITH MEMBER [Measures].[Result] AS Int(#{number_expr})
+        SELECT {[Measures].[Result]} ON COLUMNS FROM [Sales]
+      MDX
+    end
+
+    # Cases in the patched range (−1 < x < 0) — these were broken in stock.
+    it "returns -1 for -0.5 (was 0 in stock)" do
+      assert_equal(-1, int_of('-0.5'))
+    end
+
+    it "returns -1 for -0.001 (was 0 in stock)" do
+      assert_equal(-1, int_of('-0.001'))
+    end
+
+    it "returns -1 for -0.9999 (was 0 in stock)" do
+      assert_equal(-1, int_of('-0.9999'))
+    end
+
+    # Regression cases — behavior must be unchanged by the patch.
+    it "returns 0 for 0" do
+      assert_equal 0, int_of('0')
+    end
+
+    it "returns 0 for 0.5 (positive, truncates to 0)" do
+      assert_equal 0, int_of('0.5')
+    end
+
+    it "returns 2 for 2.7 (positive)" do
+      assert_equal 2, int_of('2.7')
+    end
+
+    it "returns -1 for exact -1.0" do
+      assert_equal(-1, int_of('-1.0'))
+    end
+
+    it "returns -3 for -2.7 (standard negative case)" do
+      assert_equal(-3, int_of('-2.7'))
+    end
+
+    it "returns -1 for exact -1 (no fractional part)" do
+      assert_equal(-1, int_of('-1'))
+    end
+  end
 end

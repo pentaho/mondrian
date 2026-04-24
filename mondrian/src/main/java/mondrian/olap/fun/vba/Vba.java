@@ -228,7 +228,10 @@ public class Vba {
         if (number instanceof Number) {
             int v = ((Number) number).intValue();
             double dv = ((Number) number).doubleValue();
-            if (v < 0 && v > dv) {
+            // PATCH: MONDRIAN-2730. Stock code used `v < 0 && v > dv`,
+            // which wrongly returned 0 for -1 < x < 0 because
+            // truncation gives v=0 there. `v <= 0` catches that range.
+            if (v <= 0 && v > dv) {
                 v--;
             }
             return v;
