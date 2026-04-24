@@ -285,4 +285,69 @@ describe "Vba patches" do
       assert_non_date_raises %q{DatePart("ww", <Date>, 2, 2)}
     end
   end
+
+  # Simple unary getters and value-normalizers: each reads a specific
+  # Calendar field (or normalizes to date-only / time-only). All follow
+  # the same Date→Object widening pattern.
+  describe "Simple date getters with Object date" do
+    [
+      %q{Year(<Date>)},
+      %q{Month(<Date>)},
+      %q{Day(<Date>)},
+      %q{Hour(<Date>)},
+      %q{Minute(<Date>)},
+      %q{Second(<Date>)},
+      %q{Weekday(<Date>)},
+      %q{Weekday(<Date>, 1)},       # 2-arg overload, Sunday first
+      %q{Weekday(<Date>, 2)},       # 2-arg overload, Monday first
+      %q{DateValue(<Date>)},        # returns Date
+      %q{TimeValue(<Date>)},        # returns Date
+    ].each do |template|
+      it "calc-member path matches Date-literal path: #{template}" do
+        assert_behavior_preserved template
+      end
+    end
+
+    # Specific edge cases for dates that exercise the distinct extraction
+    # paths (e.g. beginning/end of year for week, midnight for time
+    # fields, DST transitions).
+    [
+      'DateSerial(2025, 1, 1)',     # first day of year, Wednesday
+      'DateSerial(2024, 12, 31)',   # last day of year, Tuesday
+      'DateSerial(2024, 2, 29)',    # leap day
+      %q{DateAdd("s", 23*60*60 + 59*60 + 58, DateSerial(2025, 6, 15))},  # near-midnight
+    ].each do |specific_date|
+      it "extracts Year/Month/Day for #{specific_date}" do
+        %w(Year Month Day).each do |fn|
+          assert_behavior_preserved "#{fn}(<Date>)", specific_date
+        end
+      end
+
+      it "extracts Hour/Minute/Second for #{specific_date}" do
+        %w(Hour Minute Second).each do |fn|
+          assert_behavior_preserved "#{fn}(<Date>)", specific_date
+        end
+      end
+    end
+
+    it "returns null when the date argument is null (each getter)" do
+      %w(Year Month Day Hour Minute Second Weekday DateValue TimeValue).each do |fn|
+        assert_null_date_returns_null "#{fn}(<Date>)"
+      end
+    end
+
+    it "returns null when the date argument is null (Weekday 2-arg)" do
+      assert_null_date_returns_null %q{Weekday(<Date>, 2)}
+    end
+
+    it "raises when the date argument is non-Date (each getter)" do
+      %w(Year Month Day Hour Minute Second Weekday DateValue TimeValue).each do |fn|
+        assert_non_date_raises "#{fn}(<Date>)"
+      end
+    end
+
+    it "raises when the date argument is non-Date (Weekday 2-arg)" do
+      assert_non_date_raises %q{Weekday(<Date>, 2)}
+    end
+  end
 end
