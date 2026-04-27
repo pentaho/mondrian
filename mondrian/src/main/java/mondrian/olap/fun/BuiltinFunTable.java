@@ -13,8 +13,10 @@ package mondrian.olap.fun;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import mondrian.calc.BooleanCalc;
 import mondrian.calc.Calc;
@@ -2123,7 +2125,7 @@ public class BuiltinFunTable extends FunTableImpl {
         // specific Vba/Excel function definitions so a schema-level
         // UserDefinedFunction with the same name can be used instead
         // without triggering an ambiguous-match error.
-        final java.util.Set<String> skipFunctions = parseSkipFunctions();
+        final Set<String> skipFunctions = parseSkipFunctions();
 
         // Define VBA functions.
         for (FunDef funDef : JavaFunDef.scan(Vba.class)) {
@@ -2147,13 +2149,13 @@ public class BuiltinFunTable extends FunTableImpl {
     // the eigenbase-properties StringProperty caches on first read; that
     // makes the value sticky for the JVM lifetime and breaks tests that
     // need to toggle the property per case.
-    private static java.util.Set<String> parseSkipFunctions() {
+    private static Set<String> parseSkipFunctions() {
         final String value =
-            java.lang.System.getProperty("mondrian.olap.fun.SkipJavaFunDefs");
+            System.getProperty("mondrian.olap.fun.SkipJavaFunDefs");
         if (value == null || value.isEmpty()) {
-            return java.util.Collections.emptySet();
+            return Collections.emptySet();
         }
-        final java.util.Set<String> names = new java.util.HashSet<String>();
+        final Set<String> names = new HashSet<>();
         for (String part : value.split(",")) {
             final String trimmed = part.trim();
             if (!trimmed.isEmpty()) {
