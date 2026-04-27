@@ -2119,15 +2119,48 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
+        // PATCH: SkipJavaFunDefs property lets a deployment suppress
+        // specific Vba/Excel function definitions so a schema-level
+        // UserDefinedFunction with the same name can be used instead
+        // without triggering an ambiguous-match error.
+        final java.util.Set<String> skipFunctions = parseSkipFunctions();
+
         // Define VBA functions.
         for (FunDef funDef : JavaFunDef.scan(Vba.class)) {
+            if (skipFunctions.contains(funDef.getName())) {
+                continue;
+            }
             builder.define(funDef);
         }
 
         // Define Excel functions.
         for (FunDef funDef : JavaFunDef.scan(Excel.class)) {
+            if (skipFunctions.contains(funDef.getName())) {
+                continue;
+            }
             builder.define(funDef);
         }
+    }
+
+    // PATCH: helper for SkipJavaFunDefs — read and split the property.
+    // Uses System.getProperty directly (not MondrianProperties) because
+    // the eigenbase-properties StringProperty caches on first read; that
+    // makes the value sticky for the JVM lifetime and breaks tests that
+    // need to toggle the property per case.
+    private static java.util.Set<String> parseSkipFunctions() {
+        final String value =
+            java.lang.System.getProperty("mondrian.olap.fun.SkipJavaFunDefs");
+        if (value == null || value.isEmpty()) {
+            return java.util.Collections.emptySet();
+        }
+        final java.util.Set<String> names = new java.util.HashSet<String>();
+        for (String part : value.split(",")) {
+            final String trimmed = part.trim();
+            if (!trimmed.isEmpty()) {
+                names.add(trimmed);
+            }
+        }
+        return names;
     }
 
     /**

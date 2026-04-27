@@ -39,6 +39,25 @@ on the class path.
         <!-- <Default>sun.jdbc.odbc.JdbcOdbcDriver,org.hsqldb.jdbcDriver,oracle.jdbc.OracleDriver,com.mysql.jdbc.Driver</Default> -->
         <Default></Default>
     </PropertyDefinition>
+    <PropertyDefinition>
+        <Name>SkipJavaFunDefs</Name>
+        <Path>mondrian.olap.fun.SkipJavaFunDefs</Path>
+        <Description>
+Comma-separated list of MDX function names to skip when registering
+@FunctionName-annotated Java function definitions (from
+mondrian.olap.fun.vba.Vba and mondrian.olap.fun.vba.Excel). Names are
+matched case-sensitively. Whitespace around entries is trimmed.
+
+Allows a schema-level UserDefinedFunction with the same name to be
+registered without triggering an ambiguous-match error. Primarily
+useful for providing a context-aware replacement of a stock
+Vba/Excel function (e.g. a time-zone-aware Now()).
+
+Does not affect any other built-in MDX functions.
+        </Description>
+        <Type>String</Type>
+        <Default></Default>
+    </PropertyDefinition>
 	<PropertyDefinition>
         <Name>CellBatchSize</Name>
         <Path>mondrian.rolap.cellBatchSize</Path>
