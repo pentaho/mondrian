@@ -134,7 +134,8 @@ public class Vba {
             return number.doubleValue();
         } else {
             final String s = String.valueOf(expression);
-            return new Double(s);
+            // PATCH: new Double(s) is deprecated in Java 9+ and slated for removal.
+            return Double.valueOf(s);
         }
     }
 
@@ -168,7 +169,8 @@ public class Vba {
             try {
                 return Integer.parseInt(s);
             } catch (NumberFormatException e) {
-                return new Double(s).intValue();
+                // PATCH: new Double(s) is deprecated in Java 9+ and slated for removal.
+                return Double.valueOf(s).intValue();
             }
         }
     }
