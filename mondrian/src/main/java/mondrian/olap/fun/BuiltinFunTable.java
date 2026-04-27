@@ -2144,11 +2144,11 @@ public class BuiltinFunTable extends FunTableImpl {
         }
     }
 
-    // PATCH: helper for SkipJavaFunDefs — read and split the property.
-    // Uses System.getProperty directly (not MondrianProperties) because
-    // the eigenbase-properties StringProperty caches on first read; that
-    // makes the value sticky for the JVM lifetime and breaks tests that
-    // need to toggle the property per case.
+    // PATCH: read SkipJavaFunDefs from System directly so tests that toggle
+    // it per-case see the current value. MondrianProperties wouldn't —
+    // MondrianPropertiesBase.populate() snapshots System.getProperties()
+    // into its own map at singleton init and never refreshes; in prod that's
+    // fine because the property is set at startup, but tests need it live.
     private static Set<String> parseSkipFunctions() {
         final String value =
             System.getProperty("mondrian.olap.fun.SkipJavaFunDefs");
