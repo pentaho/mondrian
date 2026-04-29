@@ -111,7 +111,9 @@ public class Vba {
     // Date so that calculated members — which Mondrian's validator
     // always types as Numeric regardless of runtime return type — can
     // be passed as date arguments.
-    public static Date castToDate(Object expression) {
+    // Package-private so JavaFunDef.scan (which registers all public static
+    // methods as MDX functions) doesn't accidentally expose this helper.
+    static Date castToDate(Object expression) {
         if (expression instanceof Date) {
             return (Date) expression;
         } else if (expression == null) {

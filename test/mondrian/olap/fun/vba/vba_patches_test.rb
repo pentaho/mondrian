@@ -92,34 +92,48 @@ describe "Vba patches" do
   end
 
   describe "castToDate (direct Java-level tests)" do
-    let(:vba) { Java::MondrianOlapFunVba::Vba }
+    # castToDate is package-private so JavaFunDef.scan (which registers all
+    # public static methods on Vba as MDX functions) doesn't expose this
+    # internal helper.
+    let(:cast_to_date_method) do
+      method = Java::MondrianOlapFunVba::Vba.java_class
+        .getDeclaredMethod("castToDate", java.lang.Object.java_class)
+      method.setAccessible(true)
+      method
+    end
+
+    def cast_to_date(arg)
+      cast_to_date_method.invoke(nil, arg)
+    rescue Java::JavaLangReflect::InvocationTargetException => e
+      raise e.cause
+    end
 
     it "passes through a java.util.Date argument" do
       date = Java::JavaUtil::Date.new(1234567890000)
-      assert_equal date.getTime, vba.castToDate(date).getTime
+      assert_equal date.getTime, cast_to_date(date).getTime
     end
 
     it "returns null for a null argument" do
-      assert_nil vba.castToDate(nil)
+      assert_nil cast_to_date(nil)
     end
 
     it "accepts a java.sql.Timestamp (subclass of Date)" do
       timestamp = Java::JavaSql::Timestamp.new(1234567890000)
-      result = vba.castToDate(timestamp)
+      result = cast_to_date(timestamp)
       refute_nil result
       assert_equal timestamp.getTime, result.getTime
     end
 
     it "raises InvalidArgumentException for a String argument" do
       error = assert_raises(Java::MondrianOlap::InvalidArgumentException) do
-        vba.castToDate("not a date")
+        cast_to_date("not a date")
       end
       assert_match INVALID_TYPE_MESSAGE, error.message
     end
 
     it "raises InvalidArgumentException for an Integer argument" do
       error = assert_raises(Java::MondrianOlap::InvalidArgumentException) do
-        vba.castToDate(42)
+        cast_to_date(42)
       end
       assert_match INVALID_TYPE_MESSAGE, error.message
     end

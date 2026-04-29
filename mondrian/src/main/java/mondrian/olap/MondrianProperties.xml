@@ -44,9 +44,11 @@ on the class path.
         <Path>mondrian.olap.fun.SkipJavaFunDefs</Path>
         <Description>
 Comma-separated list of MDX function names to skip when registering
-@FunctionName-annotated Java function definitions (from
-mondrian.olap.fun.vba.Vba and mondrian.olap.fun.vba.Excel). Names are
-matched case-sensitively. Whitespace around entries is trimmed.
+Java function definitions from mondrian.olap.fun.vba.Vba and
+mondrian.olap.fun.vba.Excel. JavaFunDef.scan registers every public
+static method, using @FunctionName when present and otherwise the
+Java method name. Names are matched case-sensitively. Whitespace
+around entries is trimmed.
 
 Allows a schema-level UserDefinedFunction with the same name to be
 registered without triggering an ambiguous-match error. Primarily
