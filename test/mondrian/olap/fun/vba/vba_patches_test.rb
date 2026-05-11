@@ -1,11 +1,3 @@
-# This software is subject to the terms of the Eclipse Public License v1.0
-# Agreement, available at the following URL:
-# http://www.eclipse.org/legal/epl-v10.html.
-# You must accept the terms of that agreement to use this software.
-#
-# Copyright (C) 2026 eazyBI
-# All Rights Reserved.
-
 # frozen_string_literal: true
 
 require_relative "../../../../test_helper"
@@ -144,19 +136,19 @@ describe "Vba patches" do
     # negative) — the `floor != number` branch in dateAdd has distinct
     # logic from the integer path, so fractional cases are important.
     [
-      %q{DateAdd("d", 1, <Date>)},
-      %q{DateAdd("d", -1, <Date>)},
-      %q{DateAdd("d", 0.5, <Date>)},       # fractional: exercises floor != number branch
-      %q{DateAdd("yyyy", 1, <Date>)},
-      %q{DateAdd("yyyy", -5, <Date>)},
-      %q{DateAdd("q", 2, <Date>)},
-      %q{DateAdd("m", 1, <Date>)},
-      %q{DateAdd("m", -13, <Date>)},       # crosses year boundary
-      %q{DateAdd("ww", 3, <Date>)},
-      %q{DateAdd("h", 12, <Date>)},
-      %q{DateAdd("h", 36, <Date>)},        # crosses day boundary
-      %q{DateAdd("n", 5, <Date>)},
-      %q{DateAdd("s", 30, <Date>)},
+      'DateAdd("d", 1, <Date>)',
+      'DateAdd("d", -1, <Date>)',
+      'DateAdd("d", 0.5, <Date>)',       # fractional: exercises floor != number branch
+      'DateAdd("yyyy", 1, <Date>)',
+      'DateAdd("yyyy", -5, <Date>)',
+      'DateAdd("q", 2, <Date>)',
+      'DateAdd("m", 1, <Date>)',
+      'DateAdd("m", -13, <Date>)',       # crosses year boundary
+      'DateAdd("ww", 3, <Date>)',
+      'DateAdd("h", 12, <Date>)',
+      'DateAdd("h", 36, <Date>)',        # crosses day boundary
+      'DateAdd("n", 5, <Date>)',
+      'DateAdd("s", 30, <Date>)',
     ].each do |template|
       it "calc-member path matches Date-literal path: #{template}" do
         assert_behavior_preserved template
@@ -166,16 +158,16 @@ describe "Vba patches" do
     it "handles a leap-year Feb 29 cross-boundary add" do
       # Feb 29 2024 + 1 year = Feb 28 2025 (not Feb 29). This is a
       # VBA semantic case where the underlying Calendar math matters.
-      assert_behavior_preserved %q{DateAdd("yyyy", 1, <Date>)},
+      assert_behavior_preserved 'DateAdd("yyyy", 1, <Date>)',
         'DateSerial(2024, 2, 29)'
     end
 
     it "returns null when the date argument is null" do
-      assert_null_date_returns_null %q{DateAdd("d", 1, <Date>)}
+      assert_null_date_returns_null 'DateAdd("d", 1, <Date>)'
     end
 
     it "raises when the date argument is a non-Date, non-null value" do
-      assert_non_date_raises %q{DateAdd("d", 1, <Date>)}
+      assert_non_date_raises 'DateAdd("d", 1, <Date>)'
     end
   end
 
@@ -186,14 +178,14 @@ describe "Vba patches" do
     # date2-date1. We don't assert specific values — behavior-
     # preservation is the invariant.
     [
-      %q{DateDiff("d", <Date>, <Date>)},
-      %q{DateDiff("d", DateSerial(2025,1,1), <Date>)},    # asymmetric
-      %q{DateDiff("d", <Date>, DateSerial(2025,12,31))},  # asymmetric
-      %q{DateDiff("s", <Date>, <Date>)},
-      %q{DateDiff("m", <Date>, DateAdd("m", 6, <Date>))},
-      %q{DateDiff("yyyy", <Date>, DateAdd("yyyy", 3, <Date>))},
-      %q{DateDiff("ww", <Date>, DateAdd("d", 30, <Date>))},
-      %q{DateDiff("n", <Date>, DateAdd("h", 2, <Date>))},
+      'DateDiff("d", <Date>, <Date>)',
+      'DateDiff("d", DateSerial(2025,1,1), <Date>)',    # asymmetric
+      'DateDiff("d", <Date>, DateSerial(2025,12,31))',  # asymmetric
+      'DateDiff("s", <Date>, <Date>)',
+      'DateDiff("m", <Date>, DateAdd("m", 6, <Date>))',
+      'DateDiff("yyyy", <Date>, DateAdd("yyyy", 3, <Date>))',
+      'DateDiff("ww", <Date>, DateAdd("d", 30, <Date>))',
+      'DateDiff("n", <Date>, DateAdd("h", 2, <Date>))',
     ].each do |template|
       it "2-arg: calc-member path matches Date-literal path: #{template}" do
         assert_behavior_preserved template
@@ -202,9 +194,9 @@ describe "Vba patches" do
 
     # 3-arg overload: DateDiff(interval, date1, date2, firstDayOfWeek).
     [
-      %q{DateDiff("d", <Date>, DateAdd("d", 30, <Date>), 1)},  # Sunday first
-      %q{DateDiff("d", <Date>, DateAdd("d", 30, <Date>), 2)},  # Monday first
-      %q{DateDiff("ww", <Date>, DateAdd("d", 30, <Date>), 2)},
+      'DateDiff("d", <Date>, DateAdd("d", 30, <Date>), 1)',  # Sunday first
+      'DateDiff("d", <Date>, DateAdd("d", 30, <Date>), 2)',  # Monday first
+      'DateDiff("ww", <Date>, DateAdd("d", 30, <Date>), 2)',
     ].each do |template|
       it "3-arg: calc-member path matches Date-literal path: #{template}" do
         assert_behavior_preserved template
@@ -213,8 +205,8 @@ describe "Vba patches" do
 
     # 4-arg overload: DateDiff(interval, date1, date2, firstDayOfWeek, firstWeekOfYear).
     [
-      %q{DateDiff("d", <Date>, DateAdd("d", 30, <Date>), 1, 1)},
-      %q{DateDiff("ww", <Date>, DateAdd("d", 30, <Date>), 2, 2)},
+      'DateDiff("d", <Date>, DateAdd("d", 30, <Date>), 1, 1)',
+      'DateDiff("ww", <Date>, DateAdd("d", 30, <Date>), 2, 2)',
     ].each do |template|
       it "4-arg: calc-member path matches Date-literal path: #{template}" do
         assert_behavior_preserved template
@@ -222,19 +214,19 @@ describe "Vba patches" do
     end
 
     it "returns null when either date expression is null (2-arg)" do
-      assert_null_date_returns_null %q{DateDiff("s", <Date>, <Date>)}
+      assert_null_date_returns_null 'DateDiff("s", <Date>, <Date>)'
     end
 
     it "raises when the date expression is non-Date (2-arg)" do
-      assert_non_date_raises %q{DateDiff("s", <Date>, <Date>)}
+      assert_non_date_raises 'DateDiff("s", <Date>, <Date>)'
     end
 
     it "raises when the date expression is non-Date (3-arg)" do
-      assert_non_date_raises %q{DateDiff("d", <Date>, <Date>, 2)}
+      assert_non_date_raises 'DateDiff("d", <Date>, <Date>, 2)'
     end
 
     it "raises when the date expression is non-Date (4-arg)" do
-      assert_non_date_raises %q{DateDiff("d", <Date>, <Date>, 1, 1)}
+      assert_non_date_raises 'DateDiff("d", <Date>, <Date>, 1, 1)'
     end
   end
 
@@ -242,16 +234,16 @@ describe "Vba patches" do
     # 2-arg overload: DatePart(interval, date). Each interval has its
     # own extraction path in the Calendar code — cover them all.
     [
-      %q{DatePart("yyyy", <Date>)},
-      %q{DatePart("q", <Date>)},
-      %q{DatePart("m", <Date>)},
-      %q{DatePart("y", <Date>)},    # day of year
-      %q{DatePart("d", <Date>)},    # day of month
-      %q{DatePart("w", <Date>)},    # weekday
-      %q{DatePart("ww", <Date>)},   # week of year
-      %q{DatePart("h", <Date>)},
-      %q{DatePart("n", <Date>)},
-      %q{DatePart("s", <Date>)},
+      'DatePart("yyyy", <Date>)',
+      'DatePart("q", <Date>)',
+      'DatePart("m", <Date>)',
+      'DatePart("y", <Date>)',    # day of year
+      'DatePart("d", <Date>)',    # day of month
+      'DatePart("w", <Date>)',    # weekday
+      'DatePart("ww", <Date>)',   # week of year
+      'DatePart("h", <Date>)',
+      'DatePart("n", <Date>)',
+      'DatePart("s", <Date>)',
     ].each do |template|
       it "2-arg: calc-member path matches Date-literal path: #{template}" do
         assert_behavior_preserved template
@@ -260,11 +252,11 @@ describe "Vba patches" do
 
     # 3-arg overload: firstDayOfWeek only affects "w" and "ww".
     [
-      %q{DatePart("w", <Date>, 1)},     # Sunday first
-      %q{DatePart("w", <Date>, 2)},     # Monday first
-      %q{DatePart("ww", <Date>, 1)},
-      %q{DatePart("ww", <Date>, 2)},
-      %q{DatePart("yyyy", <Date>, 2)},  # firstDayOfWeek ignored for non-week intervals
+      'DatePart("w", <Date>, 1)',     # Sunday first
+      'DatePart("w", <Date>, 2)',     # Monday first
+      'DatePart("ww", <Date>, 1)',
+      'DatePart("ww", <Date>, 2)',
+      'DatePart("yyyy", <Date>, 2)',  # firstDayOfWeek ignored for non-week intervals
     ].each do |template|
       it "3-arg: calc-member path matches Date-literal path: #{template}" do
         assert_behavior_preserved template
@@ -273,10 +265,10 @@ describe "Vba patches" do
 
     # 4-arg overload: firstWeekOfYear only affects "w" and "ww".
     [
-      %q{DatePart("ww", <Date>, 1, 1)},  # vbFirstJan1
-      %q{DatePart("ww", <Date>, 1, 2)},  # vbFirstFourDays
-      %q{DatePart("ww", <Date>, 2, 2)},
-      %q{DatePart("d", <Date>, 1, 1)},   # both args ignored for non-week intervals
+      'DatePart("ww", <Date>, 1, 1)',  # vbFirstJan1
+      'DatePart("ww", <Date>, 1, 2)',  # vbFirstFourDays
+      'DatePart("ww", <Date>, 2, 2)',
+      'DatePart("d", <Date>, 1, 1)',   # both args ignored for non-week intervals
     ].each do |template|
       it "4-arg: calc-member path matches Date-literal path: #{template}" do
         assert_behavior_preserved template
@@ -284,19 +276,19 @@ describe "Vba patches" do
     end
 
     it "returns null when the date expression is null (2-arg)" do
-      assert_null_date_returns_null %q{DatePart("d", <Date>)}
+      assert_null_date_returns_null 'DatePart("d", <Date>)'
     end
 
     it "raises when the date expression is non-Date (2-arg)" do
-      assert_non_date_raises %q{DatePart("d", <Date>)}
+      assert_non_date_raises 'DatePart("d", <Date>)'
     end
 
     it "raises when the date expression is non-Date (3-arg)" do
-      assert_non_date_raises %q{DatePart("w", <Date>, 2)}
+      assert_non_date_raises 'DatePart("w", <Date>, 2)'
     end
 
     it "raises when the date expression is non-Date (4-arg)" do
-      assert_non_date_raises %q{DatePart("ww", <Date>, 2, 2)}
+      assert_non_date_raises 'DatePart("ww", <Date>, 2, 2)'
     end
   end
 
@@ -305,17 +297,17 @@ describe "Vba patches" do
   # the same Date→Object widening pattern.
   describe "Simple date getters with Object date" do
     [
-      %q{Year(<Date>)},
-      %q{Month(<Date>)},
-      %q{Day(<Date>)},
-      %q{Hour(<Date>)},
-      %q{Minute(<Date>)},
-      %q{Second(<Date>)},
-      %q{Weekday(<Date>)},
-      %q{Weekday(<Date>, 1)},       # 2-arg overload, Sunday first
-      %q{Weekday(<Date>, 2)},       # 2-arg overload, Monday first
-      %q{DateValue(<Date>)},        # returns Date
-      %q{TimeValue(<Date>)},        # returns Date
+      'Year(<Date>)',
+      'Month(<Date>)',
+      'Day(<Date>)',
+      'Hour(<Date>)',
+      'Minute(<Date>)',
+      'Second(<Date>)',
+      'Weekday(<Date>)',
+      'Weekday(<Date>, 1)',       # 2-arg overload, Sunday first
+      'Weekday(<Date>, 2)',       # 2-arg overload, Monday first
+      'DateValue(<Date>)',        # returns Date
+      'TimeValue(<Date>)',        # returns Date
     ].each do |template|
       it "calc-member path matches Date-literal path: #{template}" do
         assert_behavior_preserved template
@@ -329,7 +321,7 @@ describe "Vba patches" do
       'DateSerial(2025, 1, 1)',     # first day of year, Wednesday
       'DateSerial(2024, 12, 31)',   # last day of year, Tuesday
       'DateSerial(2024, 2, 29)',    # leap day
-      %q{DateAdd("s", 23*60*60 + 59*60 + 58, DateSerial(2025, 6, 15))},  # near-midnight
+      'DateAdd("s", 23*60*60 + 59*60 + 58, DateSerial(2025, 6, 15))',  # near-midnight
     ].each do |specific_date|
       it "extracts Year/Month/Day for #{specific_date}" do
         %w(Year Month Day).each do |fn|
@@ -351,7 +343,7 @@ describe "Vba patches" do
     end
 
     it "returns null when the date argument is null (Weekday 2-arg)" do
-      assert_null_date_returns_null %q{Weekday(<Date>, 2)}
+      assert_null_date_returns_null 'Weekday(<Date>, 2)'
     end
 
     it "raises when the date argument is non-Date (each getter)" do
@@ -361,7 +353,7 @@ describe "Vba patches" do
     end
 
     it "raises when the date argument is non-Date (Weekday 2-arg)" do
-      assert_non_date_raises %q{Weekday(<Date>, 2)}
+      assert_non_date_raises 'Weekday(<Date>, 2)'
     end
   end
 
