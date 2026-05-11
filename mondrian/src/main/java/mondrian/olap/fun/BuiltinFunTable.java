@@ -13,8 +13,10 @@ package mondrian.olap.fun;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import mondrian.calc.BooleanCalc;
 import mondrian.calc.Calc;
@@ -2065,7 +2067,7 @@ public class BuiltinFunTable extends FunTableImpl {
         builder.define(NthQuartileFunDef.ThirdQResolver);
 
         builder.define(CalculatedChildFunDef.instance);
-        
+
         builder.define(CachedExistsFunDef.instance);
 
         builder.define(CastFunDef.Resolver);
@@ -2119,15 +2121,48 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
+        // PATCH: skipJavaFunDefs property lets a deployment suppress
+        // specific Vba/Excel function definitions so a schema-level
+        // UserDefinedFunction with the same name can be used instead
+        // without triggering an ambiguous-match error.
+        final Set<String> skipFunctions = parseSkipFunctions();
+
         // Define VBA functions.
         for (FunDef funDef : JavaFunDef.scan(Vba.class)) {
+            if (skipFunctions.contains(funDef.getName())) {
+                continue;
+            }
             builder.define(funDef);
         }
 
         // Define Excel functions.
         for (FunDef funDef : JavaFunDef.scan(Excel.class)) {
+            if (skipFunctions.contains(funDef.getName())) {
+                continue;
+            }
             builder.define(funDef);
         }
+    }
+
+    // PATCH: read skipJavaFunDefs from System directly so tests that toggle
+    // it per-case see the current value. MondrianProperties wouldn't —
+    // MondrianPropertiesBase.populate() snapshots System.getProperties()
+    // into its own map at singleton init and never refreshes; in prod that's
+    // fine because the property is set at startup, but tests need it live.
+    private static Set<String> parseSkipFunctions() {
+        final String value =
+            System.getProperty("mondrian.olap.fun.skipJavaFunDefs");
+        if (value == null || value.isEmpty()) {
+            return Collections.emptySet();
+        }
+        final Set<String> names = new HashSet<>();
+        for (String part : value.split(",")) {
+            final String trimmed = part.trim();
+            if (!trimmed.isEmpty()) {
+                names.add(trimmed);
+            }
+        }
+        return names;
     }
 
     /**

@@ -1,0 +1,409 @@
+# frozen_string_literal: true
+
+require_relative "../../../../test_helper"
+
+# Tests for local patches to mondrian.olap.fun.vba.Vba.
+#
+# Most VBA date functions had their signatures widened from (Date) to
+# (Object) so that calculated members — which Mondrian's validator
+# always types as Numeric regardless of runtime return type — can be
+# passed as date arguments. Runtime coercion is done by a shared
+# castToDate helper.
+#
+# Tests use a behavior-preservation strategy: for each patched function,
+# run the same expression with (a) a stock Date literal and (b) a
+# calc-member that evaluates to the same date, and assert the two paths
+# return the same value. This isolates the patch's invariant ("Object
+# path works the same as Date path") from any pre-existing Mondrian
+# quirks in the underlying math (e.g. DateDiff sign inversion on
+# non-"d" intervals is a stock bug, unrelated to this patch).
+describe "Vba patches" do
+  DATE_LITERAL = 'DateSerial(2025, 9, 30)'
+  NULL_EXPRESSION = 'CASE WHEN 1=2 THEN Now() END'
+  NON_DATE_EXPRESSION = '123'
+  INVALID_TYPE_MESSAGE = /must be of type Date/
+
+  before(:all) do
+    create_olap_connection
+  end
+
+  after(:all) do
+    @olap&.close
+  end
+
+  def execute_result(mdx)
+    @olap.execute(mdx).values.first
+  end
+
+  def execute_on_date_measure(date_formula, result_formula)
+    execute_result <<~MDX
+      WITH
+        MEMBER [Measures].[Date] AS #{date_formula}
+        MEMBER [Measures].[Result] AS #{result_formula}
+      SELECT {[Measures].[Result]} ON COLUMNS FROM [Sales]
+    MDX
+  end
+
+  # Run `expression_template` (which contains `<Date>` placeholders) twice:
+  # once with the placeholders replaced by a Date literal, once with a
+  # calc-member that evaluates to the same date. Assert the two results
+  # are equal. This asserts the Object-widening patch is
+  # behavior-preserving without committing to any specific expected value.
+  def assert_behavior_preserved(expression_template, date_literal = DATE_LITERAL)
+    date_form = expression_template.gsub('<Date>', date_literal)
+    calc_form = expression_template.gsub('<Date>', '[Measures].[Date]')
+
+    baseline = execute_result(<<~MDX)
+      WITH MEMBER [Measures].[Result] AS #{date_form}
+      SELECT {[Measures].[Result]} ON COLUMNS FROM [Sales]
+    MDX
+
+    via_calc = execute_on_date_measure(date_literal, calc_form)
+
+    assert_equal normalize(baseline), normalize(via_calc),
+      "Object path must match Date path for: #{expression_template}"
+  end
+
+  # Java::JavaUtil::Date instances do not `==`-compare sensibly; compare
+  # by milliseconds.
+  def normalize(value)
+    value.respond_to?(:getTime) ? value.getTime : value
+  end
+
+  def assert_null_date_returns_null(expression_template)
+    calc_form = expression_template.gsub('<Date>', '[Measures].[Date]')
+    result = execute_on_date_measure(NULL_EXPRESSION, calc_form)
+    assert_nil result, "Null date argument should produce null: #{expression_template}"
+  end
+
+  def assert_non_date_raises(expression_template)
+    calc_form = expression_template.gsub('<Date>', '[Measures].[Date]')
+    result = execute_on_date_measure(NON_DATE_EXPRESSION, calc_form)
+    assert_match INVALID_TYPE_MESSAGE, result.message,
+      "Non-Date argument should raise: #{expression_template}"
+  end
+
+  describe "castToDate (direct Java-level tests)" do
+    # castToDate is package-private so JavaFunDef.scan (which registers all
+    # public static methods on Vba as MDX functions) doesn't expose this
+    # internal helper.
+    let(:cast_to_date_method) do
+      method = Java::MondrianOlapFunVba::Vba.java_class
+        .getDeclaredMethod("castToDate", java.lang.Object.java_class)
+      method.setAccessible(true)
+      method
+    end
+
+    def cast_to_date(arg)
+      cast_to_date_method.invoke(nil, arg)
+    rescue Java::JavaLangReflect::InvocationTargetException => e
+      raise e.cause
+    end
+
+    it "passes through a java.util.Date argument" do
+      date = Java::JavaUtil::Date.new(1234567890000)
+      assert_equal date.getTime, cast_to_date(date).getTime
+    end
+
+    it "returns null for a null argument" do
+      assert_nil cast_to_date(nil)
+    end
+
+    it "accepts a java.sql.Timestamp (subclass of Date)" do
+      timestamp = Java::JavaSql::Timestamp.new(1234567890000)
+      result = cast_to_date(timestamp)
+      refute_nil result
+      assert_equal timestamp.getTime, result.getTime
+    end
+
+    it "raises InvalidArgumentException for a String argument" do
+      error = assert_raises(Java::MondrianOlap::InvalidArgumentException) do
+        cast_to_date("not a date")
+      end
+      assert_match INVALID_TYPE_MESSAGE, error.message
+    end
+
+    it "raises InvalidArgumentException for an Integer argument" do
+      error = assert_raises(Java::MondrianOlap::InvalidArgumentException) do
+        cast_to_date(42)
+      end
+      assert_match INVALID_TYPE_MESSAGE, error.message
+    end
+  end
+
+  describe "DateAdd with Object date" do
+    # Variety of intervals and `number` shapes (integer, fractional,
+    # negative) — the `floor != number` branch in dateAdd has distinct
+    # logic from the integer path, so fractional cases are important.
+    [
+      'DateAdd("d", 1, <Date>)',
+      'DateAdd("d", -1, <Date>)',
+      'DateAdd("d", 0.5, <Date>)',       # fractional: exercises floor != number branch
+      'DateAdd("yyyy", 1, <Date>)',
+      'DateAdd("yyyy", -5, <Date>)',
+      'DateAdd("q", 2, <Date>)',
+      'DateAdd("m", 1, <Date>)',
+      'DateAdd("m", -13, <Date>)',       # crosses year boundary
+      'DateAdd("ww", 3, <Date>)',
+      'DateAdd("h", 12, <Date>)',
+      'DateAdd("h", 36, <Date>)',        # crosses day boundary
+      'DateAdd("n", 5, <Date>)',
+      'DateAdd("s", 30, <Date>)',
+    ].each do |template|
+      it "calc-member path matches Date-literal path: #{template}" do
+        assert_behavior_preserved template
+      end
+    end
+
+    it "handles a leap-year Feb 29 cross-boundary add" do
+      # Feb 29 2024 + 1 year = Feb 28 2025 (not Feb 29). This is a
+      # VBA semantic case where the underlying Calendar math matters.
+      assert_behavior_preserved 'DateAdd("yyyy", 1, <Date>)',
+        'DateSerial(2024, 2, 29)'
+    end
+
+    it "returns null when the date argument is null" do
+      assert_null_date_returns_null 'DateAdd("d", 1, <Date>)'
+    end
+
+    it "raises when the date argument is a non-Date, non-null value" do
+      assert_non_date_raises 'DateAdd("d", 1, <Date>)'
+    end
+  end
+
+  describe "DateDiff with Object dates" do
+    # 2-arg overload: DateDiff(interval, date1, date2).
+    # Exercise multiple intervals. Note: only "d" has correct sign in
+    # stock Mondrian; other intervals return date1-date2 instead of
+    # date2-date1. We don't assert specific values — behavior-
+    # preservation is the invariant.
+    [
+      'DateDiff("d", <Date>, <Date>)',
+      'DateDiff("d", DateSerial(2025,1,1), <Date>)',    # asymmetric
+      'DateDiff("d", <Date>, DateSerial(2025,12,31))',  # asymmetric
+      'DateDiff("s", <Date>, <Date>)',
+      'DateDiff("m", <Date>, DateAdd("m", 6, <Date>))',
+      'DateDiff("yyyy", <Date>, DateAdd("yyyy", 3, <Date>))',
+      'DateDiff("ww", <Date>, DateAdd("d", 30, <Date>))',
+      'DateDiff("n", <Date>, DateAdd("h", 2, <Date>))',
+    ].each do |template|
+      it "2-arg: calc-member path matches Date-literal path: #{template}" do
+        assert_behavior_preserved template
+      end
+    end
+
+    # 3-arg overload: DateDiff(interval, date1, date2, firstDayOfWeek).
+    [
+      'DateDiff("d", <Date>, DateAdd("d", 30, <Date>), 1)',  # Sunday first
+      'DateDiff("d", <Date>, DateAdd("d", 30, <Date>), 2)',  # Monday first
+      'DateDiff("ww", <Date>, DateAdd("d", 30, <Date>), 2)',
+    ].each do |template|
+      it "3-arg: calc-member path matches Date-literal path: #{template}" do
+        assert_behavior_preserved template
+      end
+    end
+
+    # 4-arg overload: DateDiff(interval, date1, date2, firstDayOfWeek, firstWeekOfYear).
+    [
+      'DateDiff("d", <Date>, DateAdd("d", 30, <Date>), 1, 1)',
+      'DateDiff("ww", <Date>, DateAdd("d", 30, <Date>), 2, 2)',
+    ].each do |template|
+      it "4-arg: calc-member path matches Date-literal path: #{template}" do
+        assert_behavior_preserved template
+      end
+    end
+
+    it "returns null when either date expression is null (2-arg)" do
+      assert_null_date_returns_null 'DateDiff("s", <Date>, <Date>)'
+    end
+
+    it "raises when the date expression is non-Date (2-arg)" do
+      assert_non_date_raises 'DateDiff("s", <Date>, <Date>)'
+    end
+
+    it "raises when the date expression is non-Date (3-arg)" do
+      assert_non_date_raises 'DateDiff("d", <Date>, <Date>, 2)'
+    end
+
+    it "raises when the date expression is non-Date (4-arg)" do
+      assert_non_date_raises 'DateDiff("d", <Date>, <Date>, 1, 1)'
+    end
+  end
+
+  describe "DatePart with Object date" do
+    # 2-arg overload: DatePart(interval, date). Each interval has its
+    # own extraction path in the Calendar code — cover them all.
+    [
+      'DatePart("yyyy", <Date>)',
+      'DatePart("q", <Date>)',
+      'DatePart("m", <Date>)',
+      'DatePart("y", <Date>)',    # day of year
+      'DatePart("d", <Date>)',    # day of month
+      'DatePart("w", <Date>)',    # weekday
+      'DatePart("ww", <Date>)',   # week of year
+      'DatePart("h", <Date>)',
+      'DatePart("n", <Date>)',
+      'DatePart("s", <Date>)',
+    ].each do |template|
+      it "2-arg: calc-member path matches Date-literal path: #{template}" do
+        assert_behavior_preserved template
+      end
+    end
+
+    # 3-arg overload: firstDayOfWeek only affects "w" and "ww".
+    [
+      'DatePart("w", <Date>, 1)',     # Sunday first
+      'DatePart("w", <Date>, 2)',     # Monday first
+      'DatePart("ww", <Date>, 1)',
+      'DatePart("ww", <Date>, 2)',
+      'DatePart("yyyy", <Date>, 2)',  # firstDayOfWeek ignored for non-week intervals
+    ].each do |template|
+      it "3-arg: calc-member path matches Date-literal path: #{template}" do
+        assert_behavior_preserved template
+      end
+    end
+
+    # 4-arg overload: firstWeekOfYear only affects "w" and "ww".
+    [
+      'DatePart("ww", <Date>, 1, 1)',  # vbFirstJan1
+      'DatePart("ww", <Date>, 1, 2)',  # vbFirstFourDays
+      'DatePart("ww", <Date>, 2, 2)',
+      'DatePart("d", <Date>, 1, 1)',   # both args ignored for non-week intervals
+    ].each do |template|
+      it "4-arg: calc-member path matches Date-literal path: #{template}" do
+        assert_behavior_preserved template
+      end
+    end
+
+    it "returns null when the date expression is null (2-arg)" do
+      assert_null_date_returns_null 'DatePart("d", <Date>)'
+    end
+
+    it "raises when the date expression is non-Date (2-arg)" do
+      assert_non_date_raises 'DatePart("d", <Date>)'
+    end
+
+    it "raises when the date expression is non-Date (3-arg)" do
+      assert_non_date_raises 'DatePart("w", <Date>, 2)'
+    end
+
+    it "raises when the date expression is non-Date (4-arg)" do
+      assert_non_date_raises 'DatePart("ww", <Date>, 2, 2)'
+    end
+  end
+
+  # Simple unary getters and value-normalizers: each reads a specific
+  # Calendar field (or normalizes to date-only / time-only). All follow
+  # the same Date→Object widening pattern.
+  describe "Simple date getters with Object date" do
+    [
+      'Year(<Date>)',
+      'Month(<Date>)',
+      'Day(<Date>)',
+      'Hour(<Date>)',
+      'Minute(<Date>)',
+      'Second(<Date>)',
+      'Weekday(<Date>)',
+      'Weekday(<Date>, 1)',       # 2-arg overload, Sunday first
+      'Weekday(<Date>, 2)',       # 2-arg overload, Monday first
+      'DateValue(<Date>)',        # returns Date
+      'TimeValue(<Date>)',        # returns Date
+    ].each do |template|
+      it "calc-member path matches Date-literal path: #{template}" do
+        assert_behavior_preserved template
+      end
+    end
+
+    # Specific edge cases for dates that exercise the distinct extraction
+    # paths (e.g. beginning/end of year for week, midnight for time
+    # fields, DST transitions).
+    [
+      'DateSerial(2025, 1, 1)',     # first day of year, Wednesday
+      'DateSerial(2024, 12, 31)',   # last day of year, Tuesday
+      'DateSerial(2024, 2, 29)',    # leap day
+      'DateAdd("s", 23*60*60 + 59*60 + 58, DateSerial(2025, 6, 15))',  # near-midnight
+    ].each do |specific_date|
+      it "extracts Year/Month/Day for #{specific_date}" do
+        %w(Year Month Day).each do |fn|
+          assert_behavior_preserved "#{fn}(<Date>)", specific_date
+        end
+      end
+
+      it "extracts Hour/Minute/Second for #{specific_date}" do
+        %w(Hour Minute Second).each do |fn|
+          assert_behavior_preserved "#{fn}(<Date>)", specific_date
+        end
+      end
+    end
+
+    it "returns null when the date argument is null (each getter)" do
+      %w(Year Month Day Hour Minute Second Weekday DateValue TimeValue).each do |fn|
+        assert_null_date_returns_null "#{fn}(<Date>)"
+      end
+    end
+
+    it "returns null when the date argument is null (Weekday 2-arg)" do
+      assert_null_date_returns_null 'Weekday(<Date>, 2)'
+    end
+
+    it "raises when the date argument is non-Date (each getter)" do
+      %w(Year Month Day Hour Minute Second Weekday DateValue TimeValue).each do |fn|
+        assert_non_date_raises "#{fn}(<Date>)"
+      end
+    end
+
+    it "raises when the date argument is non-Date (Weekday 2-arg)" do
+      assert_non_date_raises 'Weekday(<Date>, 2)'
+    end
+  end
+
+  # Int(x) should return floor(x), not trunc(x). Stock Mondrian was
+  # buggy for -1 < x < 0: truncation gives 0, but floor is -1.
+  # https://jira.pentaho.com/browse/MONDRIAN-2730
+  describe "Int MONDRIAN-2730 floor-for-small-negatives" do
+    def int_of(number_expr)
+      execute_result <<~MDX
+        WITH MEMBER [Measures].[Result] AS Int(#{number_expr})
+        SELECT {[Measures].[Result]} ON COLUMNS FROM [Sales]
+      MDX
+    end
+
+    # Cases in the patched range (−1 < x < 0) — these were broken in stock.
+    it "returns -1 for -0.5 (was 0 in stock)" do
+      assert_equal(-1, int_of('-0.5'))
+    end
+
+    it "returns -1 for -0.001 (was 0 in stock)" do
+      assert_equal(-1, int_of('-0.001'))
+    end
+
+    it "returns -1 for -0.9999 (was 0 in stock)" do
+      assert_equal(-1, int_of('-0.9999'))
+    end
+
+    # Regression cases — behavior must be unchanged by the patch.
+    it "returns 0 for 0" do
+      assert_equal 0, int_of('0')
+    end
+
+    it "returns 0 for 0.5 (positive, truncates to 0)" do
+      assert_equal 0, int_of('0.5')
+    end
+
+    it "returns 2 for 2.7 (positive)" do
+      assert_equal 2, int_of('2.7')
+    end
+
+    it "returns -1 for exact -1.0" do
+      assert_equal(-1, int_of('-1.0'))
+    end
+
+    it "returns -3 for -2.7 (standard negative case)" do
+      assert_equal(-3, int_of('-2.7'))
+    end
+
+    it "returns -1 for exact -1 (no fractional part)" do
+      assert_equal(-1, int_of('-1'))
+    end
+  end
+end

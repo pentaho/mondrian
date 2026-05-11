@@ -105,6 +105,26 @@ public class Vba {
         }
     }
 
+    // PATCH: Coerce an Object argument to Date. VBA date functions
+    // (DateAdd, DateDiff, DatePart, Day, Month, Year, Hour, Minute,
+    // Second, Weekday, DateValue, TimeValue) accept Object instead of
+    // Date so that calculated members — which Mondrian's validator
+    // always types as Numeric regardless of runtime return type — can
+    // be passed as date arguments.
+    // Package-private so JavaFunDef.scan (which registers all public static
+    // methods as MDX functions) doesn't accidentally expose this helper.
+    static Date castToDate(Object expression) {
+        if (expression instanceof Date) {
+            return (Date) expression;
+        } else if (expression == null) {
+            return null;
+        } else {
+            throw new InvalidArgumentException(
+                "Invalid parameter. Parameter " + expression
+                + " must be of type Date");
+        }
+    }
+
     @FunctionName("CDbl")
     @Signature("CDbl(expression)")
     @Description(
@@ -116,7 +136,8 @@ public class Vba {
             return number.doubleValue();
         } else {
             final String s = String.valueOf(expression);
-            return new Double(s);
+            // PATCH: new Double(s) is deprecated in Java 9+ and slated for removal.
+            return Double.valueOf(s);
         }
     }
 
@@ -150,7 +171,8 @@ public class Vba {
             try {
                 return Integer.parseInt(s);
             } catch (NumberFormatException e) {
-                return new Double(s).intValue();
+                // PATCH: new Double(s) is deprecated in Java 9+ and slated for removal.
+                return Double.valueOf(s).intValue();
             }
         }
     }
@@ -210,7 +232,10 @@ public class Vba {
         if (number instanceof Number) {
             int v = ((Number) number).intValue();
             double dv = ((Number) number).doubleValue();
-            if (v < 0 && v > dv) {
+            // PATCH: MONDRIAN-2730. Stock code used `v < 0 && v > dv`,
+            // which wrongly returned 0 for -1 < x < 0 because
+            // truncation gives v=0 there. `v <= 0` catches that range.
+            if (v <= 0 && v > dv) {
                 v--;
             }
             return v;
@@ -346,7 +371,9 @@ public class Vba {
     @Description(
         "Returns a Variant (Date) containing a date to which a specified time "
         + "interval has been added.")
-    public static Date dateAdd(String intervalName, double number, Date date) {
+    // PATCH: Accept Object date to support Numeric-typed date expressions
+    // (e.g. calculated members). See castToDate.
+    public static Date dateAdd(String intervalName, double number, Object date) {
         Interval interval = Interval.valueOf(intervalName);
         final double floor = Math.floor(number);
 
@@ -354,13 +381,13 @@ public class Vba {
         // different results in different locales: it depends whether the
         // initial date and the final date are in DST.
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
+        calendar.setTime(castToDate(date));
         if (floor != number) {
             final double ceil = Math.ceil(number);
             interval.add(calendar, (int) ceil);
             final long ceilMillis = calendar.getTimeInMillis();
 
-            calendar.setTime(date);
+            calendar.setTime(castToDate(date));
             interval.add(calendar, (int) floor);
             final long floorMillis = calendar.getTimeInMillis();
 
@@ -385,9 +412,10 @@ public class Vba {
     @Description(
         "Returns a Variant (Long) specifying the number of time intervals "
         + "between two specified dates.")
-    public static long dateDiff(String interval, Date date1, Date date2) {
+    // PATCH: Accept Object dates to support Numeric-typed date expressions.
+    public static long dateDiff(String interval, Object date1, Object date2) {
         return _dateDiff(
-            interval, date1, date2, Calendar.SUNDAY,
+            interval, castToDate(date1), castToDate(date2), Calendar.SUNDAY,
             FirstWeekOfYear.vbFirstJan1);
     }
 
@@ -397,11 +425,12 @@ public class Vba {
     @Description(
         "Returns a Variant (Long) specifying the number of time intervals "
         + "between two specified dates.")
+    // PATCH: Accept Object dates to support Numeric-typed date expressions.
     public static long dateDiff(
-        String interval, Date date1, Date date2, int firstDayOfWeek)
+        String interval, Object date1, Object date2, int firstDayOfWeek)
     {
         return _dateDiff(
-            interval, date1, date2, firstDayOfWeek,
+            interval, castToDate(date1), castToDate(date2), firstDayOfWeek,
             FirstWeekOfYear.vbFirstJan1);
     }
 
@@ -411,12 +440,13 @@ public class Vba {
     @Description(
         "Returns a Variant (Long) specifying the number of time intervals "
         + "between two specified dates.")
+    // PATCH: Accept Object dates to support Numeric-typed date expressions.
     public static long dateDiff(
-        String interval, Date date1, Date date2,
+        String interval, Object date1, Object date2,
         int firstDayOfWeek, int firstWeekOfYear)
     {
         return _dateDiff(
-            interval, date1, date2, firstDayOfWeek,
+            interval, castToDate(date1), castToDate(date2), firstDayOfWeek,
             FirstWeekOfYear.values()[firstWeekOfYear]);
     }
 
@@ -443,9 +473,10 @@ public class Vba {
     @Description(
         "Returns a Variant (Integer) containing the specified part of a given "
         + "date.")
-    public static int datePart(String interval, Date date) {
+    // PATCH: Accept Object date to support Numeric-typed date expressions.
+    public static int datePart(String interval, Object date) {
         return _datePart(
-            interval, date, Calendar.SUNDAY,
+            interval, castToDate(date), Calendar.SUNDAY,
             FirstWeekOfYear.vbFirstJan1);
     }
 
@@ -454,9 +485,10 @@ public class Vba {
     @Description(
         "Returns a Variant (Integer) containing the specified part of a given "
         + "date.")
-    public static int datePart(String interval, Date date, int firstDayOfWeek) {
+    // PATCH: Accept Object date to support Numeric-typed date expressions.
+    public static int datePart(String interval, Object date, int firstDayOfWeek) {
         return _datePart(
-            interval, date, firstDayOfWeek,
+            interval, castToDate(date), firstDayOfWeek,
             FirstWeekOfYear.vbFirstJan1);
     }
 
@@ -465,12 +497,13 @@ public class Vba {
     @Description(
         "Returns a Variant (Integer) containing the specified part of a given "
         + "date.")
+    // PATCH: Accept Object date to support Numeric-typed date expressions.
     public static int datePart(
-        String interval, Date date, int firstDayOfWeek,
+        String interval, Object date, int firstDayOfWeek,
         int firstWeekOfYear)
     {
         return _datePart(
-            interval, date, firstDayOfWeek,
+            interval, castToDate(date), firstDayOfWeek,
             FirstWeekOfYear.values()[firstWeekOfYear]);
     }
 
@@ -523,10 +556,11 @@ public class Vba {
     @FunctionName("DateValue")
     @Signature("DateValue(date)")
     @Description("Returns a Variant (Date).")
-    public static Date dateValue(Date date) {
+    // PATCH: Accept Object date to support Numeric-typed date expressions.
+    public static Date dateValue(Object date) {
         final Calendar calendar = Calendar.getInstance();
         calendar.clear();
-        calendar.setTime(date);
+        calendar.setTime(castToDate(date));
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
@@ -539,9 +573,10 @@ public class Vba {
     @Description(
         "Returns a Variant (Integer) specifying a whole number between 1 and "
         + "31, inclusive, representing the day of the month.")
-    public static int day(Date date) {
+    // PATCH: Accept Object date to support Numeric-typed date expressions.
+    public static int day(Object date) {
         final Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
+        calendar.setTime(castToDate(date));
         return calendar.get(Calendar.DAY_OF_MONTH);
     }
 
@@ -550,9 +585,10 @@ public class Vba {
     @Description(
         "Returns a Variant (Integer) specifying a whole number between 0 and "
         + "23, inclusive, representing the hour of the day.")
-    public static int hour(Date time) {
+    // PATCH: Accept Object time to support Numeric-typed date expressions.
+    public static int hour(Object time) {
         final Calendar calendar = Calendar.getInstance();
-        calendar.setTime(time);
+        calendar.setTime(castToDate(time));
         return calendar.get(Calendar.HOUR_OF_DAY);
     }
 
@@ -561,9 +597,10 @@ public class Vba {
     @Description(
         "Returns a Variant (Integer) specifying a whole number between 0 and "
         + "59, inclusive, representing the minute of the hour.")
-    public static int minute(Date time) {
+    // PATCH: Accept Object time to support Numeric-typed date expressions.
+    public static int minute(Object time) {
         final Calendar calendar = Calendar.getInstance();
-        calendar.setTime(time);
+        calendar.setTime(castToDate(time));
         return calendar.get(Calendar.MINUTE);
     }
 
@@ -572,9 +609,10 @@ public class Vba {
     @Description(
         "Returns a Variant (Integer) specifying a whole number between 1 and "
         + "12, inclusive, representing the month of the year.")
-    public static int month(Date date) {
+    // PATCH: Accept Object date to support Numeric-typed date expressions.
+    public static int month(Object date) {
         final Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
+        calendar.setTime(castToDate(date));
         final int month = calendar.get(Calendar.MONTH);
         return month + 1; // convert from 0- to 1-based
     }
@@ -593,9 +631,10 @@ public class Vba {
     @Description(
         "Returns a Variant (Integer) specifying a whole number between 0 and "
         + "59, inclusive, representing the second of the minute.")
-    public static int second(Date time) {
+    // PATCH: Accept Object time to support Numeric-typed date expressions.
+    public static int second(Object time) {
         final Calendar calendar = Calendar.getInstance();
-        calendar.setTime(time);
+        calendar.setTime(castToDate(time));
         return calendar.get(Calendar.SECOND);
     }
 
@@ -628,10 +667,11 @@ public class Vba {
     @FunctionName("TimeValue")
     @Signature("TimeValue(time)")
     @Description("Returns a Variant (Date) containing the time.")
-    public static Date timeValue(Date time) {
+    // PATCH: Accept Object time to support Numeric-typed date expressions.
+    public static Date timeValue(Object time) {
         final Calendar calendar = Calendar.getInstance();
         calendar.clear();
-        calendar.setTime(time);
+        calendar.setTime(castToDate(time));
         calendar.set(1970, 0, 1);
         return calendar.getTime();
     }
@@ -657,7 +697,8 @@ public class Vba {
     @Description(
         "Returns a Variant (Integer) containing a whole number representing "
         + "the day of the week.")
-    public static int weekday(Date date) {
+    // PATCH: Accept Object date to support Numeric-typed date expressions.
+    public static int weekday(Object date) {
         return weekday(date, Calendar.SUNDAY);
     }
 
@@ -666,9 +707,10 @@ public class Vba {
     @Description(
         "Returns a Variant (Integer) containing a whole number representing "
         + "the day of the week.")
-    public static int weekday(Date date, int firstDayOfWeek) {
+    // PATCH: Accept Object date to support Numeric-typed date expressions.
+    public static int weekday(Object date, int firstDayOfWeek) {
         final Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
+        calendar.setTime(castToDate(date));
         int weekday = calendar.get(Calendar.DAY_OF_WEEK);
         // adjust for start of week
         weekday -= (firstDayOfWeek - 1);
@@ -682,9 +724,10 @@ public class Vba {
     @Description(
         "Returns a Variant (Integer) containing a whole number representing "
         + "the year.")
-    public static int year(Date date) {
+    // PATCH: Accept Object date to support Numeric-typed date expressions.
+    public static int year(Object date) {
         final Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
+        calendar.setTime(castToDate(date));
         return calendar.get(Calendar.YEAR);
     }
 
