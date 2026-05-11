@@ -41,7 +41,7 @@ on the class path.
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>SkipJavaFunDefs</Name>
-        <Path>mondrian.olap.fun.SkipJavaFunDefs</Path>
+        <Path>mondrian.olap.fun.skipJavaFunDefs</Path>
         <Description>
 Comma-separated list of MDX function names to skip when registering
 Java function definitions from mondrian.olap.fun.vba.Vba and
@@ -1394,7 +1394,7 @@ Property that sets the compound slicer member solve order.
         </Description>
         <Type>int</Type>
         <Default>-99999</Default>
-    </PropertyDefinition>    
+    </PropertyDefinition>
     <PropertyDefinition>
         <Name>NativizeMinThreshold</Name>
         <Path>mondrian.native.NativizeMinThreshold</Path>

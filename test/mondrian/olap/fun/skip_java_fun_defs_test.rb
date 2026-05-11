@@ -15,8 +15,8 @@ require_relative "../../../test_helper"
 # BuiltinFunTable. The mechanism lets a schema (or external extension)
 # register a UserDefinedFunction with the same name as a stock Vba/Excel
 # built-in without causing an ambiguous-match error.
-describe "BuiltinFunTable SkipJavaFunDefs filter" do
-  PROPERTY = "mondrian.olap.fun.SkipJavaFunDefs"
+describe "BuiltinFunTable skipJavaFunDefs filter" do
+  PROPERTY = "mondrian.olap.fun.skipJavaFunDefs"
 
   # Construct a fresh BuiltinFunTable instance bypassing the singleton
   # so the test can observe registration with a specific property value.

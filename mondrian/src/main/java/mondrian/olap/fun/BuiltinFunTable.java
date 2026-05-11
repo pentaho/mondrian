@@ -2067,7 +2067,7 @@ public class BuiltinFunTable extends FunTableImpl {
         builder.define(NthQuartileFunDef.ThirdQResolver);
 
         builder.define(CalculatedChildFunDef.instance);
-        
+
         builder.define(CachedExistsFunDef.instance);
 
         builder.define(CastFunDef.Resolver);
@@ -2121,7 +2121,7 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        // PATCH: SkipJavaFunDefs property lets a deployment suppress
+        // PATCH: skipJavaFunDefs property lets a deployment suppress
         // specific Vba/Excel function definitions so a schema-level
         // UserDefinedFunction with the same name can be used instead
         // without triggering an ambiguous-match error.
@@ -2144,14 +2144,14 @@ public class BuiltinFunTable extends FunTableImpl {
         }
     }
 
-    // PATCH: read SkipJavaFunDefs from System directly so tests that toggle
+    // PATCH: read skipJavaFunDefs from System directly so tests that toggle
     // it per-case see the current value. MondrianProperties wouldn't —
     // MondrianPropertiesBase.populate() snapshots System.getProperties()
     // into its own map at singleton init and never refreshes; in prod that's
     // fine because the property is set at startup, but tests need it live.
     private static Set<String> parseSkipFunctions() {
         final String value =
-            System.getProperty("mondrian.olap.fun.SkipJavaFunDefs");
+            System.getProperty("mondrian.olap.fun.skipJavaFunDefs");
         if (value == null || value.isEmpty()) {
             return Collections.emptySet();
         }
