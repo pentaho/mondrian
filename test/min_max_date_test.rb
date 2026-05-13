@@ -460,8 +460,10 @@ describe "Min and Max with date expressions" do
   # Mondrian limitation: calculated members are always statically typed as
   # Numeric regardless of their runtime return type. The validator resolves
   # types bottom-up, so outer functions see <Numeric Expression> even when
-  # the value is a Date at runtime. This limits composability with functions
-  # that require DateTime arguments or signatures.
+  # the value is a Date at runtime. Core Mondrian operators (IIf,
+  # comparison) lack DateTime signatures and so cannot consume such a
+  # result. Vba date functions, however, accept Object and coerce at
+  # runtime via Vba.castToDate — see the positive tests further below.
 
   it "should not support IIf with date branches on both sides (no DateTime IIf signature)" do
     assert_raises(Mondrian::OLAP::Error) do
@@ -487,32 +489,129 @@ describe "Min and Max with date expressions" do
     end
   end
 
-  it "should not support VBA date functions when value expression is a calculated member" do
-    # Min/Max resolves as Numeric because [Test Date] is a calculated member
-    # (always Numeric in Mondrian's type system), so DateDiff sees
-    # <String>, <Numeric>, <Numeric> instead of <String>, <DateTime>, <DateTime>.
-    assert_raises(Mondrian::OLAP::Error) do
-      @olap.from('Sales').
-        with_member('[Measures].[Test Date]').as(date_measure_expression).
-        with_member('[Measures].[result]').as(
-          "DateDiff(\"d\", " \
-          "Min([Customers].[USA].Children, [Measures].[Test Date]), " \
-          "Max([Customers].[USA].Children, [Measures].[Test Date]))"
-        ).
-        columns('[Measures].[result]').execute
-    end
+  # Vba date functions take Object and coerce via Vba.castToDate, so a
+  # Min/Max result that is statically typed Numeric but holds a Date at
+  # runtime can be passed in. Coverage below pins down each Vba function
+  # the patch widened.
+
+  it "should compute DateDiff between Min and Max calc-member dates" do
+    result = @olap.from('Sales').
+      with_member('[Measures].[Test Date]').as(date_measure_expression).
+      with_member('[Measures].[result]').as(
+        "DateDiff(\"d\", " \
+        "Min([Customers].[USA].Children, [Measures].[Test Date]), " \
+        "Max([Customers].[USA].Children, [Measures].[Test Date]))"
+      ).
+      columns('[Measures].[result]').execute
+    # Min = Jan 15 2020, Max = Dec 15 2020 → 335 days.
+    assert_kind_of Numeric, result.values[0]
+    assert_equal 335, result.values[0].to_i
   end
 
-  it "should not support DateAdd when value expression is a calculated member" do
-    assert_raises(Mondrian::OLAP::Error) do
-      @olap.from('Sales').
-        with_member('[Measures].[Test Date]').as(date_measure_expression).
-        with_member('[Measures].[result]').as(
-          "DateAdd(\"d\", 30, " \
-          "Max([Customers].[USA].Children, [Measures].[Test Date]))"
-        ).
-        columns('[Measures].[result]').execute
-    end
+  it "should compute DateAdd over Max calc-member date" do
+    result = @olap.from('Sales').
+      with_member('[Measures].[Test Date]').as(date_measure_expression).
+      with_member('[Measures].[result]').as(
+        "DateAdd(\"d\", 30, " \
+        "Max([Customers].[USA].Children, [Measures].[Test Date]))"
+      ).
+      columns('[Measures].[result]').execute
+    # Max = Dec 15 2020, +30 days → Jan 14 2021.
+    assert_kind_of java.util.Date, result.values[0]
+    assert_equal Date.new(2021, 1, 14), Date.parse(result.values[0].to_s)
+  end
+
+  it "should compute DateAdd over Min calc-member date" do
+    result = @olap.from('Sales').
+      with_member('[Measures].[Test Date]').as(date_measure_expression).
+      with_member('[Measures].[result]').as(
+        "DateAdd(\"m\", 2, " \
+        "Min([Customers].[USA].Children, [Measures].[Test Date]))"
+      ).
+      columns('[Measures].[result]').execute
+    # Min = Jan 15 2020, +2 months → Mar 15 2020.
+    assert_kind_of java.util.Date, result.values[0]
+    assert_equal Date.new(2020, 3, 15), Date.parse(result.values[0].to_s)
+  end
+
+  it "should extract Year, Month and Day from Min and Max calc-member dates" do
+    result = @olap.from('Sales').
+      with_member('[Measures].[Test Date]').as(date_measure_expression).
+      with_member('[Measures].[Min Year]').as(
+        "Year(Min([Customers].[USA].Children, [Measures].[Test Date]))"
+      ).
+      with_member('[Measures].[Max Month]').as(
+        "Month(Max([Customers].[USA].Children, [Measures].[Test Date]))"
+      ).
+      with_member('[Measures].[Min Day]').as(
+        "Day(Min([Customers].[USA].Children, [Measures].[Test Date]))"
+      ).
+      columns('[Measures].[Min Year]', '[Measures].[Max Month]', '[Measures].[Min Day]').execute
+    # Min = Jan 15 2020, Max = Dec 15 2020.
+    assert_equal 2020, result.values[0].to_i
+    assert_equal 12, result.values[1].to_i
+    assert_equal 15, result.values[2].to_i
+  end
+
+  it "should compute Weekday from Min and Max calc-member dates" do
+    result = @olap.from('Sales').
+      with_member('[Measures].[Test Date]').as(date_measure_expression).
+      with_member('[Measures].[Min Weekday]').as(
+        "Weekday(Min([Customers].[USA].Children, [Measures].[Test Date]))"
+      ).
+      with_member('[Measures].[Max Weekday Mon]').as(
+        "Weekday(Max([Customers].[USA].Children, [Measures].[Test Date]), 2)"
+      ).
+      columns('[Measures].[Min Weekday]', '[Measures].[Max Weekday Mon]').execute
+    # Min = Wed Jan 15 2020; default firstDayOfWeek=Sunday → 4.
+    # Max = Tue Dec 15 2020; firstDayOfWeek=Monday(2) → 2.
+    assert_equal 4, result.values[0].to_i
+    assert_equal 2, result.values[1].to_i
+  end
+
+  it "should compute DatePart over Min and Max calc-member dates" do
+    result = @olap.from('Sales').
+      with_member('[Measures].[Test Date]').as(date_measure_expression).
+      with_member('[Measures].[Max Quarter]').as(
+        "DatePart(\"q\", Max([Customers].[USA].Children, [Measures].[Test Date]))"
+      ).
+      with_member('[Measures].[Min Year]').as(
+        "DatePart(\"yyyy\", Min([Customers].[USA].Children, [Measures].[Test Date]))"
+      ).
+      columns('[Measures].[Max Quarter]', '[Measures].[Min Year]').execute
+    # Max = Dec 15 2020 → Q4; Min = Jan 15 2020 → year 2020.
+    assert_equal 4, result.values[0].to_i
+    assert_equal 2020, result.values[1].to_i
+  end
+
+  it "should accept Vba date functions inside Min/Max value expression" do
+    # Vba date functions returning Date can be the 2-arg value expression
+    # via the same Object-widened path. Resolver still picks Numeric for
+    # the outer Min/Max (calc-member-shaped scalar), but the Date passes
+    # through extremeValue's instanceof check.
+    result = @olap.from('Sales').
+      with_member('[Measures].[Test Date]').as(date_measure_expression).
+      with_member('[Measures].[Max Shifted]').as(
+        "Max([Customers].[USA].Children, " \
+        "DateAdd(\"d\", 30, [Measures].[Test Date]))"
+      ).
+      columns('[Measures].[Max Shifted]').execute
+    # CA+30 = Feb 14 2020; OR+30 = Jul 15 2020; WA+30 = Jan 14 2021. Max = Jan 14 2021.
+    assert_kind_of java.util.Date, result.values[0]
+    assert_equal Date.new(2021, 1, 14), Date.parse(result.values[0].to_s)
+  end
+
+  it "should propagate null through Vba date functions when Min/Max is over an empty set" do
+    # Min/Max over an empty set → null. Vba.castToDate returns null for
+    # null input, so DateAdd returns null too (rather than raising).
+    result = @olap.from('Sales').
+      with_member('[Measures].[Test Date]').as(date_measure_expression).
+      with_member('[Measures].[result]').as(
+        "DateAdd(\"d\", 30, " \
+        "Max(Filter([Customers].[USA].Children, 1=2), [Measures].[Test Date]))"
+      ).
+      columns('[Measures].[result]').execute
+    assert_nil result.values[0]
   end
 
 end
