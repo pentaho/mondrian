@@ -16,7 +16,6 @@ import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.olap.FormatAwareFunDef;
 
 import java.util.Date;
 import java.util.List;
