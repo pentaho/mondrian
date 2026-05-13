@@ -135,10 +135,10 @@ class MinMaxFunDef extends AbstractAggregateFunDef
         // is statically typed DateTime (e.g., DateSerial literal), not
         // when it is a calculated member (always typed Numeric).
         return new AbstractDateTimeCalc(call, new Calc[] {listCalc, calc}) {
-            public java.util.Date evaluateDateTime(Evaluator evaluator) {
+            public Date evaluateDateTime(Evaluator evaluator) {
                 Object result = evaluate(evaluator);
-                return result instanceof java.util.Date
-                    ? (java.util.Date) result : null;
+                return result instanceof Date
+                    ? (Date) result : null;
             }
 
             public Object evaluate(Evaluator evaluator) {
