@@ -116,7 +116,8 @@ public class UdfResolver implements Resolver {
 
     /**
      * Adapter which converts a {@link UserDefinedFunction} into a
-     * {@link FunDef}.
+     * {@link FunDef}. PATCH: also forwards FormatAwareFunDef when the
+     * wrapped UDF implements it.
      */
     private class UdfFunDef extends FunDefBase
         implements FormatAwareFunDef
