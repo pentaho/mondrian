@@ -614,4 +614,20 @@ describe "Min and Max with date expressions" do
     assert_nil result.values[0]
   end
 
+  it "should treat DateTime-branch Min/Max over an empty set as empty for CoalesceEmpty" do
+    # Nested scalar consumers like CoalesceEmpty call Calc.evaluate() directly
+    # (not evaluateDateTime). If the DateTime branch returns the Util.nullValue
+    # sentinel rather than Java null, CoalesceEmpty's Java-null check misses
+    # it and the fallback never fires.
+    result = @olap.from('Sales').
+      with_member('[Measures].[result]').as(
+        "CoalesceEmpty(" \
+        "Max(Filter([Customers].[USA].Children, 1=2), DateSerial(2020, 1, 1)), " \
+        "DateSerial(1970, 1, 1))"
+      ).
+      columns('[Measures].[result]').execute
+    assert_kind_of java.util.Date, result.values[0]
+    assert_equal Date.new(1970, 1, 1), Date.parse(result.values[0].to_s)
+  end
+
 end

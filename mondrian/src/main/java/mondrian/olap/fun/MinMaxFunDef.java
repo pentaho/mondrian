@@ -147,9 +147,15 @@ class MinMaxFunDef extends AbstractAggregateFunDef
                     TupleList memberList =
                         evaluateCurrentList(listCalc, evaluator);
                     evaluator.setNonEmpty(false);
-                    return max
+                    Object result = max
                         ? maxValue(evaluator, memberList, calc)
                         : minValue(evaluator, memberList, calc);
+                    // Convert non-Date returns to Java null. extremeValue
+                    // returns Util.nullValue (Double sentinel) for empty
+                    // sets and Double.NaN for error paths; nested scalar
+                    // consumers like CoalesceEmpty/IsEmpty only recognize
+                    // Java null.
+                    return result instanceof Date ? result : null;
                 } finally {
                     evaluator.restore(savepoint);
                     evaluator.getTiming().markEnd(TIMING_NAME);
