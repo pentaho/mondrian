@@ -57,9 +57,9 @@ mondrian.foodmart.jdbcUser=yourUser
 mondrian.foodmart.jdbcPassword=yourPassword
 mondrian.catalogURL=../demo/FoodMart.xml
 ```
-The Maven profile `cmdrunner` will build Mondrian, skip the test suite and execute CmdRunner.
+The Maven profile `cmdrunner` will build Mondrian and execute CmdRunner. Run it from the `mondrian/` module directory; add `-DskipTests` to skip the legacy Java tests:
 ```
-mvn -Pcmdrunner
+mvn -Pcmdrunner -DskipTests
 ```
 #### Advanced Configuration
 Mondrian has many additional configuration options that can be specified in `mondrian.properties`.  The complete set of options as well as documentation on how to use them gets generated during the generate-sources phase of the Maven build.
