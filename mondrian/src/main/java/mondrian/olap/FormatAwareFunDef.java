@@ -42,8 +42,7 @@ public interface FormatAwareFunDef {
      * <p>Return values:
      * <ul>
      * <li>{@code 0 <= index < args.length}: use the format from the
-     *     argument at this index. Out-of-range values are treated as
-     *     {@link #NOT_PARTICIPATING}.</li>
+     *     argument at this index</li>
      * <li>{@code -1}: skip format inference from arguments entirely
      *     (useful when the function's result type differs from all
      *     argument types, e.g., DateDiffDays returns a number from
@@ -51,6 +50,9 @@ public interface FormatAwareFunDef {
      * <li>{@link #NOT_PARTICIPATING}: this function does not participate;
      *     fall through to the default format-finding behavior</li>
      * </ul>
+     *
+     * <p>Implementations must return one of the values above; other
+     * values are rejected by an assertion in {@link Formula}.
      *
      * @param args the arguments to the function call
      * @return argument index, -1 to skip, or NOT_PARTICIPATING
