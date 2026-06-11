@@ -72,7 +72,7 @@ public abstract class FunTableImpl implements FunTable {
      * @param syntax Syntax
      * @return Key
      */
-    private static Pair<String, Syntax> makeResolverKey(
+    protected static Pair<String, Syntax> makeResolverKey(
         String name,
         Syntax syntax)
     {

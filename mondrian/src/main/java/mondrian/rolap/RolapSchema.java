@@ -20,6 +20,7 @@ import mondrian.spi.*;
 import mondrian.spi.impl.Scripts;
 import mondrian.util.ByteString;
 import mondrian.util.ClassResolver;
+import mondrian.util.Pair;
 
 import org.apache.commons.vfs2.FileSystemException;
 
@@ -1410,11 +1411,23 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             for (String reservedWord : globalFunTable.getReservedWords()) {
                 builder.defineReserved(reservedWord);
             }
-            for (Resolver resolver : globalFunTable.getResolvers()) {
+
+            final Set<Pair<String, Syntax>> shadowedByUdf =
+                new HashSet<Pair<String, Syntax>>();
+
+            for (UdfResolver.UdfFactory udfFactory : udfFactoryList) {
+                final UdfResolver resolver = new UdfResolver(udfFactory);
+                shadowedByUdf.add(
+                    makeResolverKey(resolver.getName(), resolver.getSyntax()));
                 builder.define(resolver);
             }
-            for (UdfResolver.UdfFactory udfFactory : udfFactoryList) {
-                builder.define(new UdfResolver(udfFactory));
+            for (Resolver resolver : globalFunTable.getResolvers()) {
+                if (shadowedByUdf.contains(
+                    makeResolverKey(resolver.getName(), resolver.getSyntax())))
+                {
+                    continue;
+                }
+                builder.define(resolver);
             }
         }
     }
