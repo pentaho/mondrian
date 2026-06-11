@@ -52,7 +52,8 @@ public interface FormatAwareFunDef {
      * </ul>
      *
      * <p>Implementations must return one of the values above; other
-     * values are rejected by an assertion in {@link Formula}.
+     * values are treated as {@link #NOT_PARTICIPATING} (an assertion
+     * in {@link Formula} fires only when assertions are enabled).
      *
      * @param args the arguments to the function call
      * @return argument index, -1 to skip, or NOT_PARTICIPATING
