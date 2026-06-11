@@ -16,6 +16,7 @@ import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.olap.type.DateTimeType;
 
 import java.util.Date;
 import java.util.List;
@@ -152,9 +153,10 @@ class MinMaxFunDef extends AbstractAggregateFunDef
                         : minValue(evaluator, memberList, calc);
                     // Convert non-Date returns to Java null. extremeValue
                     // returns Util.nullValue (Double sentinel) for empty
-                    // sets and Double.NaN for error paths; nested scalar
-                    // consumers like CoalesceEmpty/IsEmpty only recognize
-                    // Java null.
+                    // sets and Double.NaN when the batch cell reader
+                    // signalled valueNotReadyException; neither can be a
+                    // Date, and nested scalar consumers like
+                    // CoalesceEmpty/IsEmpty only recognize Java null.
                     return result instanceof Date ? result : null;
                 } finally {
                     evaluator.restore(savepoint);
@@ -246,10 +248,17 @@ class MinMaxFunDef extends AbstractAggregateFunDef
                 return super.resolve(args, validator, conversions);
             }
             if (args.length == 2) {
-                FunDef dateFun = resolveSetAndExpression(
-                    args, validator, conversions, Category.DateTime);
-                if (dateFun != null) {
-                    return dateFun;
+                // Gate the DateTime overload on the value expression's
+                // static type. validator.canConvert is lenient — NullType
+                // (and any other untyped scalar) converts to both Numeric
+                // and DateTime, so a DateTime-first canConvert dispatch
+                // would steal the legacy Numeric case for Max(set, NULL).
+                if (args[1].getType() instanceof DateTimeType) {
+                    FunDef dateFun = resolveSetAndExpression(
+                        args, validator, conversions, Category.DateTime);
+                    if (dateFun != null) {
+                        return dateFun;
+                    }
                 }
                 return resolveSetAndExpression(
                     args, validator, conversions, Category.Numeric);
