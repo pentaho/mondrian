@@ -3037,8 +3037,11 @@ public class MondrianFoodMartLoader {
          * Output for a TIMESTAMP
          */
         } else {
+            // PATCH: match on the logical column type as well because Oracle
+            // Timestamp columns are physically created as DATE
             if (columnType.startsWith("TIMESTAMP")
-                || columnType.startsWith("DateTime"))
+                || columnType.startsWith("DateTime")
+                || column.type == Type.Timestamp)
             {
                 Timestamp ts = (Timestamp) obj;
 
@@ -3162,8 +3165,11 @@ public class MondrianFoodMartLoader {
          * Output for a TIMESTAMP
          */
         final Dialect.DatabaseProduct product = dialect.getDatabaseProduct();
+        // PATCH: match on the logical column type as well because Oracle
+        // Timestamp columns are physically created as DATE
         if (columnType.startsWith("TIMESTAMP")
-            || columnType.startsWith("DateTime"))
+            || columnType.startsWith("DateTime")
+            || column.type == Type.Timestamp)
         {
             switch (product) {
             case ORACLE:
@@ -3432,6 +3438,13 @@ public class MondrianFoodMartLoader {
                 case INFOBRIGHT:
                 case SYBASE:
                     return "DATETIME";
+                case ORACLE:
+                    // PATCH: eazyBI production maps datetime columns to
+                    // Oracle DATE (oracle_enhanced patch), never TIMESTAMP,
+                    // so the Oracle JDBC driver returns java.sql.Timestamp
+                    // (mapDateToTimestamp) instead of oracle.sql.TIMESTAMP.
+                    // Use DATE so tests exercise the same column type.
+                    return "DATE";
                 case CLICKHOUSE:
                     // PATCH: ClickHouse DateTime starts at 1970-01-01 and
                     // would silently saturate earlier values; DateTime64

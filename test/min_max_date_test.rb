@@ -1178,6 +1178,18 @@ describe "Min and Max with date column properties" do
     @olap = Mondrian::OLAP::Connection.create(CONNECTION_PARAMS.except(:catalog).merge(schema: schema))
   end
 
+  it "should return Timestamp property values as java.sql.Timestamp" do
+    # Pins the JDBC-boundary contract the Min/Max DateTime branch relies on:
+    # temporal property values must arrive as java.sql.Timestamp on every
+    # driver (SqlStatement.normalizeTemporalValue converts MySQL 8
+    # LocalDateTime and ClickHouse LocalDate values; on Oracle the loader
+    # creates DATE columns as eazyBI production does, which the Oracle JDBC
+    # driver returns as java.sql.Timestamp).
+    member = @olap.cube('Store').hierarchy('Store').level('Store Name').members.
+      detect { |m| m.property_value('First Opened') }
+    assert_kind_of java.sql.Timestamp, member.property_value('First Opened')
+  end
+
   it "should return extreme dates from Min and Max over a Timestamp property" do
     result = @olap.from('Store').
       with_member('[Measures].[Min Opened]').as(

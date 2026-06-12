@@ -379,16 +379,7 @@ public class SqlStatement {
       case OBJECT:
         return new Accessor() {
           public Object get() throws SQLException {
-            // PATCH: MONDRIAN-2714 MySQL 8.0.23 JDBC driver returns java.time.LocalDateTime values for datetime columns.
-            // This data type isn't inherited from java.util.Date and isn't recognized as Date.
-            Object val = resultSet.getObject( columnPlusOne );
-            if (val instanceof java.time.LocalDateTime) {
-              val = java.sql.Timestamp.valueOf((java.time.LocalDateTime) val);
-            // ClickHouse JDBC driver returns java.time.LocalDate values for date columns.
-            } else if (val instanceof java.time.LocalDate) {
-              val = java.sql.Date.valueOf((java.time.LocalDate) val);
-            }
-            return val;
+            return normalizeTemporalValue( resultSet.getObject( columnPlusOne ) );
           }
         };
       case STRING:
@@ -545,6 +536,38 @@ public class SqlStatement {
    * <p>Note that the DECIMAL type was added to provide a workaround for a bug
    * in the Snowflake JDBC driver.  There is no plan to support it further than that.</p>
    */
+  // PATCH: Normalize JDBC driver-specific temporal values to java.sql types so
+  // downstream code can rely on temporal values being java.util.Date instances:
+  // - MONDRIAN-2714: MySQL 8.0.23 JDBC driver returns java.time.LocalDateTime
+  //   for datetime columns
+  // - ClickHouse JDBC driver returns java.time.LocalDate for date columns
+  // - Oracle JDBC driver returns oracle.sql.TIMESTAMP and oracle.sql.DATE
+  //   (not java.util.Date subclasses) unless the oracle.jdbc.J2EE13Compliant
+  //   system property is set; converted reflectively because the Oracle
+  //   driver is not a compile-time dependency
+  static Object normalizeTemporalValue( Object val ) throws SQLException {
+    if ( val instanceof java.time.LocalDateTime ) {
+      return java.sql.Timestamp.valueOf( (java.time.LocalDateTime) val );
+    }
+    if ( val instanceof java.time.LocalDate ) {
+      return java.sql.Date.valueOf( (java.time.LocalDate) val );
+    }
+    if ( val != null ) {
+      final String className = val.getClass().getName();
+      if ( className.equals( "oracle.sql.TIMESTAMP" )
+        || className.equals( "oracle.sql.DATE" ) )
+      {
+        try {
+          return val.getClass().getMethod( "timestampValue" ).invoke( val );
+        } catch ( ReflectiveOperationException e ) {
+          throw new SQLException(
+            "Failed to convert " + className + " value", e );
+        }
+      }
+    }
+    return val;
+  }
+
   public enum Type {
     OBJECT,
     DOUBLE,
@@ -556,16 +579,7 @@ public class SqlStatement {
     public Object get( ResultSet resultSet, int column ) throws SQLException {
       switch ( this ) {
         case OBJECT:
-          // PATCH: MONDRIAN-2714 MySQL 8.0.23 JDBC driver returns java.time.LocalDateTime values for datetime columns.
-          // This data type isn't inherited from java.util.Date and isn't recognized as Date.
-          Object val = resultSet.getObject( column + 1 );
-          if (val instanceof java.time.LocalDateTime) {
-            val = java.sql.Timestamp.valueOf((java.time.LocalDateTime) val);
-          // ClickHouse JDBC driver returns java.time.LocalDate values for date columns.
-          } else if (val instanceof java.time.LocalDate) {
-            val = java.sql.Date.valueOf((java.time.LocalDate) val);
-          }
-          return val;
+          return normalizeTemporalValue( resultSet.getObject( column + 1 ) );
         case STRING:
           return resultSet.getString( column + 1 );
         case INT:
