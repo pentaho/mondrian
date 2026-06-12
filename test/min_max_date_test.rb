@@ -319,6 +319,95 @@ describe "Min and Max with date expressions" do
     assert_match(/\A[\d,]+\.\d{4}\z/, result.formatted_values[1])
   end
 
+  # The numeric branch overrides evaluateDouble to delegate through evaluate,
+  # so compositions that compile Min/Max via compileDouble — comparisons,
+  # Filter predicates, sort keys — exercise a changed code path even for
+  # purely numeric MDX. USA children Unit Sales: CA 74748, OR 67659, WA 124366.
+
+  it "should support comparison operators with numeric Min/Max result" do
+    result = @olap.from('Sales').
+      with_member('[Measures].[max above]').as(
+        "Max([Customers].[USA].Children, [Measures].[Unit Sales]) > 100000"
+      ).
+      with_member('[Measures].[min above]').as(
+        "Min([Customers].[USA].Children, [Measures].[Unit Sales]) > 100000"
+      ).
+      columns('[Measures].[max above]', '[Measures].[min above]').execute
+    assert_equal true, result.values[0]
+    assert_equal false, result.values[1]
+  end
+
+  it "should select members whose value equals Min/Max via Filter predicate" do
+    # Min/Max evaluated inside a Filter predicate runs once per iterated
+    # member with a changed current context — savepoint/restore and
+    # dependsOn must keep the inner aggregation stable across iterations.
+    result = @olap.from('Sales').
+      columns('[Measures].[Unit Sales]').
+      rows("Filter([Customers].[USA].Children, " \
+        "[Measures].[Unit Sales] = Max([Customers].[USA].Children, [Measures].[Unit Sales]))").execute
+    assert_equal ['[Customers].[USA].[WA]'], result.row_full_names
+
+    result = @olap.from('Sales').
+      columns('[Measures].[Unit Sales]').
+      rows("Filter([Customers].[USA].Children, " \
+        "[Measures].[Unit Sales] = Min([Customers].[USA].Children, [Measures].[Unit Sales]))").execute
+    assert_equal ['[Customers].[USA].[OR]'], result.row_full_names
+  end
+
+  it "should order members by numeric Min/Max sort key" do
+    # Per-state quarterly maxima: CA 21436, OR 19287, WA 34235. The sort key
+    # depends on the iterated Customers member, so a dependsOn regression
+    # would freeze one key value for all members and break the order.
+    result = @olap.from('Sales').
+      columns('[Measures].[Unit Sales]').
+      rows("Order([Customers].[USA].Children, " \
+        "Max([Time].[1997].Children, [Measures].[Unit Sales]), BASC)").execute
+    assert_equal %w([Customers].[USA].[OR] [Customers].[USA].[CA] [Customers].[USA].[WA]),
+      result.row_full_names
+  end
+
+  it "should pick members with extreme numeric Min/Max keys via TopCount and BottomCount" do
+    result = @olap.from('Sales').
+      columns('[Measures].[Unit Sales]').
+      rows("TopCount([Customers].[USA].Children, 2, " \
+        "Max([Time].[1997].Children, [Measures].[Unit Sales]))").execute
+    assert_equal %w([Customers].[USA].[WA] [Customers].[USA].[CA]), result.row_full_names
+
+    result = @olap.from('Sales').
+      columns('[Measures].[Unit Sales]').
+      rows("BottomCount([Customers].[USA].Children, 1, " \
+        "Max([Time].[1997].Children, [Measures].[Unit Sales]))").execute
+    assert_equal %w([Customers].[USA].[OR]), result.row_full_names
+  end
+
+  it "should aggregate per-member numeric Max with Sum" do
+    # Sum of per-state quarterly maxima: 21436 + 19287 + 34235 = 74958.
+    result = @olap.from('Sales').
+      with_member('[Measures].[sum of max]').as(
+        "Sum([Customers].[USA].Children, " \
+        "Max([Time].[1997].Children, [Measures].[Unit Sales]))"
+      ).
+      columns('[Measures].[sum of max]').execute
+    assert_equal 74_958, result.values[0].to_i
+  end
+
+  it "should support nesting numeric Min and Max in both directions" do
+    # Per-state quarterly minima: CA 16890, OR 15079, WA 29479 → max 29479.
+    # Per-state quarterly maxima: CA 21436, OR 19287, WA 34235 → min 19287.
+    result = @olap.from('Sales').
+      with_member('[Measures].[max of min]').as(
+        "Max([Customers].[USA].Children, " \
+        "Min([Time].[1997].Children, [Measures].[Unit Sales]))"
+      ).
+      with_member('[Measures].[min of max]').as(
+        "Min([Customers].[USA].Children, " \
+        "Max([Time].[1997].Children, [Measures].[Unit Sales]))"
+      ).
+      columns('[Measures].[max of min]', '[Measures].[min of max]').execute
+    assert_equal 29_479, result.values[0].to_i
+    assert_equal 19_287, result.values[1].to_i
+  end
+
   it "should work inside IIf with date Min/Max and null fallback" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
