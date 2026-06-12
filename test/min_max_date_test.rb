@@ -1160,7 +1160,7 @@ describe "Min and Max with date column properties" do
     # this also exercises the statically-typed DateTime branch with real
     # data. One store row has null dates, so real-data null skipping is
     # exercised too.
-    schema = Mondrian::OLAP::Schema.define do
+    schema = define_schema do
       cube 'Store' do
         table 'store'
         dimension 'Store' do

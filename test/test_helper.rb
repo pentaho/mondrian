@@ -20,6 +20,15 @@ class Minitest::Spec
     assert_equal expected_normalized, actual_normalized, msg
   end
 
+  # Wrapper to bypass Oracle's default uppercasing of object names.
+  def define_schema(name = nil, attributes = {}, &block)
+    if name.is_a?(Hash) && attributes.empty?
+      attributes = name
+      name = nil
+    end
+    Mondrian::OLAP::Schema.define(name, {upcase_data_dictionary: false}.merge(attributes), &block)
+  end
+
   def new_olap_connection
     @olap = Mondrian::OLAP::Connection.new(CONNECTION_PARAMS)
   end

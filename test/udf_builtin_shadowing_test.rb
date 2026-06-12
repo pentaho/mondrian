@@ -12,7 +12,7 @@ require 'date'
 describe "Schema UDF shadowing builtin functions" do
   # Minimal FoodMart cube with an optional UDF block appended to the schema.
   def create_connection(&schema_block)
-    schema = Mondrian::OLAP::Schema.define do
+    schema = define_schema do
       cube 'Sales' do
         table 'sales_fact_1997'
         dimension 'Gender', foreign_key: 'customer_id' do
