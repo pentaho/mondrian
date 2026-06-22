@@ -3054,8 +3054,8 @@ public class MondrianFoodMartLoader {
                 case NEOVIEW:
                     return "TIMESTAMP '" + ts + "'";
                 case CLICKHOUSE:
-                    // PATCH: ClickHouse DateTime64(0) does not support
-                    // fractional seconds
+                    // PATCH: ClickHouse DateTime and DateTime64(0) do not
+                    // support fractional seconds
                     return "'"
                         + ts.toString().replaceAll("\\.\\d+", "") + "'";
                 default:
@@ -3067,7 +3067,8 @@ public class MondrianFoodMartLoader {
              * Output for a DATE
              */
             } else if (columnType.startsWith("DATE")
-                || columnType.equals("Date32"))
+                // Date and Date32 are ClickHouse date types
+                || columnType.startsWith("Date"))
             {
                 Date dt = (Date) obj;
                 switch (dialect.getDatabaseProduct()) {
@@ -3177,7 +3178,7 @@ public class MondrianFoodMartLoader {
             case NEOVIEW:
                 return "TIMESTAMP " + columnValue;
             case CLICKHOUSE:
-                // PATCH: ClickHouse DateTime64(0) does not support
+                // PATCH: ClickHouse DateTime and DateTime64(0) do not support
                 // fractional seconds; strip e.g. ".0" from
                 // '1946-08-15 00:00:00.0'
                 return columnValue.replaceAll("\\.\\d+", "");
@@ -3187,7 +3188,8 @@ public class MondrianFoodMartLoader {
          * Output for a DATE
          */
         } else if (columnType.startsWith("DATE")
-            || columnType.equals("Date32"))
+            // Date and Date32 are ClickHouse date types
+            || columnType.startsWith("Date"))
         {
             switch (product) {
             case ORACLE:
