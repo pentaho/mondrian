@@ -71,11 +71,11 @@ describe "Schema UDF shadowing builtin functions" do
   end
 
   it "should shadow the stock VBA Now() without the skipJavaFunDefs property" do
-    # The motivating production case: eazyBI defines a Now UDF, and without
-    # shadowing the stock VBA Now() triggers an ambiguous-match error (the
-    # skipJavaFunDefs property exists solely to suppress it). Also proves
-    # shadowing works for SimpleResolver-wrapped JavaFunDefs, not just the
-    # MultiResolver builtins covered by the Min tests.
+    # Schema UDFs can override default/builtin functions: when a schema
+    # defines its own Now UDF, without shadowing the stock VBA Now() triggers
+    # an ambiguous-match error (the skipJavaFunDefs property exists solely to
+    # suppress it). Also proves shadowing works for SimpleResolver-wrapped
+    # JavaFunDefs, not just the MultiResolver builtins covered by the Min tests.
     assert_nil java.lang.System.getProperty("mondrian.olap.fun.skipJavaFunDefs")
     olap = create_connection do
       user_defined_function 'Now' do

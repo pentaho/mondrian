@@ -3422,7 +3422,7 @@ public class MondrianFoodMartLoader {
                 case CLICKHOUSE:
                     // PATCH: ClickHouse Date starts at 1970-01-01 and would
                     // silently saturate earlier dates; Date32 starts at
-                    // 1900-01-01 (same type as eazyBI production DWH tables)
+                    // 1900-01-01 and covers the FoodMart date range
                     return "Date32";
                 case INGRES:
                     return "INGRESDATE";
@@ -3439,17 +3439,17 @@ public class MondrianFoodMartLoader {
                 case SYBASE:
                     return "DATETIME";
                 case ORACLE:
-                    // PATCH: eazyBI production maps datetime columns to
-                    // Oracle DATE (oracle_enhanced patch), never TIMESTAMP,
-                    // so the Oracle JDBC driver returns java.sql.Timestamp
-                    // (mapDateToTimestamp) instead of oracle.sql.TIMESTAMP.
-                    // Use DATE so tests exercise the same column type.
+                    // PATCH: create datetime columns as Oracle DATE, never
+                    // TIMESTAMP, so the Oracle JDBC driver returns them as
+                    // java.sql.Timestamp (mapDateToTimestamp) instead of
+                    // oracle.sql.TIMESTAMP. This exercises the JDBC boundary
+                    // the Min/Max DateTime branch relies on.
                     return "DATE";
                 case CLICKHOUSE:
                     // PATCH: ClickHouse DateTime starts at 1970-01-01 and
                     // would silently saturate earlier values; DateTime64
-                    // starts at 1900-01-01 (same type as eazyBI production
-                    // DWH tables)
+                    // starts at 1900-01-01 and covers the FoodMart
+                    // datetime range
                     return "DateTime64(0)";
                 case INGRES:
                     return "INGRESDATE";
