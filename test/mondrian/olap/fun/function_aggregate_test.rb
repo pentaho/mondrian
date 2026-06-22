@@ -1,18 +1,9 @@
-# This software is subject to the terms of the Eclipse Public License v1.0
-# Agreement, available at the following URL:
-# http://www.eclipse.org/legal/epl-v10.html.
-# You must accept the terms of that agreement to use this software.
-#
-# Copyright (C) 2003-2005 Julian Hyde
-# Copyright (C) 2005-2021 Hitachi Vantara and others
-# Copyright (C) 2026 eazyBI
-# All Rights Reserved.
-
 # frozen_string_literal: true
 
-require_relative "../../../test_helper"
+require "test_helper"
 
-# Java: mondrian/olap/fun/FunctionTest.java
+# These tests mirror the Java tests in mondrian/olap/fun/FunctionTest.java.
+# Each "# Java:" comment below names the corresponding Java test method.
 describe "Aggregate and Statistical Functions" do
   before(:all) do
     create_olap_connection
@@ -22,7 +13,6 @@ describe "Aggregate and Statistical Functions" do
     # Java: FunctionTest#testAggregateDepends
     it "depends on correct hierarchies" do
       skip "assertExprDependsOn not yet available"
-      # TODO: assertExprDependsOn not yet available
     end
 
     # Java: FunctionTest#testAggregate
