@@ -10,11 +10,13 @@ describe "Min and Max with date expressions" do
 
   # Use CASE to assign different dates to USA state children
   def date_measure_expression
-    "CASE [Customers].CurrentMember" \
-    " WHEN [Customers].[USA].[CA] THEN DateSerial(2020, 1, 15)" \
-    " WHEN [Customers].[USA].[OR] THEN DateSerial(2020, 6, 15)" \
-    " WHEN [Customers].[USA].[WA] THEN DateSerial(2020, 12, 15)" \
-    " END"
+    <<~MDX
+      CASE [Customers].CurrentMember
+      WHEN [Customers].[USA].[CA] THEN DateSerial(2020, 1, 15)
+      WHEN [Customers].[USA].[OR] THEN DateSerial(2020, 6, 15)
+      WHEN [Customers].[USA].[WA] THEN DateSerial(2020, 12, 15)
+      END
+    MDX
   end
 
   it "should return the latest date from Max" do
@@ -66,10 +68,12 @@ describe "Min and Max with date expressions" do
   it "should skip null date values and return extreme of non-null" do
     # Only CA and OR get dates, WA is null
     partial_date_expression =
-      "CASE [Customers].CurrentMember" \
-      " WHEN [Customers].[USA].[CA] THEN DateSerial(2020, 1, 15)" \
-      " WHEN [Customers].[USA].[OR] THEN DateSerial(2020, 6, 15)" \
-      " END"
+      <<~MDX
+        CASE [Customers].CurrentMember
+        WHEN [Customers].[USA].[CA] THEN DateSerial(2020, 1, 15)
+        WHEN [Customers].[USA].[OR] THEN DateSerial(2020, 6, 15)
+        END
+      MDX
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(partial_date_expression).
       with_member('[Measures].[Max Date]').as(
@@ -224,12 +228,10 @@ describe "Min and Max with date expressions" do
   it "should work inside IIf with 2-arg numeric form" do
     result = @olap.from('Sales').
       with_member('[Measures].[min result]').as(
-        "IIf([Measures].[Unit Sales] > 0, " \
-        "Min([Customers].[USA].Children, [Measures].[Unit Sales]), 0)"
+        "IIf([Measures].[Unit Sales] > 0, Min([Customers].[USA].Children, [Measures].[Unit Sales]), 0)"
       ).
       with_member('[Measures].[max result]').as(
-        "IIf([Measures].[Unit Sales] > 0, " \
-        "Max([Customers].[USA].Children, [Measures].[Unit Sales]), 0)"
+        "IIf([Measures].[Unit Sales] > 0, Max([Customers].[USA].Children, [Measures].[Unit Sales]), 0)"
       ).
       columns('[Measures].[min result]', '[Measures].[max result]').execute
     assert_kind_of Numeric, result.values[0]
@@ -239,12 +241,10 @@ describe "Min and Max with date expressions" do
   it "should work inside IIf with 1-arg numeric form" do
     result = @olap.from('Sales').
       with_member('[Measures].[max result]').as(
-        "IIf([Measures].[Unit Sales] > 0, " \
-        "Max([Customers].[USA].Children), 0)"
+        "IIf([Measures].[Unit Sales] > 0, Max([Customers].[USA].Children), 0)"
       ).
       with_member('[Measures].[min result]').as(
-        "IIf([Measures].[Unit Sales] > 0, " \
-        "Min([Customers].[USA].Children), 0)"
+        "IIf([Measures].[Unit Sales] > 0, Min([Customers].[USA].Children), 0)"
       ).
       columns('[Measures].[max result]', '[Measures].[min result]').execute
     assert_kind_of Numeric, result.values[0]
@@ -360,8 +360,7 @@ describe "Min and Max with date expressions" do
     # would freeze one key value for all members and break the order.
     result = @olap.from('Sales').
       columns('[Measures].[Unit Sales]').
-      rows("Order([Customers].[USA].Children, " \
-        "Max([Time].[1997].Children, [Measures].[Unit Sales]), BASC)").execute
+      rows("Order([Customers].[USA].Children, Max([Time].[1997].Children, [Measures].[Unit Sales]), BASC)").execute
     assert_equal %w([Customers].[USA].[OR] [Customers].[USA].[CA] [Customers].[USA].[WA]),
       result.row_full_names
   end
@@ -369,14 +368,12 @@ describe "Min and Max with date expressions" do
   it "should pick members with extreme numeric Min/Max keys via TopCount and BottomCount" do
     result = @olap.from('Sales').
       columns('[Measures].[Unit Sales]').
-      rows("TopCount([Customers].[USA].Children, 2, " \
-        "Max([Time].[1997].Children, [Measures].[Unit Sales]))").execute
+      rows("TopCount([Customers].[USA].Children, 2, Max([Time].[1997].Children, [Measures].[Unit Sales]))").execute
     assert_equal %w([Customers].[USA].[WA] [Customers].[USA].[CA]), result.row_full_names
 
     result = @olap.from('Sales').
       columns('[Measures].[Unit Sales]').
-      rows("BottomCount([Customers].[USA].Children, 1, " \
-        "Max([Time].[1997].Children, [Measures].[Unit Sales]))").execute
+      rows("BottomCount([Customers].[USA].Children, 1, Max([Time].[1997].Children, [Measures].[Unit Sales]))").execute
     assert_equal %w([Customers].[USA].[OR]), result.row_full_names
   end
 
@@ -384,8 +381,7 @@ describe "Min and Max with date expressions" do
     # Sum of per-state quarterly maxima: 21436 + 19287 + 34235 = 74958.
     result = @olap.from('Sales').
       with_member('[Measures].[sum of max]').as(
-        "Sum([Customers].[USA].Children, " \
-        "Max([Time].[1997].Children, [Measures].[Unit Sales]))"
+        "Sum([Customers].[USA].Children, Max([Time].[1997].Children, [Measures].[Unit Sales]))"
       ).
       columns('[Measures].[sum of max]').execute
     assert_equal 74_958, result.values[0].to_i
@@ -396,12 +392,10 @@ describe "Min and Max with date expressions" do
     # Per-state quarterly maxima: CA 21436, OR 19287, WA 34235 → min 19287.
     result = @olap.from('Sales').
       with_member('[Measures].[max of min]').as(
-        "Max([Customers].[USA].Children, " \
-        "Min([Time].[1997].Children, [Measures].[Unit Sales]))"
+        "Max([Customers].[USA].Children, Min([Time].[1997].Children, [Measures].[Unit Sales]))"
       ).
       with_member('[Measures].[min of max]').as(
-        "Min([Customers].[USA].Children, " \
-        "Max([Time].[1997].Children, [Measures].[Unit Sales]))"
+        "Min([Customers].[USA].Children, Max([Time].[1997].Children, [Measures].[Unit Sales]))"
       ).
       columns('[Measures].[max of min]', '[Measures].[min of max]').execute
     assert_equal 29_479, result.values[0].to_i
@@ -412,12 +406,10 @@ describe "Min and Max with date expressions" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
       with_member('[Measures].[min result]').as(
-        "IIf([Measures].[Unit Sales] > 0, " \
-        "Min([Customers].[USA].Children, [Measures].[Test Date]), NULL)"
+        "IIf([Measures].[Unit Sales] > 0, Min([Customers].[USA].Children, [Measures].[Test Date]), NULL)"
       ).
       with_member('[Measures].[max result]').as(
-        "IIf([Measures].[Unit Sales] > 0, " \
-        "Max([Customers].[USA].Children, [Measures].[Test Date]), NULL)"
+        "IIf([Measures].[Unit Sales] > 0, Max([Customers].[USA].Children, [Measures].[Test Date]), NULL)"
       ).
       columns('[Measures].[min result]', '[Measures].[max result]').execute
     assert_kind_of java.util.Date, result.values[0]
@@ -430,12 +422,10 @@ describe "Min and Max with date expressions" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
       with_member('[Measures].[max of min]').as(
-        "Max([Customers].[USA].Children, " \
-        "Min({[Customers].CurrentMember}, [Measures].[Test Date]))"
+        "Max([Customers].[USA].Children, Min({[Customers].CurrentMember}, [Measures].[Test Date]))"
       ).
       with_member('[Measures].[min of max]').as(
-        "Min([Customers].[USA].Children, " \
-        "Max({[Customers].CurrentMember}, [Measures].[Test Date]))"
+        "Min([Customers].[USA].Children, Max({[Customers].CurrentMember}, [Measures].[Test Date]))"
       ).
       columns('[Measures].[max of min]', '[Measures].[min of max]').execute
     # Each inner Min/Max over a single member returns that member's date,
@@ -546,14 +536,10 @@ describe "Min and Max with date expressions" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
       with_member('[Measures].[max result]').as(
-        "CoalesceEmpty(" \
-        "Max(Filter([Customers].[USA].Children, 1=2), [Measures].[Test Date]), " \
-        "DateSerial(1970, 1, 1))"
+        "CoalesceEmpty(Max(Filter([Customers].[USA].Children, 1=2), [Measures].[Test Date]), DateSerial(1970, 1, 1))"
       ).
       with_member('[Measures].[min result]').as(
-        "CoalesceEmpty(" \
-        "Min(Filter([Customers].[USA].Children, 1=2), [Measures].[Test Date]), " \
-        "DateSerial(1970, 1, 1))"
+        "CoalesceEmpty(Min(Filter([Customers].[USA].Children, 1=2), [Measures].[Test Date]), DateSerial(1970, 1, 1))"
       ).
       columns('[Measures].[max result]', '[Measures].[min result]').execute
     # Max/Min over empty set returns null, CoalesceEmpty falls back to DateSerial
@@ -567,12 +553,10 @@ describe "Min and Max with date expressions" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
       with_member('[Measures].[max result]').as(
-        "Max(CrossJoin({[Customers].[USA].[CA], [Customers].[USA].[WA]}, " \
-        "{[Gender].[All Gender]}), [Measures].[Test Date])"
+        "Max(CrossJoin({[Customers].[USA].[CA], [Customers].[USA].[WA]}, {[Gender].[All Gender]}), [Measures].[Test Date])"
       ).
       with_member('[Measures].[min result]').as(
-        "Min(CrossJoin({[Customers].[USA].[CA], [Customers].[USA].[WA]}, " \
-        "{[Gender].[All Gender]}), [Measures].[Test Date])"
+        "Min(CrossJoin({[Customers].[USA].[CA], [Customers].[USA].[WA]}, {[Gender].[All Gender]}), [Measures].[Test Date])"
       ).
       columns('[Measures].[max result]', '[Measures].[min result]').execute
     assert_kind_of java.util.Date, result.values[0]
@@ -588,9 +572,9 @@ describe "Min and Max with date expressions" do
     # picks the DateTime signature for Min/Max.
     result = @olap.from('Sales').
       with_member('[Measures].[result]').as(
-        "DateDiff(\"d\", " \
-        "Min([Customers].[USA].Children, DateSerial(2020, 1, 15)), " \
-        "Max([Customers].[USA].Children, DateSerial(2020, 12, 15)))"
+        'DateDiff("d", ' \
+        'Min([Customers].[USA].Children, DateSerial(2020, 1, 15)), ' \
+        'Max([Customers].[USA].Children, DateSerial(2020, 12, 15)))'
       ).
       columns('[Measures].[result]').execute
     # All members evaluate to the same date in each Min/Max, so diff = 335 days
@@ -641,9 +625,9 @@ describe "Min and Max with date expressions" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
       with_member('[Measures].[result]').as(
-        "DateDiff(\"d\", " \
-        "Min([Customers].[USA].Children, [Measures].[Test Date]), " \
-        "Max([Customers].[USA].Children, [Measures].[Test Date]))"
+        'DateDiff("d", ' \
+        'Min([Customers].[USA].Children, [Measures].[Test Date]), ' \
+        'Max([Customers].[USA].Children, [Measures].[Test Date]))'
       ).
       columns('[Measures].[result]').execute
     # Min = Jan 15 2020, Max = Dec 15 2020 → 335 days.
@@ -655,8 +639,7 @@ describe "Min and Max with date expressions" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
       with_member('[Measures].[result]').as(
-        "DateAdd(\"d\", 30, " \
-        "Max([Customers].[USA].Children, [Measures].[Test Date]))"
+        'DateAdd("d", 30, Max([Customers].[USA].Children, [Measures].[Test Date]))'
       ).
       columns('[Measures].[result]').execute
     # Max = Dec 15 2020, +30 days → Jan 14 2021.
@@ -668,8 +651,7 @@ describe "Min and Max with date expressions" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
       with_member('[Measures].[result]').as(
-        "DateAdd(\"m\", 2, " \
-        "Min([Customers].[USA].Children, [Measures].[Test Date]))"
+        'DateAdd("m", 2, Min([Customers].[USA].Children, [Measures].[Test Date]))'
       ).
       columns('[Measures].[result]').execute
     # Min = Jan 15 2020, +2 months → Mar 15 2020.
@@ -716,10 +698,10 @@ describe "Min and Max with date expressions" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
       with_member('[Measures].[Max Quarter]').as(
-        "DatePart(\"q\", Max([Customers].[USA].Children, [Measures].[Test Date]))"
+        'DatePart("q", Max([Customers].[USA].Children, [Measures].[Test Date]))'
       ).
       with_member('[Measures].[Min Year]').as(
-        "DatePart(\"yyyy\", Min([Customers].[USA].Children, [Measures].[Test Date]))"
+        'DatePart("yyyy", Min([Customers].[USA].Children, [Measures].[Test Date]))'
       ).
       columns('[Measures].[Max Quarter]', '[Measures].[Min Year]').execute
     # Max = Dec 15 2020 → Q4; Min = Jan 15 2020 → year 2020.
@@ -735,12 +717,10 @@ describe "Min and Max with date expressions" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
       with_member('[Measures].[Max Shifted]').as(
-        "Max([Customers].[USA].Children, " \
-        "DateAdd(\"d\", 30, [Measures].[Test Date]))"
+        'Max([Customers].[USA].Children, DateAdd("d", 30, [Measures].[Test Date]))'
       ).
       with_member('[Measures].[Min Shifted]').as(
-        "Min([Customers].[USA].Children, " \
-        "DateAdd(\"d\", 30, [Measures].[Test Date]))"
+        'Min([Customers].[USA].Children, DateAdd("d", 30, [Measures].[Test Date]))'
       ).
       columns('[Measures].[Max Shifted]', '[Measures].[Min Shifted]').execute
     # CA+30 = Feb 14 2020; OR+30 = Jul 15 2020; WA+30 = Jan 14 2021.
@@ -756,12 +736,10 @@ describe "Min and Max with date expressions" do
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
       with_member('[Measures].[max result]').as(
-        "DateAdd(\"d\", 30, " \
-        "Max(Filter([Customers].[USA].Children, 1=2), [Measures].[Test Date]))"
+        'DateAdd("d", 30, Max(Filter([Customers].[USA].Children, 1=2), [Measures].[Test Date]))'
       ).
       with_member('[Measures].[min result]').as(
-        "DateAdd(\"d\", 30, " \
-        "Min(Filter([Customers].[USA].Children, 1=2), [Measures].[Test Date]))"
+        'DateAdd("d", 30, Min(Filter([Customers].[USA].Children, 1=2), [Measures].[Test Date]))'
       ).
       columns('[Measures].[max result]', '[Measures].[min result]').execute
     assert_nil result.values[0]
@@ -800,14 +778,10 @@ describe "Min and Max with date expressions" do
     # it and the fallback never fires.
     result = @olap.from('Sales').
       with_member('[Measures].[max result]').as(
-        "CoalesceEmpty(" \
-        "Max(Filter([Customers].[USA].Children, 1=2), DateSerial(2020, 1, 1)), " \
-        "DateSerial(1970, 1, 1))"
+        "CoalesceEmpty(Max(Filter([Customers].[USA].Children, 1=2), DateSerial(2020, 1, 1)), DateSerial(1970, 1, 1))"
       ).
       with_member('[Measures].[min result]').as(
-        "CoalesceEmpty(" \
-        "Min(Filter([Customers].[USA].Children, 1=2), DateSerial(2020, 1, 1)), " \
-        "DateSerial(1970, 1, 1))"
+        "CoalesceEmpty(Min(Filter([Customers].[USA].Children, 1=2), DateSerial(2020, 1, 1)), DateSerial(1970, 1, 1))"
       ).
       columns('[Measures].[max result]', '[Measures].[min result]').execute
     assert_kind_of java.util.Date, result.values[0]
@@ -877,12 +851,10 @@ describe "Min and Max with date expressions" do
     # DateTime branch normalizes the empty-set sentinel to null.
     result = @olap.from('Sales').
       with_member('[Measures].[max result]').as(
-        "DateAdd(\"d\", 30, " \
-        "Max(Filter([Customers].[USA].Children, 1=2), DateSerial(2020, 1, 1)))"
+        'DateAdd("d", 30, Max(Filter([Customers].[USA].Children, 1=2), DateSerial(2020, 1, 1)))'
       ).
       with_member('[Measures].[min result]').as(
-        "DateAdd(\"d\", 30, " \
-        "Min(Filter([Customers].[USA].Children, 1=2), DateSerial(2020, 1, 1)))"
+        'DateAdd("d", 30, Min(Filter([Customers].[USA].Children, 1=2), DateSerial(2020, 1, 1)))'
       ).
       columns('[Measures].[max result]', '[Measures].[min result]').execute
     assert_nil result.values[0]
@@ -943,10 +915,12 @@ describe "Min and Max with date expressions" do
   it "should skip null date values through the DateTime branch" do
     # Only CA and OR get dates, WA evaluates to null
     partial_date_expression =
-      "CASE [Customers].CurrentMember" \
-      " WHEN [Customers].[USA].[CA] THEN DateSerial(2020, 1, 15)" \
-      " WHEN [Customers].[USA].[OR] THEN DateSerial(2020, 6, 15)" \
-      " END"
+      <<~MDX
+        CASE [Customers].CurrentMember
+        WHEN [Customers].[USA].[CA] THEN DateSerial(2020, 1, 15)
+        WHEN [Customers].[USA].[OR] THEN DateSerial(2020, 6, 15)
+        END
+      MDX
     result = @olap.from('Sales').
       with_member('[Measures].[Max Date]').as(
         "Max([Customers].[USA].Children, #{partial_date_expression})"
@@ -981,12 +955,10 @@ describe "Min and Max with date expressions" do
   it "should work with CrossJoin producing tuples through the DateTime branch" do
     result = @olap.from('Sales').
       with_member('[Measures].[max result]').as(
-        "Max(CrossJoin({[Customers].[USA].[CA], [Customers].[USA].[WA]}, " \
-        "{[Gender].[All Gender]}), #{date_measure_expression})"
+        "Max(CrossJoin({[Customers].[USA].[CA], [Customers].[USA].[WA]}, {[Gender].[All Gender]}), #{date_measure_expression})"
       ).
       with_member('[Measures].[min result]').as(
-        "Min(CrossJoin({[Customers].[USA].[CA], [Customers].[USA].[WA]}, " \
-        "{[Gender].[All Gender]}), #{date_measure_expression})"
+        "Min(CrossJoin({[Customers].[USA].[CA], [Customers].[USA].[WA]}, {[Gender].[All Gender]}), #{date_measure_expression})"
       ).
       columns('[Measures].[max result]', '[Measures].[min result]').execute
     assert_equal Date.new(2020, 12, 15), Date.parse(result.values[0].to_s)
@@ -1035,8 +1007,10 @@ describe "Min and Max with date expressions" do
           @olap.from('Sales').
             with_member('[Measures].[Date Calc]').as("DateSerial(2020, 1, 15)").
             with_member('[Measures].[Mixed]').as(
-              "CASE [Customers].CurrentMember" \
-              " WHEN [Customers].[USA].[CA] #{case_branches} END"
+              <<~MDX
+                CASE [Customers].CurrentMember
+                WHEN [Customers].[USA].[CA] #{case_branches} END
+              MDX
             ).
             with_member('[Measures].[result]').as(
               "#{min_or_max}([Customers].[USA].Children, [Measures].[Mixed])"
@@ -1072,11 +1046,13 @@ describe "Min and Max with date expressions" do
   it "should distinguish dates by time of day" do
     # All three values fall on the same day; only the time component differs.
     time_expression =
-      "CASE [Customers].CurrentMember" \
-      " WHEN [Customers].[USA].[CA] THEN DateAdd(\"h\", 9, DateSerial(2020, 1, 15))" \
-      " WHEN [Customers].[USA].[OR] THEN DateAdd(\"h\", 17, DateSerial(2020, 1, 15))" \
-      " WHEN [Customers].[USA].[WA] THEN DateAdd(\"h\", 1, DateSerial(2020, 1, 15))" \
-      " END"
+      <<~MDX
+        CASE [Customers].CurrentMember
+        WHEN [Customers].[USA].[CA] THEN DateAdd("h", 9, DateSerial(2020, 1, 15))
+        WHEN [Customers].[USA].[OR] THEN DateAdd("h", 17, DateSerial(2020, 1, 15))
+        WHEN [Customers].[USA].[WA] THEN DateAdd("h", 1, DateSerial(2020, 1, 15))
+        END
+      MDX
     result = @olap.from('Sales').
       with_member('[Measures].[Test Time]').as(time_expression).
       with_member('[Measures].[max result]').as(
@@ -1095,10 +1071,12 @@ describe "Min and Max with date expressions" do
 
   it "should compare dates before 1970 correctly" do
     epoch_expression =
-      "CASE [Customers].CurrentMember" \
-      " WHEN [Customers].[USA].[CA] THEN DateSerial(1965, 6, 15)" \
-      " WHEN [Customers].[USA].[OR] THEN DateSerial(1975, 6, 15)" \
-      " END"
+      <<~MDX
+        CASE [Customers].CurrentMember
+        WHEN [Customers].[USA].[CA] THEN DateSerial(1965, 6, 15)
+        WHEN [Customers].[USA].[OR] THEN DateSerial(1975, 6, 15)
+        END
+      MDX
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(epoch_expression).
       with_member('[Measures].[max result]').as(
@@ -1193,10 +1171,10 @@ describe "Min and Max with date column properties" do
   it "should return extreme dates from Min and Max over a Timestamp property" do
     result = @olap.from('Store').
       with_member('[Measures].[Min Opened]').as(
-        "Min([Store].[Store Name].Members, [Store].CurrentMember.Properties(\"First Opened\"))"
+        'Min([Store].[Store Name].Members, [Store].CurrentMember.Properties("First Opened"))'
       ).
       with_member('[Measures].[Max Opened]').as(
-        "Max([Store].[Store Name].Members, [Store].CurrentMember.Properties(\"First Opened\"))"
+        'Max([Store].[Store Name].Members, [Store].CurrentMember.Properties("First Opened"))'
       ).
       columns('[Measures].[Min Opened]', '[Measures].[Max Opened]').execute
     assert_kind_of java.util.Date, result.values[0]
@@ -1208,10 +1186,10 @@ describe "Min and Max with date column properties" do
   it "should return extreme dates from Min and Max over another Timestamp property" do
     result = @olap.from('Store').
       with_member('[Measures].[Min Remodel]').as(
-        "Min([Store].[Store Name].Members, [Store].CurrentMember.Properties(\"Last Remodel\"))"
+        'Min([Store].[Store Name].Members, [Store].CurrentMember.Properties("Last Remodel"))'
       ).
       with_member('[Measures].[Max Remodel]').as(
-        "Max([Store].[Store Name].Members, [Store].CurrentMember.Properties(\"Last Remodel\"))"
+        'Max([Store].[Store Name].Members, [Store].CurrentMember.Properties("Last Remodel"))'
       ).
       columns('[Measures].[Min Remodel]', '[Measures].[Max Remodel]').execute
     assert_equal Date.new(1958, 1, 7), Date.parse(result.values[0].to_s)
@@ -1221,9 +1199,9 @@ describe "Min and Max with date column properties" do
   it "should compose property-sourced Min and Max with Vba date functions" do
     result = @olap.from('Store').
       with_member('[Measures].[result]').as(
-        "DateDiff(\"d\", " \
-        "Min([Store].[Store Name].Members, [Store].CurrentMember.Properties(\"First Opened\")), " \
-        "Max([Store].[Store Name].Members, [Store].CurrentMember.Properties(\"First Opened\")))"
+        'DateDiff("d", ' \
+        'Min([Store].[Store Name].Members, [Store].CurrentMember.Properties("First Opened")), ' \
+        'Max([Store].[Store Name].Members, [Store].CurrentMember.Properties("First Opened")))'
       ).
       columns('[Measures].[result]').execute
     assert_kind_of Numeric, result.values[0]
