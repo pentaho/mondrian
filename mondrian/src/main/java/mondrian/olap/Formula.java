@@ -498,6 +498,41 @@ public class Formula extends QueryPart {
             return null;
         }
 
+        // If the expression is a function that implements FormatAwareFunDef
+        // (directly on the FunDef, or via a wrapped UDF), let it control
+        // which argument's format to use.
+        if (exp instanceof ResolvedFunCall) {
+            ResolvedFunCall call = (ResolvedFunCall) exp;
+            FormatAwareFunDef formatAware = call.getFormatAwareFunDef();
+            if (formatAware != null) {
+                int index = formatAware.getFormatExpIndex(call.getArgs());
+                if (index == -1) {
+                    // Function explicitly opts out of format inheritance.
+                    return null;
+                }
+                if (index >= 0 && index < call.getArgCount()) {
+                    try {
+                        call.getArg(index).accept(
+                            new FormatFinder(validator));
+                    } catch (FoundOne foundOne) {
+                        return foundOne.exp;
+                    }
+                    // Function explicitly participated in format inference
+                    // and selected a specific argument. If no format was
+                    // found there, do not fall through to scanning the whole
+                    // expression — that risks picking up a format from an
+                    // unrelated part (e.g., a measure inside a Filter
+                    // predicate) and defeats the purpose of the opt-in.
+                    return null;
+                }
+                // NOT_PARTICIPATING: the function declines to participate —
+                // fall through to the default depth-first scan below.
+                assert index == FormatAwareFunDef.NOT_PARTICIPATING
+                    : "Unexpected FormatAwareFunDef.getFormatExpIndex() "
+                    + "result: " + index;
+            }
+        }
+
         // Burrow into the expression. If we find a member, use its format
         // string.
         try {

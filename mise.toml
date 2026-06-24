@@ -4,6 +4,8 @@ ruby = "jruby-9.4.14.0"
 maven = "3.9"
 
 [tasks.package]
+# Keep -q (quiet build: only WARN/ERROR output). Drop it locally when
+# troubleshooting a build, but don't commit the removal.
 run = "mvn package -q -DskipTests"
 
 [tasks.test]

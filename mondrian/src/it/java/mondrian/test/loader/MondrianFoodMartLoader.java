@@ -3037,8 +3037,11 @@ public class MondrianFoodMartLoader {
          * Output for a TIMESTAMP
          */
         } else {
+            // PATCH: match on the logical column type as well because Oracle
+            // Timestamp columns are physically created as DATE
             if (columnType.startsWith("TIMESTAMP")
-                || columnType.equals("DateTime"))
+                || columnType.startsWith("DateTime")
+                || column.type == Type.Timestamp)
             {
                 Timestamp ts = (Timestamp) obj;
 
@@ -3051,8 +3054,8 @@ public class MondrianFoodMartLoader {
                 case NEOVIEW:
                     return "TIMESTAMP '" + ts + "'";
                 case CLICKHOUSE:
-                    // PATCH: ClickHouse DateTime does not support
-                    // fractional seconds
+                    // PATCH: ClickHouse DateTime and DateTime64(0) do not
+                    // support fractional seconds
                     return "'"
                         + ts.toString().replaceAll("\\.\\d+", "") + "'";
                 default:
@@ -3063,7 +3066,10 @@ public class MondrianFoodMartLoader {
             /*
              * Output for a DATE
              */
-            } else if (columnType.startsWith("DATE")) {
+            } else if (columnType.startsWith("DATE")
+                // Date and Date32 are ClickHouse date types
+                || columnType.startsWith("Date"))
+            {
                 Date dt = (Date) obj;
                 switch (dialect.getDatabaseProduct()) {
                 case ORACLE:
@@ -3160,8 +3166,11 @@ public class MondrianFoodMartLoader {
          * Output for a TIMESTAMP
          */
         final Dialect.DatabaseProduct product = dialect.getDatabaseProduct();
+        // PATCH: match on the logical column type as well because Oracle
+        // Timestamp columns are physically created as DATE
         if (columnType.startsWith("TIMESTAMP")
-            || columnType.equals("DateTime"))
+            || columnType.startsWith("DateTime")
+            || column.type == Type.Timestamp)
         {
             switch (product) {
             case ORACLE:
@@ -3169,7 +3178,7 @@ public class MondrianFoodMartLoader {
             case NEOVIEW:
                 return "TIMESTAMP " + columnValue;
             case CLICKHOUSE:
-                // PATCH: ClickHouse DateTime does not support
+                // PATCH: ClickHouse DateTime and DateTime64(0) do not support
                 // fractional seconds; strip e.g. ".0" from
                 // '1946-08-15 00:00:00.0'
                 return columnValue.replaceAll("\\.\\d+", "");
@@ -3178,7 +3187,10 @@ public class MondrianFoodMartLoader {
         /*
          * Output for a DATE
          */
-        } else if (columnType.startsWith("DATE")) {
+        } else if (columnType.startsWith("DATE")
+            // Date and Date32 are ClickHouse date types
+            || columnType.startsWith("Date"))
+        {
             switch (product) {
             case ORACLE:
             case LUCIDDB:
@@ -3409,6 +3421,11 @@ public class MondrianFoodMartLoader {
                 switch (dialect.getDatabaseProduct()) {
                 case MSSQL:
                     return "DATETIME";
+                case CLICKHOUSE:
+                    // PATCH: ClickHouse Date starts at 1970-01-01 and would
+                    // silently saturate earlier dates; Date32 starts at
+                    // 1900-01-01 and covers the FoodMart date range
+                    return "Date32";
                 case INGRES:
                     return "INGRESDATE";
                 default:
@@ -3423,9 +3440,19 @@ public class MondrianFoodMartLoader {
                 case INFOBRIGHT:
                 case SYBASE:
                     return "DATETIME";
+                case ORACLE:
+                    // PATCH: create datetime columns as Oracle DATE, never
+                    // TIMESTAMP, so the Oracle JDBC driver returns them as
+                    // java.sql.Timestamp (mapDateToTimestamp) instead of
+                    // oracle.sql.TIMESTAMP. This exercises the JDBC boundary
+                    // the Min/Max DateTime branch relies on.
+                    return "DATE";
                 case CLICKHOUSE:
-                    // PATCH: ClickHouse uses DateTime instead of TIMESTAMP
-                    return "DateTime";
+                    // PATCH: ClickHouse DateTime starts at 1970-01-01 and
+                    // would silently saturate earlier values; DateTime64
+                    // starts at 1900-01-01 and covers the FoodMart
+                    // datetime range
+                    return "DateTime64(0)";
                 case INGRES:
                     return "INGRESDATE";
                 case INFORMIX:
