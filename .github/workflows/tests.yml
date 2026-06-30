@@ -19,7 +19,7 @@ jobs:
         JAVA_VERSION: [8, 11, 17, 21, 25]
         MONDRIAN_DRIVER: [mysql, postgresql, oracle, sqlserver, clickhouse]
     env:
-      JRUBY_VERSION: 9.4.14.0
+      JRUBY_VERSION: 9.4.15.0
       JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
       MONDRIAN_DRIVER: ${{ matrix.MONDRIAN_DRIVER }}
       ORACLE_HOME: /u01/app/oracle/product/11.2.0/xe
@@ -110,7 +110,7 @@ jobs:
       matrix:
         JAVA_VERSION: [8, 11, 17, 21, 25]
     env:
-      JRUBY_VERSION: 9.4.14.0
+      JRUBY_VERSION: 9.4.15.0
       JAVA_VERSION: ${{ matrix.JAVA_VERSION }}
       MONDRIAN_DRIVER: sqlserver
       SQLSERVER_ADMIN_PASSWORD: Password12!
