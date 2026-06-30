@@ -1,6 +1,6 @@
 [tools]
 java = ["temurin-11", "zulu-8", "temurin-17", "temurin-21", "temurin-25"]
-ruby = "jruby-9.4.14.0"
+ruby = "jruby-9.4.15.0"
 maven = "3.9"
 
 [tasks.package]
