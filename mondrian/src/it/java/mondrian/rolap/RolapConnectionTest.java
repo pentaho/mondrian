@@ -24,7 +24,7 @@ import mondrian.util.Pair;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
