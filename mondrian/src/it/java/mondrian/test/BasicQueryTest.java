@@ -2,13 +2,14 @@
  *
  * Pentaho
  *
- * Copyright (C) 2024 by Hitachi Vantara, LLC : http://www.pentaho.com
+ * Copyright (C) 2024 - 2026 by Pentaho Canada Inc. : http://www.pentaho.com
  *
  * Use of this software is governed by the Business Source License included
  * in the LICENSE.TXT file.
  *
- * Change Date: 2029-07-20
+ * Change Date: 2030-06-15
  ******************************************************************************/
+
 
 package mondrian.test;
 
@@ -4537,7 +4538,7 @@ public class BasicQueryTest extends FoodMartTestCase {
   }
 
   /**
-   * Testcase for Hitachi Vantara bug <a href="http://jira.pentaho.com/browse/BISERVER-1323">BISERVER-1323</a>, empty
+   * Testcase for Pentaho bug <a href="http://jira.pentaho.com/browse/BISERVER-1323">BISERVER-1323</a>, empty
    * SQL query generated when crossjoining more than two sets each containing just the 'all' member.
    */
   public void testEmptySqlBug() {
