@@ -2,13 +2,14 @@
  *
  * Pentaho
  *
- * Copyright (C) 2024 by Hitachi Vantara, LLC : http://www.pentaho.com
+ * Copyright (C) 2024 - 2026 by Pentaho Canada Inc. : http://www.pentaho.com
  *
  * Use of this software is governed by the Business Source License included
  * in the LICENSE.TXT file.
  *
- * Change Date: 2029-07-20
+ * Change Date: 2030-06-15
  ******************************************************************************/
+
 
 package mondrian.spi.impl;
 
@@ -22,7 +23,7 @@ import java.util.List;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the NuoDB database.
- * In order to use NuoDB with Hitachi Vantara Mondrian users can only use NuoDB
+ * In order to use NuoDB with Pentaho Mondrian users can only use NuoDB
  * version 2.0.4 or newer.
  *
  * @author rbuck
