@@ -2,6 +2,13 @@
 
 This file provides guidance to AI coding agents working with this repository.
 
+## Documentation
+
+Architecture and data-flow documentation lives in [docs/](docs/README.md).
+Start with `docs/architecture.md` for the layer/package map and
+`docs/query-lifecycle.md` for the end-to-end MDX execution path; load further
+package/topic documents only as the task requires.
+
 ## Overview
 
 mondrian-olap-java is a fork of the Mondrian OLAP Java engine, maintained to provide the core Java library for the [mondrian-olap](https://github.com/rsim/mondrian-olap) JRuby gem. This fork includes patches and enhancements specific to the mondrian-olap use case, built on top of Pentaho Mondrian 9.3.0.0.
