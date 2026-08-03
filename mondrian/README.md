@@ -5,12 +5,12 @@ Mondrian is an Online Analytical Processing (OLAP) server that enables business 
 * JDK 1.8 or higher
 * Maven 3.3 or higher
 * Docker (for running integration tests without a dedicated MySQL DB)
-* Credentials to the server one.hitachivantara.com set in maven settings.xml (for running integration tests without a dedicated MySQL DB). Example bellow:
+* Credentials to the server repo.pentaho.com set in maven settings.xml (for running integration tests without a dedicated MySQL DB). Example bellow:
 ```
     <server>
       <username>username</username>
       <password>password</password>
-      <id>one.hitachivantara.com</id>
+      <id>repo.pentaho.com</id>
     </server>
 ```
 
@@ -24,7 +24,7 @@ Skip the integration tests by omitting `-DrunITs -P embedded-mysql,load-foodmart
 #### Run Isolate Integration Test
 To run the tests locally, the following property must be set
 ```
-<pentaho.docker.pull.host>one.hitachivantara.com/pnt-docker</pentaho.docker.pull.host>
+<pentaho.docker.pull.host>repo.pentaho.com/pnt-docker</pentaho.docker.pull.host>
 ```
 or
 ```
