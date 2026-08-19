@@ -1,0 +1,211 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+
+<script type="text/javascript" src="../web-scripts/en/script.content.js"></script>
+<script type="text/javascript" language="javascript" src="../web-scripts/formvalid.js"></script>
+
+<link href="../css/base.css" rel="stylesheet" type="text/css" media="all">
+
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta name="Keywords" content="pentaho open source business intelligence BI reporting analysis etl dashboards data integration mining" />
+<meta name="description" content="Spend 90% less on your next Business Intelligence project with Pentaho Reporting, Analysis, Dashboards
+, Data Integration / ETL, and Data Mining." />
+<meta name="robots" content="index,follow" />
+    
+<title>Pentaho Mondrian Documentation</title>
+
+    <!--[if lte IE 7]>
+    	<style type="text/css">
+    		#menu
+    			{
+    				zoom: 1;
+    				position: relative;
+    			}
+		
+			div#ddtopmenubar {
+				position:relative;
+				float:right;
+				margin: 0;
+				padding-top:5px;
+			}
+    	</style>
+    <![endif]-->
+</head>
+<body style="margin:15px;">
+<div style="border-bottom:1px solid #cecece; height:80px;">
+<div style="float:left;"><img src="../images/pentaho_logo.jpeg" alt="Pentaho Home" border="0"></div><h1 style="font-size:2em; padding-top: 48px;"><span style="margin-bottom:250px;">Mondrian Documentation</span></h1></div>
+<table cellpadding="0" cellspacing="0" style="padding:10px 0px 0px 0px;">
+	<tr>
+    	<td style="padding-right:10px; vertical-align:top;">
+            <table>
+      <tr>
+      <td>
+           <div id="tabz" style="height: 10px;">
+        <table border="0" cellspacing="0" cellpadding="0" width="100%">          
+          <tr>
+            <td><img src="../images/panel_left_top.png" width="18" height="10"></td>
+            <td style="border-top: 1px solid #c9c9c9; background-color:#FFFFFF; width:100%;"><img src="../images/clr.gif" width="9" height="9"></td>
+            <td><img src="../images/panel_right_top.png" width="18" height="10"></td>
+          </tr>
+        </table>
+        </div>
+        <div>
+        <table border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td background="../images/panel_left.png"><img src="../images/clr.gif" width="18" height="150"></td>
+            <td style="width:100%; background-color:#FFFFFF; white-space:nowrap; vertical-align:top;">
+            
+<a href="../documentation/olap.html" style="font-weight:bold; color:#EF8033;">What is OLAP</a><br />
+<a href="../documentation/installation.html" >Installation</a><br />
+&nbsp;&nbsp;- <a href="../documentation/installation_es.html" >(Spanish)</a><br />
+&nbsp;&nbsp;- <a href="../documentation/installation_fr.html" >(French)</a><br />
+<a href="../documentation/mdx.html" >MDX</a><br />
+<a href="../documentation/architecture.html" >Architecture</a><br />
+<a href="../documentation/schema.html" >Writing a Schema</a><br />
+<a href="../documentation/configuration.html" >Configuration</a><br />
+<a href="../documentation/performance.html" >Performance</a><br />
+<a href="../documentation/aggregate_tables.html" >Aggregate Tables</a><br />
+<a href="../documentation/cache_control.html" >Cache Control</a><br />
+<a href="../documentation/workbench.html" >Workbench</a><br />
+<a href="../documentation/command_runner.html" >Command Runner</a><br />
+<a href="../documentation/faq.html" >FAQ</a><br />
+<a href="../documentation/roadmap.html" >Roadmap</a><br />
+<a href="../documentation/components.html" >Components</a><br />
+<a target="_blank" href="../api">API</a><br />
+<a href="../documentation/developers_guide.html" >Developer's Guide</a><br />
+<a href="../documentation/developer_notes.html" >Developer Notes</a><br />
+<a href="/help">Help</a>            </td>
+            <td background="../images/panel_right.png"><img src="../images/clr.gif" width="18" height="150"></td>
+          </tr>
+          <tr>
+            <td><img src="../images/panel_left_bottom.png" width="18" height="22"></td>
+            <td background="../images/panel_bottom.png"><img src="../images/clr.gif" width="22" height="22"></td>
+            <td><img src="../images/panel_right_bottom.png" width="18" height="22"></td>
+          </tr>
+        </table>
+        </div>
+      </td>
+      </tr>
+      </table></td>
+        <td class="contentRightMargin" valign="top" width="100%" style="padding-top:10px;">
+            
+<!-- page title -->
+<div class="contentheading">Mondrian and OLAP</div>
+<!-- end page title -->
+
+
+<p>Mondrian is an OLAP engine written in Java. It executes queries written in the MDX language, reading data from a relational database (RDBMS), and presents the results in a multidimensional format via a Java API. Let's go into what that means.</p>
+<!-- 
+######################################
+##  Online Analytical Processing #####
+###################################### -->
+<h3>Online Analytical Processing</h3>
+
+<p>Online Analytical Processing (OLAP) means analysing large quantities of data in real-time. Unlike Online Transaction Processing (OLTP), where typical operations read and modify individual and small numbers of records, OLAP deals with data in bulk, and operations are generally read-only. The term 'online' implies that even though huge quantities of data are involved — typically many millions of records, occupying several gigabytes — the system must respond to queries fast enough to allow an interactive exploration of the data. As we shall see, that presents considerable technical challenges.</p>
+
+<p>OLAP employs a technique called Multidimensional Analysis. Whereas a relational database stores all data in the form of rows and columns, a multidimensional dataset consists of axes and cells. Consider the dataset</p>
+<table width="500" class="grayTable">
+    <tr>
+      <td nowrap><i>Year</i></td>
+      <td align="right" colspan="2"><b>2000</b></td>
+      <td align="right" colspan="2"><b>2001</b></td>
+      <td align="right" colspan="2"><b>Growth</b></td>
+    </tr>
+    <tr>
+      <td nowrap><i>Product</i></td>
+      <td align="right"><b>Dollar sales</b></td>
+      <td align="right"><b>Unit sales</b></td>
+      <td align="right"><b>Dollar sales</b></td>
+      <td align="right"><b>Unit sales</b></td>
+      <td align="right"><b>Dollar sales</b></td>
+      <td align="right"><b>Unit sales</b></td>
+    </tr>
+    <tr>
+      <td align="left"><b>Total</b></td>
+      <td align="right">$7,073</td>
+      <td align="right">2,693</td>
+      <td align="right">$7,636</td>
+      <td align="right">3,008</td>
+      <td align="right">8%</td>
+      <td align="right">12%</td>
+    </tr>
+    <tr>
+      <td align="left"><b>— Books</b></td>
+      <td align="right">$2,753</td>
+      <td align="right">824</td>
+      <td align="right">$3,331</td>
+      <td align="right">966</td>
+      <td align="right">21%</td>
+      <td align="right">17%</td>
+    </tr>
+    <tr>
+      <td align="left"><b>—— Fiction</b></td>
+      <td align="right">$1,341</td>
+      <td align="right">424</td>
+      <td align="right">$1,202</td>
+      <td align="right">380</td>
+      <td align="right">-10%</td>
+      <td align="right">-10%</td>
+    </tr>
+    <tr>
+      <td align="left"><b>—— Non-fiction</b></td>
+      <td align="right">$1,412</td>
+      <td align="right">400</td>
+      <td align="right">$2,129</td>
+      <td align="right">586</td>
+      <td align="right">51%</td>
+      <td align="right">47%</td>
+    </tr>
+    <tr>
+      <td align="left"><b>— Magazines</b></td>
+      <td align="right">$2,753</td>
+      <td align="right">824</td>
+      <td align="right">$2,426</td>
+      <td align="right">766</td>
+      <td align="right">-12%</td>
+      <td align="right">-7%</td>
+    </tr>
+    <tr>
+      <td align="left"><b>&mdash; Greetings cards</b></td>
+      <td align="right">$1,567</td>
+      <td align="right">1,045</td>
+      <td align="right">$1,879</td>
+      <td align="right">1,276</td>
+      <td align="right">20%</td>
+      <td align="right">22%</td>
+    </tr>
+    </table>
+<p>The rows axis consists of the members 'All products', 'Books', 'Fiction', and so forth, and the columns axis consists of the cartesian product of the years '2000' and '2001', and the calculation 'Growth', and the measures 'Unit sales' and 'Dollar sales'. Each cell represents the sales of a product category in a particular year; for example, the dollar sales of Magazines in 2001 were $2,426.</p>
+
+<p>This is a richer view of the data than would be presented by a relational database. The members of a multidimensional dataset are not always values from a relational column. 'Total', 'Books' and 'Fiction' are members at successive levels in a hierarchy, each of which is rolled up to the next. And even though it is alongside the years '2000' and '2001', 'Growth' is a calculated member, which introduces a formula for computing cells from other cells.</p>
+
+<p>The dimensions used here — products, time, and measures — are just three of many dimensions by which the dataset can be categorized and filtered. The collection of dimensions, hierarchies and measures is called a cube.</p>
+
+<!-- 
+########################
+##  Conclusion     #####
+######################## -->
+<h3>Conclusion</h3>
+
+<p>I hope I have demonstrated that multidimensional is above all a way of presenting data. Although some multidimensional databases store the data in multidimensional format, I shall argue that it is simpler to store the data in relational format.</p>
+
+<p>Now it's time to look at the architecture of an OLAP system. See <a href="architecture.html">Mondrian architecture</a>.</p>
+<br />
+<br />
+
+<p>
+    Author: Julian Hyde; last modified August 2006.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/olap.html?ac=22">log</a>)<br/>
+    Copyright (C) 2002-2005 Julian Hyde<br/>
+    Copyright (C) 2005-2006 Pentaho
+</p>
+
+<br />
+
+         </td>
+      </tr>
+</table>
+</body>
+</html>

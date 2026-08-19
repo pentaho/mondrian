@@ -1,0 +1,736 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2007-2012 Pentaho and others<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.util;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import org.eigenbase.util.property.StringProperty;<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>import java.lang.reflect.*;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import java.util.Properties;<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>/**<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * Concrete derived classes of the generic &lt;code&gt;ObjectFactory&lt;/code&gt; class<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * are used to produce an implementation of an interface (a<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * normal interface implementation or a Proxy). In general, a<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * factory should produce a default implementation for general application<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * use as well as particular implementations used during testing.<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * During testing of application code and during normal execution,<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * the application code uses one of the &lt;code&gt;ObjectFactory&lt;/code&gt;'s<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * methods for producing implementation instances - the same method is<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * used both for test and non-test modes. There are two ways of<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * modifying the implementation returned to the application code.<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * &lt;p&gt;The first is for the application to use Properties.<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * The &lt;code&gt;ObjectFactory&lt;/code&gt; implementation looks for a given<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * property (by default the name of the property is the class name<a name="line.31"></a>
+<span class="sourceLineNo">032</span> * of the interfaceClass object) and if found uses it as the classname<a name="line.32"></a>
+<span class="sourceLineNo">033</span> * to create.&lt;/p&gt;<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *<a name="line.34"></a>
+<span class="sourceLineNo">035</span> * &lt;p&gt;A second approach is to use a ThreadLocal; if the ThreadLocal<a name="line.35"></a>
+<span class="sourceLineNo">036</span> * is non-empty then use it as the class name.&lt;/p&gt;<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * &lt;p&gt;When to use a Factory?<a name="line.38"></a>
+<span class="sourceLineNo">039</span> *<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * &lt;p&gt;Everyone has an opinion. For me, there are two criteria: enabling<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * unit testing and providing end-user/developer-customizer overriding.<a name="line.41"></a>
+<span class="sourceLineNo">042</span> *<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * &lt;p&gt;If a method has side-effects, either its result depends upon<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * a side-effect or calling it causes a side-effect, then the Object<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * hosting the method is a candidate for having a factory. Why?<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * Well, consider the case where a method returns the value of<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * a System property and the System property is determined only once<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * and set to a static final variable:<a name="line.48"></a>
+<span class="sourceLineNo">049</span> *<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * &lt;pre&gt;<a name="line.50"></a>
+<span class="sourceLineNo">051</span> *      class OneValue {<a name="line.51"></a>
+<span class="sourceLineNo">052</span> *          private static final boolean propValue;<a name="line.52"></a>
+<span class="sourceLineNo">053</span> *          static {<a name="line.53"></a>
+<span class="sourceLineNo">054</span> *              propValue = Boolean.getBoolean("com.app.info.value");<a name="line.54"></a>
+<span class="sourceLineNo">055</span> *          }<a name="line.55"></a>
+<span class="sourceLineNo">056</span> *          .....<a name="line.56"></a>
+<span class="sourceLineNo">057</span> *          public boolean hasInfo() {<a name="line.57"></a>
+<span class="sourceLineNo">058</span> *              return propValue;<a name="line.58"></a>
+<span class="sourceLineNo">059</span> *          }<a name="line.59"></a>
+<span class="sourceLineNo">060</span> *      }<a name="line.60"></a>
+<span class="sourceLineNo">061</span> * &lt;/pre&gt;<a name="line.61"></a>
+<span class="sourceLineNo">062</span> *<a name="line.62"></a>
+<span class="sourceLineNo">063</span> * &lt;p&gt;In this case, only one value is ever returned. If you have a<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * module, a client of the above code, that uses the value returned<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * by a call to the<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * &lt;code&gt;hasInfo()&lt;/code&gt; method, how do you write a unit test of<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * your module that tests both possible return values?<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * You can not, its value is based upon a side-effect, an external<a name="line.68"></a>
+<span class="sourceLineNo">069</span> * value that can not be controlled by the unit test.&lt;/p&gt;<a name="line.69"></a>
+<span class="sourceLineNo">070</span> *<a name="line.70"></a>
+<span class="sourceLineNo">071</span> * &lt;p&gt;If the &lt;code&gt;OneValue&lt;/code&gt; class was an interface and there was a<a name="line.71"></a>
+<span class="sourceLineNo">072</span> * factory, then the unit test could arrange that its own version of the<a name="line.72"></a>
+<span class="sourceLineNo">073</span> * &lt;code&gt;OneValue&lt;/code&gt;<a name="line.73"></a>
+<span class="sourceLineNo">074</span> * interface was returned and in one test arrange that &lt;code&gt;true&lt;/code&gt;<a name="line.74"></a>
+<span class="sourceLineNo">075</span> * was returned and in a second test, arrange that &lt;code&gt;false&lt;/code&gt;<a name="line.75"></a>
+<span class="sourceLineNo">076</span> * was returned.&lt;/p&gt;<a name="line.76"></a>
+<span class="sourceLineNo">077</span> *<a name="line.77"></a>
+<span class="sourceLineNo">078</span> * &lt;p&gt;The above is a trivial example of code that disallows clients of the<a name="line.78"></a>
+<span class="sourceLineNo">079</span> * code from being properly tested.&lt;/p&gt;<a name="line.79"></a>
+<span class="sourceLineNo">080</span> *<a name="line.80"></a>
+<span class="sourceLineNo">081</span> * &lt;p&gt;Another example might be a module that directly initializes a JMS<a name="line.81"></a>
+<span class="sourceLineNo">082</span> * queue and receives JMS message<a name="line.82"></a>
+<span class="sourceLineNo">083</span> * from the JMS queue. This code can not be tested without having a live<a name="line.83"></a>
+<span class="sourceLineNo">084</span> * JMS queue. On the other hand, if one defines an interface allowing<a name="line.84"></a>
+<span class="sourceLineNo">085</span> * one to wrap access to the JMS queue and accesses the implementation<a name="line.85"></a>
+<span class="sourceLineNo">086</span> * via a factory, then unit tests can be create that use a mock<a name="line.86"></a>
+<span class="sourceLineNo">087</span> * JMS queue.&lt;/p&gt;<a name="line.87"></a>
+<span class="sourceLineNo">088</span> *<a name="line.88"></a>
+<span class="sourceLineNo">089</span> * &lt;p&gt;With regards to providing end-user/developer-customizer overriding,<a name="line.89"></a>
+<span class="sourceLineNo">090</span> * its generally good to have a flexible application framework.<a name="line.90"></a>
+<span class="sourceLineNo">091</span> * Experimental or just different implementations can be developed and<a name="line.91"></a>
+<span class="sourceLineNo">092</span> * tested without having to touch a lot of the application code itself.&lt;/p&gt;<a name="line.92"></a>
+<span class="sourceLineNo">093</span> *<a name="line.93"></a>
+<span class="sourceLineNo">094</span> * &lt;p&gt;There is, of course, a trade-off between the use of a factory<a name="line.94"></a>
+<span class="sourceLineNo">095</span> * and the size or simplicity of the object being created.&lt;/p&gt;<a name="line.95"></a>
+<span class="sourceLineNo">096</span> *<a name="line.96"></a>
+<span class="sourceLineNo">097</span> * &lt;p&gt;What are the requirements for a template ObjectFactory?&lt;/p&gt;<a name="line.97"></a>
+<span class="sourceLineNo">098</span> *<a name="line.98"></a>
+<span class="sourceLineNo">099</span> * &lt;p&gt;First, every implementation must support the writing of unit tests.<a name="line.99"></a>
+<span class="sourceLineNo">100</span> * What this means it that test cases can override what the factory<a name="line.100"></a>
+<span class="sourceLineNo">101</span> * produces. The test cases can all use the same produced Object or<a name="line.101"></a>
+<span class="sourceLineNo">102</span> * each can request an Object targeted to its particular test. All this<a name="line.102"></a>
+<span class="sourceLineNo">103</span> * without changing the &lt;code&gt;default&lt;/code&gt; behavior of the factory.&lt;/p&gt;<a name="line.103"></a>
+<span class="sourceLineNo">104</span> *<a name="line.104"></a>
+<span class="sourceLineNo">105</span> * &lt;p&gt;Next, it should be possible to create a factory from the template that<a name="line.105"></a>
+<span class="sourceLineNo">106</span> * is intended to deliver the same Object each time it is called, a<a name="line.106"></a>
+<span class="sourceLineNo">107</span> * different, new Object each time it is called, or, based on the<a name="line.107"></a>
+<span class="sourceLineNo">108</span> * calling environment (parameters, properties, &lt;code&gt;ThreadLocal&lt;/code&gt;,<a name="line.108"></a>
+<span class="sourceLineNo">109</span> * etc.) one of a set of Objects. These are possible &lt;code&gt;default&lt;/code&gt;<a name="line.109"></a>
+<span class="sourceLineNo">110</span> * behaviors, but, again, they can be overridden for test purposes.&lt;/p&gt;<a name="line.110"></a>
+<span class="sourceLineNo">111</span> *<a name="line.111"></a>
+<span class="sourceLineNo">112</span> * &lt;p&gt;While a factory has a &lt;code&gt;default&lt;/code&gt; behavior in an<a name="line.112"></a>
+<span class="sourceLineNo">113</span> * application, it must be possible for every factory's behavior<a name="line.113"></a>
+<span class="sourceLineNo">114</span> * in that application to be globally overridden. What that means is<a name="line.114"></a>
+<span class="sourceLineNo">115</span> * if the application designer has dictated a &lt;code&gt;default&lt;/code&gt;, the<a name="line.115"></a>
+<span class="sourceLineNo">116</span> * application user should be able to change the default. An example of<a name="line.116"></a>
+<span class="sourceLineNo">117</span> * this is overriding what Object is returned based upon a<a name="line.117"></a>
+<span class="sourceLineNo">118</span> * &lt;code&gt;System&lt;/code&gt; property value.&lt;/p&gt;<a name="line.118"></a>
+<span class="sourceLineNo">119</span> *<a name="line.119"></a>
+<span class="sourceLineNo">120</span> * &lt;p&gt;Lastly, every factory is a singleton - if an interface with<a name="line.120"></a>
+<span class="sourceLineNo">121</span> * an implementation whose creation is mediated by a factory, then<a name="line.121"></a>
+<span class="sourceLineNo">122</span> * there is a single factory that does that creating.<a name="line.122"></a>
+<span class="sourceLineNo">123</span> * This does not mean that such a factory always return the same value,<a name="line.123"></a>
+<span class="sourceLineNo">124</span> * rather that there is only one instance of the factory itself.&lt;/p&gt;<a name="line.124"></a>
+<span class="sourceLineNo">125</span> *<a name="line.125"></a>
+<span class="sourceLineNo">126</span> * &lt;p&gt;The following is an example class that generates a factory<a name="line.126"></a>
+<span class="sourceLineNo">127</span> * singleton. In this case, the factory extends the<a name="line.127"></a>
+<span class="sourceLineNo">128</span> * &lt;code&gt;ObjectFactory&lt;/code&gt;<a name="line.128"></a>
+<span class="sourceLineNo">129</span> * rather than the &lt;code&gt;ObjectFactory.Singleton&lt;/code&gt;:&lt;/p&gt;<a name="line.129"></a>
+<span class="sourceLineNo">130</span> *<a name="line.130"></a>
+<span class="sourceLineNo">131</span> * &lt;pre&gt;<a name="line.131"></a>
+<span class="sourceLineNo">132</span> *<a name="line.132"></a>
+<span class="sourceLineNo">133</span> *      public final class FooFactory extends ObjectFactory&lt;Foo&gt; {<a name="line.133"></a>
+<span class="sourceLineNo">134</span> *          // The single instance of the factory<a name="line.134"></a>
+<span class="sourceLineNo">135</span> *          private static final FooFactory factory;<a name="line.135"></a>
+<span class="sourceLineNo">136</span> *          static {<a name="line.136"></a>
+<span class="sourceLineNo">137</span> *              factory = new FooFactory();<a name="line.137"></a>
+<span class="sourceLineNo">138</span> *          }<a name="line.138"></a>
+<span class="sourceLineNo">139</span> *          public static FooFactory instance() {<a name="line.139"></a>
+<span class="sourceLineNo">140</span> *              return factory;<a name="line.140"></a>
+<span class="sourceLineNo">141</span> *          }<a name="line.141"></a>
+<span class="sourceLineNo">142</span> *          ..........<a name="line.142"></a>
+<span class="sourceLineNo">143</span> *          private FooFactory() {<a name="line.143"></a>
+<span class="sourceLineNo">144</span> *              super(Foo.class);<a name="line.144"></a>
+<span class="sourceLineNo">145</span> *          }<a name="line.145"></a>
+<span class="sourceLineNo">146</span> *          ..........<a name="line.146"></a>
+<span class="sourceLineNo">147</span> *      }<a name="line.147"></a>
+<span class="sourceLineNo">148</span> *<a name="line.148"></a>
+<span class="sourceLineNo">149</span> * &lt;/pre&gt;<a name="line.149"></a>
+<span class="sourceLineNo">150</span> *<a name="line.150"></a>
+<span class="sourceLineNo">151</span> * &lt;p&gt;There are multiple ways of creating derived classes that have support<a name="line.151"></a>
+<span class="sourceLineNo">152</span> * for unit testing. A very simple way is to use &lt;code&gt;ThreadLocal&lt;/code&gt;s.&lt;/p&gt;<a name="line.152"></a>
+<span class="sourceLineNo">153</span> *<a name="line.153"></a>
+<span class="sourceLineNo">154</span> * &lt;pre&gt;<a name="line.154"></a>
+<span class="sourceLineNo">155</span> *<a name="line.155"></a>
+<span class="sourceLineNo">156</span> *          private static final ThreadLocal ClassName = new ThreadLocal();<a name="line.156"></a>
+<span class="sourceLineNo">157</span> *          private static String getThreadLocalClassName() {<a name="line.157"></a>
+<span class="sourceLineNo">158</span> *              return (String) ClassName.get();<a name="line.158"></a>
+<span class="sourceLineNo">159</span> *          }<a name="line.159"></a>
+<span class="sourceLineNo">160</span> *          public static void setThreadLocalClassName(String className) {<a name="line.160"></a>
+<span class="sourceLineNo">161</span> *              ClassName.set(className);<a name="line.161"></a>
+<span class="sourceLineNo">162</span> *          }<a name="line.162"></a>
+<span class="sourceLineNo">163</span> *          public static void clearThreadLocalClassName() {<a name="line.163"></a>
+<span class="sourceLineNo">164</span> *              ClassName.set(null);<a name="line.164"></a>
+<span class="sourceLineNo">165</span> *          }<a name="line.165"></a>
+<span class="sourceLineNo">166</span> *          ..........<a name="line.166"></a>
+<span class="sourceLineNo">167</span> *          protected String getClassName() {<a name="line.167"></a>
+<span class="sourceLineNo">168</span> *              return getThreadLocalClassName();<a name="line.168"></a>
+<span class="sourceLineNo">169</span> *          }<a name="line.169"></a>
+<span class="sourceLineNo">170</span> *<a name="line.170"></a>
+<span class="sourceLineNo">171</span> * &lt;/pre&gt;<a name="line.171"></a>
+<span class="sourceLineNo">172</span> *<a name="line.172"></a>
+<span class="sourceLineNo">173</span> * &lt;p&gt;Here, the unit test will call the &lt;code&gt;setThreadLocalClassName&lt;/code&gt;<a name="line.173"></a>
+<span class="sourceLineNo">174</span> * method setting it with the class name of a specialized implementation of<a name="line.174"></a>
+<span class="sourceLineNo">175</span> * the template interface. In the &lt;code&gt;finally&lt;/code&gt; clause of the<a name="line.175"></a>
+<span class="sourceLineNo">176</span> * unit test, it is very important that there be a call to the<a name="line.176"></a>
+<span class="sourceLineNo">177</span> * &lt;code&gt;clearThreadLocalClassName&lt;/code&gt; method so that other<a name="line.177"></a>
+<span class="sourceLineNo">178</span> * tests, etc. do not get an instance of the test-specific specialized<a name="line.178"></a>
+<span class="sourceLineNo">179</span> * implementation.&lt;/p&gt;<a name="line.179"></a>
+<span class="sourceLineNo">180</span> *<a name="line.180"></a>
+<span class="sourceLineNo">181</span> * &lt;p&gt;The following is an example unit test that uses the factory's<a name="line.181"></a>
+<span class="sourceLineNo">182</span> * &lt;code&gt;ThreadLocal&lt;/code&gt; to override the implementation that is returned.&lt;/p&gt;<a name="line.182"></a>
+<span class="sourceLineNo">183</span> *<a name="line.183"></a>
+<span class="sourceLineNo">184</span> * &lt;pre&gt;<a name="line.184"></a>
+<span class="sourceLineNo">185</span> *      interface Boo {<a name="line.185"></a>
+<span class="sourceLineNo">186</span> *          boolean getValue();<a name="line.186"></a>
+<span class="sourceLineNo">187</span> *          .......<a name="line.187"></a>
+<span class="sourceLineNo">188</span> *      }<a name="line.188"></a>
+<span class="sourceLineNo">189</span> *      class NormalBooImpl implements Boo {<a name="line.189"></a>
+<span class="sourceLineNo">190</span> *          public boolean getValue() { ... }<a name="line.190"></a>
+<span class="sourceLineNo">191</span> *          .......<a name="line.191"></a>
+<span class="sourceLineNo">192</span> *      }<a name="line.192"></a>
+<span class="sourceLineNo">193</span> *      class MyCode {<a name="line.193"></a>
+<span class="sourceLineNo">194</span> *          private Boo boo;<a name="line.194"></a>
+<span class="sourceLineNo">195</span> *          MyCode() {<a name="line.195"></a>
+<span class="sourceLineNo">196</span> *              boo = BooFactory.instance().getObject();<a name="line.196"></a>
+<span class="sourceLineNo">197</span> *          }<a name="line.197"></a>
+<span class="sourceLineNo">198</span> *          .......<a name="line.198"></a>
+<span class="sourceLineNo">199</span> *          int getValue() {<a name="line.199"></a>
+<span class="sourceLineNo">200</span> *              if (boo.getValue()) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span> *                  return 1;<a name="line.201"></a>
+<span class="sourceLineNo">202</span> *              } else {<a name="line.202"></a>
+<span class="sourceLineNo">203</span> *                  return 0;<a name="line.203"></a>
+<span class="sourceLineNo">204</span> *              }<a name="line.204"></a>
+<span class="sourceLineNo">205</span> *<a name="line.205"></a>
+<span class="sourceLineNo">206</span> *          }<a name="line.206"></a>
+<span class="sourceLineNo">207</span> *      }<a name="line.207"></a>
+<span class="sourceLineNo">208</span> *<a name="line.208"></a>
+<span class="sourceLineNo">209</span> *      class MyCodeTest {<a name="line.209"></a>
+<span class="sourceLineNo">210</span> *          private static boolean testValue;<a name="line.210"></a>
+<span class="sourceLineNo">211</span> *          static class BooTest1 implements Boo {<a name="line.211"></a>
+<span class="sourceLineNo">212</span> *              public boolean getValue() {<a name="line.212"></a>
+<span class="sourceLineNo">213</span> *                  return MyTest.testValue;<a name="line.213"></a>
+<span class="sourceLineNo">214</span> *              }<a name="line.214"></a>
+<span class="sourceLineNo">215</span> *              .....<a name="line.215"></a>
+<span class="sourceLineNo">216</span> *          }<a name="line.216"></a>
+<span class="sourceLineNo">217</span> *          static class BooTest2 implements<a name="line.217"></a>
+<span class="sourceLineNo">218</span> *                      java.lang.reflect.InvocationHandler {<a name="line.218"></a>
+<span class="sourceLineNo">219</span> *              private final Boo boo;<a name="line.219"></a>
+<span class="sourceLineNo">220</span> *              public BooTest2() {<a name="line.220"></a>
+<span class="sourceLineNo">221</span> *                  // remove test class name<a name="line.221"></a>
+<span class="sourceLineNo">222</span> *                  BooFactory.clearThreadLocalClassName();<a name="line.222"></a>
+<span class="sourceLineNo">223</span> *                  // get default Boo implementation<a name="line.223"></a>
+<span class="sourceLineNo">224</span> *                  this.boo = BooFactory.instance().getObject();<a name="line.224"></a>
+<span class="sourceLineNo">225</span> *              }<a name="line.225"></a>
+<span class="sourceLineNo">226</span> *              public Object invoke(Object proxy, Method method, Object[] args)<a name="line.226"></a>
+<span class="sourceLineNo">227</span> *                  throws Throwable {<a name="line.227"></a>
+<span class="sourceLineNo">228</span> *                  if (method.getName().equals("getValue")) [<a name="line.228"></a>
+<span class="sourceLineNo">229</span> *                      return new Boolean(MyTest.testValue);<a name="line.229"></a>
+<span class="sourceLineNo">230</span> *                  } else {<a name="line.230"></a>
+<span class="sourceLineNo">231</span> *                      return method.invoke(this.boo, args);<a name="line.231"></a>
+<span class="sourceLineNo">232</span> *                  }<a name="line.232"></a>
+<span class="sourceLineNo">233</span> *              }<a name="line.233"></a>
+<span class="sourceLineNo">234</span> *          }<a name="line.234"></a>
+<span class="sourceLineNo">235</span> *          public void test1() {<a name="line.235"></a>
+<span class="sourceLineNo">236</span> *              try {<a name="line.236"></a>
+<span class="sourceLineNo">237</span> *                  // Factory will creates test class<a name="line.237"></a>
+<span class="sourceLineNo">238</span> *                  BooFactory.setThreadLocalClassName("MyTest.BooTest1");<a name="line.238"></a>
+<span class="sourceLineNo">239</span> *<a name="line.239"></a>
+<span class="sourceLineNo">240</span> *                  MyTest.testValue = true;<a name="line.240"></a>
+<span class="sourceLineNo">241</span> *                  MyCode myCode = new MyCode();<a name="line.241"></a>
+<span class="sourceLineNo">242</span> *                  int value = myCode.getValue();<a name="line.242"></a>
+<span class="sourceLineNo">243</span> *                  assertTrue("Value not 1", (value == 1));<a name="line.243"></a>
+<span class="sourceLineNo">244</span> *<a name="line.244"></a>
+<span class="sourceLineNo">245</span> *                  MyTest.testValue = false;<a name="line.245"></a>
+<span class="sourceLineNo">246</span> *                  myCode = new MyCode();<a name="line.246"></a>
+<span class="sourceLineNo">247</span> *                  value = myCode.getValue();<a name="line.247"></a>
+<span class="sourceLineNo">248</span> *                  assertTrue("Value not 0", (value == 0));<a name="line.248"></a>
+<span class="sourceLineNo">249</span> *              } finally {<a name="line.249"></a>
+<span class="sourceLineNo">250</span> *                  BooFactory.clearThreadLocalClassName();<a name="line.250"></a>
+<span class="sourceLineNo">251</span> *              }<a name="line.251"></a>
+<span class="sourceLineNo">252</span> *          }<a name="line.252"></a>
+<span class="sourceLineNo">253</span> *          public void test2() {<a name="line.253"></a>
+<span class="sourceLineNo">254</span> *              try {<a name="line.254"></a>
+<span class="sourceLineNo">255</span> *                  // Use InvocationHandler and Factory Proxy capability<a name="line.255"></a>
+<span class="sourceLineNo">256</span> *                  BooFactory.setThreadLocalClassName("MyTest.BooTest2");<a name="line.256"></a>
+<span class="sourceLineNo">257</span> *<a name="line.257"></a>
+<span class="sourceLineNo">258</span> *                  MyTest.testValue = true;<a name="line.258"></a>
+<span class="sourceLineNo">259</span> *                  MyCode myCode = new MyCode();<a name="line.259"></a>
+<span class="sourceLineNo">260</span> *                  int value = myCode.getValue();<a name="line.260"></a>
+<span class="sourceLineNo">261</span> *                  assertTrue("Value not 1", (value == 1));<a name="line.261"></a>
+<span class="sourceLineNo">262</span> *<a name="line.262"></a>
+<span class="sourceLineNo">263</span> *                  MyTest.testValue = false;<a name="line.263"></a>
+<span class="sourceLineNo">264</span> *                  myCode = new MyCode();<a name="line.264"></a>
+<span class="sourceLineNo">265</span> *                  value = myCode.getValue();<a name="line.265"></a>
+<span class="sourceLineNo">266</span> *                  assertTrue("Value not 0", (value == 0));<a name="line.266"></a>
+<span class="sourceLineNo">267</span> *              } finally {<a name="line.267"></a>
+<span class="sourceLineNo">268</span> *                  BooFactory.clearThreadLocalClassName();<a name="line.268"></a>
+<span class="sourceLineNo">269</span> *              }<a name="line.269"></a>
+<span class="sourceLineNo">270</span> *          }<a name="line.270"></a>
+<span class="sourceLineNo">271</span> *      }<a name="line.271"></a>
+<span class="sourceLineNo">272</span> *<a name="line.272"></a>
+<span class="sourceLineNo">273</span> * &lt;/pre&gt;<a name="line.273"></a>
+<span class="sourceLineNo">274</span> *<a name="line.274"></a>
+<span class="sourceLineNo">275</span> * &lt;p&gt;While this is a very simple example, it shows how using such factories<a name="line.275"></a>
+<span class="sourceLineNo">276</span> * can aid in creating testable code. The MyCode method is a client of<a name="line.276"></a>
+<span class="sourceLineNo">277</span> * the Boo implementation. How to test the two different code branches the<a name="line.277"></a>
+<span class="sourceLineNo">278</span> * method can take? Because the Boo object is generated by a factory,<a name="line.278"></a>
+<span class="sourceLineNo">279</span> * one can override what object the factory returns.&lt;/p&gt;<a name="line.279"></a>
+<span class="sourceLineNo">280</span> *<a name="line.280"></a>
+<span class="sourceLineNo">281</span> * @author Richard M. Emberson<a name="line.281"></a>
+<span class="sourceLineNo">282</span> * @since Feb 01 2007<a name="line.282"></a>
+<span class="sourceLineNo">283</span> */<a name="line.283"></a>
+<span class="sourceLineNo">284</span>public abstract class ObjectFactory&lt;V&gt; {<a name="line.284"></a>
+<span class="sourceLineNo">285</span><a name="line.285"></a>
+<span class="sourceLineNo">286</span>    private static final Class[] EMPTY_CLASS_ARRAY = new Class[0];<a name="line.286"></a>
+<span class="sourceLineNo">287</span>    private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];<a name="line.287"></a>
+<span class="sourceLineNo">288</span><a name="line.288"></a>
+<span class="sourceLineNo">289</span>    /**<a name="line.289"></a>
+<span class="sourceLineNo">290</span>     * The type of the object to be generated.<a name="line.290"></a>
+<span class="sourceLineNo">291</span>     */<a name="line.291"></a>
+<span class="sourceLineNo">292</span>    private final Class&lt;V&gt; interfaceClass;<a name="line.292"></a>
+<span class="sourceLineNo">293</span><a name="line.293"></a>
+<span class="sourceLineNo">294</span>    /**<a name="line.294"></a>
+<span class="sourceLineNo">295</span>     * Creates a new factory object. The &lt;code&gt;interfaceClass&lt;/code&gt; parameter<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     * is used to cast the object generated to type right type.<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     *<a name="line.297"></a>
+<span class="sourceLineNo">298</span>     * @param interfaceClass the class object for the interface implemented<a name="line.298"></a>
+<span class="sourceLineNo">299</span>     * by the objects returned by this factory<a name="line.299"></a>
+<span class="sourceLineNo">300</span>     *<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     */<a name="line.301"></a>
+<span class="sourceLineNo">302</span>    protected ObjectFactory(final Class&lt;V&gt; interfaceClass) {<a name="line.302"></a>
+<span class="sourceLineNo">303</span>        this.interfaceClass = interfaceClass;<a name="line.303"></a>
+<span class="sourceLineNo">304</span>    }<a name="line.304"></a>
+<span class="sourceLineNo">305</span><a name="line.305"></a>
+<span class="sourceLineNo">306</span>    /**<a name="line.306"></a>
+<span class="sourceLineNo">307</span>     * Constructs an object where the System Properties can be used<a name="line.307"></a>
+<span class="sourceLineNo">308</span>     * to look up a class name.<a name="line.308"></a>
+<span class="sourceLineNo">309</span>     * The constructor for the object takes no parameters.<a name="line.309"></a>
+<span class="sourceLineNo">310</span>     *<a name="line.310"></a>
+<span class="sourceLineNo">311</span>     * @return the newly created object<a name="line.311"></a>
+<span class="sourceLineNo">312</span>     * @throws CreationException if unable to create the object<a name="line.312"></a>
+<span class="sourceLineNo">313</span>     */<a name="line.313"></a>
+<span class="sourceLineNo">314</span>    protected final V getObject() throws CreationException {<a name="line.314"></a>
+<span class="sourceLineNo">315</span>        return getObject(System.getProperties());<a name="line.315"></a>
+<span class="sourceLineNo">316</span>    }<a name="line.316"></a>
+<span class="sourceLineNo">317</span><a name="line.317"></a>
+<span class="sourceLineNo">318</span>    /**<a name="line.318"></a>
+<span class="sourceLineNo">319</span>     * Constructs an object where the &lt;code&gt;Properties&lt;/code&gt; parameter can<a name="line.319"></a>
+<span class="sourceLineNo">320</span>     * be used to look up a class name.<a name="line.320"></a>
+<span class="sourceLineNo">321</span>     * The constructor for the object takes no parameters.<a name="line.321"></a>
+<span class="sourceLineNo">322</span>     *<a name="line.322"></a>
+<span class="sourceLineNo">323</span>     * @param props the property definitions to use to determine the<a name="line.323"></a>
+<span class="sourceLineNo">324</span>     * implementation class<a name="line.324"></a>
+<span class="sourceLineNo">325</span>     *<a name="line.325"></a>
+<span class="sourceLineNo">326</span>     * @return the newly created object<a name="line.326"></a>
+<span class="sourceLineNo">327</span>     * @throws CreationException if unable to create the object<a name="line.327"></a>
+<span class="sourceLineNo">328</span>     */<a name="line.328"></a>
+<span class="sourceLineNo">329</span>    protected final V getObject(final Properties props)<a name="line.329"></a>
+<span class="sourceLineNo">330</span>        throws CreationException<a name="line.330"></a>
+<span class="sourceLineNo">331</span>    {<a name="line.331"></a>
+<span class="sourceLineNo">332</span>        return getObject(props, EMPTY_CLASS_ARRAY, EMPTY_OBJECT_ARRAY);<a name="line.332"></a>
+<span class="sourceLineNo">333</span>    }<a name="line.333"></a>
+<span class="sourceLineNo">334</span><a name="line.334"></a>
+<span class="sourceLineNo">335</span>    /**<a name="line.335"></a>
+<span class="sourceLineNo">336</span>     * Constructs an object where the &lt;code&gt;parameterTypes&lt;/code&gt; and<a name="line.336"></a>
+<span class="sourceLineNo">337</span>     * &lt;code&gt;parameterValues&lt;/code&gt; are constructor parameters and<a name="line.337"></a>
+<span class="sourceLineNo">338</span>     * System Properties are used to look up a class name.<a name="line.338"></a>
+<span class="sourceLineNo">339</span>     *<a name="line.339"></a>
+<span class="sourceLineNo">340</span>     * @param parameterTypes  the class parameters that define the signature<a name="line.340"></a>
+<span class="sourceLineNo">341</span>     * of the constructor to use<a name="line.341"></a>
+<span class="sourceLineNo">342</span>     * @param parameterValues  the values to use to construct the current<a name="line.342"></a>
+<span class="sourceLineNo">343</span>     * instance of the object<a name="line.343"></a>
+<span class="sourceLineNo">344</span>     * @return the newly created object<a name="line.344"></a>
+<span class="sourceLineNo">345</span>     * @throws CreationException if unable to create the object<a name="line.345"></a>
+<span class="sourceLineNo">346</span>     */<a name="line.346"></a>
+<span class="sourceLineNo">347</span>    protected final V getObject(<a name="line.347"></a>
+<span class="sourceLineNo">348</span>        final Class[] parameterTypes,<a name="line.348"></a>
+<span class="sourceLineNo">349</span>        final Object[] parameterValues)<a name="line.349"></a>
+<span class="sourceLineNo">350</span>        throws CreationException<a name="line.350"></a>
+<span class="sourceLineNo">351</span>    {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>        return getObject(<a name="line.352"></a>
+<span class="sourceLineNo">353</span>            System.getProperties(), parameterTypes, parameterValues);<a name="line.353"></a>
+<span class="sourceLineNo">354</span>    }<a name="line.354"></a>
+<span class="sourceLineNo">355</span><a name="line.355"></a>
+<span class="sourceLineNo">356</span>    /**<a name="line.356"></a>
+<span class="sourceLineNo">357</span>     * Constructs an object where the &lt;code&gt;parameterTypes&lt;/code&gt; and<a name="line.357"></a>
+<span class="sourceLineNo">358</span>     * &lt;code&gt;parameterValues&lt;/code&gt; are constructor parameters and<a name="line.358"></a>
+<span class="sourceLineNo">359</span>     * Properties parameter is used to look up a class name.<a name="line.359"></a>
+<span class="sourceLineNo">360</span>     * &lt;p&gt;<a name="line.360"></a>
+<span class="sourceLineNo">361</span>     * This returns a new instance of the Object each time its<a name="line.361"></a>
+<span class="sourceLineNo">362</span>     * called (assuming that if the method &lt;code&gt;getDefault&lt;/code&gt;,<a name="line.362"></a>
+<span class="sourceLineNo">363</span>     * which derived classes implement), if called, creates a new<a name="line.363"></a>
+<span class="sourceLineNo">364</span>     * object each time.<a name="line.364"></a>
+<span class="sourceLineNo">365</span>     *<a name="line.365"></a>
+<span class="sourceLineNo">366</span>     * @param props the property definitions to use to determine the<a name="line.366"></a>
+<span class="sourceLineNo">367</span>     * @param parameterTypes  the class parameters that define the signature<a name="line.367"></a>
+<span class="sourceLineNo">368</span>     * of the constructor to use<a name="line.368"></a>
+<span class="sourceLineNo">369</span>     * @param parameterValues  the values to use to construct the current<a name="line.369"></a>
+<span class="sourceLineNo">370</span>     * instance of the object<a name="line.370"></a>
+<span class="sourceLineNo">371</span>     * @return the newly created object<a name="line.371"></a>
+<span class="sourceLineNo">372</span>     * @throws CreationException if unable to create the object<a name="line.372"></a>
+<span class="sourceLineNo">373</span>     */<a name="line.373"></a>
+<span class="sourceLineNo">374</span>    protected V getObject(<a name="line.374"></a>
+<span class="sourceLineNo">375</span>        final Properties props,<a name="line.375"></a>
+<span class="sourceLineNo">376</span>        final Class[] parameterTypes,<a name="line.376"></a>
+<span class="sourceLineNo">377</span>        final Object[] parameterValues) throws CreationException<a name="line.377"></a>
+<span class="sourceLineNo">378</span>    {<a name="line.378"></a>
+<span class="sourceLineNo">379</span>        // Unit test override<a name="line.379"></a>
+<span class="sourceLineNo">380</span>        final String className = getClassName();<a name="line.380"></a>
+<span class="sourceLineNo">381</span>        if (className != null) {<a name="line.381"></a>
+<span class="sourceLineNo">382</span>            return getObject(className, parameterTypes, parameterValues);<a name="line.382"></a>
+<span class="sourceLineNo">383</span>        }<a name="line.383"></a>
+<span class="sourceLineNo">384</span><a name="line.384"></a>
+<span class="sourceLineNo">385</span>        final String propClassName = getClassName(props);<a name="line.385"></a>
+<span class="sourceLineNo">386</span>        return (propClassName != null)<a name="line.386"></a>
+<span class="sourceLineNo">387</span>            // User overriding application default<a name="line.387"></a>
+<span class="sourceLineNo">388</span>            ? getObject(propClassName, parameterTypes, parameterValues)<a name="line.388"></a>
+<span class="sourceLineNo">389</span>            // Get application default<a name="line.389"></a>
+<span class="sourceLineNo">390</span>            : getDefault(parameterTypes, parameterValues);<a name="line.390"></a>
+<span class="sourceLineNo">391</span>    }<a name="line.391"></a>
+<span class="sourceLineNo">392</span><a name="line.392"></a>
+<span class="sourceLineNo">393</span>    /**<a name="line.393"></a>
+<span class="sourceLineNo">394</span>     * Creates an instance with the given &lt;code&gt;className&lt;/code&gt;,<a name="line.394"></a>
+<span class="sourceLineNo">395</span>     * &lt;code&gt;parameterTypes&lt;/code&gt; and &lt;code&gt;parameterValues&lt;/code&gt; or<a name="line.395"></a>
+<span class="sourceLineNo">396</span>     * throw a &lt;code&gt;CreationException&lt;/code&gt;. There are two different<a name="line.396"></a>
+<span class="sourceLineNo">397</span>     * mechanims available. The first is to uses reflection<a name="line.397"></a>
+<span class="sourceLineNo">398</span>     * to create the instance typing the generated Object based upon<a name="line.398"></a>
+<span class="sourceLineNo">399</span>     * the &lt;code&gt;interfaceClass&lt;/code&gt; factory instance object.<a name="line.399"></a>
+<span class="sourceLineNo">400</span>     * With the second the &lt;code&gt;className&lt;/code&gt; is an class that implements<a name="line.400"></a>
+<span class="sourceLineNo">401</span>     * the &lt;code&gt;InvocationHandler&lt;/code&gt; interface and in this case<a name="line.401"></a>
+<span class="sourceLineNo">402</span>     * the &lt;code&gt;java.lang.reflect.Proxy&lt;/code&gt; class is used to<a name="line.402"></a>
+<span class="sourceLineNo">403</span>     * generate a proxy.<a name="line.403"></a>
+<span class="sourceLineNo">404</span>     *<a name="line.404"></a>
+<span class="sourceLineNo">405</span>     * @param className the class name used to create Object instance<a name="line.405"></a>
+<span class="sourceLineNo">406</span>     * @param parameterTypes  the class parameters that define the signature<a name="line.406"></a>
+<span class="sourceLineNo">407</span>     * of the constructor to use<a name="line.407"></a>
+<span class="sourceLineNo">408</span>     * @param parameterValues  the values to use to construct the current<a name="line.408"></a>
+<span class="sourceLineNo">409</span>     * instance of the object<a name="line.409"></a>
+<span class="sourceLineNo">410</span>     * @return the newly created object<a name="line.410"></a>
+<span class="sourceLineNo">411</span>     * @throws CreationException if unable to create the object<a name="line.411"></a>
+<span class="sourceLineNo">412</span>     */<a name="line.412"></a>
+<span class="sourceLineNo">413</span>    protected V getObject(<a name="line.413"></a>
+<span class="sourceLineNo">414</span>        final String className,<a name="line.414"></a>
+<span class="sourceLineNo">415</span>        final Class[] parameterTypes,<a name="line.415"></a>
+<span class="sourceLineNo">416</span>        final Object[] parameterValues) throws CreationException<a name="line.416"></a>
+<span class="sourceLineNo">417</span>    {<a name="line.417"></a>
+<span class="sourceLineNo">418</span>        try {<a name="line.418"></a>
+<span class="sourceLineNo">419</span>            // As a place to begin google:<a name="line.419"></a>
+<span class="sourceLineNo">420</span>            //   org.apache.cxf.BusFactoryHelper.java<a name="line.420"></a>
+<span class="sourceLineNo">421</span>            final Class&lt;?&gt; genericClass =<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                ClassResolver.INSTANCE.forName(className, true);<a name="line.422"></a>
+<span class="sourceLineNo">423</span><a name="line.423"></a>
+<span class="sourceLineNo">424</span>            // Are we creating a Proxy or an instance?<a name="line.424"></a>
+<span class="sourceLineNo">425</span>            if (InvocationHandler.class.isAssignableFrom(genericClass)) {<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                final Constructor constructor =<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                    genericClass.getConstructor(parameterTypes);<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                InvocationHandler handler = (InvocationHandler)<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                    constructor.newInstance(parameterValues);<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                //noinspection unchecked<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                return (V) Proxy.newProxyInstance(<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                    genericClass.getClassLoader(),<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                    new Class[] { this.interfaceClass },<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                    handler);<a name="line.434"></a>
+<span class="sourceLineNo">435</span>            } else {<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                final Class&lt;? extends V&gt; specificClass =<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                    genericClass.asSubclass(interfaceClass);<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                final Constructor&lt;? extends V&gt; constructor =<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                    specificClass.getConstructor(parameterTypes);<a name="line.439"></a>
+<span class="sourceLineNo">440</span><a name="line.440"></a>
+<span class="sourceLineNo">441</span>                return constructor.newInstance(parameterValues);<a name="line.441"></a>
+<span class="sourceLineNo">442</span>            }<a name="line.442"></a>
+<span class="sourceLineNo">443</span>        } catch (Exception exc) {<a name="line.443"></a>
+<span class="sourceLineNo">444</span>            throw new CreationException(<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                "Error creating object of type \""<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                    + this.interfaceClass.getName() + "\"",<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                exc);<a name="line.447"></a>
+<span class="sourceLineNo">448</span>        }<a name="line.448"></a>
+<span class="sourceLineNo">449</span>    }<a name="line.449"></a>
+<span class="sourceLineNo">450</span><a name="line.450"></a>
+<span class="sourceLineNo">451</span>    /**<a name="line.451"></a>
+<span class="sourceLineNo">452</span>     * Returns the name of a class to use to create an object.<a name="line.452"></a>
+<span class="sourceLineNo">453</span>     * The default implementation returns null but derived<a name="line.453"></a>
+<span class="sourceLineNo">454</span>     * classes can return a class name.<a name="line.454"></a>
+<span class="sourceLineNo">455</span>     * &lt;p&gt;<a name="line.455"></a>
+<span class="sourceLineNo">456</span>     * This method is the primary mechanism for supporting Unit testing.<a name="line.456"></a>
+<span class="sourceLineNo">457</span>     * A derived class can have, as an example, this method return<a name="line.457"></a>
+<span class="sourceLineNo">458</span>     * the value of a &lt;code&gt;ThreadLocal&lt;/code&gt;. For testing it<a name="line.458"></a>
+<span class="sourceLineNo">459</span>     * return a class name while for normal use it returns &lt;code&gt;null&lt;/code&gt;.<a name="line.459"></a>
+<span class="sourceLineNo">460</span>     *<a name="line.460"></a>
+<span class="sourceLineNo">461</span>     * @return &lt;code&gt;null&lt;/code&gt; or a class name<a name="line.461"></a>
+<span class="sourceLineNo">462</span>     */<a name="line.462"></a>
+<span class="sourceLineNo">463</span>    protected String getClassName() {<a name="line.463"></a>
+<span class="sourceLineNo">464</span>        return null;<a name="line.464"></a>
+<span class="sourceLineNo">465</span>    }<a name="line.465"></a>
+<span class="sourceLineNo">466</span><a name="line.466"></a>
+<span class="sourceLineNo">467</span>    /**<a name="line.467"></a>
+<span class="sourceLineNo">468</span>     * Returns the name of a class to use to create an object.<a name="line.468"></a>
+<span class="sourceLineNo">469</span>     * The factory's &lt;code&gt;StringProperty&lt;/code&gt; is gotten and<a name="line.469"></a>
+<span class="sourceLineNo">470</span>     * if it has a non-null value, then that is returned. Otherwise,<a name="line.470"></a>
+<span class="sourceLineNo">471</span>     * the &lt;code&gt;StringProperty&lt;/code&gt;'s name (path) is used as the<a name="line.471"></a>
+<span class="sourceLineNo">472</span>     * name to probe the &lt;code&gt;Properties&lt;/code&gt; object for a value.<a name="line.472"></a>
+<span class="sourceLineNo">473</span>     * This method is allowed to return null.<a name="line.473"></a>
+<span class="sourceLineNo">474</span>     *<a name="line.474"></a>
+<span class="sourceLineNo">475</span>     * @return &lt;code&gt;null&lt;/code&gt; or a class name<a name="line.475"></a>
+<span class="sourceLineNo">476</span>     */<a name="line.476"></a>
+<span class="sourceLineNo">477</span>    protected String getClassName(final Properties props) {<a name="line.477"></a>
+<span class="sourceLineNo">478</span>        final StringProperty stringProp = getStringProperty();<a name="line.478"></a>
+<span class="sourceLineNo">479</span>        final String className = stringProp.get();<a name="line.479"></a>
+<span class="sourceLineNo">480</span>        return (className != null)<a name="line.480"></a>
+<span class="sourceLineNo">481</span>            ? className<a name="line.481"></a>
+<span class="sourceLineNo">482</span>            : (props == null)<a name="line.482"></a>
+<span class="sourceLineNo">483</span>            ? null : props.getProperty(stringProp.getPath());<a name="line.483"></a>
+<span class="sourceLineNo">484</span>    }<a name="line.484"></a>
+<span class="sourceLineNo">485</span><a name="line.485"></a>
+<span class="sourceLineNo">486</span>    /**<a name="line.486"></a>
+<span class="sourceLineNo">487</span>     * Return the &lt;code&gt;StringProperty&lt;/code&gt; associated with this factory.<a name="line.487"></a>
+<span class="sourceLineNo">488</span>     *<a name="line.488"></a>
+<span class="sourceLineNo">489</span>     * @return the  &lt;code&gt;StringProperty&lt;/code&gt;<a name="line.489"></a>
+<span class="sourceLineNo">490</span>     */<a name="line.490"></a>
+<span class="sourceLineNo">491</span>    protected abstract StringProperty getStringProperty();<a name="line.491"></a>
+<span class="sourceLineNo">492</span><a name="line.492"></a>
+<span class="sourceLineNo">493</span>    /**<a name="line.493"></a>
+<span class="sourceLineNo">494</span>     * For most uses (other than testing) this is the method that derived<a name="line.494"></a>
+<span class="sourceLineNo">495</span>     * classes implement that return the desired object.<a name="line.495"></a>
+<span class="sourceLineNo">496</span>     *<a name="line.496"></a>
+<span class="sourceLineNo">497</span>     * @param parameterTypes  the class parameters that define the signature<a name="line.497"></a>
+<span class="sourceLineNo">498</span>     * of the constructor to use<a name="line.498"></a>
+<span class="sourceLineNo">499</span>     * @param parameterValues  the values to use to construct the current<a name="line.499"></a>
+<span class="sourceLineNo">500</span>     * instance of the object<a name="line.500"></a>
+<span class="sourceLineNo">501</span>     * @return the newly created object<a name="line.501"></a>
+<span class="sourceLineNo">502</span>     * @throws CreationException if unable to create the object<a name="line.502"></a>
+<span class="sourceLineNo">503</span>     */<a name="line.503"></a>
+<span class="sourceLineNo">504</span>    protected abstract V getDefault(<a name="line.504"></a>
+<span class="sourceLineNo">505</span>        Class[] parameterTypes,<a name="line.505"></a>
+<span class="sourceLineNo">506</span>        Object[] parameterValues)<a name="line.506"></a>
+<span class="sourceLineNo">507</span>        throws CreationException;<a name="line.507"></a>
+<span class="sourceLineNo">508</span><a name="line.508"></a>
+<span class="sourceLineNo">509</span>    /**<a name="line.509"></a>
+<span class="sourceLineNo">510</span>     * Gets the current override values in the opaque context object and<a name="line.510"></a>
+<span class="sourceLineNo">511</span>     * clears those values within the Factory.<a name="line.511"></a>
+<span class="sourceLineNo">512</span>     *<a name="line.512"></a>
+<span class="sourceLineNo">513</span>     * &lt;p&gt;This is used in testing.<a name="line.513"></a>
+<span class="sourceLineNo">514</span>     *<a name="line.514"></a>
+<span class="sourceLineNo">515</span>     * @return the test &lt;code&gt;Context&lt;/code&gt; object.<a name="line.515"></a>
+<span class="sourceLineNo">516</span>     */<a name="line.516"></a>
+<span class="sourceLineNo">517</span>    public Object removeContext() {<a name="line.517"></a>
+<span class="sourceLineNo">518</span>        return null;<a name="line.518"></a>
+<span class="sourceLineNo">519</span>    }<a name="line.519"></a>
+<span class="sourceLineNo">520</span><a name="line.520"></a>
+<span class="sourceLineNo">521</span>    /**<a name="line.521"></a>
+<span class="sourceLineNo">522</span>     * Restores the context object resetting override values.<a name="line.522"></a>
+<span class="sourceLineNo">523</span>     *<a name="line.523"></a>
+<span class="sourceLineNo">524</span>     * &lt;p&gt;This is used in testing.<a name="line.524"></a>
+<span class="sourceLineNo">525</span>     *<a name="line.525"></a>
+<span class="sourceLineNo">526</span>     * @param context the context object to be restored.<a name="line.526"></a>
+<span class="sourceLineNo">527</span>     */<a name="line.527"></a>
+<span class="sourceLineNo">528</span>    public void restoreContext(final Object context) {<a name="line.528"></a>
+<span class="sourceLineNo">529</span>        // empty<a name="line.529"></a>
+<span class="sourceLineNo">530</span>    }<a name="line.530"></a>
+<span class="sourceLineNo">531</span><a name="line.531"></a>
+<span class="sourceLineNo">532</span><a name="line.532"></a>
+<span class="sourceLineNo">533</span>    /**<a name="line.533"></a>
+<span class="sourceLineNo">534</span>     * Implementation of ObjectFactory<a name="line.534"></a>
+<span class="sourceLineNo">535</span>     * that returns only a single instance of the Object.<a name="line.535"></a>
+<span class="sourceLineNo">536</span>     */<a name="line.536"></a>
+<span class="sourceLineNo">537</span>    public static abstract class Singleton&lt;T&gt; extends ObjectFactory&lt;T&gt; {<a name="line.537"></a>
+<span class="sourceLineNo">538</span><a name="line.538"></a>
+<span class="sourceLineNo">539</span>        /**<a name="line.539"></a>
+<span class="sourceLineNo">540</span>         * The single instance of the object created by the factory.<a name="line.540"></a>
+<span class="sourceLineNo">541</span>         */<a name="line.541"></a>
+<span class="sourceLineNo">542</span>        protected T singleInstance;<a name="line.542"></a>
+<span class="sourceLineNo">543</span><a name="line.543"></a>
+<span class="sourceLineNo">544</span>        /**<a name="line.544"></a>
+<span class="sourceLineNo">545</span>         * The test single instance of the object created by the factory.<a name="line.545"></a>
+<span class="sourceLineNo">546</span>         * Creating this &lt;code&gt;testSingleInstance&lt;/code&gt; does not change the<a name="line.546"></a>
+<span class="sourceLineNo">547</span>         * current value of the &lt;code&gt;singleInstance&lt;/code&gt; variable.<a name="line.547"></a>
+<span class="sourceLineNo">548</span>         */<a name="line.548"></a>
+<span class="sourceLineNo">549</span>        protected T testSingleInstance;<a name="line.549"></a>
+<span class="sourceLineNo">550</span><a name="line.550"></a>
+<span class="sourceLineNo">551</span>        /**<a name="line.551"></a>
+<span class="sourceLineNo">552</span>         * Creates a new singleton factory object. The<a name="line.552"></a>
+<span class="sourceLineNo">553</span>         * &lt;code&gt;interfaceClass&lt;/code&gt; parameter<a name="line.553"></a>
+<span class="sourceLineNo">554</span>         * is used to cast the object generated to type right type.<a name="line.554"></a>
+<span class="sourceLineNo">555</span>         *<a name="line.555"></a>
+<span class="sourceLineNo">556</span>         * @param interfaceClass the class object for the interface implemented<a name="line.556"></a>
+<span class="sourceLineNo">557</span>         * by the objects returned by this factory<a name="line.557"></a>
+<span class="sourceLineNo">558</span>         */<a name="line.558"></a>
+<span class="sourceLineNo">559</span>        protected Singleton(final Class&lt;T&gt; interfaceClass) {<a name="line.559"></a>
+<span class="sourceLineNo">560</span>            super(interfaceClass);<a name="line.560"></a>
+<span class="sourceLineNo">561</span>        }<a name="line.561"></a>
+<span class="sourceLineNo">562</span><a name="line.562"></a>
+<span class="sourceLineNo">563</span>        /**<a name="line.563"></a>
+<span class="sourceLineNo">564</span>         * Returns the singleton Object.<a name="line.564"></a>
+<span class="sourceLineNo">565</span>         * The first time this is called, an object is created where<a name="line.565"></a>
+<span class="sourceLineNo">566</span>         * the &lt;code&gt;parameterTypes&lt;/code&gt; and<a name="line.566"></a>
+<span class="sourceLineNo">567</span>         * &lt;code&gt;parameterValues&lt;/code&gt; are constructor parameters and<a name="line.567"></a>
+<span class="sourceLineNo">568</span>         * Properties parameter is used to look up a class name.<a name="line.568"></a>
+<span class="sourceLineNo">569</span>         * &lt;p&gt;<a name="line.569"></a>
+<span class="sourceLineNo">570</span>         * This returns a same instance of the Object each time its<a name="line.570"></a>
+<span class="sourceLineNo">571</span>         * called except if the &lt;code&gt;getClassName&lt;/code&gt; method<a name="line.571"></a>
+<span class="sourceLineNo">572</span>         * returns a non-null class name which should only<a name="line.572"></a>
+<span class="sourceLineNo">573</span>         * happen as needed for unit testing.<a name="line.573"></a>
+<span class="sourceLineNo">574</span>         *<a name="line.574"></a>
+<span class="sourceLineNo">575</span>         * @param props the property definitions to use to determine the<a name="line.575"></a>
+<span class="sourceLineNo">576</span>         * @param parameterTypes  the class parameters that define the signature<a name="line.576"></a>
+<span class="sourceLineNo">577</span>         * of the constructor to use<a name="line.577"></a>
+<span class="sourceLineNo">578</span>         * @param parameterValues  the values to use to construct the current<a name="line.578"></a>
+<span class="sourceLineNo">579</span>         * instance of the object<a name="line.579"></a>
+<span class="sourceLineNo">580</span>         * @return the newly created object<a name="line.580"></a>
+<span class="sourceLineNo">581</span>         * @throws CreationException if unable to create the object<a name="line.581"></a>
+<span class="sourceLineNo">582</span>         */<a name="line.582"></a>
+<span class="sourceLineNo">583</span>        protected T getObject(<a name="line.583"></a>
+<span class="sourceLineNo">584</span>            final Properties props,<a name="line.584"></a>
+<span class="sourceLineNo">585</span>            final Class[] parameterTypes,<a name="line.585"></a>
+<span class="sourceLineNo">586</span>            final Object[] parameterValues) throws CreationException<a name="line.586"></a>
+<span class="sourceLineNo">587</span>        {<a name="line.587"></a>
+<span class="sourceLineNo">588</span>            // Unit test override, do not use application instance.<a name="line.588"></a>
+<span class="sourceLineNo">589</span>            final String className = getClassName();<a name="line.589"></a>
+<span class="sourceLineNo">590</span>            if (className != null) {<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                if (this.testSingleInstance == null) {<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                    this.testSingleInstance =<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                        getTestObject(<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                            className,<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                            parameterTypes,<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                            parameterValues);<a name="line.596"></a>
+<span class="sourceLineNo">597</span>                }<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                return this.testSingleInstance;<a name="line.598"></a>
+<span class="sourceLineNo">599</span>            }<a name="line.599"></a>
+<span class="sourceLineNo">600</span><a name="line.600"></a>
+<span class="sourceLineNo">601</span>            // NOTE: Should we distinguish between any Properties Object<a name="line.601"></a>
+<span class="sourceLineNo">602</span>            // and that returned by System? When its the System's<a name="line.602"></a>
+<span class="sourceLineNo">603</span>            // Properties Object (which is not a final instance variable<a name="line.603"></a>
+<span class="sourceLineNo">604</span>            // within the System class), then its for sure the user<a name="line.604"></a>
+<span class="sourceLineNo">605</span>            // providing a global override. If its not the System<a name="line.605"></a>
+<span class="sourceLineNo">606</span>            // Properties object, then it may or may not be a global<a name="line.606"></a>
+<span class="sourceLineNo">607</span>            // override so we may not want to set the singleInstance<a name="line.607"></a>
+<span class="sourceLineNo">608</span>            // to it. For now I am ignoring the issue.<a name="line.608"></a>
+<span class="sourceLineNo">609</span>            if (this.singleInstance == null) {<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                final String propClassName = getClassName(props);<a name="line.610"></a>
+<span class="sourceLineNo">611</span><a name="line.611"></a>
+<span class="sourceLineNo">612</span>                this.singleInstance = (propClassName != null)<a name="line.612"></a>
+<span class="sourceLineNo">613</span>                    // The user overriding application default<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                    ? getObject(propClassName, parameterTypes, parameterValues)<a name="line.614"></a>
+<span class="sourceLineNo">615</span>                    // Get application default<a name="line.615"></a>
+<span class="sourceLineNo">616</span>                    : getDefault(parameterTypes, parameterValues);<a name="line.616"></a>
+<span class="sourceLineNo">617</span>            }<a name="line.617"></a>
+<span class="sourceLineNo">618</span>            return this.singleInstance;<a name="line.618"></a>
+<span class="sourceLineNo">619</span>        }<a name="line.619"></a>
+<span class="sourceLineNo">620</span><a name="line.620"></a>
+<span class="sourceLineNo">621</span>        /**<a name="line.621"></a>
+<span class="sourceLineNo">622</span>         * Create an instance for test purposes.<a name="line.622"></a>
+<span class="sourceLineNo">623</span>         *<a name="line.623"></a>
+<span class="sourceLineNo">624</span>         * @param className the class name used to create Object instance<a name="line.624"></a>
+<span class="sourceLineNo">625</span>         * @param parameterTypes  the class parameters that define the signature<a name="line.625"></a>
+<span class="sourceLineNo">626</span>         * of the constructor to use<a name="line.626"></a>
+<span class="sourceLineNo">627</span>         * @param parameterValues  the values to use to construct the current<a name="line.627"></a>
+<span class="sourceLineNo">628</span>         * instance of the object<a name="line.628"></a>
+<span class="sourceLineNo">629</span>         * @return the newly created object<a name="line.629"></a>
+<span class="sourceLineNo">630</span>         * @throws CreationException if unable to create the object<a name="line.630"></a>
+<span class="sourceLineNo">631</span>         */<a name="line.631"></a>
+<span class="sourceLineNo">632</span>        protected T getTestObject(<a name="line.632"></a>
+<span class="sourceLineNo">633</span>            final String className,<a name="line.633"></a>
+<span class="sourceLineNo">634</span>            final Class[] parameterTypes,<a name="line.634"></a>
+<span class="sourceLineNo">635</span>            final Object[] parameterValues) throws CreationException<a name="line.635"></a>
+<span class="sourceLineNo">636</span>        {<a name="line.636"></a>
+<span class="sourceLineNo">637</span>            return getObject(className, parameterTypes, parameterValues);<a name="line.637"></a>
+<span class="sourceLineNo">638</span>        }<a name="line.638"></a>
+<span class="sourceLineNo">639</span>    }<a name="line.639"></a>
+<span class="sourceLineNo">640</span><a name="line.640"></a>
+<span class="sourceLineNo">641</span>    /**<a name="line.641"></a>
+<span class="sourceLineNo">642</span>     * This is for testing only.<a name="line.642"></a>
+<span class="sourceLineNo">643</span>     * &lt;p&gt;<a name="line.643"></a>
+<span class="sourceLineNo">644</span>     * &lt;code&gt;Context&lt;/code&gt; contain the Factory implementation specific<a name="line.644"></a>
+<span class="sourceLineNo">645</span>     * non-default values and mechanism for overriding the default<a name="line.645"></a>
+<span class="sourceLineNo">646</span>     * instance type returned by the Factory.<a name="line.646"></a>
+<span class="sourceLineNo">647</span>     * Factory implementation can extend the &lt;code&gt;Context&lt;/code&gt; interface<a name="line.647"></a>
+<span class="sourceLineNo">648</span>     * to capture its specific override values.<a name="line.648"></a>
+<span class="sourceLineNo">649</span>     * If, for example, a Factory implementation uses a &lt;code&gt;ThreadLocal&lt;/code&gt;<a name="line.649"></a>
+<span class="sourceLineNo">650</span>     * to override the default instance type for unit tests, then the<a name="line.650"></a>
+<span class="sourceLineNo">651</span>     * &lt;code&gt;Context&lt;/code&gt;<a name="line.651"></a>
+<span class="sourceLineNo">652</span>     * will hold the current value of the &lt;code&gt;ThreadLocal&lt;/code&gt;.<a name="line.652"></a>
+<span class="sourceLineNo">653</span>     * Getting the Context, clears the &lt;code&gt;ThreadLocal&lt;/code&gt; value.<a name="line.653"></a>
+<span class="sourceLineNo">654</span>     * This allows the tester who wishes to create code that will provide<a name="line.654"></a>
+<span class="sourceLineNo">655</span>     * a wrapper around the default instance type to register their<a name="line.655"></a>
+<span class="sourceLineNo">656</span>     * wrapper class name with the &lt;code&gt;ThreadLocal&lt;/code&gt;, and, within<a name="line.656"></a>
+<span class="sourceLineNo">657</span>     * the wrapper constructor, get the &lt;code&gt;Context&lt;/code&gt;, get<a name="line.657"></a>
+<span class="sourceLineNo">658</span>     * a default instance, and then restore the &lt;code&gt;Context&lt;/code&gt;.<a name="line.658"></a>
+<span class="sourceLineNo">659</span>     */<a name="line.659"></a>
+<span class="sourceLineNo">660</span>    public interface Context {<a name="line.660"></a>
+<span class="sourceLineNo">661</span>    }<a name="line.661"></a>
+<span class="sourceLineNo">662</span>}<a name="line.662"></a>
+<span class="sourceLineNo">663</span><a name="line.663"></a>
+<span class="sourceLineNo">664</span>// End ObjectFactory.java<a name="line.664"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

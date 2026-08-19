@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2010-2010 Pentaho<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.olap.fun;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import mondrian.calc.*;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.calc.impl.AbstractMemberCalc;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.mdx.ResolvedFunCall;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.olap.*;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import mondrian.resource.MondrianResource;<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>/**<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * Definition of the &lt;code&gt;StrToMember&lt;/code&gt; MDX function.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * &lt;p&gt;Syntax:<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * &lt;blockquote&gt;&lt;code&gt;StrToMember(&amp;lt;String Expression&amp;gt;)<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * &lt;/code&gt;&lt;/blockquote&gt;<a name="line.23"></a>
+<span class="sourceLineNo">024</span> */<a name="line.24"></a>
+<span class="sourceLineNo">025</span>class StrToMemberFunDef extends FunDefBase {<a name="line.25"></a>
+<span class="sourceLineNo">026</span>    public static final FunDef INSTANCE = new StrToMemberFunDef();<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span>    private StrToMemberFunDef() {<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        super(<a name="line.29"></a>
+<span class="sourceLineNo">030</span>            "StrToMember",<a name="line.30"></a>
+<span class="sourceLineNo">031</span>            "Returns a member from a unique name String in MDX format.",<a name="line.31"></a>
+<span class="sourceLineNo">032</span>            "fmS");<a name="line.32"></a>
+<span class="sourceLineNo">033</span>    }<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        final StringCalc memberNameCalc =<a name="line.36"></a>
+<span class="sourceLineNo">037</span>            compiler.compileString(call.getArg(0));<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        return new AbstractMemberCalc(call, new Calc[] {memberNameCalc}) {<a name="line.38"></a>
+<span class="sourceLineNo">039</span>            public Member evaluateMember(Evaluator evaluator) {<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                String memberName =<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                    memberNameCalc.evaluateString(evaluator);<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                if (memberName == null) {<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                    throw newEvalException(<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                        MondrianResource.instance().NullValue.ex());<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                }<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                return parseMember(evaluator, memberName, null);<a name="line.46"></a>
+<span class="sourceLineNo">047</span>            }<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        };<a name="line.48"></a>
+<span class="sourceLineNo">049</span>    }<a name="line.49"></a>
+<span class="sourceLineNo">050</span>}<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>// End StrToMemberFunDef.java<a name="line.52"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

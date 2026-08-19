@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2012-2012 Pentaho<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.spi;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import mondrian.server.Execution;<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>import javax.sql.DataSource;<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span>/**<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * Provides estimates of the number of rows in a database.<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * &lt;p&gt;Mondrian generally finds statistics providers via the<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * {@link Dialect#getStatisticsProviders} method on the dialect object for the<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * current connection. The default implementation of that method looks first at<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * the "mondrian.statistics.providers.DATABASE" property (substituting the<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * current database name, e.g. MYSQL or ORACLE, for &lt;i&gt;DATABASE&lt;/i&gt;), then at<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * the {@link mondrian.olap.MondrianProperties#StatisticsProviders "mondrian.statistics.providers"}<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * property.&lt;/p&gt;<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * @see mondrian.spi.impl.JdbcStatisticsProvider<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * @see mondrian.spi.impl.SqlStatisticsProvider<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *<a name="line.29"></a>
+<span class="sourceLineNo">030</span> */<a name="line.30"></a>
+<span class="sourceLineNo">031</span>public interface StatisticsProvider {<a name="line.31"></a>
+<span class="sourceLineNo">032</span>    /**<a name="line.32"></a>
+<span class="sourceLineNo">033</span>     * Returns an estimate of the number of rows in a table.<a name="line.33"></a>
+<span class="sourceLineNo">034</span>     *<a name="line.34"></a>
+<span class="sourceLineNo">035</span>     * @param dialect Dialect<a name="line.35"></a>
+<span class="sourceLineNo">036</span>     * @param dataSource Data source<a name="line.36"></a>
+<span class="sourceLineNo">037</span>     * @param catalog Catalog name<a name="line.37"></a>
+<span class="sourceLineNo">038</span>     * @param schema Schema name<a name="line.38"></a>
+<span class="sourceLineNo">039</span>     * @param table Table name<a name="line.39"></a>
+<span class="sourceLineNo">040</span>     * @param execution Execution<a name="line.40"></a>
+<span class="sourceLineNo">041</span>     *<a name="line.41"></a>
+<span class="sourceLineNo">042</span>     * @return Estimated number of rows in table, or -1 if there<a name="line.42"></a>
+<span class="sourceLineNo">043</span>     * is no estimate<a name="line.43"></a>
+<span class="sourceLineNo">044</span>     */<a name="line.44"></a>
+<span class="sourceLineNo">045</span>    int getTableCardinality(<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        Dialect dialect,<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        DataSource dataSource,<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        String catalog,<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        String schema,<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        String table,<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        Execution execution);<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>    /**<a name="line.53"></a>
+<span class="sourceLineNo">054</span>     * Returns an estimate of the number of rows returned by a query.<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     *<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     * @param dialect Dialect<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     * @param dataSource Data source<a name="line.57"></a>
+<span class="sourceLineNo">058</span>     * @param sql Query, e.g. "select * from customers where age &lt; 20"<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     * @param execution Execution<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     *<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     * @return Estimated number of rows returned by query, or -1 if there<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     * is no estimate<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     */<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    int getQueryCardinality(<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        Dialect dialect,<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        DataSource dataSource,<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        String sql,<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        Execution execution);<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>    /**<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     * Returns an estimate of the number of rows in a table.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     * @param dialect Dialect<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     * @param dataSource Data source<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     * @param catalog Catalog name<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     * @param schema Schema name<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     * @param table Table name<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * @param column Column name<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * @param execution Execution<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     *<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * @return Estimated number of rows in table, or -1 if there<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     * is no estimate<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     */<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    int getColumnCardinality(<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        Dialect dialect,<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        DataSource dataSource,<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        String catalog,<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        String schema,<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        String table,<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        String column,<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        Execution execution);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>}<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>// End StatisticsProvider.java<a name="line.94"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

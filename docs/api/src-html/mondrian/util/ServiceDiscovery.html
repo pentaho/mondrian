@@ -1,0 +1,234 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2009-2010 Pentaho and others<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.util;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import org.apache.commons.logging.Log;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import org.apache.commons.logging.LogFactory;<a name="line.13"></a>
+<span class="sourceLineNo">014</span><a name="line.14"></a>
+<span class="sourceLineNo">015</span>import java.io.*;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import java.net.URL;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import java.util.*;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>/**<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * Utility functions to discover Java services.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * &lt;p&gt;Java services are described in<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * &lt;a href="http://java.sun.com/j2se/1.5.0/docs/guide/jar/jar.html#Service%20Provider"&gt;<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * the JAR File Specification&lt;/a&gt;.<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * &lt;p&gt;Based on the suggested file format, this class reads the service<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * entries in a JAR file and discovers implementors of an interface.<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * @author Marc Batchelor<a name="line.29"></a>
+<span class="sourceLineNo">030</span> */<a name="line.30"></a>
+<span class="sourceLineNo">031</span>public class ServiceDiscovery&lt;T&gt; {<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>    private static final Log logger = LogFactory.getLog(ServiceDiscovery.class);<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>    private final Class&lt;T&gt; theInterface;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>    /**<a name="line.37"></a>
+<span class="sourceLineNo">038</span>     * Creates a ServiceDiscovery.<a name="line.38"></a>
+<span class="sourceLineNo">039</span>     *<a name="line.39"></a>
+<span class="sourceLineNo">040</span>     * @param theInterface Interface for service<a name="line.40"></a>
+<span class="sourceLineNo">041</span>     *<a name="line.41"></a>
+<span class="sourceLineNo">042</span>     * @return ServiceDiscovery for finding instances of the given interface<a name="line.42"></a>
+<span class="sourceLineNo">043</span>     */<a name="line.43"></a>
+<span class="sourceLineNo">044</span>    public static &lt;T&gt; ServiceDiscovery&lt;T&gt; forClass(Class&lt;T&gt; theInterface) {<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        return new ServiceDiscovery&lt;T&gt;(theInterface);<a name="line.45"></a>
+<span class="sourceLineNo">046</span>    }<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>    /**<a name="line.48"></a>
+<span class="sourceLineNo">049</span>     * Creates a ServiceDiscovery.<a name="line.49"></a>
+<span class="sourceLineNo">050</span>     *<a name="line.50"></a>
+<span class="sourceLineNo">051</span>     * @param theInterface Interface for service<a name="line.51"></a>
+<span class="sourceLineNo">052</span>     */<a name="line.52"></a>
+<span class="sourceLineNo">053</span>    private ServiceDiscovery(Class&lt;T&gt; theInterface) {<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        assert theInterface != null;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        this.theInterface = theInterface;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>    }<a name="line.56"></a>
+<span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span>    /**<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     * Returns a list of classes that implement the service.<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     *<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     * @return List of classes that implement the service<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     */<a name="line.62"></a>
+<span class="sourceLineNo">063</span>    public List&lt;Class&lt;T&gt;&gt; getImplementor() {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        // Use linked hash set to eliminate duplicates but still return results<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        // in the order they were added.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        Set&lt;Class&lt;T&gt;&gt; uniqueClasses = new LinkedHashSet&lt;Class&lt;T&gt;&gt;();<a name="line.66"></a>
+<span class="sourceLineNo">067</span><a name="line.67"></a>
+<span class="sourceLineNo">068</span>        ClassLoader cLoader = Thread.currentThread().getContextClassLoader();<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        if (cLoader == null) {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>            cLoader = this.getClass().getClassLoader();<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        }<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        try {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>            // Enumerate the files because I may have more than one .jar file<a name="line.73"></a>
+<span class="sourceLineNo">074</span>            // that contains an implementation for the interface, and therefore,<a name="line.74"></a>
+<span class="sourceLineNo">075</span>            // more than one list of entries.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>            String lookupName = "META-INF/services/" + theInterface.getName();<a name="line.76"></a>
+<span class="sourceLineNo">077</span>            Enumeration&lt;URL&gt; urlEnum = cLoader.getResources(lookupName);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>            while (urlEnum.hasMoreElements()) {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                URL resourceURL = urlEnum.nextElement();<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                InputStream is = null;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                try {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                    is = resourceURL.openStream();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                    BufferedReader reader =<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                        new BufferedReader(new InputStreamReader(is));<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>                    // read each class and parse it<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                    String clazz;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                    while ((clazz = reader.readLine()) != null) {<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                        parseImplementor(clazz, cLoader, uniqueClasses);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                    }<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                } catch (IOException e) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                    logger.warn(<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                        "Error while finding service file " + resourceURL<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                        + " for " + theInterface,<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        e);<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                } finally {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                    if (is != null) {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                        is.close();<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                    }<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                }<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            }<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        } catch (IOException e) {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            logger.warn(<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                "Error while finding service files for " + theInterface,<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                e);<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        }<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        List&lt;Class&lt;T&gt;&gt; rtn = new ArrayList&lt;Class&lt;T&gt;&gt;();<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        rtn.addAll(uniqueClasses);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        return rtn;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    }<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>    /**<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     * Parses a list of classes that implement a service.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     * @param clazz Class name (or list of class names)<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     * @param cLoader Class loader<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     * @param uniqueClasses Set of classes (output)<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     */<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    protected void parseImplementor(<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        String clazz,<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        ClassLoader cLoader,<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        Set&lt;Class&lt;T&gt;&gt; uniqueClasses)<a name="line.122"></a>
+<span class="sourceLineNo">123</span>    {<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        // Split should leave me with a class name in the first string<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        // which will nicely ignore comments in the line. I checked<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        // and found that it also doesn't choke if:<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        // a- There are no spaces on the line - you end up with one entry<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        // b- A line begins with a whitespace character (the trim() fixes that)<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        // c- Multiples of the same interface are filtered out<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        assert clazz != null;<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>        String[] classList = clazz.trim().split("#");<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        String theClass = classList[0].trim(); // maybe overkill, maybe not. :-D<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        if (theClass.length() == 0) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            // Ignore lines that are empty after removing comments &amp; trailing<a name="line.135"></a>
+<span class="sourceLineNo">136</span>            // spaces.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            return;<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        }<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        try {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>            // I want to look up the class but not cause the static<a name="line.140"></a>
+<span class="sourceLineNo">141</span>            // initializer to execute.<a name="line.141"></a>
+<span class="sourceLineNo">142</span>            Class interfaceImplementor =<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                Class.forName(theClass, false, cLoader);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>            if (theInterface.isAssignableFrom(interfaceImplementor)) {<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                //noinspection unchecked<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                uniqueClasses.add((Class&lt;T&gt;) interfaceImplementor);<a name="line.146"></a>
+<span class="sourceLineNo">147</span>            } else {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                logger.error(<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                    "Class " + interfaceImplementor<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                    + " cannot be assigned to interface "<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                    + theInterface);<a name="line.151"></a>
+<span class="sourceLineNo">152</span>            }<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        } catch (ClassNotFoundException ignored) {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            ignored.printStackTrace();<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        } catch (LinkageError ignored) {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            // including ExceptionInInitializerError<a name="line.156"></a>
+<span class="sourceLineNo">157</span>            ignored.printStackTrace();<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        }<a name="line.158"></a>
+<span class="sourceLineNo">159</span>    }<a name="line.159"></a>
+<span class="sourceLineNo">160</span>}<a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span>// End ServiceDiscovery.java<a name="line.162"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

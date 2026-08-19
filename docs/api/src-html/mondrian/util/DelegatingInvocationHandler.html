@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2007-2012 Pentaho<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.util;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import java.lang.reflect.*;<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>/**<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * A class derived from &lt;code&gt;DelegatingInvocationHandler&lt;/code&gt; handles a<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * method call by looking for a method in itself with identical parameters. If<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * no such method is found, it forwards the call to a fallback object, which<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * must implement all of the interfaces which this proxy implements.<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * &lt;p&gt;It is useful in creating a wrapper class around an interface which may<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * change over time.&lt;/p&gt;<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * &lt;p&gt;Example:<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * &lt;blockquote&gt;<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * &lt;pre&gt;import java.sql.Connection;<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * Connection connection = ...;<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * Connection tracingConnection = (Connection) Proxy.newProxyInstance(<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *     null,<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *     new Class[] {Connection.class},<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *     new DelegatingInvocationHandler() {<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *         protected Object getTarget() {<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *             return connection;<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *         }<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *         Statement createStatement() {<a name="line.35"></a>
+<span class="sourceLineNo">036</span> *             System.out.println("statement created");<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *             return connection.createStatement();<a name="line.37"></a>
+<span class="sourceLineNo">038</span> *         }<a name="line.38"></a>
+<span class="sourceLineNo">039</span> *     });&lt;/pre&gt;<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * &lt;/blockquote&gt;<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * &lt;/p&gt;<a name="line.41"></a>
+<span class="sourceLineNo">042</span> *<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * @author jhyde<a name="line.43"></a>
+<span class="sourceLineNo">044</span> */<a name="line.44"></a>
+<span class="sourceLineNo">045</span>public abstract class DelegatingInvocationHandler<a name="line.45"></a>
+<span class="sourceLineNo">046</span>    implements InvocationHandler<a name="line.46"></a>
+<span class="sourceLineNo">047</span>{<a name="line.47"></a>
+<span class="sourceLineNo">048</span>    public Object invoke(<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        Object proxy,<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        Method method,<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        Object [] args)<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        throws Throwable<a name="line.52"></a>
+<span class="sourceLineNo">053</span>    {<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        Class clazz = getClass();<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        Method matchingMethod;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        try {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>            matchingMethod =<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                clazz.getMethod(<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                    method.getName(),<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                    method.getParameterTypes());<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        } catch (NoSuchMethodException e) {<a name="line.61"></a>
+<span class="sourceLineNo">062</span>            matchingMethod = null;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        } catch (SecurityException e) {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>            matchingMethod = null;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        }<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        try {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>            if (matchingMethod != null) {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                // Invoke the method in the derived class.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                return matchingMethod.invoke(this, args);<a name="line.69"></a>
+<span class="sourceLineNo">070</span>            }<a name="line.70"></a>
+<span class="sourceLineNo">071</span>            final Object target = getTarget();<a name="line.71"></a>
+<span class="sourceLineNo">072</span>            if (target == null) {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                throw new UnsupportedOperationException(<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                    "method: " + method);<a name="line.74"></a>
+<span class="sourceLineNo">075</span>            }<a name="line.75"></a>
+<span class="sourceLineNo">076</span>            return method.invoke(<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                target,<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                args);<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        } catch (InvocationTargetException e) {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>            throw e.getTargetException();<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        }<a name="line.81"></a>
+<span class="sourceLineNo">082</span>    }<a name="line.82"></a>
+<span class="sourceLineNo">083</span><a name="line.83"></a>
+<span class="sourceLineNo">084</span>    /**<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     * Returns the object to forward method calls to, should the derived class<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     * not implement the method. Generally, this object will be a member of the<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     * derived class, supplied as a parameter to its constructor.<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     * &lt;p&gt;The default implementation returns null, which will cause the<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     * {@link #invoke(Object, java.lang.reflect.Method, Object[])} method<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     * to throw an {@link UnsupportedOperationException} if the derived class<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     * does not have the required method.<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     * @return object to forward method calls to<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     * @throws InvocationTargetException if there is an error acquiring the<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     * target<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     */<a name="line.98"></a>
+<span class="sourceLineNo">099</span>    protected Object getTarget() throws InvocationTargetException {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        return null;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    }<a name="line.101"></a>
+<span class="sourceLineNo">102</span>}<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>// End DelegatingInvocationHandler.java<a name="line.104"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

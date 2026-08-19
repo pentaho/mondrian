@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2007-2012 Pentaho<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.olap4j;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import mondrian.mdx.LevelExpr;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.mdx.UnresolvedFunCall;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.olap.*;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.olap.type.TypeUtil;<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>import org.olap4j.Axis;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import org.olap4j.CellSetAxisMetaData;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import org.olap4j.metadata.Hierarchy;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import org.olap4j.metadata.Property;<a name="line.20"></a>
+<span class="sourceLineNo">021</span><a name="line.21"></a>
+<span class="sourceLineNo">022</span>import java.util.*;<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>/**<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * Implementation of {@link org.olap4j.CellSetMetaData}<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * for the Mondrian OLAP engine.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * @author jhyde<a name="line.28"></a>
+<span class="sourceLineNo">029</span>  @since Nov 17, 2007<a name="line.29"></a>
+<span class="sourceLineNo">030</span>*/<a name="line.30"></a>
+<span class="sourceLineNo">031</span>class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {<a name="line.31"></a>
+<span class="sourceLineNo">032</span>    private final QueryAxis queryAxis;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>    private final MondrianOlap4jCellSetMetaData cellSetMetaData;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>    private final List&lt;Property&gt; propertyList = new ArrayList&lt;Property&gt;();<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>    /**<a name="line.36"></a>
+<span class="sourceLineNo">037</span>     * Creates a MondrianOlap4jCellSetAxisMetaData.<a name="line.37"></a>
+<span class="sourceLineNo">038</span>     *<a name="line.38"></a>
+<span class="sourceLineNo">039</span>     * @param cellSetMetaData Cell set axis metadata<a name="line.39"></a>
+<span class="sourceLineNo">040</span>     * @param queryAxis Query axis<a name="line.40"></a>
+<span class="sourceLineNo">041</span>     */<a name="line.41"></a>
+<span class="sourceLineNo">042</span>    MondrianOlap4jCellSetAxisMetaData(<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        MondrianOlap4jCellSetMetaData cellSetMetaData,<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        QueryAxis queryAxis)<a name="line.44"></a>
+<span class="sourceLineNo">045</span>    {<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        if (queryAxis == null) {<a name="line.46"></a>
+<span class="sourceLineNo">047</span>            queryAxis = new QueryAxis(<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                false, null, AxisOrdinal.StandardAxisOrdinal.SLICER,<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                QueryAxis.SubtotalVisibility.Undefined);<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        }<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        this.queryAxis = queryAxis;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        this.cellSetMetaData = cellSetMetaData;<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>        // populate property list<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        for (Id id : queryAxis.getDimensionProperties()) {<a name="line.55"></a>
+<span class="sourceLineNo">056</span>            final String[] names = id.toStringArray();<a name="line.56"></a>
+<span class="sourceLineNo">057</span>            Property olap4jProperty = null;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>            if (names.length == 1) {<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                olap4jProperty =<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                    Util.lookup(<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                        Property.StandardMemberProperty.class, names[0]);<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                if (olap4jProperty == null) {<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                    olap4jProperty =<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                        MondrianOlap4jProperty.MEMBER_EXTENSIONS.get(names[0]);<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                }<a name="line.65"></a>
+<span class="sourceLineNo">066</span>            }<a name="line.66"></a>
+<span class="sourceLineNo">067</span>            if (olap4jProperty == null) {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                final UnresolvedFunCall call =<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                    (UnresolvedFunCall)<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                        Util.lookup(<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                            cellSetMetaData.query, id.getSegments(), true);<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                olap4jProperty =<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                    new MondrianOlap4jProperty(<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                        Util.lookupProperty(<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                            ((LevelExpr) call.getArg(0)).getLevel(),<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                            call.getFunName()));<a name="line.76"></a>
+<span class="sourceLineNo">077</span>            }<a name="line.77"></a>
+<span class="sourceLineNo">078</span>            propertyList.add(olap4jProperty);<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        }<a name="line.79"></a>
+<span class="sourceLineNo">080</span>    }<a name="line.80"></a>
+<span class="sourceLineNo">081</span><a name="line.81"></a>
+<span class="sourceLineNo">082</span>    public Axis getAxisOrdinal() {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        return Axis.Factory.forOrdinal(<a name="line.83"></a>
+<span class="sourceLineNo">084</span>            queryAxis.getAxisOrdinal().logicalOrdinal());<a name="line.84"></a>
+<span class="sourceLineNo">085</span>    }<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>    public List&lt;Hierarchy&gt; getHierarchies() {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        return getHierarchiesNonFilter();<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    }<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>    /**<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     * Returns the hierarchies on a non-filter axis.<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     * @return List of hierarchies, never null<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     */<a name="line.95"></a>
+<span class="sourceLineNo">096</span>    private List&lt;Hierarchy&gt; getHierarchiesNonFilter() {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        final Exp exp = queryAxis.getSet();<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        if (exp == null) {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            return Collections.emptyList();<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        }<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        List&lt;Hierarchy&gt; hierarchyList = new ArrayList&lt;Hierarchy&gt;();<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        for (mondrian.olap.Hierarchy hierarchy<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            : TypeUtil.getHierarchies(exp.getType()))<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>            hierarchyList.add(<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                cellSetMetaData.olap4jStatement.olap4jConnection.toOlap4j(<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                    hierarchy));<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        }<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        return hierarchyList;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    }<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>    public List&lt;Property&gt; getProperties() {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        return propertyList;<a name="line.113"></a>
+<span class="sourceLineNo">114</span>    }<a name="line.114"></a>
+<span class="sourceLineNo">115</span>}<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>// End MondrianOlap4jCellSetAxisMetaData.java<a name="line.117"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

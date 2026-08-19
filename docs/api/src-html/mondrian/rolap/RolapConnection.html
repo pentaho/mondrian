@@ -1,0 +1,1311 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2001-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2013 Pentaho and others<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.rolap;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.calc.*;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.calc.impl.DelegatingTupleList;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.olap.*;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import mondrian.parser.MdxParserValidator;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import mondrian.resource.MondrianResource;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import mondrian.server.*;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import mondrian.spi.*;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import mondrian.spi.impl.JndiDataSourceResolver;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import mondrian.util.*;<a name="line.21"></a>
+<span class="sourceLineNo">022</span><a name="line.22"></a>
+<span class="sourceLineNo">023</span>import org.apache.log4j.Logger;<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span>import org.eigenbase.util.property.StringProperty;<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span>import org.olap4j.Scenario;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.io.PrintWriter;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.lang.reflect.InvocationTargetException;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.lang.reflect.Method;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.sql.Connection;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.sql.SQLException;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.*;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.concurrent.Callable;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.concurrent.atomic.AtomicInteger;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import javax.sql.DataSource;<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>/**<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * A &lt;code&gt;RolapConnection&lt;/code&gt; is a connection to a Mondrian OLAP Server.<a name="line.40"></a>
+<span class="sourceLineNo">041</span> *<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * &lt;p&gt;Typically, you create a connection via<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * {@link DriverManager#getConnection(String, mondrian.spi.CatalogLocator)}.<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * {@link RolapConnectionProperties} describes allowable keywords.&lt;/p&gt;<a name="line.44"></a>
+<span class="sourceLineNo">045</span> *<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * @see RolapSchema<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * @see DriverManager<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * @author jhyde<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * @since 2 October, 2002<a name="line.49"></a>
+<span class="sourceLineNo">050</span> */<a name="line.50"></a>
+<span class="sourceLineNo">051</span>public class RolapConnection extends ConnectionBase {<a name="line.51"></a>
+<span class="sourceLineNo">052</span>    private static final Logger LOGGER =<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        Logger.getLogger(RolapConnection.class);<a name="line.53"></a>
+<span class="sourceLineNo">054</span>    private static final AtomicInteger ID_GENERATOR = new AtomicInteger();<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>    private final MondrianServer server;<a name="line.56"></a>
+<span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span>    private final Util.PropertyList connectInfo;<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>    /**<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     * Factory for JDBC connections to talk to the RDBMS. This factory will<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     * usually use a connection pool.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     */<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    private final DataSource dataSource;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    private final String catalogUrl;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>    private final RolapSchema schema;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>    private SchemaReader schemaReader;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    protected Role role;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    private Locale locale = Locale.getDefault();<a name="line.69"></a>
+<span class="sourceLineNo">070</span>    private Scenario scenario;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    private boolean closed = false;<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>    private static DataSourceResolver dataSourceResolver;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    private final int id;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    private final Statement internalStatement;<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>    /**<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * Creates a connection.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     *<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     * @param server Server instance this connection belongs to<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * @param connectInfo Connection properties; keywords are described in<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *   {@link RolapConnectionProperties}.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     * @param dataSource JDBC data source<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     */<a name="line.84"></a>
+<span class="sourceLineNo">085</span>    public RolapConnection(<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        MondrianServer server,<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        Util.PropertyList connectInfo,<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        DataSource dataSource)<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        this(server, connectInfo, null, dataSource);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    }<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>    /**<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     * Creates a RolapConnection.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     * &lt;p&gt;Only {@link RolapSchemaPool#get} calls this with<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     * schema != null (to create a schema's internal connection).<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     * Other uses retrieve a schema from the cache based upon<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     * the &lt;code&gt;Catalog&lt;/code&gt; property.<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     *<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     * @param server Server instance this connection belongs to<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     * @param connectInfo Connection properties; keywords are described in<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     *   {@link RolapConnectionProperties}.<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     * @param schema Schema for the connection. Must be null unless this is to<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *   be an internal connection.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     * @param dataSource If not null an external DataSource to be used<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     *        by Mondrian<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     */<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    RolapConnection(<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        MondrianServer server,<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        Util.PropertyList connectInfo,<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        RolapSchema schema,<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        DataSource dataSource)<a name="line.113"></a>
+<span class="sourceLineNo">114</span>    {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        super();<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        assert server != null;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        this.server = server;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        this.id = ID_GENERATOR.getAndIncrement();<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>        assert connectInfo != null;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        String provider = connectInfo.get(<a name="line.121"></a>
+<span class="sourceLineNo">122</span>            RolapConnectionProperties.Provider.name(), "mondrian");<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        Util.assertTrue(provider.equalsIgnoreCase("mondrian"));<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        this.connectInfo = connectInfo;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        this.catalogUrl =<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            connectInfo.get(RolapConnectionProperties.Catalog.name());<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        final String jdbcUser =<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            connectInfo.get(RolapConnectionProperties.JdbcUser.name());<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        final String jdbcConnectString =<a name="line.129"></a>
+<span class="sourceLineNo">130</span>            connectInfo.get(RolapConnectionProperties.Jdbc.name());<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        final String strDataSource =<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            connectInfo.get(RolapConnectionProperties.DataSource.name());<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        StringBuilder buf = new StringBuilder();<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        this.dataSource =<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            createDataSource(dataSource, connectInfo, buf);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        Role role = null;<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>        // Register this connection before we register its internal statement.<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        server.addConnection(this);<a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span>        if (schema == null) {<a name="line.141"></a>
+<span class="sourceLineNo">142</span>            // If RolapSchema.Pool.get were to call this with schema == null,<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            // we would loop.<a name="line.143"></a>
+<span class="sourceLineNo">144</span>            Statement bootstrapStatement = createInternalStatement(false);<a name="line.144"></a>
+<span class="sourceLineNo">145</span>            final Locus locus =<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                new Locus(<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                    new Execution(bootstrapStatement, 0),<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                    null,<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                    "Initializing connection");<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            Locus.push(locus);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            try {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                if (dataSource == null) {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                    // If there is no external data source is passed in, we<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                    // expect the properties Jdbc, JdbcUser, DataSource to be<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                    // set, as they are used to generate the schema cache key.<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                    final String connectionKey =<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                        jdbcConnectString<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        + getJdbcProperties(connectInfo).toString();<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span>                    schema = RolapSchemaPool.instance().get(<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        catalogUrl,<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        connectionKey,<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        jdbcUser,<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                        strDataSource,<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        connectInfo);<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                } else {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                    schema = RolapSchemaPool.instance().get(<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        catalogUrl,<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                        dataSource,<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        connectInfo);<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                }<a name="line.171"></a>
+<span class="sourceLineNo">172</span>            } finally {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                Locus.pop(locus);<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                bootstrapStatement.close();<a name="line.174"></a>
+<span class="sourceLineNo">175</span>            }<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            internalStatement =<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                schema.getInternalConnection().getInternalStatement();<a name="line.177"></a>
+<span class="sourceLineNo">178</span>            String roleNameList =<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                connectInfo.get(RolapConnectionProperties.Role.name());<a name="line.179"></a>
+<span class="sourceLineNo">180</span>            if (roleNameList != null) {<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                List&lt;String&gt; roleNames = Util.parseCommaList(roleNameList);<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                List&lt;Role&gt; roleList = new ArrayList&lt;Role&gt;();<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                for (String roleName : roleNames) {<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                    final LockBox.Entry entry =<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                        server.getLockBox().get(roleName);<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                    Role role1;<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                    if (entry != null) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                        try {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                            role1 = (Role) entry.getValue();<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                        } catch (ClassCastException e) {<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                            role1 = null;<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                        }<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                    } else {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                        role1 = schema.lookupRole(roleName);<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                    }<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                    if (role1 == null) {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                        throw Util.newError(<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                            "Role '" + roleName + "' not found");<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                    }<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                    roleList.add(role1);<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                }<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                switch (roleList.size()) {<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                case 0:<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                    // If they specify 'Role=;', the list of names will be<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                    // empty, and the effect will be as if they did specify<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                    // Role at all.<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                    role = null;<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                    break;<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                case 1:<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                    role = roleList.get(0);<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                    break;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                default:<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                    role = RoleImpl.union(roleList);<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                    break;<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                }<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            }<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        } else {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>            this.internalStatement = createInternalStatement(true);<a name="line.218"></a>
+<span class="sourceLineNo">219</span><a name="line.219"></a>
+<span class="sourceLineNo">220</span>            // We are creating an internal connection. Now is a great time to<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            // make sure that the JDBC credentials are valid, for this<a name="line.221"></a>
+<span class="sourceLineNo">222</span>            // connection and for external connections built on top of this.<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            Connection conn = null;<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            java.sql.Statement statement = null;<a name="line.224"></a>
+<span class="sourceLineNo">225</span>            try {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                conn = this.dataSource.getConnection();<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                Dialect dialect =<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                    DialectManager.createDialect(this.dataSource, conn);<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                if (dialect.getDatabaseProduct()<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                    == Dialect.DatabaseProduct.DERBY)<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                {<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                    // Derby requires a little extra prodding to do the<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                    // validation to detect an error.<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                    statement = conn.createStatement();<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                    statement.executeQuery("select * from bogustable");<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                }<a name="line.236"></a>
+<span class="sourceLineNo">237</span>            } catch (SQLException e) {<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                if (e.getMessage().equals(<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                        "Table/View 'BOGUSTABLE' does not exist."))<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                {<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                    // Ignore. This exception comes from Derby when the<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                    // connection is valid. If the connection were invalid, we<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                    // would receive an error such as "Schema 'BOGUSUSER' does<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                    // not exist"<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                } else {<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                    throw Util.newError(<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                        e,<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                        "Error while creating SQL connection: " + buf);<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>            } finally {<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                try {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                    if (statement != null) {<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                        statement.close();<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                    }<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                    if (conn != null) {<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                        conn.close();<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                    }<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                } catch (SQLException e) {<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                    // ignore<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                }<a name="line.260"></a>
+<span class="sourceLineNo">261</span>            }<a name="line.261"></a>
+<span class="sourceLineNo">262</span>        }<a name="line.262"></a>
+<span class="sourceLineNo">263</span><a name="line.263"></a>
+<span class="sourceLineNo">264</span>        if (role == null) {<a name="line.264"></a>
+<span class="sourceLineNo">265</span>            role = schema.getDefaultRole();<a name="line.265"></a>
+<span class="sourceLineNo">266</span>        }<a name="line.266"></a>
+<span class="sourceLineNo">267</span><a name="line.267"></a>
+<span class="sourceLineNo">268</span>        // Set the locale.<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        String localeString =<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            connectInfo.get(RolapConnectionProperties.Locale.name());<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        if (localeString != null) {<a name="line.271"></a>
+<span class="sourceLineNo">272</span>            this.locale = Util.parseLocale(localeString);<a name="line.272"></a>
+<span class="sourceLineNo">273</span>            assert locale != null;<a name="line.273"></a>
+<span class="sourceLineNo">274</span>        }<a name="line.274"></a>
+<span class="sourceLineNo">275</span><a name="line.275"></a>
+<span class="sourceLineNo">276</span>        this.schema = schema;<a name="line.276"></a>
+<span class="sourceLineNo">277</span>        setRole(role);<a name="line.277"></a>
+<span class="sourceLineNo">278</span>    }<a name="line.278"></a>
+<span class="sourceLineNo">279</span><a name="line.279"></a>
+<span class="sourceLineNo">280</span>    @Override<a name="line.280"></a>
+<span class="sourceLineNo">281</span>    protected void finalize() throws Throwable {<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        try {<a name="line.282"></a>
+<span class="sourceLineNo">283</span>            super.finalize();<a name="line.283"></a>
+<span class="sourceLineNo">284</span>            close();<a name="line.284"></a>
+<span class="sourceLineNo">285</span>        } catch (Throwable t) {<a name="line.285"></a>
+<span class="sourceLineNo">286</span>            LOGGER.info(<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                MondrianResource.instance()<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                    .FinalizerErrorRolapConnection.baseMessage,<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                t);<a name="line.289"></a>
+<span class="sourceLineNo">290</span>        }<a name="line.290"></a>
+<span class="sourceLineNo">291</span>    }<a name="line.291"></a>
+<span class="sourceLineNo">292</span><a name="line.292"></a>
+<span class="sourceLineNo">293</span>    /**<a name="line.293"></a>
+<span class="sourceLineNo">294</span>     * Returns the identifier of this connection. Unique within the lifetime of<a name="line.294"></a>
+<span class="sourceLineNo">295</span>     * this JVM.<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     *<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     * @return Identifier of this connection<a name="line.297"></a>
+<span class="sourceLineNo">298</span>     */<a name="line.298"></a>
+<span class="sourceLineNo">299</span>    public int getId() {<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        return id;<a name="line.300"></a>
+<span class="sourceLineNo">301</span>    }<a name="line.301"></a>
+<span class="sourceLineNo">302</span><a name="line.302"></a>
+<span class="sourceLineNo">303</span>    protected Logger getLogger() {<a name="line.303"></a>
+<span class="sourceLineNo">304</span>        return LOGGER;<a name="line.304"></a>
+<span class="sourceLineNo">305</span>    }<a name="line.305"></a>
+<span class="sourceLineNo">306</span><a name="line.306"></a>
+<span class="sourceLineNo">307</span>    /**<a name="line.307"></a>
+<span class="sourceLineNo">308</span>     * Creates a JDBC data source from the JDBC credentials contained within a<a name="line.308"></a>
+<span class="sourceLineNo">309</span>     * set of mondrian connection properties.<a name="line.309"></a>
+<span class="sourceLineNo">310</span>     *<a name="line.310"></a>
+<span class="sourceLineNo">311</span>     * &lt;p&gt;This method is package-level so that it can be called from the<a name="line.311"></a>
+<span class="sourceLineNo">312</span>     * RolapConnectionTest unit test.<a name="line.312"></a>
+<span class="sourceLineNo">313</span>     *<a name="line.313"></a>
+<span class="sourceLineNo">314</span>     * @param dataSource Anonymous data source from user, or null<a name="line.314"></a>
+<span class="sourceLineNo">315</span>     * @param connectInfo Mondrian connection properties<a name="line.315"></a>
+<span class="sourceLineNo">316</span>     * @param buf Into which method writes a description of the JDBC credentials<a name="line.316"></a>
+<span class="sourceLineNo">317</span>     * @return Data source<a name="line.317"></a>
+<span class="sourceLineNo">318</span>     */<a name="line.318"></a>
+<span class="sourceLineNo">319</span>    static DataSource createDataSource(<a name="line.319"></a>
+<span class="sourceLineNo">320</span>        DataSource dataSource,<a name="line.320"></a>
+<span class="sourceLineNo">321</span>        Util.PropertyList connectInfo,<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        StringBuilder buf)<a name="line.322"></a>
+<span class="sourceLineNo">323</span>    {<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        assert buf != null;<a name="line.324"></a>
+<span class="sourceLineNo">325</span>        final String jdbcConnectString =<a name="line.325"></a>
+<span class="sourceLineNo">326</span>            connectInfo.get(RolapConnectionProperties.Jdbc.name());<a name="line.326"></a>
+<span class="sourceLineNo">327</span>        final String jdbcUser =<a name="line.327"></a>
+<span class="sourceLineNo">328</span>            connectInfo.get(RolapConnectionProperties.JdbcUser.name());<a name="line.328"></a>
+<span class="sourceLineNo">329</span>        final String jdbcPassword =<a name="line.329"></a>
+<span class="sourceLineNo">330</span>            connectInfo.get(RolapConnectionProperties.JdbcPassword.name());<a name="line.330"></a>
+<span class="sourceLineNo">331</span>        final String dataSourceName =<a name="line.331"></a>
+<span class="sourceLineNo">332</span>            connectInfo.get(RolapConnectionProperties.DataSource.name());<a name="line.332"></a>
+<span class="sourceLineNo">333</span><a name="line.333"></a>
+<span class="sourceLineNo">334</span>        if (dataSource != null) {<a name="line.334"></a>
+<span class="sourceLineNo">335</span>            appendKeyValue(buf, "Anonymous data source", dataSource);<a name="line.335"></a>
+<span class="sourceLineNo">336</span>            appendKeyValue(<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                buf, RolapConnectionProperties.JdbcUser.name(), jdbcUser);<a name="line.337"></a>
+<span class="sourceLineNo">338</span>            appendKeyValue(<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                buf,<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                RolapConnectionProperties.JdbcPassword.name(),<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                jdbcPassword);<a name="line.341"></a>
+<span class="sourceLineNo">342</span>            if (jdbcUser != null || jdbcPassword != null) {<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                dataSource =<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                    new UserPasswordDataSource(<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                        dataSource, jdbcUser, jdbcPassword);<a name="line.345"></a>
+<span class="sourceLineNo">346</span>            }<a name="line.346"></a>
+<span class="sourceLineNo">347</span>            return dataSource;<a name="line.347"></a>
+<span class="sourceLineNo">348</span><a name="line.348"></a>
+<span class="sourceLineNo">349</span>        } else if (jdbcConnectString != null) {<a name="line.349"></a>
+<span class="sourceLineNo">350</span>            // Get connection through own pooling datasource<a name="line.350"></a>
+<span class="sourceLineNo">351</span>            appendKeyValue(<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                buf, RolapConnectionProperties.Jdbc.name(), jdbcConnectString);<a name="line.352"></a>
+<span class="sourceLineNo">353</span>            appendKeyValue(<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                buf, RolapConnectionProperties.JdbcUser.name(), jdbcUser);<a name="line.354"></a>
+<span class="sourceLineNo">355</span>            appendKeyValue(<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                buf,<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                RolapConnectionProperties.JdbcPassword.name(),<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                jdbcPassword);<a name="line.358"></a>
+<span class="sourceLineNo">359</span>            String jdbcDrivers =<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                connectInfo.get(RolapConnectionProperties.JdbcDrivers.name());<a name="line.360"></a>
+<span class="sourceLineNo">361</span>            if (jdbcDrivers != null) {<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                RolapUtil.loadDrivers(jdbcDrivers);<a name="line.362"></a>
+<span class="sourceLineNo">363</span>            }<a name="line.363"></a>
+<span class="sourceLineNo">364</span>            final String jdbcDriversProp =<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                    MondrianProperties.instance().JdbcDrivers.get();<a name="line.365"></a>
+<span class="sourceLineNo">366</span>            RolapUtil.loadDrivers(jdbcDriversProp);<a name="line.366"></a>
+<span class="sourceLineNo">367</span><a name="line.367"></a>
+<span class="sourceLineNo">368</span>            Properties jdbcProperties = getJdbcProperties(connectInfo);<a name="line.368"></a>
+<span class="sourceLineNo">369</span>            final Map&lt;String, String&gt; map = Util.toMap(jdbcProperties);<a name="line.369"></a>
+<span class="sourceLineNo">370</span>            for (Map.Entry&lt;String, String&gt; entry : map.entrySet()) {<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                // FIXME ordering is non-deterministic<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                appendKeyValue(buf, entry.getKey(), entry.getValue());<a name="line.372"></a>
+<span class="sourceLineNo">373</span>            }<a name="line.373"></a>
+<span class="sourceLineNo">374</span><a name="line.374"></a>
+<span class="sourceLineNo">375</span>            if (jdbcUser != null) {<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                jdbcProperties.put("user", jdbcUser);<a name="line.376"></a>
+<span class="sourceLineNo">377</span>            }<a name="line.377"></a>
+<span class="sourceLineNo">378</span>            if (jdbcPassword != null) {<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                jdbcProperties.put("password", jdbcPassword);<a name="line.379"></a>
+<span class="sourceLineNo">380</span>            }<a name="line.380"></a>
+<span class="sourceLineNo">381</span><a name="line.381"></a>
+<span class="sourceLineNo">382</span>            // JDBC connections are dumb beasts, so we assume they're not<a name="line.382"></a>
+<span class="sourceLineNo">383</span>            // pooled. Therefore the default is true.<a name="line.383"></a>
+<span class="sourceLineNo">384</span>            final boolean poolNeeded =<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                connectInfo.get(<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                    RolapConnectionProperties.PoolNeeded.name(),<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                    "true").equalsIgnoreCase("true");<a name="line.387"></a>
+<span class="sourceLineNo">388</span><a name="line.388"></a>
+<span class="sourceLineNo">389</span>            if (!poolNeeded) {<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                // Connection is already pooled; don't pool it again.<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                return new DriverManagerDataSource(<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                    jdbcConnectString,<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                    jdbcProperties);<a name="line.393"></a>
+<span class="sourceLineNo">394</span>            }<a name="line.394"></a>
+<span class="sourceLineNo">395</span><a name="line.395"></a>
+<span class="sourceLineNo">396</span>            if (jdbcConnectString.toLowerCase().indexOf("mysql") &gt; -1) {<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                // mysql driver needs this autoReconnect parameter<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                jdbcProperties.setProperty("autoReconnect", "true");<a name="line.398"></a>
+<span class="sourceLineNo">399</span>            }<a name="line.399"></a>
+<span class="sourceLineNo">400</span>            return RolapConnectionPool.instance()<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                .getDriverManagerPoolingDataSource(<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                    jdbcConnectString, jdbcProperties);<a name="line.402"></a>
+<span class="sourceLineNo">403</span><a name="line.403"></a>
+<span class="sourceLineNo">404</span>        } else if (dataSourceName != null) {<a name="line.404"></a>
+<span class="sourceLineNo">405</span>            appendKeyValue(<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                buf,<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                RolapConnectionProperties.DataSource.name(),<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                dataSourceName);<a name="line.408"></a>
+<span class="sourceLineNo">409</span>            appendKeyValue(<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                buf,<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                RolapConnectionProperties.JdbcUser.name(),<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                jdbcUser);<a name="line.412"></a>
+<span class="sourceLineNo">413</span>            appendKeyValue(<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                buf,<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                RolapConnectionProperties.JdbcPassword.name(),<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                jdbcPassword);<a name="line.416"></a>
+<span class="sourceLineNo">417</span><a name="line.417"></a>
+<span class="sourceLineNo">418</span>            // Data sources are fairly smart, so we assume they look after<a name="line.418"></a>
+<span class="sourceLineNo">419</span>            // their own pooling. Therefore the default is false.<a name="line.419"></a>
+<span class="sourceLineNo">420</span>            final boolean poolNeeded =<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                connectInfo.get(<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                    RolapConnectionProperties.PoolNeeded.name(),<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                    "false").equalsIgnoreCase("true");<a name="line.423"></a>
+<span class="sourceLineNo">424</span><a name="line.424"></a>
+<span class="sourceLineNo">425</span>            // Get connection from datasource.<a name="line.425"></a>
+<span class="sourceLineNo">426</span>            DataSourceResolver dataSourceResolver = getDataSourceResolver();<a name="line.426"></a>
+<span class="sourceLineNo">427</span>            try {<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                dataSource = dataSourceResolver.lookup(dataSourceName);<a name="line.428"></a>
+<span class="sourceLineNo">429</span>            } catch (Exception e) {<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                throw Util.newInternal(<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                    e,<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                    "Error while looking up data source ("<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                    + dataSourceName + ")");<a name="line.433"></a>
+<span class="sourceLineNo">434</span>            }<a name="line.434"></a>
+<span class="sourceLineNo">435</span>            if (poolNeeded) {<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                dataSource =<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                    RolapConnectionPool.instance()<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                        .getDataSourcePoolingDataSource(<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                            dataSource, dataSourceName, jdbcUser, jdbcPassword);<a name="line.439"></a>
+<span class="sourceLineNo">440</span>            } else {<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                if (jdbcUser != null || jdbcPassword != null) {<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                    dataSource =<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                        new UserPasswordDataSource(<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                            dataSource, jdbcUser, jdbcPassword);<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                }<a name="line.445"></a>
+<span class="sourceLineNo">446</span>            }<a name="line.446"></a>
+<span class="sourceLineNo">447</span>            return dataSource;<a name="line.447"></a>
+<span class="sourceLineNo">448</span>        } else {<a name="line.448"></a>
+<span class="sourceLineNo">449</span>            throw Util.newInternal(<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                "Connect string '" + connectInfo.toString()<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                + "' must contain either '" + RolapConnectionProperties.Jdbc<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                + "' or '" + RolapConnectionProperties.DataSource + "'");<a name="line.452"></a>
+<span class="sourceLineNo">453</span>        }<a name="line.453"></a>
+<span class="sourceLineNo">454</span>    }<a name="line.454"></a>
+<span class="sourceLineNo">455</span><a name="line.455"></a>
+<span class="sourceLineNo">456</span>    /**<a name="line.456"></a>
+<span class="sourceLineNo">457</span>     * Returns the instance of the {@link mondrian.spi.DataSourceResolver}<a name="line.457"></a>
+<span class="sourceLineNo">458</span>     * plugin.<a name="line.458"></a>
+<span class="sourceLineNo">459</span>     *<a name="line.459"></a>
+<span class="sourceLineNo">460</span>     * @return data source resolver<a name="line.460"></a>
+<span class="sourceLineNo">461</span>     */<a name="line.461"></a>
+<span class="sourceLineNo">462</span>    private static synchronized DataSourceResolver getDataSourceResolver() {<a name="line.462"></a>
+<span class="sourceLineNo">463</span>        if (dataSourceResolver == null) {<a name="line.463"></a>
+<span class="sourceLineNo">464</span>            final StringProperty property =<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                MondrianProperties.instance().DataSourceResolverClass;<a name="line.465"></a>
+<span class="sourceLineNo">466</span>            final String className =<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                property.get(<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                    JndiDataSourceResolver.class.getName());<a name="line.468"></a>
+<span class="sourceLineNo">469</span>            try {<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                dataSourceResolver =<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                    ClassResolver.INSTANCE.instantiateSafe(className);<a name="line.471"></a>
+<span class="sourceLineNo">472</span>            } catch (ClassCastException e) {<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                throw Util.newInternal(<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                    e,<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                    "Plugin class specified by property "<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                    + property.getPath()<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                    + " must implement "<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                    + DataSourceResolver.class.getName());<a name="line.478"></a>
+<span class="sourceLineNo">479</span>            }<a name="line.479"></a>
+<span class="sourceLineNo">480</span>        }<a name="line.480"></a>
+<span class="sourceLineNo">481</span>        return dataSourceResolver;<a name="line.481"></a>
+<span class="sourceLineNo">482</span>    }<a name="line.482"></a>
+<span class="sourceLineNo">483</span><a name="line.483"></a>
+<span class="sourceLineNo">484</span>    /**<a name="line.484"></a>
+<span class="sourceLineNo">485</span>     * Appends "key=value" to a buffer, if value is not null.<a name="line.485"></a>
+<span class="sourceLineNo">486</span>     *<a name="line.486"></a>
+<span class="sourceLineNo">487</span>     * @param buf Buffer<a name="line.487"></a>
+<span class="sourceLineNo">488</span>     * @param key Key<a name="line.488"></a>
+<span class="sourceLineNo">489</span>     * @param value Value<a name="line.489"></a>
+<span class="sourceLineNo">490</span>     */<a name="line.490"></a>
+<span class="sourceLineNo">491</span>    private static void appendKeyValue(<a name="line.491"></a>
+<span class="sourceLineNo">492</span>        StringBuilder buf,<a name="line.492"></a>
+<span class="sourceLineNo">493</span>        String key,<a name="line.493"></a>
+<span class="sourceLineNo">494</span>        Object value)<a name="line.494"></a>
+<span class="sourceLineNo">495</span>    {<a name="line.495"></a>
+<span class="sourceLineNo">496</span>        if (value != null) {<a name="line.496"></a>
+<span class="sourceLineNo">497</span>            if (buf.length() &gt; 0) {<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                buf.append("; ");<a name="line.498"></a>
+<span class="sourceLineNo">499</span>            }<a name="line.499"></a>
+<span class="sourceLineNo">500</span>            buf.append(key).append('=').append(value);<a name="line.500"></a>
+<span class="sourceLineNo">501</span>        }<a name="line.501"></a>
+<span class="sourceLineNo">502</span>    }<a name="line.502"></a>
+<span class="sourceLineNo">503</span><a name="line.503"></a>
+<span class="sourceLineNo">504</span>    /**<a name="line.504"></a>
+<span class="sourceLineNo">505</span>     * Creates a {@link Properties} object containing all of the JDBC<a name="line.505"></a>
+<span class="sourceLineNo">506</span>     * connection properties present in the<a name="line.506"></a>
+<span class="sourceLineNo">507</span>     * {@link mondrian.olap.Util.PropertyList connectInfo}.<a name="line.507"></a>
+<span class="sourceLineNo">508</span>     *<a name="line.508"></a>
+<span class="sourceLineNo">509</span>     * @param connectInfo Connection properties<a name="line.509"></a>
+<span class="sourceLineNo">510</span>     * @return The JDBC connection properties.<a name="line.510"></a>
+<span class="sourceLineNo">511</span>     */<a name="line.511"></a>
+<span class="sourceLineNo">512</span>    private static Properties getJdbcProperties(Util.PropertyList connectInfo) {<a name="line.512"></a>
+<span class="sourceLineNo">513</span>        Properties jdbcProperties = new Properties();<a name="line.513"></a>
+<span class="sourceLineNo">514</span>        for (Pair&lt;String, String&gt; entry : connectInfo) {<a name="line.514"></a>
+<span class="sourceLineNo">515</span>            if (entry.left.startsWith(<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                    RolapConnectionProperties.JdbcPropertyPrefix))<a name="line.516"></a>
+<span class="sourceLineNo">517</span>            {<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                jdbcProperties.put(<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                    entry.left.substring(<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                        RolapConnectionProperties.JdbcPropertyPrefix.length()),<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                    entry.right);<a name="line.521"></a>
+<span class="sourceLineNo">522</span>            }<a name="line.522"></a>
+<span class="sourceLineNo">523</span>        }<a name="line.523"></a>
+<span class="sourceLineNo">524</span>        return jdbcProperties;<a name="line.524"></a>
+<span class="sourceLineNo">525</span>    }<a name="line.525"></a>
+<span class="sourceLineNo">526</span><a name="line.526"></a>
+<span class="sourceLineNo">527</span>    public Util.PropertyList getConnectInfo() {<a name="line.527"></a>
+<span class="sourceLineNo">528</span>        return connectInfo;<a name="line.528"></a>
+<span class="sourceLineNo">529</span>    }<a name="line.529"></a>
+<span class="sourceLineNo">530</span><a name="line.530"></a>
+<span class="sourceLineNo">531</span>    public void close() {<a name="line.531"></a>
+<span class="sourceLineNo">532</span>        if (!closed) {<a name="line.532"></a>
+<span class="sourceLineNo">533</span>            closed = true;<a name="line.533"></a>
+<span class="sourceLineNo">534</span>            server.removeConnection(this);<a name="line.534"></a>
+<span class="sourceLineNo">535</span>        }<a name="line.535"></a>
+<span class="sourceLineNo">536</span>        if (internalStatement != null) {<a name="line.536"></a>
+<span class="sourceLineNo">537</span>            internalStatement.close();<a name="line.537"></a>
+<span class="sourceLineNo">538</span>        }<a name="line.538"></a>
+<span class="sourceLineNo">539</span>    }<a name="line.539"></a>
+<span class="sourceLineNo">540</span><a name="line.540"></a>
+<span class="sourceLineNo">541</span>    public RolapSchema getSchema() {<a name="line.541"></a>
+<span class="sourceLineNo">542</span>        return schema;<a name="line.542"></a>
+<span class="sourceLineNo">543</span>    }<a name="line.543"></a>
+<span class="sourceLineNo">544</span><a name="line.544"></a>
+<span class="sourceLineNo">545</span>    public String getConnectString() {<a name="line.545"></a>
+<span class="sourceLineNo">546</span>        return connectInfo.toString();<a name="line.546"></a>
+<span class="sourceLineNo">547</span>    }<a name="line.547"></a>
+<span class="sourceLineNo">548</span><a name="line.548"></a>
+<span class="sourceLineNo">549</span>    public String getCatalogName() {<a name="line.549"></a>
+<span class="sourceLineNo">550</span>        return catalogUrl;<a name="line.550"></a>
+<span class="sourceLineNo">551</span>    }<a name="line.551"></a>
+<span class="sourceLineNo">552</span><a name="line.552"></a>
+<span class="sourceLineNo">553</span>    public Locale getLocale() {<a name="line.553"></a>
+<span class="sourceLineNo">554</span>        return locale;<a name="line.554"></a>
+<span class="sourceLineNo">555</span>    }<a name="line.555"></a>
+<span class="sourceLineNo">556</span><a name="line.556"></a>
+<span class="sourceLineNo">557</span>    public void setLocale(Locale locale) {<a name="line.557"></a>
+<span class="sourceLineNo">558</span>        if (locale == null) {<a name="line.558"></a>
+<span class="sourceLineNo">559</span>            throw new IllegalArgumentException("locale must not be null");<a name="line.559"></a>
+<span class="sourceLineNo">560</span>        }<a name="line.560"></a>
+<span class="sourceLineNo">561</span>        this.locale = locale;<a name="line.561"></a>
+<span class="sourceLineNo">562</span>    }<a name="line.562"></a>
+<span class="sourceLineNo">563</span><a name="line.563"></a>
+<span class="sourceLineNo">564</span>    public SchemaReader getSchemaReader() {<a name="line.564"></a>
+<span class="sourceLineNo">565</span>        return schemaReader;<a name="line.565"></a>
+<span class="sourceLineNo">566</span>    }<a name="line.566"></a>
+<span class="sourceLineNo">567</span><a name="line.567"></a>
+<span class="sourceLineNo">568</span>    public Object getProperty(String name) {<a name="line.568"></a>
+<span class="sourceLineNo">569</span>        // Mask out the values of certain properties.<a name="line.569"></a>
+<span class="sourceLineNo">570</span>        if (name.equals(RolapConnectionProperties.JdbcPassword.name())<a name="line.570"></a>
+<span class="sourceLineNo">571</span>            || name.equals(RolapConnectionProperties.CatalogContent.name()))<a name="line.571"></a>
+<span class="sourceLineNo">572</span>        {<a name="line.572"></a>
+<span class="sourceLineNo">573</span>            return "";<a name="line.573"></a>
+<span class="sourceLineNo">574</span>        }<a name="line.574"></a>
+<span class="sourceLineNo">575</span>        return connectInfo.get(name);<a name="line.575"></a>
+<span class="sourceLineNo">576</span>    }<a name="line.576"></a>
+<span class="sourceLineNo">577</span><a name="line.577"></a>
+<span class="sourceLineNo">578</span>    public CacheControl getCacheControl(PrintWriter pw) {<a name="line.578"></a>
+<span class="sourceLineNo">579</span>        return getServer().getAggregationManager().getCacheControl(this, pw);<a name="line.579"></a>
+<span class="sourceLineNo">580</span>    }<a name="line.580"></a>
+<span class="sourceLineNo">581</span><a name="line.581"></a>
+<span class="sourceLineNo">582</span>    /**<a name="line.582"></a>
+<span class="sourceLineNo">583</span>     * Executes a Query.<a name="line.583"></a>
+<span class="sourceLineNo">584</span>     *<a name="line.584"></a>
+<span class="sourceLineNo">585</span>     * @param query Query parse tree<a name="line.585"></a>
+<span class="sourceLineNo">586</span>     *<a name="line.586"></a>
+<span class="sourceLineNo">587</span>     * @throws ResourceLimitExceededException if some resource limit specified<a name="line.587"></a>
+<span class="sourceLineNo">588</span>     *     in the property file was exceeded<a name="line.588"></a>
+<span class="sourceLineNo">589</span>     * @throws QueryCanceledException if query was canceled during execution<a name="line.589"></a>
+<span class="sourceLineNo">590</span>     * @throws QueryTimeoutException if query exceeded timeout specified in<a name="line.590"></a>
+<span class="sourceLineNo">591</span>     *     the property file<a name="line.591"></a>
+<span class="sourceLineNo">592</span>     *<a name="line.592"></a>
+<span class="sourceLineNo">593</span>     * @deprecated Use {@link #execute(mondrian.server.Execution)}; this method<a name="line.593"></a>
+<span class="sourceLineNo">594</span>     *     will be removed in mondrian-4.0<a name="line.594"></a>
+<span class="sourceLineNo">595</span>     */<a name="line.595"></a>
+<span class="sourceLineNo">596</span>    public Result execute(Query query) {<a name="line.596"></a>
+<span class="sourceLineNo">597</span>        final Statement statement = query.getStatement();<a name="line.597"></a>
+<span class="sourceLineNo">598</span>        Execution execution =<a name="line.598"></a>
+<span class="sourceLineNo">599</span>            new Execution(statement, statement.getQueryTimeoutMillis());<a name="line.599"></a>
+<span class="sourceLineNo">600</span>        return execute(execution);<a name="line.600"></a>
+<span class="sourceLineNo">601</span>    }<a name="line.601"></a>
+<span class="sourceLineNo">602</span><a name="line.602"></a>
+<span class="sourceLineNo">603</span>    /**<a name="line.603"></a>
+<span class="sourceLineNo">604</span>     * Executes a statement.<a name="line.604"></a>
+<span class="sourceLineNo">605</span>     *<a name="line.605"></a>
+<span class="sourceLineNo">606</span>     * @param execution Execution context (includes statement, query)<a name="line.606"></a>
+<span class="sourceLineNo">607</span>     *<a name="line.607"></a>
+<span class="sourceLineNo">608</span>     * @throws ResourceLimitExceededException if some resource limit specified<a name="line.608"></a>
+<span class="sourceLineNo">609</span>     *     in the property file was exceeded<a name="line.609"></a>
+<span class="sourceLineNo">610</span>     * @throws QueryCanceledException if query was canceled during execution<a name="line.610"></a>
+<span class="sourceLineNo">611</span>     * @throws QueryTimeoutException if query exceeded timeout specified in<a name="line.611"></a>
+<span class="sourceLineNo">612</span>     *     the property file<a name="line.612"></a>
+<span class="sourceLineNo">613</span>     */<a name="line.613"></a>
+<span class="sourceLineNo">614</span>    public Result execute(final Execution execution) {<a name="line.614"></a>
+<span class="sourceLineNo">615</span>        execution.copyMDC();<a name="line.615"></a>
+<span class="sourceLineNo">616</span>        return<a name="line.616"></a>
+<span class="sourceLineNo">617</span>            server.getResultShepherd()<a name="line.617"></a>
+<span class="sourceLineNo">618</span>                .shepherdExecution(<a name="line.618"></a>
+<span class="sourceLineNo">619</span>                    execution,<a name="line.619"></a>
+<span class="sourceLineNo">620</span>                    new Callable&lt;Result&gt;() {<a name="line.620"></a>
+<span class="sourceLineNo">621</span>                        public Result call() throws Exception {<a name="line.621"></a>
+<span class="sourceLineNo">622</span>                            return executeInternal(execution);<a name="line.622"></a>
+<span class="sourceLineNo">623</span>                        }<a name="line.623"></a>
+<span class="sourceLineNo">624</span>                    });<a name="line.624"></a>
+<span class="sourceLineNo">625</span>    }<a name="line.625"></a>
+<span class="sourceLineNo">626</span><a name="line.626"></a>
+<span class="sourceLineNo">627</span>    private Result executeInternal(final Execution execution) {<a name="line.627"></a>
+<span class="sourceLineNo">628</span>        execution.setContextMap();<a name="line.628"></a>
+<span class="sourceLineNo">629</span>        final Statement statement = execution.getMondrianStatement();<a name="line.629"></a>
+<span class="sourceLineNo">630</span>        // Cleanup any previous executions still running<a name="line.630"></a>
+<span class="sourceLineNo">631</span>        synchronized (statement) {<a name="line.631"></a>
+<span class="sourceLineNo">632</span>            final Execution previousExecution =<a name="line.632"></a>
+<span class="sourceLineNo">633</span>                statement.getCurrentExecution();<a name="line.633"></a>
+<span class="sourceLineNo">634</span>            if (previousExecution != null) {<a name="line.634"></a>
+<span class="sourceLineNo">635</span>                statement.end(previousExecution);<a name="line.635"></a>
+<span class="sourceLineNo">636</span>            }<a name="line.636"></a>
+<span class="sourceLineNo">637</span>        }<a name="line.637"></a>
+<span class="sourceLineNo">638</span>        final Query query = statement.getQuery();<a name="line.638"></a>
+<span class="sourceLineNo">639</span>        final MemoryMonitor.Listener listener = new MemoryMonitor.Listener() {<a name="line.639"></a>
+<span class="sourceLineNo">640</span>            public void memoryUsageNotification(long used, long max) {<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                execution.setOutOfMemory(<a name="line.641"></a>
+<span class="sourceLineNo">642</span>                    "OutOfMemory used="<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                    + used<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                    + ", max="<a name="line.644"></a>
+<span class="sourceLineNo">645</span>                    + max<a name="line.645"></a>
+<span class="sourceLineNo">646</span>                    + " for connection: "<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                    + getConnectString());<a name="line.647"></a>
+<span class="sourceLineNo">648</span>            }<a name="line.648"></a>
+<span class="sourceLineNo">649</span>        };<a name="line.649"></a>
+<span class="sourceLineNo">650</span>        MemoryMonitor mm = MemoryMonitorFactory.getMemoryMonitor();<a name="line.650"></a>
+<span class="sourceLineNo">651</span>        final long currId = execution.getId();<a name="line.651"></a>
+<span class="sourceLineNo">652</span>        try {<a name="line.652"></a>
+<span class="sourceLineNo">653</span>            mm.addListener(listener);<a name="line.653"></a>
+<span class="sourceLineNo">654</span>            // Check to see if we must punt<a name="line.654"></a>
+<span class="sourceLineNo">655</span>            execution.checkCancelOrTimeout();<a name="line.655"></a>
+<span class="sourceLineNo">656</span><a name="line.656"></a>
+<span class="sourceLineNo">657</span>            if (LOGGER.isDebugEnabled()) {<a name="line.657"></a>
+<span class="sourceLineNo">658</span>                LOGGER.debug(Util.unparse(query));<a name="line.658"></a>
+<span class="sourceLineNo">659</span>            }<a name="line.659"></a>
+<span class="sourceLineNo">660</span><a name="line.660"></a>
+<span class="sourceLineNo">661</span>            if (RolapUtil.MDX_LOGGER.isDebugEnabled()) {<a name="line.661"></a>
+<span class="sourceLineNo">662</span>                RolapUtil.MDX_LOGGER.debug(currId + ": " + Util.unparse(query));<a name="line.662"></a>
+<span class="sourceLineNo">663</span>            }<a name="line.663"></a>
+<span class="sourceLineNo">664</span><a name="line.664"></a>
+<span class="sourceLineNo">665</span>            final Locus locus = new Locus(execution, null, "Loading cells");<a name="line.665"></a>
+<span class="sourceLineNo">666</span>            Locus.push(locus);<a name="line.666"></a>
+<span class="sourceLineNo">667</span>            Result result;<a name="line.667"></a>
+<span class="sourceLineNo">668</span>            try {<a name="line.668"></a>
+<span class="sourceLineNo">669</span>                statement.start(execution);<a name="line.669"></a>
+<span class="sourceLineNo">670</span>                ((RolapCube) query.getCube()).clearCachedAggregations(true);<a name="line.670"></a>
+<span class="sourceLineNo">671</span>                result = new RolapResult(execution, true);<a name="line.671"></a>
+<span class="sourceLineNo">672</span>                int i = 0;<a name="line.672"></a>
+<span class="sourceLineNo">673</span>                for (QueryAxis axis : query.getAxes()) {<a name="line.673"></a>
+<span class="sourceLineNo">674</span>                    if (axis.isNonEmpty()) {<a name="line.674"></a>
+<span class="sourceLineNo">675</span>                        result = new NonEmptyResult(result, execution, i);<a name="line.675"></a>
+<span class="sourceLineNo">676</span>                    }<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                    ++i;<a name="line.677"></a>
+<span class="sourceLineNo">678</span>                }<a name="line.678"></a>
+<span class="sourceLineNo">679</span>            } finally {<a name="line.679"></a>
+<span class="sourceLineNo">680</span>                Locus.pop(locus);<a name="line.680"></a>
+<span class="sourceLineNo">681</span>                ((RolapCube) query.getCube()).clearCachedAggregations(true);<a name="line.681"></a>
+<span class="sourceLineNo">682</span>            }<a name="line.682"></a>
+<span class="sourceLineNo">683</span>            statement.end(execution);<a name="line.683"></a>
+<span class="sourceLineNo">684</span>            return result;<a name="line.684"></a>
+<span class="sourceLineNo">685</span>        } catch (ResultLimitExceededException e) {<a name="line.685"></a>
+<span class="sourceLineNo">686</span>            // query has been punted<a name="line.686"></a>
+<span class="sourceLineNo">687</span>            throw e;<a name="line.687"></a>
+<span class="sourceLineNo">688</span>        } catch (Exception e) {<a name="line.688"></a>
+<span class="sourceLineNo">689</span>            try {<a name="line.689"></a>
+<span class="sourceLineNo">690</span>                if (!execution.isCancelOrTimeout()) {<a name="line.690"></a>
+<span class="sourceLineNo">691</span>                    statement.end(execution);<a name="line.691"></a>
+<span class="sourceLineNo">692</span>                }<a name="line.692"></a>
+<span class="sourceLineNo">693</span>            } catch (Exception e1) {<a name="line.693"></a>
+<span class="sourceLineNo">694</span>                // We can safely ignore that cleanup exception.<a name="line.694"></a>
+<span class="sourceLineNo">695</span>                // If an error is encountered here, it means that<a name="line.695"></a>
+<span class="sourceLineNo">696</span>                // one was already encountered at statement.start()<a name="line.696"></a>
+<span class="sourceLineNo">697</span>                // above and the exception we will throw after the<a name="line.697"></a>
+<span class="sourceLineNo">698</span>                // cleanup is the same as the original one.<a name="line.698"></a>
+<span class="sourceLineNo">699</span>            }<a name="line.699"></a>
+<span class="sourceLineNo">700</span>            String queryString;<a name="line.700"></a>
+<span class="sourceLineNo">701</span>            try {<a name="line.701"></a>
+<span class="sourceLineNo">702</span>                queryString = Util.unparse(query);<a name="line.702"></a>
+<span class="sourceLineNo">703</span>            } catch (Exception e1) {<a name="line.703"></a>
+<span class="sourceLineNo">704</span>                queryString = "?";<a name="line.704"></a>
+<span class="sourceLineNo">705</span>            }<a name="line.705"></a>
+<span class="sourceLineNo">706</span>            throw Util.newError(<a name="line.706"></a>
+<span class="sourceLineNo">707</span>                e,<a name="line.707"></a>
+<span class="sourceLineNo">708</span>                "Error while executing query [" + queryString + "]");<a name="line.708"></a>
+<span class="sourceLineNo">709</span>        } finally {<a name="line.709"></a>
+<span class="sourceLineNo">710</span>            mm.removeListener(listener);<a name="line.710"></a>
+<span class="sourceLineNo">711</span>            if (RolapUtil.MDX_LOGGER.isDebugEnabled()) {<a name="line.711"></a>
+<span class="sourceLineNo">712</span>                final long elapsed = execution.getElapsedMillis();<a name="line.712"></a>
+<span class="sourceLineNo">713</span>                RolapUtil.MDX_LOGGER.debug(<a name="line.713"></a>
+<span class="sourceLineNo">714</span>                    currId + ": exec: " + elapsed + " ms");<a name="line.714"></a>
+<span class="sourceLineNo">715</span>            }<a name="line.715"></a>
+<span class="sourceLineNo">716</span>        }<a name="line.716"></a>
+<span class="sourceLineNo">717</span>    }<a name="line.717"></a>
+<span class="sourceLineNo">718</span><a name="line.718"></a>
+<span class="sourceLineNo">719</span>    public void setRole(Role role) {<a name="line.719"></a>
+<span class="sourceLineNo">720</span>        assert role != null;<a name="line.720"></a>
+<span class="sourceLineNo">721</span><a name="line.721"></a>
+<span class="sourceLineNo">722</span>        this.role = role;<a name="line.722"></a>
+<span class="sourceLineNo">723</span>        this.schemaReader = new RolapSchemaReader(role, schema);<a name="line.723"></a>
+<span class="sourceLineNo">724</span>    }<a name="line.724"></a>
+<span class="sourceLineNo">725</span><a name="line.725"></a>
+<span class="sourceLineNo">726</span>    public Role getRole() {<a name="line.726"></a>
+<span class="sourceLineNo">727</span>        Util.assertPostcondition(role != null, "role != null");<a name="line.727"></a>
+<span class="sourceLineNo">728</span><a name="line.728"></a>
+<span class="sourceLineNo">729</span>        return role;<a name="line.729"></a>
+<span class="sourceLineNo">730</span>    }<a name="line.730"></a>
+<span class="sourceLineNo">731</span><a name="line.731"></a>
+<span class="sourceLineNo">732</span>    public void setScenario(Scenario scenario) {<a name="line.732"></a>
+<span class="sourceLineNo">733</span>        this.scenario = scenario;<a name="line.733"></a>
+<span class="sourceLineNo">734</span>    }<a name="line.734"></a>
+<span class="sourceLineNo">735</span><a name="line.735"></a>
+<span class="sourceLineNo">736</span>    public Scenario getScenario() {<a name="line.736"></a>
+<span class="sourceLineNo">737</span>        return scenario;<a name="line.737"></a>
+<span class="sourceLineNo">738</span>    }<a name="line.738"></a>
+<span class="sourceLineNo">739</span><a name="line.739"></a>
+<span class="sourceLineNo">740</span>    /**<a name="line.740"></a>
+<span class="sourceLineNo">741</span>     * Returns the server (mondrian instance) that this connection belongs to.<a name="line.741"></a>
+<span class="sourceLineNo">742</span>     * Usually there is only one server instance in a given JVM.<a name="line.742"></a>
+<span class="sourceLineNo">743</span>     *<a name="line.743"></a>
+<span class="sourceLineNo">744</span>     * @return Server instance; never null<a name="line.744"></a>
+<span class="sourceLineNo">745</span>     */<a name="line.745"></a>
+<span class="sourceLineNo">746</span>    public MondrianServer getServer() {<a name="line.746"></a>
+<span class="sourceLineNo">747</span>        return server;<a name="line.747"></a>
+<span class="sourceLineNo">748</span>    }<a name="line.748"></a>
+<span class="sourceLineNo">749</span><a name="line.749"></a>
+<span class="sourceLineNo">750</span>    public QueryPart parseStatement(String query) {<a name="line.750"></a>
+<span class="sourceLineNo">751</span>        Statement statement = createInternalStatement(false);<a name="line.751"></a>
+<span class="sourceLineNo">752</span>        final Locus locus =<a name="line.752"></a>
+<span class="sourceLineNo">753</span>            new Locus(<a name="line.753"></a>
+<span class="sourceLineNo">754</span>                new Execution(statement, 0),<a name="line.754"></a>
+<span class="sourceLineNo">755</span>                "Parse/validate MDX statement",<a name="line.755"></a>
+<span class="sourceLineNo">756</span>                null);<a name="line.756"></a>
+<span class="sourceLineNo">757</span>        Locus.push(locus);<a name="line.757"></a>
+<span class="sourceLineNo">758</span>        try {<a name="line.758"></a>
+<span class="sourceLineNo">759</span>            QueryPart queryPart =<a name="line.759"></a>
+<span class="sourceLineNo">760</span>                parseStatement(statement, query, null, false);<a name="line.760"></a>
+<span class="sourceLineNo">761</span>            if (queryPart instanceof Query) {<a name="line.761"></a>
+<span class="sourceLineNo">762</span>                ((Query) queryPart).setOwnStatement(true);<a name="line.762"></a>
+<span class="sourceLineNo">763</span>                statement = null;<a name="line.763"></a>
+<span class="sourceLineNo">764</span>            }<a name="line.764"></a>
+<span class="sourceLineNo">765</span>            return queryPart;<a name="line.765"></a>
+<span class="sourceLineNo">766</span>        } finally {<a name="line.766"></a>
+<span class="sourceLineNo">767</span>            Locus.pop(locus);<a name="line.767"></a>
+<span class="sourceLineNo">768</span>            if (statement != null) {<a name="line.768"></a>
+<span class="sourceLineNo">769</span>                statement.close();<a name="line.769"></a>
+<span class="sourceLineNo">770</span>            }<a name="line.770"></a>
+<span class="sourceLineNo">771</span>        }<a name="line.771"></a>
+<span class="sourceLineNo">772</span>    }<a name="line.772"></a>
+<span class="sourceLineNo">773</span><a name="line.773"></a>
+<span class="sourceLineNo">774</span>    public Exp parseExpression(String expr) {<a name="line.774"></a>
+<span class="sourceLineNo">775</span>        boolean debug = false;<a name="line.775"></a>
+<span class="sourceLineNo">776</span>        if (getLogger().isDebugEnabled()) {<a name="line.776"></a>
+<span class="sourceLineNo">777</span>            //debug = true;<a name="line.777"></a>
+<span class="sourceLineNo">778</span>            getLogger().debug(<a name="line.778"></a>
+<span class="sourceLineNo">779</span>                Util.nl<a name="line.779"></a>
+<span class="sourceLineNo">780</span>                + expr);<a name="line.780"></a>
+<span class="sourceLineNo">781</span>        }<a name="line.781"></a>
+<span class="sourceLineNo">782</span>        final Statement statement = getInternalStatement();<a name="line.782"></a>
+<span class="sourceLineNo">783</span>        try {<a name="line.783"></a>
+<span class="sourceLineNo">784</span>            MdxParserValidator parser = createParser();<a name="line.784"></a>
+<span class="sourceLineNo">785</span>            final FunTable funTable = getSchema().getFunTable();<a name="line.785"></a>
+<span class="sourceLineNo">786</span>            return parser.parseExpression(statement, expr, debug, funTable);<a name="line.786"></a>
+<span class="sourceLineNo">787</span>        } catch (Throwable exception) {<a name="line.787"></a>
+<span class="sourceLineNo">788</span>            throw MondrianResource.instance().FailedToParseQuery.ex(<a name="line.788"></a>
+<span class="sourceLineNo">789</span>                expr,<a name="line.789"></a>
+<span class="sourceLineNo">790</span>                exception);<a name="line.790"></a>
+<span class="sourceLineNo">791</span>        }<a name="line.791"></a>
+<span class="sourceLineNo">792</span>    }<a name="line.792"></a>
+<span class="sourceLineNo">793</span><a name="line.793"></a>
+<span class="sourceLineNo">794</span>    public Statement getInternalStatement() {<a name="line.794"></a>
+<span class="sourceLineNo">795</span>        if (internalStatement == null) {<a name="line.795"></a>
+<span class="sourceLineNo">796</span>            return schema.getInternalConnection().getInternalStatement();<a name="line.796"></a>
+<span class="sourceLineNo">797</span>        } else {<a name="line.797"></a>
+<span class="sourceLineNo">798</span>            return internalStatement;<a name="line.798"></a>
+<span class="sourceLineNo">799</span>        }<a name="line.799"></a>
+<span class="sourceLineNo">800</span>    }<a name="line.800"></a>
+<span class="sourceLineNo">801</span><a name="line.801"></a>
+<span class="sourceLineNo">802</span>    private Statement createInternalStatement(boolean reentrant) {<a name="line.802"></a>
+<span class="sourceLineNo">803</span>        final Statement statement =<a name="line.803"></a>
+<span class="sourceLineNo">804</span>            reentrant<a name="line.804"></a>
+<span class="sourceLineNo">805</span>                ? new ReentrantInternalStatement()<a name="line.805"></a>
+<span class="sourceLineNo">806</span>                : new InternalStatement();<a name="line.806"></a>
+<span class="sourceLineNo">807</span>        server.addStatement(statement);<a name="line.807"></a>
+<span class="sourceLineNo">808</span>        return statement;<a name="line.808"></a>
+<span class="sourceLineNo">809</span>    }<a name="line.809"></a>
+<span class="sourceLineNo">810</span><a name="line.810"></a>
+<span class="sourceLineNo">811</span>    /**<a name="line.811"></a>
+<span class="sourceLineNo">812</span>     * Implementation of {@link DataSource} which calls the good ol'<a name="line.812"></a>
+<span class="sourceLineNo">813</span>     * {@link java.sql.DriverManager}.<a name="line.813"></a>
+<span class="sourceLineNo">814</span>     *<a name="line.814"></a>
+<span class="sourceLineNo">815</span>     * &lt;p&gt;Overrides {@link #hashCode()} and {@link #equals(Object)} so that<a name="line.815"></a>
+<span class="sourceLineNo">816</span>     * {@link Dialect} objects can be cached more effectively.<a name="line.816"></a>
+<span class="sourceLineNo">817</span>     */<a name="line.817"></a>
+<span class="sourceLineNo">818</span>    private static class DriverManagerDataSource implements DataSource {<a name="line.818"></a>
+<span class="sourceLineNo">819</span>        private final String jdbcConnectString;<a name="line.819"></a>
+<span class="sourceLineNo">820</span>        private PrintWriter logWriter;<a name="line.820"></a>
+<span class="sourceLineNo">821</span>        private int loginTimeout;<a name="line.821"></a>
+<span class="sourceLineNo">822</span>        private Properties jdbcProperties;<a name="line.822"></a>
+<span class="sourceLineNo">823</span><a name="line.823"></a>
+<span class="sourceLineNo">824</span>        public DriverManagerDataSource(<a name="line.824"></a>
+<span class="sourceLineNo">825</span>            String jdbcConnectString,<a name="line.825"></a>
+<span class="sourceLineNo">826</span>            Properties properties)<a name="line.826"></a>
+<span class="sourceLineNo">827</span>        {<a name="line.827"></a>
+<span class="sourceLineNo">828</span>            this.jdbcConnectString = jdbcConnectString;<a name="line.828"></a>
+<span class="sourceLineNo">829</span>            this.jdbcProperties = properties;<a name="line.829"></a>
+<span class="sourceLineNo">830</span>        }<a name="line.830"></a>
+<span class="sourceLineNo">831</span><a name="line.831"></a>
+<span class="sourceLineNo">832</span>        @Override<a name="line.832"></a>
+<span class="sourceLineNo">833</span>        public int hashCode() {<a name="line.833"></a>
+<span class="sourceLineNo">834</span>            int h = loginTimeout;<a name="line.834"></a>
+<span class="sourceLineNo">835</span>            h = Util.hash(h, jdbcConnectString);<a name="line.835"></a>
+<span class="sourceLineNo">836</span>            h = Util.hash(h, jdbcProperties);<a name="line.836"></a>
+<span class="sourceLineNo">837</span>            return h;<a name="line.837"></a>
+<span class="sourceLineNo">838</span>        }<a name="line.838"></a>
+<span class="sourceLineNo">839</span><a name="line.839"></a>
+<span class="sourceLineNo">840</span>        @Override<a name="line.840"></a>
+<span class="sourceLineNo">841</span>        public boolean equals(Object obj) {<a name="line.841"></a>
+<span class="sourceLineNo">842</span>            if (obj instanceof DriverManagerDataSource) {<a name="line.842"></a>
+<span class="sourceLineNo">843</span>                DriverManagerDataSource<a name="line.843"></a>
+<span class="sourceLineNo">844</span>                    that = (DriverManagerDataSource) obj;<a name="line.844"></a>
+<span class="sourceLineNo">845</span>                return this.loginTimeout == that.loginTimeout<a name="line.845"></a>
+<span class="sourceLineNo">846</span>                    &amp;&amp; this.jdbcConnectString.equals(that.jdbcConnectString)<a name="line.846"></a>
+<span class="sourceLineNo">847</span>                    &amp;&amp; this.jdbcProperties.equals(that.jdbcProperties);<a name="line.847"></a>
+<span class="sourceLineNo">848</span>            }<a name="line.848"></a>
+<span class="sourceLineNo">849</span>            return false;<a name="line.849"></a>
+<span class="sourceLineNo">850</span>        }<a name="line.850"></a>
+<span class="sourceLineNo">851</span><a name="line.851"></a>
+<span class="sourceLineNo">852</span>        public Connection getConnection() throws SQLException {<a name="line.852"></a>
+<span class="sourceLineNo">853</span>            return new org.apache.commons.dbcp.DelegatingConnection(<a name="line.853"></a>
+<span class="sourceLineNo">854</span>                java.sql.DriverManager.getConnection(<a name="line.854"></a>
+<span class="sourceLineNo">855</span>                    jdbcConnectString, jdbcProperties));<a name="line.855"></a>
+<span class="sourceLineNo">856</span>        }<a name="line.856"></a>
+<span class="sourceLineNo">857</span><a name="line.857"></a>
+<span class="sourceLineNo">858</span>        public Connection getConnection(String username, String password)<a name="line.858"></a>
+<span class="sourceLineNo">859</span>            throws SQLException<a name="line.859"></a>
+<span class="sourceLineNo">860</span>        {<a name="line.860"></a>
+<span class="sourceLineNo">861</span>            if (jdbcProperties == null) {<a name="line.861"></a>
+<span class="sourceLineNo">862</span>                return java.sql.DriverManager.getConnection(<a name="line.862"></a>
+<span class="sourceLineNo">863</span>                    jdbcConnectString, username, password);<a name="line.863"></a>
+<span class="sourceLineNo">864</span>            } else {<a name="line.864"></a>
+<span class="sourceLineNo">865</span>                Properties temp = (Properties)jdbcProperties.clone();<a name="line.865"></a>
+<span class="sourceLineNo">866</span>                temp.put("user", username);<a name="line.866"></a>
+<span class="sourceLineNo">867</span>                temp.put("password", password);<a name="line.867"></a>
+<span class="sourceLineNo">868</span>                return java.sql.DriverManager.getConnection(<a name="line.868"></a>
+<span class="sourceLineNo">869</span>                    jdbcConnectString, temp);<a name="line.869"></a>
+<span class="sourceLineNo">870</span>            }<a name="line.870"></a>
+<span class="sourceLineNo">871</span>        }<a name="line.871"></a>
+<span class="sourceLineNo">872</span><a name="line.872"></a>
+<span class="sourceLineNo">873</span>        public PrintWriter getLogWriter() throws SQLException {<a name="line.873"></a>
+<span class="sourceLineNo">874</span>            return logWriter;<a name="line.874"></a>
+<span class="sourceLineNo">875</span>        }<a name="line.875"></a>
+<span class="sourceLineNo">876</span><a name="line.876"></a>
+<span class="sourceLineNo">877</span>        public void setLogWriter(PrintWriter out) throws SQLException {<a name="line.877"></a>
+<span class="sourceLineNo">878</span>            logWriter = out;<a name="line.878"></a>
+<span class="sourceLineNo">879</span>        }<a name="line.879"></a>
+<span class="sourceLineNo">880</span><a name="line.880"></a>
+<span class="sourceLineNo">881</span>        public void setLoginTimeout(int seconds) throws SQLException {<a name="line.881"></a>
+<span class="sourceLineNo">882</span>            loginTimeout = seconds;<a name="line.882"></a>
+<span class="sourceLineNo">883</span>        }<a name="line.883"></a>
+<span class="sourceLineNo">884</span><a name="line.884"></a>
+<span class="sourceLineNo">885</span>        public int getLoginTimeout() throws SQLException {<a name="line.885"></a>
+<span class="sourceLineNo">886</span>            return loginTimeout;<a name="line.886"></a>
+<span class="sourceLineNo">887</span>        }<a name="line.887"></a>
+<span class="sourceLineNo">888</span><a name="line.888"></a>
+<span class="sourceLineNo">889</span>        public java.util.logging.Logger getParentLogger() {<a name="line.889"></a>
+<span class="sourceLineNo">890</span>            return java.util.logging.Logger.getLogger("");<a name="line.890"></a>
+<span class="sourceLineNo">891</span>        }<a name="line.891"></a>
+<span class="sourceLineNo">892</span><a name="line.892"></a>
+<span class="sourceLineNo">893</span>        public &lt;T&gt; T unwrap(Class&lt;T&gt; iface) throws SQLException {<a name="line.893"></a>
+<span class="sourceLineNo">894</span>            throw new SQLException("not a wrapper");<a name="line.894"></a>
+<span class="sourceLineNo">895</span>        }<a name="line.895"></a>
+<span class="sourceLineNo">896</span><a name="line.896"></a>
+<span class="sourceLineNo">897</span>        public boolean isWrapperFor(Class&lt;?&gt; iface) throws SQLException {<a name="line.897"></a>
+<span class="sourceLineNo">898</span>            return false;<a name="line.898"></a>
+<span class="sourceLineNo">899</span>        }<a name="line.899"></a>
+<span class="sourceLineNo">900</span>    }<a name="line.900"></a>
+<span class="sourceLineNo">901</span><a name="line.901"></a>
+<span class="sourceLineNo">902</span>    public DataSource getDataSource() {<a name="line.902"></a>
+<span class="sourceLineNo">903</span>        return dataSource;<a name="line.903"></a>
+<span class="sourceLineNo">904</span>    }<a name="line.904"></a>
+<span class="sourceLineNo">905</span><a name="line.905"></a>
+<span class="sourceLineNo">906</span>    /**<a name="line.906"></a>
+<span class="sourceLineNo">907</span>     * Helper method to allow olap4j wrappers to implement<a name="line.907"></a>
+<span class="sourceLineNo">908</span>     * {@link org.olap4j.OlapConnection#createScenario()}.<a name="line.908"></a>
+<span class="sourceLineNo">909</span>     *<a name="line.909"></a>
+<span class="sourceLineNo">910</span>     * @return new Scenario<a name="line.910"></a>
+<span class="sourceLineNo">911</span>     */<a name="line.911"></a>
+<span class="sourceLineNo">912</span>    public ScenarioImpl createScenario() {<a name="line.912"></a>
+<span class="sourceLineNo">913</span>        final ScenarioImpl scenario = new ScenarioImpl();<a name="line.913"></a>
+<span class="sourceLineNo">914</span>        scenario.register(schema);<a name="line.914"></a>
+<span class="sourceLineNo">915</span>        return scenario;<a name="line.915"></a>
+<span class="sourceLineNo">916</span>    }<a name="line.916"></a>
+<span class="sourceLineNo">917</span><a name="line.917"></a>
+<span class="sourceLineNo">918</span>    /**<a name="line.918"></a>
+<span class="sourceLineNo">919</span>     * A &lt;code&gt;NonEmptyResult&lt;/code&gt; filters a result by removing empty rows<a name="line.919"></a>
+<span class="sourceLineNo">920</span>     * on a particular axis.<a name="line.920"></a>
+<span class="sourceLineNo">921</span>     */<a name="line.921"></a>
+<span class="sourceLineNo">922</span>    static class NonEmptyResult extends ResultBase {<a name="line.922"></a>
+<span class="sourceLineNo">923</span><a name="line.923"></a>
+<span class="sourceLineNo">924</span>        final Result underlying;<a name="line.924"></a>
+<span class="sourceLineNo">925</span>        private final int axis;<a name="line.925"></a>
+<span class="sourceLineNo">926</span>        private final Map&lt;Integer, Integer&gt; map;<a name="line.926"></a>
+<span class="sourceLineNo">927</span>        /** workspace. Synchronized access only. */<a name="line.927"></a>
+<span class="sourceLineNo">928</span>        private final int[] pos;<a name="line.928"></a>
+<span class="sourceLineNo">929</span><a name="line.929"></a>
+<span class="sourceLineNo">930</span>        /**<a name="line.930"></a>
+<span class="sourceLineNo">931</span>         * Creates a NonEmptyResult.<a name="line.931"></a>
+<span class="sourceLineNo">932</span>         *<a name="line.932"></a>
+<span class="sourceLineNo">933</span>         * @param result Result set<a name="line.933"></a>
+<span class="sourceLineNo">934</span>         * @param execution Execution context<a name="line.934"></a>
+<span class="sourceLineNo">935</span>         * @param axis Which axis to make non-empty<a name="line.935"></a>
+<span class="sourceLineNo">936</span>         */<a name="line.936"></a>
+<span class="sourceLineNo">937</span>        NonEmptyResult(Result result, Execution execution, int axis) {<a name="line.937"></a>
+<span class="sourceLineNo">938</span>            super(execution, result.getAxes().clone());<a name="line.938"></a>
+<span class="sourceLineNo">939</span><a name="line.939"></a>
+<span class="sourceLineNo">940</span>            this.underlying = result;<a name="line.940"></a>
+<span class="sourceLineNo">941</span>            this.axis = axis;<a name="line.941"></a>
+<span class="sourceLineNo">942</span>            this.map = new HashMap&lt;Integer, Integer&gt;();<a name="line.942"></a>
+<span class="sourceLineNo">943</span>            int axisCount = underlying.getAxes().length;<a name="line.943"></a>
+<span class="sourceLineNo">944</span>            this.pos = new int[axisCount];<a name="line.944"></a>
+<span class="sourceLineNo">945</span>            this.slicerAxis = underlying.getSlicerAxis();<a name="line.945"></a>
+<span class="sourceLineNo">946</span>            TupleList tupleList =<a name="line.946"></a>
+<span class="sourceLineNo">947</span>                ((RolapAxis) underlying.getAxes()[axis]).getTupleList();<a name="line.947"></a>
+<span class="sourceLineNo">948</span><a name="line.948"></a>
+<span class="sourceLineNo">949</span>            final TupleList filteredTupleList;<a name="line.949"></a>
+<span class="sourceLineNo">950</span>            if (!tupleList.isEmpty()<a name="line.950"></a>
+<span class="sourceLineNo">951</span>                &amp;&amp; tupleList.get(0).get(0).getDimension().isHighCardinality())<a name="line.951"></a>
+<span class="sourceLineNo">952</span>            {<a name="line.952"></a>
+<span class="sourceLineNo">953</span>                filteredTupleList =<a name="line.953"></a>
+<span class="sourceLineNo">954</span>                    new DelegatingTupleList(<a name="line.954"></a>
+<span class="sourceLineNo">955</span>                        tupleList.getArity(),<a name="line.955"></a>
+<span class="sourceLineNo">956</span>                        new FilteredIterableList&lt;List&lt;Member&gt;&gt;(<a name="line.956"></a>
+<span class="sourceLineNo">957</span>                            tupleList,<a name="line.957"></a>
+<span class="sourceLineNo">958</span>                            new FilteredIterableList.Filter&lt;List&lt;Member&gt;&gt;() {<a name="line.958"></a>
+<span class="sourceLineNo">959</span>                                public boolean accept(final List&lt;Member&gt; p) {<a name="line.959"></a>
+<span class="sourceLineNo">960</span>                                    return p.get(0) != null;<a name="line.960"></a>
+<span class="sourceLineNo">961</span>                                }<a name="line.961"></a>
+<span class="sourceLineNo">962</span>                            }<a name="line.962"></a>
+<span class="sourceLineNo">963</span>                        ));<a name="line.963"></a>
+<span class="sourceLineNo">964</span>            } else {<a name="line.964"></a>
+<span class="sourceLineNo">965</span>                filteredTupleList =<a name="line.965"></a>
+<span class="sourceLineNo">966</span>                    TupleCollections.createList(tupleList.getArity());<a name="line.966"></a>
+<span class="sourceLineNo">967</span>                int i = -1;<a name="line.967"></a>
+<span class="sourceLineNo">968</span>                TupleCursor tupleCursor = tupleList.tupleCursor();<a name="line.968"></a>
+<span class="sourceLineNo">969</span>                while (tupleCursor.forward()) {<a name="line.969"></a>
+<span class="sourceLineNo">970</span>                    ++i;<a name="line.970"></a>
+<span class="sourceLineNo">971</span>                    if (! isEmpty(i, axis)) {<a name="line.971"></a>
+<span class="sourceLineNo">972</span>                        map.put(filteredTupleList.size(), i);<a name="line.972"></a>
+<span class="sourceLineNo">973</span>                        filteredTupleList.addCurrent(tupleCursor);<a name="line.973"></a>
+<span class="sourceLineNo">974</span>                    }<a name="line.974"></a>
+<span class="sourceLineNo">975</span>                }<a name="line.975"></a>
+<span class="sourceLineNo">976</span>            }<a name="line.976"></a>
+<span class="sourceLineNo">977</span>            this.axes[axis] = new RolapAxis(filteredTupleList);<a name="line.977"></a>
+<span class="sourceLineNo">978</span>        }<a name="line.978"></a>
+<span class="sourceLineNo">979</span><a name="line.979"></a>
+<span class="sourceLineNo">980</span>        protected Logger getLogger() {<a name="line.980"></a>
+<span class="sourceLineNo">981</span>            return LOGGER;<a name="line.981"></a>
+<span class="sourceLineNo">982</span>        }<a name="line.982"></a>
+<span class="sourceLineNo">983</span><a name="line.983"></a>
+<span class="sourceLineNo">984</span>        /**<a name="line.984"></a>
+<span class="sourceLineNo">985</span>         * Returns true if all cells at a given offset on a given axis are<a name="line.985"></a>
+<span class="sourceLineNo">986</span>         * empty. For example, in a 2x2x2 dataset, &lt;code&gt;isEmpty(1,0)&lt;/code&gt;<a name="line.986"></a>
+<span class="sourceLineNo">987</span>         * returns true if cells &lt;code&gt;{(1,0,0), (1,0,1), (1,1,0),<a name="line.987"></a>
+<span class="sourceLineNo">988</span>         * (1,1,1)}&lt;/code&gt; are all empty. As you can see, we hold the 0th<a name="line.988"></a>
+<span class="sourceLineNo">989</span>         * coordinate fixed at 1, and vary all other coordinates over all<a name="line.989"></a>
+<span class="sourceLineNo">990</span>         * possible values.<a name="line.990"></a>
+<span class="sourceLineNo">991</span>         */<a name="line.991"></a>
+<span class="sourceLineNo">992</span>        private boolean isEmpty(int offset, int fixedAxis) {<a name="line.992"></a>
+<span class="sourceLineNo">993</span>            int axisCount = getAxes().length;<a name="line.993"></a>
+<span class="sourceLineNo">994</span>            pos[fixedAxis] = offset;<a name="line.994"></a>
+<span class="sourceLineNo">995</span>            return isEmptyRecurse(fixedAxis, axisCount - 1);<a name="line.995"></a>
+<span class="sourceLineNo">996</span>        }<a name="line.996"></a>
+<span class="sourceLineNo">997</span><a name="line.997"></a>
+<span class="sourceLineNo">998</span>        private boolean isEmptyRecurse(int fixedAxis, int axis) {<a name="line.998"></a>
+<span class="sourceLineNo">999</span>            if (axis &lt; 0) {<a name="line.999"></a>
+<span class="sourceLineNo">1000</span>                RolapCell cell = (RolapCell) underlying.getCell(pos);<a name="line.1000"></a>
+<span class="sourceLineNo">1001</span>                return cell.isNull();<a name="line.1001"></a>
+<span class="sourceLineNo">1002</span>            } else if (axis == fixedAxis) {<a name="line.1002"></a>
+<span class="sourceLineNo">1003</span>                return isEmptyRecurse(fixedAxis, axis - 1);<a name="line.1003"></a>
+<span class="sourceLineNo">1004</span>            } else {<a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>                List&lt;Position&gt; positions = getAxes()[axis].getPositions();<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span>                final int positionCount = positions.size();<a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>                for (int i = 0; i &lt; positionCount; i++) {<a name="line.1007"></a>
+<span class="sourceLineNo">1008</span>                    pos[axis] = i;<a name="line.1008"></a>
+<span class="sourceLineNo">1009</span>                    if (!isEmptyRecurse(fixedAxis, axis - 1)) {<a name="line.1009"></a>
+<span class="sourceLineNo">1010</span>                        return false;<a name="line.1010"></a>
+<span class="sourceLineNo">1011</span>                    }<a name="line.1011"></a>
+<span class="sourceLineNo">1012</span>                }<a name="line.1012"></a>
+<span class="sourceLineNo">1013</span>                return true;<a name="line.1013"></a>
+<span class="sourceLineNo">1014</span>            }<a name="line.1014"></a>
+<span class="sourceLineNo">1015</span>        }<a name="line.1015"></a>
+<span class="sourceLineNo">1016</span><a name="line.1016"></a>
+<span class="sourceLineNo">1017</span>        // synchronized because we use 'pos'<a name="line.1017"></a>
+<span class="sourceLineNo">1018</span>        public synchronized Cell getCell(int[] externalPos) {<a name="line.1018"></a>
+<span class="sourceLineNo">1019</span>            try {<a name="line.1019"></a>
+<span class="sourceLineNo">1020</span>                System.arraycopy(<a name="line.1020"></a>
+<span class="sourceLineNo">1021</span>                    externalPos, 0, this.pos, 0, externalPos.length);<a name="line.1021"></a>
+<span class="sourceLineNo">1022</span>                int offset = externalPos[axis];<a name="line.1022"></a>
+<span class="sourceLineNo">1023</span>                int mappedOffset = mapOffsetToUnderlying(offset);<a name="line.1023"></a>
+<span class="sourceLineNo">1024</span>                this.pos[axis] = mappedOffset;<a name="line.1024"></a>
+<span class="sourceLineNo">1025</span>                return underlying.getCell(this.pos);<a name="line.1025"></a>
+<span class="sourceLineNo">1026</span>            } catch (NullPointerException npe) {<a name="line.1026"></a>
+<span class="sourceLineNo">1027</span>                return underlying.getCell(externalPos);<a name="line.1027"></a>
+<span class="sourceLineNo">1028</span>            }<a name="line.1028"></a>
+<span class="sourceLineNo">1029</span>        }<a name="line.1029"></a>
+<span class="sourceLineNo">1030</span><a name="line.1030"></a>
+<span class="sourceLineNo">1031</span>        private int mapOffsetToUnderlying(int offset) {<a name="line.1031"></a>
+<span class="sourceLineNo">1032</span>            return map.get(offset);<a name="line.1032"></a>
+<span class="sourceLineNo">1033</span>        }<a name="line.1033"></a>
+<span class="sourceLineNo">1034</span><a name="line.1034"></a>
+<span class="sourceLineNo">1035</span>        public void close() {<a name="line.1035"></a>
+<span class="sourceLineNo">1036</span>            underlying.close();<a name="line.1036"></a>
+<span class="sourceLineNo">1037</span>        }<a name="line.1037"></a>
+<span class="sourceLineNo">1038</span>    }<a name="line.1038"></a>
+<span class="sourceLineNo">1039</span><a name="line.1039"></a>
+<span class="sourceLineNo">1040</span>    /**<a name="line.1040"></a>
+<span class="sourceLineNo">1041</span>     * Data source that delegates all methods to an underlying data source.<a name="line.1041"></a>
+<span class="sourceLineNo">1042</span>     */<a name="line.1042"></a>
+<span class="sourceLineNo">1043</span>    private static abstract class DelegatingDataSource implements DataSource {<a name="line.1043"></a>
+<span class="sourceLineNo">1044</span>        protected final DataSource dataSource;<a name="line.1044"></a>
+<span class="sourceLineNo">1045</span><a name="line.1045"></a>
+<span class="sourceLineNo">1046</span>        public DelegatingDataSource(DataSource dataSource) {<a name="line.1046"></a>
+<span class="sourceLineNo">1047</span>            this.dataSource = dataSource;<a name="line.1047"></a>
+<span class="sourceLineNo">1048</span>        }<a name="line.1048"></a>
+<span class="sourceLineNo">1049</span><a name="line.1049"></a>
+<span class="sourceLineNo">1050</span>        public Connection getConnection() throws SQLException {<a name="line.1050"></a>
+<span class="sourceLineNo">1051</span>            return dataSource.getConnection();<a name="line.1051"></a>
+<span class="sourceLineNo">1052</span>        }<a name="line.1052"></a>
+<span class="sourceLineNo">1053</span><a name="line.1053"></a>
+<span class="sourceLineNo">1054</span>        public Connection getConnection(<a name="line.1054"></a>
+<span class="sourceLineNo">1055</span>            String username,<a name="line.1055"></a>
+<span class="sourceLineNo">1056</span>            String password)<a name="line.1056"></a>
+<span class="sourceLineNo">1057</span>            throws SQLException<a name="line.1057"></a>
+<span class="sourceLineNo">1058</span>        {<a name="line.1058"></a>
+<span class="sourceLineNo">1059</span>            return dataSource.getConnection(username, password);<a name="line.1059"></a>
+<span class="sourceLineNo">1060</span>        }<a name="line.1060"></a>
+<span class="sourceLineNo">1061</span><a name="line.1061"></a>
+<span class="sourceLineNo">1062</span>        public PrintWriter getLogWriter() throws SQLException {<a name="line.1062"></a>
+<span class="sourceLineNo">1063</span>            return dataSource.getLogWriter();<a name="line.1063"></a>
+<span class="sourceLineNo">1064</span>        }<a name="line.1064"></a>
+<span class="sourceLineNo">1065</span><a name="line.1065"></a>
+<span class="sourceLineNo">1066</span>        public void setLogWriter(PrintWriter out) throws SQLException {<a name="line.1066"></a>
+<span class="sourceLineNo">1067</span>            dataSource.setLogWriter(out);<a name="line.1067"></a>
+<span class="sourceLineNo">1068</span>        }<a name="line.1068"></a>
+<span class="sourceLineNo">1069</span><a name="line.1069"></a>
+<span class="sourceLineNo">1070</span>        public void setLoginTimeout(int seconds) throws SQLException {<a name="line.1070"></a>
+<span class="sourceLineNo">1071</span>            dataSource.setLoginTimeout(seconds);<a name="line.1071"></a>
+<span class="sourceLineNo">1072</span>        }<a name="line.1072"></a>
+<span class="sourceLineNo">1073</span><a name="line.1073"></a>
+<span class="sourceLineNo">1074</span>        public int getLoginTimeout() throws SQLException {<a name="line.1074"></a>
+<span class="sourceLineNo">1075</span>            return dataSource.getLoginTimeout();<a name="line.1075"></a>
+<span class="sourceLineNo">1076</span>        }<a name="line.1076"></a>
+<span class="sourceLineNo">1077</span><a name="line.1077"></a>
+<span class="sourceLineNo">1078</span>        // JDBC 4.0 support (JDK 1.6 and higher)<a name="line.1078"></a>
+<span class="sourceLineNo">1079</span>        public &lt;T&gt; T unwrap(Class&lt;T&gt; iface) throws SQLException {<a name="line.1079"></a>
+<span class="sourceLineNo">1080</span>            if (Util.JdbcVersion &gt;= 0x0400) {<a name="line.1080"></a>
+<span class="sourceLineNo">1081</span>                // Do<a name="line.1081"></a>
+<span class="sourceLineNo">1082</span>                //              return dataSource.unwrap(iface);<a name="line.1082"></a>
+<span class="sourceLineNo">1083</span>                // via reflection.<a name="line.1083"></a>
+<span class="sourceLineNo">1084</span>                try {<a name="line.1084"></a>
+<span class="sourceLineNo">1085</span>                    Method method =<a name="line.1085"></a>
+<span class="sourceLineNo">1086</span>                        DataSource.class.getMethod("unwrap", Class.class);<a name="line.1086"></a>
+<span class="sourceLineNo">1087</span>                    return iface.cast(method.invoke(dataSource, iface));<a name="line.1087"></a>
+<span class="sourceLineNo">1088</span>                } catch (IllegalAccessException e) {<a name="line.1088"></a>
+<span class="sourceLineNo">1089</span>                    throw Util.newInternal(e, "While invoking unwrap");<a name="line.1089"></a>
+<span class="sourceLineNo">1090</span>                } catch (InvocationTargetException e) {<a name="line.1090"></a>
+<span class="sourceLineNo">1091</span>                    throw Util.newInternal(e, "While invoking unwrap");<a name="line.1091"></a>
+<span class="sourceLineNo">1092</span>                } catch (NoSuchMethodException e) {<a name="line.1092"></a>
+<span class="sourceLineNo">1093</span>                    throw Util.newInternal(e, "While invoking unwrap");<a name="line.1093"></a>
+<span class="sourceLineNo">1094</span>                }<a name="line.1094"></a>
+<span class="sourceLineNo">1095</span>            } else {<a name="line.1095"></a>
+<span class="sourceLineNo">1096</span>                if (iface.isInstance(dataSource)) {<a name="line.1096"></a>
+<span class="sourceLineNo">1097</span>                    return iface.cast(dataSource);<a name="line.1097"></a>
+<span class="sourceLineNo">1098</span>                } else {<a name="line.1098"></a>
+<span class="sourceLineNo">1099</span>                    return null;<a name="line.1099"></a>
+<span class="sourceLineNo">1100</span>                }<a name="line.1100"></a>
+<span class="sourceLineNo">1101</span>            }<a name="line.1101"></a>
+<span class="sourceLineNo">1102</span>        }<a name="line.1102"></a>
+<span class="sourceLineNo">1103</span><a name="line.1103"></a>
+<span class="sourceLineNo">1104</span>        // JDBC 4.0 support (JDK 1.6 and higher)<a name="line.1104"></a>
+<span class="sourceLineNo">1105</span>        public boolean isWrapperFor(Class&lt;?&gt; iface) throws SQLException {<a name="line.1105"></a>
+<span class="sourceLineNo">1106</span>            if (Util.JdbcVersion &gt;= 0x0400) {<a name="line.1106"></a>
+<span class="sourceLineNo">1107</span>                // Do<a name="line.1107"></a>
+<span class="sourceLineNo">1108</span>                //              return dataSource.isWrapperFor(iface);<a name="line.1108"></a>
+<span class="sourceLineNo">1109</span>                // via reflection.<a name="line.1109"></a>
+<span class="sourceLineNo">1110</span>                try {<a name="line.1110"></a>
+<span class="sourceLineNo">1111</span>                    Method method =<a name="line.1111"></a>
+<span class="sourceLineNo">1112</span>                        DataSource.class.getMethod(<a name="line.1112"></a>
+<span class="sourceLineNo">1113</span>                            "isWrapperFor", boolean.class);<a name="line.1113"></a>
+<span class="sourceLineNo">1114</span>                    return (Boolean) method.invoke(dataSource, iface);<a name="line.1114"></a>
+<span class="sourceLineNo">1115</span>                } catch (IllegalAccessException e) {<a name="line.1115"></a>
+<span class="sourceLineNo">1116</span>                    throw Util.newInternal(e, "While invoking isWrapperFor");<a name="line.1116"></a>
+<span class="sourceLineNo">1117</span>                } catch (InvocationTargetException e) {<a name="line.1117"></a>
+<span class="sourceLineNo">1118</span>                    throw Util.newInternal(e, "While invoking isWrapperFor");<a name="line.1118"></a>
+<span class="sourceLineNo">1119</span>                } catch (NoSuchMethodException e) {<a name="line.1119"></a>
+<span class="sourceLineNo">1120</span>                    throw Util.newInternal(e, "While invoking isWrapperFor");<a name="line.1120"></a>
+<span class="sourceLineNo">1121</span>                }<a name="line.1121"></a>
+<span class="sourceLineNo">1122</span>            } else {<a name="line.1122"></a>
+<span class="sourceLineNo">1123</span>                return iface.isInstance(dataSource);<a name="line.1123"></a>
+<span class="sourceLineNo">1124</span>            }<a name="line.1124"></a>
+<span class="sourceLineNo">1125</span>        }<a name="line.1125"></a>
+<span class="sourceLineNo">1126</span><a name="line.1126"></a>
+<span class="sourceLineNo">1127</span>        // JDBC 4.1 support (JDK 1.7 and higher)<a name="line.1127"></a>
+<span class="sourceLineNo">1128</span>        public java.util.logging.Logger getParentLogger() {<a name="line.1128"></a>
+<span class="sourceLineNo">1129</span>            if (Util.JdbcVersion &gt;= 0x0401) {<a name="line.1129"></a>
+<span class="sourceLineNo">1130</span>                // Do<a name="line.1130"></a>
+<span class="sourceLineNo">1131</span>                //              return dataSource.getParentLogger();<a name="line.1131"></a>
+<span class="sourceLineNo">1132</span>                // via reflection.<a name="line.1132"></a>
+<span class="sourceLineNo">1133</span>                try {<a name="line.1133"></a>
+<span class="sourceLineNo">1134</span>                    Method method =<a name="line.1134"></a>
+<span class="sourceLineNo">1135</span>                        DataSource.class.getMethod("getParentLogger");<a name="line.1135"></a>
+<span class="sourceLineNo">1136</span>                    return (java.util.logging.Logger) method.invoke(dataSource);<a name="line.1136"></a>
+<span class="sourceLineNo">1137</span>                } catch (IllegalAccessException e) {<a name="line.1137"></a>
+<span class="sourceLineNo">1138</span>                    throw Util.newInternal(e, "While invoking getParentLogger");<a name="line.1138"></a>
+<span class="sourceLineNo">1139</span>                } catch (InvocationTargetException e) {<a name="line.1139"></a>
+<span class="sourceLineNo">1140</span>                    throw Util.newInternal(e, "While invoking getParentLogger");<a name="line.1140"></a>
+<span class="sourceLineNo">1141</span>                } catch (NoSuchMethodException e) {<a name="line.1141"></a>
+<span class="sourceLineNo">1142</span>                    throw Util.newInternal(e, "While invoking getParentLogger");<a name="line.1142"></a>
+<span class="sourceLineNo">1143</span>                }<a name="line.1143"></a>
+<span class="sourceLineNo">1144</span>            } else {<a name="line.1144"></a>
+<span class="sourceLineNo">1145</span>                // Can't throw SQLFeatureNotSupportedException... it doesn't<a name="line.1145"></a>
+<span class="sourceLineNo">1146</span>                // exist before JDBC 4.1.<a name="line.1146"></a>
+<span class="sourceLineNo">1147</span>                throw new UnsupportedOperationException();<a name="line.1147"></a>
+<span class="sourceLineNo">1148</span>            }<a name="line.1148"></a>
+<span class="sourceLineNo">1149</span>        }<a name="line.1149"></a>
+<span class="sourceLineNo">1150</span>    }<a name="line.1150"></a>
+<span class="sourceLineNo">1151</span><a name="line.1151"></a>
+<span class="sourceLineNo">1152</span>    /**<a name="line.1152"></a>
+<span class="sourceLineNo">1153</span>     * Data source that gets connections from an underlying data source but<a name="line.1153"></a>
+<span class="sourceLineNo">1154</span>     * with different user name and password.<a name="line.1154"></a>
+<span class="sourceLineNo">1155</span>     */<a name="line.1155"></a>
+<span class="sourceLineNo">1156</span>    private static class UserPasswordDataSource extends DelegatingDataSource {<a name="line.1156"></a>
+<span class="sourceLineNo">1157</span>        private final String jdbcUser;<a name="line.1157"></a>
+<span class="sourceLineNo">1158</span>        private final String jdbcPassword;<a name="line.1158"></a>
+<span class="sourceLineNo">1159</span><a name="line.1159"></a>
+<span class="sourceLineNo">1160</span>        /**<a name="line.1160"></a>
+<span class="sourceLineNo">1161</span>         * Creates a UserPasswordDataSource<a name="line.1161"></a>
+<span class="sourceLineNo">1162</span>         *<a name="line.1162"></a>
+<span class="sourceLineNo">1163</span>         * @param dataSource Underlying data source<a name="line.1163"></a>
+<span class="sourceLineNo">1164</span>         * @param jdbcUser User name<a name="line.1164"></a>
+<span class="sourceLineNo">1165</span>         * @param jdbcPassword Password<a name="line.1165"></a>
+<span class="sourceLineNo">1166</span>         */<a name="line.1166"></a>
+<span class="sourceLineNo">1167</span>        public UserPasswordDataSource(<a name="line.1167"></a>
+<span class="sourceLineNo">1168</span>            DataSource dataSource,<a name="line.1168"></a>
+<span class="sourceLineNo">1169</span>            String jdbcUser,<a name="line.1169"></a>
+<span class="sourceLineNo">1170</span>            String jdbcPassword)<a name="line.1170"></a>
+<span class="sourceLineNo">1171</span>        {<a name="line.1171"></a>
+<span class="sourceLineNo">1172</span>            super(dataSource);<a name="line.1172"></a>
+<span class="sourceLineNo">1173</span>            this.jdbcUser = jdbcUser;<a name="line.1173"></a>
+<span class="sourceLineNo">1174</span>            this.jdbcPassword = jdbcPassword;<a name="line.1174"></a>
+<span class="sourceLineNo">1175</span>        }<a name="line.1175"></a>
+<span class="sourceLineNo">1176</span><a name="line.1176"></a>
+<span class="sourceLineNo">1177</span>        public Connection getConnection() throws SQLException {<a name="line.1177"></a>
+<span class="sourceLineNo">1178</span>            return dataSource.getConnection(jdbcUser, jdbcPassword);<a name="line.1178"></a>
+<span class="sourceLineNo">1179</span>        }<a name="line.1179"></a>
+<span class="sourceLineNo">1180</span>    }<a name="line.1180"></a>
+<span class="sourceLineNo">1181</span><a name="line.1181"></a>
+<span class="sourceLineNo">1182</span>    /**<a name="line.1182"></a>
+<span class="sourceLineNo">1183</span>     * &lt;p&gt;Implementation of {@link Statement} for use when you don't have an<a name="line.1183"></a>
+<span class="sourceLineNo">1184</span>     * olap4j connection.&lt;/p&gt;<a name="line.1184"></a>
+<span class="sourceLineNo">1185</span>     */<a name="line.1185"></a>
+<span class="sourceLineNo">1186</span>    private class InternalStatement extends StatementImpl {<a name="line.1186"></a>
+<span class="sourceLineNo">1187</span>        private boolean closed = false;<a name="line.1187"></a>
+<span class="sourceLineNo">1188</span><a name="line.1188"></a>
+<span class="sourceLineNo">1189</span>        public void close() {<a name="line.1189"></a>
+<span class="sourceLineNo">1190</span>            if (!closed) {<a name="line.1190"></a>
+<span class="sourceLineNo">1191</span>                closed = true;<a name="line.1191"></a>
+<span class="sourceLineNo">1192</span>                server.removeStatement(this);<a name="line.1192"></a>
+<span class="sourceLineNo">1193</span>            }<a name="line.1193"></a>
+<span class="sourceLineNo">1194</span>        }<a name="line.1194"></a>
+<span class="sourceLineNo">1195</span><a name="line.1195"></a>
+<span class="sourceLineNo">1196</span>        public RolapConnection getMondrianConnection() {<a name="line.1196"></a>
+<span class="sourceLineNo">1197</span>            return RolapConnection.this;<a name="line.1197"></a>
+<span class="sourceLineNo">1198</span>        }<a name="line.1198"></a>
+<span class="sourceLineNo">1199</span>    }<a name="line.1199"></a>
+<span class="sourceLineNo">1200</span><a name="line.1200"></a>
+<span class="sourceLineNo">1201</span>    /**<a name="line.1201"></a>
+<span class="sourceLineNo">1202</span>     * &lt;p&gt;A statement that can be used for all of the various internal<a name="line.1202"></a>
+<span class="sourceLineNo">1203</span>     * operations, such as resolving MDX identifiers, that require a<a name="line.1203"></a>
+<span class="sourceLineNo">1204</span>     * {@link Statement} and an {@link Execution}.<a name="line.1204"></a>
+<span class="sourceLineNo">1205</span>     *<a name="line.1205"></a>
+<span class="sourceLineNo">1206</span>     * &lt;p&gt;The statement needs to be reentrant because there are many such<a name="line.1206"></a>
+<span class="sourceLineNo">1207</span>     * operations; several of these operations might be active at one time. We<a name="line.1207"></a>
+<span class="sourceLineNo">1208</span>     * don't want to create a new statement for each, but just one internal<a name="line.1208"></a>
+<span class="sourceLineNo">1209</span>     * statement for each connection. The statement shouldn't have a unique<a name="line.1209"></a>
+<span class="sourceLineNo">1210</span>     * execution. For this reason, we don't use the inherited {@link #execution}<a name="line.1210"></a>
+<span class="sourceLineNo">1211</span>     * field.&lt;/p&gt;<a name="line.1211"></a>
+<span class="sourceLineNo">1212</span>     *<a name="line.1212"></a>
+<span class="sourceLineNo">1213</span>     * &lt;p&gt;But there is a drawback. If we can't find the unique execution, the<a name="line.1213"></a>
+<span class="sourceLineNo">1214</span>     * statement cannot be canceled or time out. If you want that behavior<a name="line.1214"></a>
+<span class="sourceLineNo">1215</span>     * from an internal statement, use the base class: create a new<a name="line.1215"></a>
+<span class="sourceLineNo">1216</span>     * {@link InternalStatement} for each operation.&lt;/p&gt;<a name="line.1216"></a>
+<span class="sourceLineNo">1217</span>     */<a name="line.1217"></a>
+<span class="sourceLineNo">1218</span>    private class ReentrantInternalStatement extends InternalStatement {<a name="line.1218"></a>
+<span class="sourceLineNo">1219</span>        @Override<a name="line.1219"></a>
+<span class="sourceLineNo">1220</span>        public void start(Execution execution) {<a name="line.1220"></a>
+<span class="sourceLineNo">1221</span>            // Unlike StatementImpl, there is not a unique execution. An<a name="line.1221"></a>
+<span class="sourceLineNo">1222</span>            // internal statement can execute several at the same time. So,<a name="line.1222"></a>
+<span class="sourceLineNo">1223</span>            // we don't set this.execution.<a name="line.1223"></a>
+<span class="sourceLineNo">1224</span>            execution.start();<a name="line.1224"></a>
+<span class="sourceLineNo">1225</span>        }<a name="line.1225"></a>
+<span class="sourceLineNo">1226</span><a name="line.1226"></a>
+<span class="sourceLineNo">1227</span>        @Override<a name="line.1227"></a>
+<span class="sourceLineNo">1228</span>        public void end(Execution execution) {<a name="line.1228"></a>
+<span class="sourceLineNo">1229</span>            execution.end();<a name="line.1229"></a>
+<span class="sourceLineNo">1230</span>        }<a name="line.1230"></a>
+<span class="sourceLineNo">1231</span><a name="line.1231"></a>
+<span class="sourceLineNo">1232</span>        @Override<a name="line.1232"></a>
+<span class="sourceLineNo">1233</span>        public void close() {<a name="line.1233"></a>
+<span class="sourceLineNo">1234</span>            // do not close<a name="line.1234"></a>
+<span class="sourceLineNo">1235</span>        }<a name="line.1235"></a>
+<span class="sourceLineNo">1236</span>    }<a name="line.1236"></a>
+<span class="sourceLineNo">1237</span>}<a name="line.1237"></a>
+<span class="sourceLineNo">1238</span><a name="line.1238"></a>
+<span class="sourceLineNo">1239</span>// End RolapConnection.java<a name="line.1239"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

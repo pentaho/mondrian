@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2001-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2009 Pentaho and others<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>//<a name="line.10"></a>
+<span class="sourceLineNo">011</span>// jhyde, 10 August, 2001<a name="line.11"></a>
+<span class="sourceLineNo">012</span>*/<a name="line.12"></a>
+<span class="sourceLineNo">013</span>package mondrian.rolap;<a name="line.13"></a>
+<span class="sourceLineNo">014</span><a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.olap.Util;<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>/**<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * A &lt;code&gt;CellReader&lt;/code&gt; finds the cell value for the current context<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * held by &lt;code&gt;evaluator&lt;/code&gt;.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * &lt;p&gt;It returns:&lt;ul&gt;<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * &lt;li&gt;&lt;code&gt;null&lt;/code&gt; if the source is unable to evaluate the cell (for<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *   example, &lt;code&gt;AggregatingCellReader&lt;/code&gt; does not have the cell<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *   in its cache). This value should only be returned if the caller is<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *   expecting it.&lt;/li&gt;<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * &lt;li&gt;{@link Util#nullValue} if the cell evaluates to null&lt;/li&gt;<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * &lt;li&gt;{@link mondrian.olap.Util.ErrorCellValue} if the cell evaluates to an<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *   error&lt;/li&gt;<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * &lt;li&gt;an Object representing a value (often a {@link Double} or a {@link<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *   java.math.BigDecimal}), otherwise&lt;/li&gt;<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * &lt;/ul&gt;<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *<a name="line.32"></a>
+<span class="sourceLineNo">033</span> * @author jhyde<a name="line.33"></a>
+<span class="sourceLineNo">034</span> * @since 10 August, 2001<a name="line.34"></a>
+<span class="sourceLineNo">035</span> */<a name="line.35"></a>
+<span class="sourceLineNo">036</span>interface CellReader {<a name="line.36"></a>
+<span class="sourceLineNo">037</span>    /**<a name="line.37"></a>
+<span class="sourceLineNo">038</span>     * Returns the value of the cell which has the context described by the<a name="line.38"></a>
+<span class="sourceLineNo">039</span>     * evaluator.<a name="line.39"></a>
+<span class="sourceLineNo">040</span>     * A cell could have optional compound member coordinates usually specified<a name="line.40"></a>
+<span class="sourceLineNo">041</span>     * using the Aggregate function. These compound members are contained in the<a name="line.41"></a>
+<span class="sourceLineNo">042</span>     * evaluator.<a name="line.42"></a>
+<span class="sourceLineNo">043</span>     *<a name="line.43"></a>
+<span class="sourceLineNo">044</span>     * &lt;p&gt;If no aggregation contains the required cell, returns null.<a name="line.44"></a>
+<span class="sourceLineNo">045</span>     *<a name="line.45"></a>
+<span class="sourceLineNo">046</span>     * &lt;p&gt;If the value is null, returns {@link Util#nullValue}.<a name="line.46"></a>
+<span class="sourceLineNo">047</span>     *<a name="line.47"></a>
+<span class="sourceLineNo">048</span>     * @return Cell value, or null if not found, or {@link Util#nullValue} if<a name="line.48"></a>
+<span class="sourceLineNo">049</span>     * the value is null<a name="line.49"></a>
+<span class="sourceLineNo">050</span>     */<a name="line.50"></a>
+<span class="sourceLineNo">051</span>    Object get(RolapEvaluator evaluator);<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>    /**<a name="line.53"></a>
+<span class="sourceLineNo">054</span>     * Returns the number of times this cell reader has told a lie<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     * (since creation), because the required cell value is not in the<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     * cache.<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     */<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    int getMissCount();<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>    /**<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     * @return whether thus cell reader has any pending cell requests that are<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     * not loaded yet.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     */<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    boolean isDirty();<a name="line.64"></a>
+<span class="sourceLineNo">065</span>}<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>// End CellReader.java<a name="line.67"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

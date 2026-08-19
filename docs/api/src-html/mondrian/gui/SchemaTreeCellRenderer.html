@@ -1,0 +1,726 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2002-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2010 Pentaho and others<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>// All Rights Reserved.<a name="line.10"></a>
+<span class="sourceLineNo">011</span>*/<a name="line.11"></a>
+<span class="sourceLineNo">012</span>package mondrian.gui;<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.gui.validate.ValidationUtils;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.gui.validate.impl.*;<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>import org.eigenbase.xom.ElementDef;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>import java.awt.*;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import javax.swing.*;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import javax.swing.tree.TreePath;<a name="line.21"></a>
+<span class="sourceLineNo">022</span><a name="line.22"></a>
+<span class="sourceLineNo">023</span>/**<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * Render an entry for the tree.<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * @author sean<a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>public class SchemaTreeCellRenderer<a name="line.28"></a>
+<span class="sourceLineNo">029</span>    extends javax.swing.tree.DefaultTreeCellRenderer<a name="line.29"></a>
+<span class="sourceLineNo">030</span>{<a name="line.30"></a>
+<span class="sourceLineNo">031</span>    private final ClassLoader myClassLoader;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>    public boolean invalidFlag;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>    private JdbcMetaData jdbcMetaData;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>    private final Workbench workbench;<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>    /**<a name="line.36"></a>
+<span class="sourceLineNo">037</span>     * Creates a SchemaTreeCellRenderer with Workbench and metadata.<a name="line.37"></a>
+<span class="sourceLineNo">038</span>     */<a name="line.38"></a>
+<span class="sourceLineNo">039</span>    public SchemaTreeCellRenderer(<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        Workbench workbench,<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        JdbcMetaData jdbcMetaData)<a name="line.41"></a>
+<span class="sourceLineNo">042</span>    {<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        super();<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        this.myClassLoader = this.getClass().getClassLoader();<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        this.workbench = workbench;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        this.jdbcMetaData = jdbcMetaData;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>    }<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>    /**<a name="line.49"></a>
+<span class="sourceLineNo">050</span>     * Creates a SchemaTreeCellRenderer.<a name="line.50"></a>
+<span class="sourceLineNo">051</span>     */<a name="line.51"></a>
+<span class="sourceLineNo">052</span>    public SchemaTreeCellRenderer() {<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        this(null, null);<a name="line.53"></a>
+<span class="sourceLineNo">054</span>    }<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>    public Component getTreeCellRendererComponent(<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        JTree tree,<a name="line.57"></a>
+<span class="sourceLineNo">058</span>        Object value,<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        boolean sel,<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        boolean expanded,<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        boolean leaf,<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        int row,<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        boolean hasFocus)<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    {<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        super.getTreeCellRendererComponent(<a name="line.65"></a>
+<span class="sourceLineNo">066</span>            tree, value, sel, expanded, leaf, row, hasFocus);<a name="line.66"></a>
+<span class="sourceLineNo">067</span><a name="line.67"></a>
+<span class="sourceLineNo">068</span>        invalidFlag = isInvalid(tree, value, row);<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>        // Allow the layout mgr to calculate the pref size of renderer.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        this.setPreferredSize(null);<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        if (value instanceof MondrianGuiDef.Cube) {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>            setText(invalidFlag, ((MondrianGuiDef.Cube) value).name);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>            super.setIcon(<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                new ImageIcon(<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                    myClassLoader.getResource(<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                        workbench<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                            .getResourceConverter().getGUIReference("cube"))));<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        } else if (value instanceof MondrianGuiDef.Column) {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>            setText(invalidFlag, ((MondrianGuiDef.Column) value).name);<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        } else if (value instanceof MondrianGuiDef.Dimension) {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>            super.setIcon(<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                new ImageIcon(<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                    myClassLoader.getResource(<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                            "dimension"))));<a name="line.86"></a>
+<span class="sourceLineNo">087</span>            setText(invalidFlag, ((MondrianGuiDef.CubeDimension) value).name);<a name="line.87"></a>
+<span class="sourceLineNo">088</span>            // Do not remove this line.  This sets the preferred width of tree<a name="line.88"></a>
+<span class="sourceLineNo">089</span>            // cell displaying dimension name.  This resolves the ambiguous<a name="line.89"></a>
+<span class="sourceLineNo">090</span>            // problem of last char or last word truncated from dimension name<a name="line.90"></a>
+<span class="sourceLineNo">091</span>            // in the tree cell.  This problem was there with only Dimension<a name="line.91"></a>
+<span class="sourceLineNo">092</span>            // objects, while all other objects display their names without any<a name="line.92"></a>
+<span class="sourceLineNo">093</span>            // truncation of characters. Therefore, we have to force the setting<a name="line.93"></a>
+<span class="sourceLineNo">094</span>            // of preferred width to desired width so that characters do not<a name="line.94"></a>
+<span class="sourceLineNo">095</span>            // truncate from dimension name.  Along with this the preferred size<a name="line.95"></a>
+<span class="sourceLineNo">096</span>            // of other objects should be set to null, so that the layout mgr<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            // can calculate the preferred width in case of other objects.<a name="line.97"></a>
+<span class="sourceLineNo">098</span>            this.setPreferredSize(<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                new java.awt.Dimension(<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                    this.getPreferredSize().width + 1,<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                    25));<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        } else if (value instanceof MondrianGuiDef.DimensionUsage) {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            super.setIcon(<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                new ImageIcon(<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                    myClassLoader.getResource(<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                            "dimensionUsage"))));<a name="line.107"></a>
+<span class="sourceLineNo">108</span>            setText(invalidFlag, ((MondrianGuiDef.CubeDimension) value).name);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        } else if (value instanceof MondrianGuiDef.KeyExpression) {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>            super.setIcon(<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                new ImageIcon(<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                    myClassLoader.getResource(<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                        workbench<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                            .getResourceConverter().getGUIReference("key"))));<a name="line.114"></a>
+<span class="sourceLineNo">115</span>            setText(<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                workbench.getResourceConverter().getString(<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                    "common.keyExpression.title",<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                    "Key Expression"));<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        } else if (value instanceof MondrianGuiDef.NameExpression) {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            super.setIcon(<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                new ImageIcon(<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                    myClassLoader.getResource(<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                        workbench<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                            .getResourceConverter().getGUIReference("name"))));<a name="line.124"></a>
+<span class="sourceLineNo">125</span>            setText(<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                workbench.getResourceConverter().getString(<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                    "common.nameExpression.title",<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                    "Name Expression"));<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        } else if (value instanceof MondrianGuiDef.OrdinalExpression) {<a name="line.129"></a>
+<span class="sourceLineNo">130</span>            super.setIcon(<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                new ImageIcon(<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                    myClassLoader.getResource(<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                            "ordinal"))));<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            setText(<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                workbench.getResourceConverter().getString(<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                    "common.ordinalExpression.title",<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                    "Ordinal Expression"));<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        } else if (value instanceof MondrianGuiDef.CaptionExpression) {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>            super.setIcon(<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                new ImageIcon(<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                    myClassLoader.getResource(<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                        workbench<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                            .getResourceConverter().getGUIReference("name"))));<a name="line.144"></a>
+<span class="sourceLineNo">145</span>            setText(<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                workbench.getResourceConverter().getString(<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                    "common.captionExpression.title",<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                    "Caption Expression"));<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        } else if (value instanceof MondrianGuiDef.ParentExpression) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            super.setIcon(<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                new ImageIcon(<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                    myClassLoader.getResource(<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                            "parent"))));<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            setText(<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                workbench.getResourceConverter().getString(<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                    "common.parentExpression.title",<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                    "Parent Expression"));<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        } else if (value instanceof MondrianGuiDef.Expression) {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            super.setIcon(<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                new ImageIcon(<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                    myClassLoader.getResource(<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                            "expression"))));<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            setText(<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                workbench.getResourceConverter().getString(<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                    "common.expression.title",<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                    "Expression"));<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        } else if (value instanceof MondrianGuiDef.ExpressionView) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            super.setIcon(<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                new ImageIcon(<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                    myClassLoader.getResource(<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                            "expression"))));<a name="line.174"></a>
+<span class="sourceLineNo">175</span>            setText(<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                workbench.getResourceConverter().getString(<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                    "common.expressionView.title",<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                    "Expression View"));<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        } else if (value instanceof MondrianGuiDef.Hierarchy) {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>            String name = ((MondrianGuiDef.Hierarchy) value).name;<a name="line.180"></a>
+<span class="sourceLineNo">181</span><a name="line.181"></a>
+<span class="sourceLineNo">182</span>            if (name == null || name.trim().length() == 0) {<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                setText(<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                    invalidFlag,<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                    workbench.getResourceConverter().getString(<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                        "common.hierarchy.default.name",<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                        "default"));<a name="line.187"></a>
+<span class="sourceLineNo">188</span>            } else {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                setText(invalidFlag, name);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>            }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>            super.setIcon(<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                new ImageIcon(<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                    myClassLoader.getResource(<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                            "hierarchy"))));<a name="line.195"></a>
+<span class="sourceLineNo">196</span>            this.setPreferredSize(<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                new java.awt.Dimension(<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                    this.getPreferredSize().width + 1,<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                    25));<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        } else if (value instanceof MondrianGuiDef.RelationOrJoin) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>            TreePath tpath = tree.getPathForRow(row);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>            String prefix = "";<a name="line.202"></a>
+<span class="sourceLineNo">203</span>            if (tpath != null) {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                TreePath parentpath = tpath.getParentPath();<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                if (parentpath != null) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                    Object parent = parentpath.getLastPathComponent();<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                    if (parent instanceof MondrianGuiDef.Join) {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                        int indexOfChild = tree.getModel().getIndexOfChild(<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                            parent, value);<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                        switch (indexOfChild) {<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                        case 0:<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                            prefix = workbench.getResourceConverter().getString(<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                                "common.left.title",<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                                "Left")<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                                     + " ";<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                            break;<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                        case 1:<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                            prefix = workbench.getResourceConverter().getString(<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                                "common.right.title",<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                                "Right")<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                                     + " ";<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                            break;<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                        }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                    }<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>            }<a name="line.226"></a>
+<span class="sourceLineNo">227</span>            if (value instanceof MondrianGuiDef.Join) {<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                setText(<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                    workbench.getResourceConverter().getFormattedString(<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                        "schemaTreeCellRenderer.join.title",<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                        "{0}Join",<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                        prefix));<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                super.setIcon(<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                    new ImageIcon(<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                        myClassLoader.getResource(<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                            workbench.getResourceConverter().getGUIReference(<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                                "join"))));<a name="line.237"></a>
+<span class="sourceLineNo">238</span>            } else if (value instanceof MondrianGuiDef.Table) {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                // Set the table name to alias if present.<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                MondrianGuiDef.Table theTable = (MondrianGuiDef.Table) value;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                String theName =<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                    (theTable.alias != null<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                     &amp;&amp; theTable.alias.trim().length() &gt; 0)<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                    ? theTable.alias<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                    : theTable.name;<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                setText(<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                    workbench.getResourceConverter().getFormattedString(<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                        "schemaTreeCellRenderer.table.title",<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                        "{0}Table: {1}",<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                        prefix.length() == 0<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                            ? ""<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                            : prefix + " : ",<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                        theName));<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                super.setIcon(<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                    new ImageIcon(<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                        myClassLoader.getResource(<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                            workbench.getResourceConverter().getGUIReference(<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                                "table"))));<a name="line.258"></a>
+<span class="sourceLineNo">259</span>            } else if (value instanceof MondrianGuiDef.View) {<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                setText(<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                    workbench.getResourceConverter().getFormattedString(<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                        "schemaTreeCellRenderer.view.title",<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                        "View"));<a name="line.263"></a>
+<span class="sourceLineNo">264</span>            }<a name="line.264"></a>
+<span class="sourceLineNo">265</span>            // REVIEW: Need to deal with InlineTable here<a name="line.265"></a>
+<span class="sourceLineNo">266</span>            this.getPreferredSize();<a name="line.266"></a>
+<span class="sourceLineNo">267</span>            // Do not remove this<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            this.setPreferredSize(<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                new Dimension(<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                    this.getPreferredSize().width + 35,<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                    24));<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        } else if (value instanceof MondrianGuiDef.Level) {<a name="line.272"></a>
+<span class="sourceLineNo">273</span>            setText(invalidFlag, ((MondrianGuiDef.Level) value).name);<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            super.setIcon(<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                new ImageIcon(<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                    myClassLoader.getResource(<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                        workbench<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                            .getResourceConverter().getGUIReference("level"))));<a name="line.278"></a>
+<span class="sourceLineNo">279</span>            // See earlier comments about setPreferredSize.<a name="line.279"></a>
+<span class="sourceLineNo">280</span>            this.setPreferredSize(<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                new java.awt.Dimension(<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                    this.getPreferredSize().width + 1,<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                    25)); //Do not remove this<a name="line.283"></a>
+<span class="sourceLineNo">284</span>        } else if (value instanceof MondrianGuiDef.Measure) {<a name="line.284"></a>
+<span class="sourceLineNo">285</span>            setText(invalidFlag, ((MondrianGuiDef.Measure) value).name);<a name="line.285"></a>
+<span class="sourceLineNo">286</span>            super.setIcon(<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                new ImageIcon(<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                    myClassLoader.getResource(<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                            "measure"))));<a name="line.290"></a>
+<span class="sourceLineNo">291</span>        } else if (value instanceof MondrianGuiDef.Formula) {<a name="line.291"></a>
+<span class="sourceLineNo">292</span>            setText(invalidFlag, ((MondrianGuiDef.Formula) value).getName());<a name="line.292"></a>
+<span class="sourceLineNo">293</span>            super.setIcon(<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                new ImageIcon(<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                    myClassLoader.getResource(<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                            "formula"))));<a name="line.297"></a>
+<span class="sourceLineNo">298</span>        } else if (value instanceof MondrianGuiDef.MemberReaderParameter) {<a name="line.298"></a>
+<span class="sourceLineNo">299</span>            setText(<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                invalidFlag,<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                ((MondrianGuiDef.MemberReaderParameter) value).name);<a name="line.301"></a>
+<span class="sourceLineNo">302</span>        } else if (value instanceof MondrianGuiDef.Property) {<a name="line.302"></a>
+<span class="sourceLineNo">303</span>            setText(invalidFlag, ((MondrianGuiDef.Property) value).name);<a name="line.303"></a>
+<span class="sourceLineNo">304</span>            super.setIcon(<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                new ImageIcon(<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                    myClassLoader.getResource(<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                            "property"))));<a name="line.308"></a>
+<span class="sourceLineNo">309</span>        } else if (value instanceof MondrianGuiDef.Schema) {<a name="line.309"></a>
+<span class="sourceLineNo">310</span>            setText(<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                    "common.schema.title",<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                    "Schema"));<a name="line.313"></a>
+<span class="sourceLineNo">314</span>            super.setIcon(<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                new ImageIcon(<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                    myClassLoader.getResource(<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                            "schema"))));<a name="line.318"></a>
+<span class="sourceLineNo">319</span>        } else if (value instanceof MondrianGuiDef.NamedSet) {<a name="line.319"></a>
+<span class="sourceLineNo">320</span>            setText(invalidFlag, ((MondrianGuiDef.NamedSet) value).name);<a name="line.320"></a>
+<span class="sourceLineNo">321</span>            super.setIcon(<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                new ImageIcon(<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                    myClassLoader.getResource(<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                            "namedSet"))));<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        } else if (value instanceof MondrianGuiDef.CalculatedMember) {<a name="line.326"></a>
+<span class="sourceLineNo">327</span>            setText(<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                invalidFlag, ((MondrianGuiDef.CalculatedMember) value).name);<a name="line.328"></a>
+<span class="sourceLineNo">329</span>            super.setIcon(<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                new ImageIcon(<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                    myClassLoader.getResource(<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                            "calculatedMember"))));<a name="line.333"></a>
+<span class="sourceLineNo">334</span>        } else if (value instanceof MondrianGuiDef.CalculatedMemberProperty) {<a name="line.334"></a>
+<span class="sourceLineNo">335</span>            setText(<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                invalidFlag,<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                ((MondrianGuiDef.CalculatedMemberProperty) value).name);<a name="line.337"></a>
+<span class="sourceLineNo">338</span>            super.setIcon(<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                new ImageIcon(<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                    myClassLoader.getResource(<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                        workbench<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                            .getResourceConverter().getGUIReference("nopic"))));<a name="line.342"></a>
+<span class="sourceLineNo">343</span>        } else if (value instanceof MondrianGuiDef.UserDefinedFunction) {<a name="line.343"></a>
+<span class="sourceLineNo">344</span>            setText(<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                invalidFlag, ((MondrianGuiDef.UserDefinedFunction) value).name);<a name="line.345"></a>
+<span class="sourceLineNo">346</span>            super.setIcon(<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                new ImageIcon(<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                    myClassLoader.getResource(<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                            "userDefinedFunction"))));<a name="line.350"></a>
+<span class="sourceLineNo">351</span>        } else if (value instanceof MondrianGuiDef.MemberFormatter) {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>            setText(<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                    "common.memberFormatter.title",<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                    "Member Formatter"));<a name="line.355"></a>
+<span class="sourceLineNo">356</span>            super.setIcon(<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                new ImageIcon(<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                    myClassLoader.getResource(<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                            "format"))));<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        } else if (value instanceof MondrianGuiDef.CellFormatter) {<a name="line.361"></a>
+<span class="sourceLineNo">362</span>            setText(<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                    "common.cellFormatter.title",<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                    "Cell Formatter"));<a name="line.365"></a>
+<span class="sourceLineNo">366</span>            super.setIcon(<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                new ImageIcon(<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                    myClassLoader.getResource(<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                            "format"))));<a name="line.370"></a>
+<span class="sourceLineNo">371</span>        } else if (value instanceof MondrianGuiDef.PropertyFormatter) {<a name="line.371"></a>
+<span class="sourceLineNo">372</span>            setText(<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                    "common.propertyFormatter.title",<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                    "Property Formatter"));<a name="line.375"></a>
+<span class="sourceLineNo">376</span>            super.setIcon(<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                new ImageIcon(<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                    myClassLoader.getResource(<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                            "format"))));<a name="line.380"></a>
+<span class="sourceLineNo">381</span>        } else if (value instanceof MondrianGuiDef.Script) {<a name="line.381"></a>
+<span class="sourceLineNo">382</span>            setText(<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                    "common.script.title",<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                    "Script"));<a name="line.385"></a>
+<span class="sourceLineNo">386</span>            super.setIcon(<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                new ImageIcon(<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                    myClassLoader.getResource(<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                            "script"))));<a name="line.390"></a>
+<span class="sourceLineNo">391</span>        } else if (value instanceof MondrianGuiDef.Role) {<a name="line.391"></a>
+<span class="sourceLineNo">392</span>            setText(invalidFlag, ((MondrianGuiDef.Role) value).name);<a name="line.392"></a>
+<span class="sourceLineNo">393</span>            super.setIcon(<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                new ImageIcon(<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                    myClassLoader.getResource(<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                        workbench<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                            .getResourceConverter().getGUIReference("role"))));<a name="line.397"></a>
+<span class="sourceLineNo">398</span>        } else if (value instanceof MondrianGuiDef.Parameter) {<a name="line.398"></a>
+<span class="sourceLineNo">399</span>            setText(invalidFlag, ((MondrianGuiDef.Parameter) value).name);<a name="line.399"></a>
+<span class="sourceLineNo">400</span>            super.setIcon(<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                new ImageIcon(<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                    myClassLoader.getResource(<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                            "parameter"))));<a name="line.404"></a>
+<span class="sourceLineNo">405</span>        } else if (value instanceof MondrianGuiDef.SchemaGrant) {<a name="line.405"></a>
+<span class="sourceLineNo">406</span>            setText(<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                    "common.schemaGrant.title",<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                    "Schema Grant"));<a name="line.409"></a>
+<span class="sourceLineNo">410</span>            super.setIcon(<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                new ImageIcon(<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                    myClassLoader.getResource(<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                            "schemaGrant"))));<a name="line.414"></a>
+<span class="sourceLineNo">415</span>        } else if (value instanceof MondrianGuiDef.CubeGrant) {<a name="line.415"></a>
+<span class="sourceLineNo">416</span>            setText(<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                    "common.cubeGrant.title",<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                    "Cube Grant"));<a name="line.419"></a>
+<span class="sourceLineNo">420</span>            super.setIcon(<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                new ImageIcon(<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                    myClassLoader.getResource(<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                            "cubeGrant"))));<a name="line.424"></a>
+<span class="sourceLineNo">425</span>        } else if (value instanceof MondrianGuiDef.DimensionGrant) {<a name="line.425"></a>
+<span class="sourceLineNo">426</span>            setText(<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                    "common.dimensionGrant.title",<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                    "Dimension Grant"));<a name="line.429"></a>
+<span class="sourceLineNo">430</span>            super.setIcon(<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                new ImageIcon(<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                    myClassLoader.getResource(<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                            "dimensionGrant"))));<a name="line.434"></a>
+<span class="sourceLineNo">435</span>        } else if (value instanceof MondrianGuiDef.HierarchyGrant) {<a name="line.435"></a>
+<span class="sourceLineNo">436</span>            setText(<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                    "common.hierarchyGrant.title",<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                    "Hierarchy Grant"));<a name="line.439"></a>
+<span class="sourceLineNo">440</span>            super.setIcon(<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                new ImageIcon(<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                    myClassLoader.getResource(<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                            "hierarchyGrant"))));<a name="line.444"></a>
+<span class="sourceLineNo">445</span>        } else if (value instanceof MondrianGuiDef.MemberGrant) {<a name="line.445"></a>
+<span class="sourceLineNo">446</span>            setText(<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                    "common.memberGrant.title",<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                    "Member Grant"));<a name="line.449"></a>
+<span class="sourceLineNo">450</span>            super.setIcon(<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                new ImageIcon(<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                    myClassLoader.getResource(<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                            "memberGrant"))));<a name="line.454"></a>
+<span class="sourceLineNo">455</span>        } else if (value instanceof MondrianGuiDef.Annotations) {<a name="line.455"></a>
+<span class="sourceLineNo">456</span>            setText(<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                    "common.annotations.title",<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                    "Annotations"));<a name="line.459"></a>
+<span class="sourceLineNo">460</span>            super.setIcon(<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                new ImageIcon(<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                    myClassLoader.getResource(<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                            "annotations"))));<a name="line.464"></a>
+<span class="sourceLineNo">465</span>        } else if (value instanceof MondrianGuiDef.Annotation) {<a name="line.465"></a>
+<span class="sourceLineNo">466</span>            setText(<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                invalidFlag, ((MondrianGuiDef.Annotation)value).name);<a name="line.467"></a>
+<span class="sourceLineNo">468</span>            super.setIcon(<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                new ImageIcon(<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                    myClassLoader.getResource(<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                            "annotation"))));<a name="line.472"></a>
+<span class="sourceLineNo">473</span>        } else if (value instanceof MondrianGuiDef.SQL) {<a name="line.473"></a>
+<span class="sourceLineNo">474</span>            setText(invalidFlag, ((MondrianGuiDef.SQL) value).dialect);<a name="line.474"></a>
+<span class="sourceLineNo">475</span>            super.setIcon(<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                new ImageIcon(<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                    myClassLoader.getResource(<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                        workbench<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                            .getResourceConverter().getGUIReference("sql"))));<a name="line.479"></a>
+<span class="sourceLineNo">480</span>        } else if (value instanceof MondrianGuiDef.View) {<a name="line.480"></a>
+<span class="sourceLineNo">481</span>            setText(<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                workbench.getResourceConverter().getString(<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                    "common.view.title",<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                    "View"));<a name="line.484"></a>
+<span class="sourceLineNo">485</span>        } else if (value instanceof MondrianGuiDef.VirtualCube) {<a name="line.485"></a>
+<span class="sourceLineNo">486</span>            setText(invalidFlag, ((MondrianGuiDef.VirtualCube) value).name);<a name="line.486"></a>
+<span class="sourceLineNo">487</span>            super.setIcon(<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                new ImageIcon(<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                    myClassLoader.getResource(<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                            "virtualCube"))));<a name="line.491"></a>
+<span class="sourceLineNo">492</span>        } else if (value instanceof MondrianGuiDef.VirtualCubeDimension) {<a name="line.492"></a>
+<span class="sourceLineNo">493</span>            setText(<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                invalidFlag,<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                ((MondrianGuiDef.VirtualCubeDimension) value).name);<a name="line.495"></a>
+<span class="sourceLineNo">496</span>            super.setIcon(<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                new ImageIcon(<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                    myClassLoader.getResource(<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                            "virtualCubeDimension"))));<a name="line.500"></a>
+<span class="sourceLineNo">501</span>        } else if (value instanceof MondrianGuiDef.VirtualCubeMeasure) {<a name="line.501"></a>
+<span class="sourceLineNo">502</span>            setText(<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                invalidFlag, ((MondrianGuiDef.VirtualCubeMeasure) value).name);<a name="line.503"></a>
+<span class="sourceLineNo">504</span>            super.setIcon(<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                new ImageIcon(<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                    myClassLoader.getResource(<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                            "virtualCubeMeasure"))));<a name="line.508"></a>
+<span class="sourceLineNo">509</span>        } else if (value instanceof MondrianGuiDef.AggName) {<a name="line.509"></a>
+<span class="sourceLineNo">510</span>            setText(<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                    "common.aggName.title",<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                    "Aggregate Name"));<a name="line.513"></a>
+<span class="sourceLineNo">514</span>            super.setIcon(<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                new ImageIcon(<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                    myClassLoader.getResource(<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                            "aggTable"))));<a name="line.518"></a>
+<span class="sourceLineNo">519</span>        } else if (value instanceof MondrianGuiDef.AggForeignKey) {<a name="line.519"></a>
+<span class="sourceLineNo">520</span>            setText(<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                    "common.aggForeignKey.title",<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                    "Aggregate Foreign Key"));<a name="line.523"></a>
+<span class="sourceLineNo">524</span>            super.setIcon(<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                new ImageIcon(<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                    myClassLoader.getResource(<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                            "aggForeignKey"))));<a name="line.528"></a>
+<span class="sourceLineNo">529</span>        } else if (value instanceof MondrianGuiDef.AggIgnoreColumn) {<a name="line.529"></a>
+<span class="sourceLineNo">530</span>            setText(<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                    "common.aggIgnoreColumn.title",<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                    "Aggregate Ignore Column"));<a name="line.533"></a>
+<span class="sourceLineNo">534</span>            super.setIcon(<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                new ImageIcon(<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                    myClassLoader.getResource(<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                            "aggIgnoreColumn"))));<a name="line.538"></a>
+<span class="sourceLineNo">539</span>        } else if (value instanceof MondrianGuiDef.AggLevel) {<a name="line.539"></a>
+<span class="sourceLineNo">540</span>            setText(<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                    "common.aggLevel.title", "Aggregate Level"));<a name="line.542"></a>
+<span class="sourceLineNo">543</span>            super.setIcon(<a name="line.543"></a>
+<span class="sourceLineNo">544</span>                new ImageIcon(<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                    myClassLoader.getResource(<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                            "aggLevel"))));<a name="line.547"></a>
+<span class="sourceLineNo">548</span>        } else if (value instanceof MondrianGuiDef.AggMeasure) {<a name="line.548"></a>
+<span class="sourceLineNo">549</span>            setText(<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                    "common.aggMeasure.title",<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                    "Aggregate Measure"));<a name="line.552"></a>
+<span class="sourceLineNo">553</span>            super.setIcon(<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                new ImageIcon(<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                    myClassLoader.getResource(<a name="line.555"></a>
+<span class="sourceLineNo">556</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                            "aggMeasure"))));<a name="line.557"></a>
+<span class="sourceLineNo">558</span>        } else if (value instanceof MondrianGuiDef.AggPattern) {<a name="line.558"></a>
+<span class="sourceLineNo">559</span>            setText(<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                    "common.aggPattern.title",<a name="line.561"></a>
+<span class="sourceLineNo">562</span>                    "Aggregate Pattern"));<a name="line.562"></a>
+<span class="sourceLineNo">563</span>            super.setIcon(<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                new ImageIcon(<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                    myClassLoader.getResource(<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                            "aggPattern"))));<a name="line.567"></a>
+<span class="sourceLineNo">568</span>        } else if (value instanceof MondrianGuiDef.AggExclude) {<a name="line.568"></a>
+<span class="sourceLineNo">569</span>            setText(<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                    "common.aggExclude.title",<a name="line.571"></a>
+<span class="sourceLineNo">572</span>                    "Aggregate Exclude"));<a name="line.572"></a>
+<span class="sourceLineNo">573</span>            super.setIcon(<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                new ImageIcon(<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                    myClassLoader.getResource(<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.576"></a>
+<span class="sourceLineNo">577</span>                            "aggExclude"))));<a name="line.577"></a>
+<span class="sourceLineNo">578</span>        } else if (value instanceof MondrianGuiDef.Closure) {<a name="line.578"></a>
+<span class="sourceLineNo">579</span>            setText(<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                invalidFlag, workbench.getResourceConverter().getString(<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                    "common.closure.title",<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                    "Closure"));<a name="line.582"></a>
+<span class="sourceLineNo">583</span>            super.setIcon(<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                new ImageIcon(<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                    myClassLoader.getResource(<a name="line.585"></a>
+<span class="sourceLineNo">586</span>                        workbench.getResourceConverter().getGUIReference(<a name="line.586"></a>
+<span class="sourceLineNo">587</span>                            "closure"))));<a name="line.587"></a>
+<span class="sourceLineNo">588</span>        } else if (value instanceof ElementDef) {<a name="line.588"></a>
+<span class="sourceLineNo">589</span>            setText(((ElementDef) value).getName());<a name="line.589"></a>
+<span class="sourceLineNo">590</span>        } else {<a name="line.590"></a>
+<span class="sourceLineNo">591</span>            super.setText("");<a name="line.591"></a>
+<span class="sourceLineNo">592</span>        }<a name="line.592"></a>
+<span class="sourceLineNo">593</span><a name="line.593"></a>
+<span class="sourceLineNo">594</span>        return this;<a name="line.594"></a>
+<span class="sourceLineNo">595</span>    }<a name="line.595"></a>
+<span class="sourceLineNo">596</span><a name="line.596"></a>
+<span class="sourceLineNo">597</span>    // called from external methods<a name="line.597"></a>
+<span class="sourceLineNo">598</span>    public String invalid(JTree tree, TreePath tpath, Object value) {<a name="line.598"></a>
+<span class="sourceLineNo">599</span>        return this.invalid(tree, tpath, value, null, null, null, null);<a name="line.599"></a>
+<span class="sourceLineNo">600</span>    }<a name="line.600"></a>
+<span class="sourceLineNo">601</span><a name="line.601"></a>
+<span class="sourceLineNo">602</span>    public String invalid(<a name="line.602"></a>
+<span class="sourceLineNo">603</span>        JTree tree,<a name="line.603"></a>
+<span class="sourceLineNo">604</span>        TreePath tpath,<a name="line.604"></a>
+<span class="sourceLineNo">605</span>        Object value,<a name="line.605"></a>
+<span class="sourceLineNo">606</span>        MondrianGuiDef.Cube cube,<a name="line.606"></a>
+<span class="sourceLineNo">607</span>        MondrianGuiDef.Dimension parentDimension,<a name="line.607"></a>
+<span class="sourceLineNo">608</span>        MondrianGuiDef.Hierarchy parentHierarchy,<a name="line.608"></a>
+<span class="sourceLineNo">609</span>        MondrianGuiDef.Level parentLevel)<a name="line.609"></a>
+<span class="sourceLineNo">610</span>    {<a name="line.610"></a>
+<span class="sourceLineNo">611</span>        return ValidationUtils.invalid(<a name="line.611"></a>
+<span class="sourceLineNo">612</span>            new WorkbenchMessages(workbench.getResourceConverter()),<a name="line.612"></a>
+<span class="sourceLineNo">613</span>            new WorkbenchJdbcValidator(jdbcMetaData),<a name="line.613"></a>
+<span class="sourceLineNo">614</span>            new WorkbenchTreeModel((SchemaTreeModel) tree.getModel()),<a name="line.614"></a>
+<span class="sourceLineNo">615</span>            new WorkbenchTreeModelPath(tpath),<a name="line.615"></a>
+<span class="sourceLineNo">616</span>            value,<a name="line.616"></a>
+<span class="sourceLineNo">617</span>            cube,<a name="line.617"></a>
+<span class="sourceLineNo">618</span>            parentDimension,<a name="line.618"></a>
+<span class="sourceLineNo">619</span>            parentHierarchy,<a name="line.619"></a>
+<span class="sourceLineNo">620</span>            parentLevel,<a name="line.620"></a>
+<span class="sourceLineNo">621</span>            jdbcMetaData.getRequireSchema());<a name="line.621"></a>
+<span class="sourceLineNo">622</span>    }<a name="line.622"></a>
+<span class="sourceLineNo">623</span><a name="line.623"></a>
+<span class="sourceLineNo">624</span>    private boolean isInvalid(JTree tree, Object value, int row) {<a name="line.624"></a>
+<span class="sourceLineNo">625</span>        // getPathForRow(row) returns null for new objects added to tree in the<a name="line.625"></a>
+<span class="sourceLineNo">626</span>        // first run of rendering. Check for null before calling methods on<a name="line.626"></a>
+<span class="sourceLineNo">627</span>        // Treepath returned.<a name="line.627"></a>
+<span class="sourceLineNo">628</span>        return invalid(tree, tree.getPathForRow(row), value) != null;<a name="line.628"></a>
+<span class="sourceLineNo">629</span>    }<a name="line.629"></a>
+<span class="sourceLineNo">630</span><a name="line.630"></a>
+<span class="sourceLineNo">631</span>    public void setText(boolean invalidFlag, String myText) {<a name="line.631"></a>
+<span class="sourceLineNo">632</span>        if (invalidFlag) {<a name="line.632"></a>
+<span class="sourceLineNo">633</span>            myText = "&lt;html&gt;&lt;FONT COLOR=RED&gt;&lt;b&gt;x&lt;/b&gt;&lt;/FONT&gt;&lt;FONT COLOR="<a name="line.633"></a>
+<span class="sourceLineNo">634</span>                     + getForeground().hashCode()<a name="line.634"></a>
+<span class="sourceLineNo">635</span>                     + "&gt;"<a name="line.635"></a>
+<span class="sourceLineNo">636</span>                     + myText<a name="line.636"></a>
+<span class="sourceLineNo">637</span>                     + "&lt;/FONT&gt;&lt;/html&gt;";<a name="line.637"></a>
+<span class="sourceLineNo">638</span>        }<a name="line.638"></a>
+<span class="sourceLineNo">639</span>        setText(myText);<a name="line.639"></a>
+<span class="sourceLineNo">640</span>    }<a name="line.640"></a>
+<span class="sourceLineNo">641</span><a name="line.641"></a>
+<span class="sourceLineNo">642</span>    /**<a name="line.642"></a>
+<span class="sourceLineNo">643</span>     * Called from {@link SchemaExplorer#resetMetaData(JdbcMetaData)}. A call to<a name="line.643"></a>
+<span class="sourceLineNo">644</span>     * {@link #updateUI} should be made on the owning SchemaFrame to reflect the<a name="line.644"></a>
+<span class="sourceLineNo">645</span>     * use of the JdbcMetaData being set.<a name="line.645"></a>
+<span class="sourceLineNo">646</span>     *<a name="line.646"></a>
+<span class="sourceLineNo">647</span>     * @param jdbcMetaData Meta data<a name="line.647"></a>
+<span class="sourceLineNo">648</span>     */<a name="line.648"></a>
+<span class="sourceLineNo">649</span>    public void setMetaData(JdbcMetaData jdbcMetaData) {<a name="line.649"></a>
+<span class="sourceLineNo">650</span>        this.jdbcMetaData = jdbcMetaData;<a name="line.650"></a>
+<span class="sourceLineNo">651</span>    }<a name="line.651"></a>
+<span class="sourceLineNo">652</span>}<a name="line.652"></a>
+<span class="sourceLineNo">653</span><a name="line.653"></a>
+<span class="sourceLineNo">654</span>// End SchemaTreeCellRenderer.java<a name="line.654"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

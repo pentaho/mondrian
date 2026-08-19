@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2003-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2009 Pentaho<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.olap;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>/**<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * &lt;code&gt;AxisOrdinal&lt;/code&gt; describes the allowable values for an axis code.<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * @author jhyde<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * @since Feb 21, 2003<a name="line.17"></a>
+<span class="sourceLineNo">018</span> */<a name="line.18"></a>
+<span class="sourceLineNo">019</span>public interface AxisOrdinal {<a name="line.19"></a>
+<span class="sourceLineNo">020</span>    /**<a name="line.20"></a>
+<span class="sourceLineNo">021</span>     * Returns the name of this axis, e.g. "COLUMNS", "SLICER", "AXIS(17)".<a name="line.21"></a>
+<span class="sourceLineNo">022</span>     *<a name="line.22"></a>
+<span class="sourceLineNo">023</span>     * @return Name of the axis<a name="line.23"></a>
+<span class="sourceLineNo">024</span>     */<a name="line.24"></a>
+<span class="sourceLineNo">025</span>    String name();<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span>    /**<a name="line.27"></a>
+<span class="sourceLineNo">028</span>     * Returns the ordinal of this axis.<a name="line.28"></a>
+<span class="sourceLineNo">029</span>     * {@link StandardAxisOrdinal#COLUMNS} = 0,<a name="line.29"></a>
+<span class="sourceLineNo">030</span>     * {@link StandardAxisOrdinal#ROWS} = 1, etc.<a name="line.30"></a>
+<span class="sourceLineNo">031</span>     *<a name="line.31"></a>
+<span class="sourceLineNo">032</span>     * @return ordinal of this axis<a name="line.32"></a>
+<span class="sourceLineNo">033</span>     */<a name="line.33"></a>
+<span class="sourceLineNo">034</span>    int logicalOrdinal();<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>    /**<a name="line.36"></a>
+<span class="sourceLineNo">037</span>     * Returns whether this is the filter (slicer) axis.<a name="line.37"></a>
+<span class="sourceLineNo">038</span>     *<a name="line.38"></a>
+<span class="sourceLineNo">039</span>     * @return whether this is the filter axis<a name="line.39"></a>
+<span class="sourceLineNo">040</span>     */<a name="line.40"></a>
+<span class="sourceLineNo">041</span>    boolean isFilter();<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>    public enum StandardAxisOrdinal implements AxisOrdinal {<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        /** No axis.*/<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        NONE,<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span>        /** Slicer axis. */<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        SLICER,<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span>        /** Columns axis (also known as X axis), logical ordinal = 0. */<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        COLUMNS,<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>        /** Rows axis (also known as Y axis), logical ordinal = 1. */<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        ROWS,<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>        /** Pages axis, logical ordinal = 2. */<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        PAGES,<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>        /** Chapters axis, logical ordinal = 3. */<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        CHAPTERS,<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span>        /** Sections axis, logical ordinal = 4. */<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        SECTIONS;<a name="line.63"></a>
+<span class="sourceLineNo">064</span><a name="line.64"></a>
+<span class="sourceLineNo">065</span>        /**<a name="line.65"></a>
+<span class="sourceLineNo">066</span>         * Returns an axis with a given number.<a name="line.66"></a>
+<span class="sourceLineNo">067</span>         *<a name="line.67"></a>
+<span class="sourceLineNo">068</span>         * &lt;p&gt;If ordinal is greater than 4, returns a non-standard axis called<a name="line.68"></a>
+<span class="sourceLineNo">069</span>         * "AXIS(n)". Never returns null.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>         *<a name="line.70"></a>
+<span class="sourceLineNo">071</span>         * @param ordinal Ordinal<a name="line.71"></a>
+<span class="sourceLineNo">072</span>         * @return Axis<a name="line.72"></a>
+<span class="sourceLineNo">073</span>         */<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        public static AxisOrdinal forLogicalOrdinal(final int ordinal) {<a name="line.74"></a>
+<span class="sourceLineNo">075</span>            if (ordinal + 2 &gt; SECTIONS.ordinal()) {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                return new AxisOrdinal() {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                    public String name() {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                        return "AXIS(" + ordinal + ")";<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                    }<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>                    public int logicalOrdinal() {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        return ordinal;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                    }<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>                    public boolean isFilter() {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                        return false;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                    }<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                };<a name="line.88"></a>
+<span class="sourceLineNo">089</span>            } else {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                return values()[ordinal + 2];<a name="line.90"></a>
+<span class="sourceLineNo">091</span>            }<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        }<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>        public int logicalOrdinal() {<a name="line.94"></a>
+<span class="sourceLineNo">095</span>            return ordinal() - 2;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        }<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>        public boolean isFilter() {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            return this == SLICER;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        }<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    }<a name="line.101"></a>
+<span class="sourceLineNo">102</span>}<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>// End AxisOrdinal.java<a name="line.104"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2002-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2009 Pentaho and others<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.web.servlet;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.olap.*;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.spi.CatalogLocator;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.spi.impl.ServletContextCatalogLocator;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import mondrian.web.taglib.ResultCache;<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>import org.eigenbase.xom.StringEscaper;<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>import java.io.IOException;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import java.util.Enumeration;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import java.util.List;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import javax.servlet.ServletConfig;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import javax.servlet.ServletException;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import javax.servlet.http.*;<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span>/**<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * &lt;code&gt;MdxQueryServlet&lt;/code&gt; is a servlet which receives MDX queries,<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * executes them, and formats the results in an HTML table.<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * @author  Sean McCullough<a name="line.31"></a>
+<span class="sourceLineNo">032</span> * @since 13 February, 2002<a name="line.32"></a>
+<span class="sourceLineNo">033</span> */<a name="line.33"></a>
+<span class="sourceLineNo">034</span>public class MdxQueryServlet extends HttpServlet {<a name="line.34"></a>
+<span class="sourceLineNo">035</span>    private String connectString;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>    private CatalogLocator locator;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>    /**<a name="line.38"></a>
+<span class="sourceLineNo">039</span>     * Initializes the servlet.<a name="line.39"></a>
+<span class="sourceLineNo">040</span>     */<a name="line.40"></a>
+<span class="sourceLineNo">041</span>    public void init(ServletConfig config) throws ServletException {<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        super.init(config);<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        connectString = config.getInitParameter("connectString");<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        Enumeration initParameterNames = config.getInitParameterNames();<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        while (initParameterNames.hasMoreElements()) {<a name="line.45"></a>
+<span class="sourceLineNo">046</span>            String name = (String) initParameterNames.nextElement();<a name="line.46"></a>
+<span class="sourceLineNo">047</span>            String value = config.getInitParameter(name);<a name="line.47"></a>
+<span class="sourceLineNo">048</span>            MondrianProperties.instance().setProperty(name, value);<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        }<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        locator = new ServletContextCatalogLocator(config.getServletContext());<a name="line.50"></a>
+<span class="sourceLineNo">051</span>    }<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>    /**<a name="line.53"></a>
+<span class="sourceLineNo">054</span>     * Destroys the servlet.<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     */<a name="line.55"></a>
+<span class="sourceLineNo">056</span>    public void destroy() {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    }<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>    /**<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     * Processes requests for both HTTP &lt;code&gt;GET&lt;/code&gt; and &lt;code&gt;POST&lt;/code&gt;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     * methods.<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     *<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     * @param request servlet request<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     * @param response servlet response<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     */<a name="line.65"></a>
+<span class="sourceLineNo">066</span>    protected void processRequest(<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        HttpServletRequest request, HttpServletResponse response)<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        throws ServletException, java.io.IOException<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        String queryName = request.getParameter("query");<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        request.setAttribute("query", queryName);<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        if (queryName != null) {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>            processTransform(request, response);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>            return;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        }<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        String queryString = request.getParameter("queryString");<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        request.setAttribute("queryString", queryString);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        mondrian.olap.Connection mdxConnection = null;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        StringBuilder html = new StringBuilder();<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>        // execute the query<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        try {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>            mdxConnection = DriverManager.getConnection(connectString, locator);<a name="line.83"></a>
+<span class="sourceLineNo">084</span>            Query q = mdxConnection.parseQuery(queryString);<a name="line.84"></a>
+<span class="sourceLineNo">085</span>            Result result = mdxConnection.execute(q);<a name="line.85"></a>
+<span class="sourceLineNo">086</span>            List&lt;Position&gt; slicers = result.getSlicerAxis().getPositions();<a name="line.86"></a>
+<span class="sourceLineNo">087</span>            html.append("&lt;table class='resulttable' cellspacing=1 border=0&gt;");<a name="line.87"></a>
+<span class="sourceLineNo">088</span>            html.append(Util.nl);<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>            List&lt;Position&gt; columns = result.getAxes()[0].getPositions();<a name="line.90"></a>
+<span class="sourceLineNo">091</span>            List&lt;Position&gt; rows = null;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>            if (result.getAxes().length == 2) {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                rows = result.getAxes()[1].getPositions();<a name="line.93"></a>
+<span class="sourceLineNo">094</span>            }<a name="line.94"></a>
+<span class="sourceLineNo">095</span>            int columnWidth = columns.get(0).size();<a name="line.95"></a>
+<span class="sourceLineNo">096</span>            int rowWidth = 0;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            if (result.getAxes().length == 2) {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                rowWidth = result.getAxes()[1].getPositions().get(0).size();<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            }<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            for (int j = 0; j &lt; columnWidth; j++) {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                html.append("&lt;tr&gt;");<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>                // if it has more than 1 dimension<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                if (j == 0 &amp;&amp; result.getAxes().length &gt; 1) {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                    // Print the top-left cell, and fill it with slicer members.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                    html.append("&lt;td nowrap class='slicer' rowspan='")<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                        .append(columnWidth)<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                        .append("' colspan='")<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                        .append(rowWidth)<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                        .append("'&gt;");<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                    for (Position position : slicers) {<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                        int k = 0;<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                        for (Member member : position) {<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                            if (k &gt; 0) {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                                html.append("&lt;br/&gt;");<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                            }<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                            html.append(member.getUniqueName());<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                            k++;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                        }<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                    }<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                    html.append("&amp;nbsp;&lt;/td&gt;").append(Util.nl);<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                }<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>                // Print the column headings.<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                for (int i = 0; i &lt; columns.size(); i++) {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                    Position position = columns.get(i);<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                    //Member member = columns[i].getMember(j);<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                    Member member = position.get(j);<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                    int width = 1;<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                    while ((i + 1) &lt; columns.size()<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                        &amp;&amp; columns.get(i + 1).get(j) == member)<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                    {<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                        i++;<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                        width++;<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                    }<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                    html.append("&lt;td nowrap class='columnheading' colspan='")<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                        .append(width).append("'&gt;")<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                        .append(member.getUniqueName()).append("&lt;/td&gt;");<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                }<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                html.append("&lt;/tr&gt;").append(Util.nl);<a name="line.140"></a>
+<span class="sourceLineNo">141</span>            }<a name="line.141"></a>
+<span class="sourceLineNo">142</span>            //if is two axes, show<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            if (result.getAxes().length &gt; 1) {<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                for (int i = 0; i &lt; rows.size(); i++) {<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                    html.append("&lt;tr&gt;");<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                    final Position row = rows.get(i);<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                    for (Member member : row) {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        html.append("&lt;td nowrap class='rowheading'&gt;")<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                            .append(member.getUniqueName())<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                            .append("&lt;/td&gt;");<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                    }<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                    for (int j = 0; j &lt; columns.size(); j++) {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                        showCell(html, result.getCell(new int[] {j, i}));<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                    }<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                    html.append("&lt;/tr&gt;");<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                }<a name="line.156"></a>
+<span class="sourceLineNo">157</span>            } else {<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                html.append("&lt;tr&gt;");<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                for (int i = 0; i &lt; columns.size(); i++) {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                    showCell(html, result.getCell(new int[] {i}));<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                }<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                html.append("&lt;/tr&gt;");<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            }<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            html.append("&lt;/table&gt;");<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        } catch (Throwable e) {<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            final String[] strings = Util.convertStackToString(e);<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            html.append("Error:&lt;pre&gt;&lt;blockquote&gt;");<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            for (String string : strings) {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                html.append(StringEscaper.htmlEscaper.escapeString(string));<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            }<a name="line.170"></a>
+<span class="sourceLineNo">171</span>            html.append("&lt;/blockquote&gt;&lt;/pre&gt;");<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        } finally {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            if (mdxConnection != null) {<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                mdxConnection.close();<a name="line.174"></a>
+<span class="sourceLineNo">175</span>            }<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        }<a name="line.176"></a>
+<span class="sourceLineNo">177</span><a name="line.177"></a>
+<span class="sourceLineNo">178</span>        request.setAttribute("result", html.toString());<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        response.setHeader("Content-Type", "text/html");<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        getServletContext().getRequestDispatcher("/adhoc.jsp").include(<a name="line.180"></a>
+<span class="sourceLineNo">181</span>            request, response);<a name="line.181"></a>
+<span class="sourceLineNo">182</span>    }<a name="line.182"></a>
+<span class="sourceLineNo">183</span><a name="line.183"></a>
+<span class="sourceLineNo">184</span>    private void showCell(StringBuilder out, Cell cell) {<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        out.append("&lt;td class='cell'&gt;")<a name="line.185"></a>
+<span class="sourceLineNo">186</span>            .append(cell.getFormattedValue())<a name="line.186"></a>
+<span class="sourceLineNo">187</span>            .append("&lt;/td&gt;");<a name="line.187"></a>
+<span class="sourceLineNo">188</span>    }<a name="line.188"></a>
+<span class="sourceLineNo">189</span><a name="line.189"></a>
+<span class="sourceLineNo">190</span>    private void processTransform(<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        HttpServletRequest request, HttpServletResponse response)<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        throws ServletException, IOException<a name="line.192"></a>
+<span class="sourceLineNo">193</span>    {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        String queryName = request.getParameter("query");<a name="line.194"></a>
+<span class="sourceLineNo">195</span>        ResultCache rc =<a name="line.195"></a>
+<span class="sourceLineNo">196</span>            ResultCache.getInstance(<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                request.getSession(), getServletContext(), queryName);<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        Query query = rc.getQuery();<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        query = query.clone();<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        rc.setDirty();<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        String operation = request.getParameter("operation");<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        if (operation.equals("expand")) {<a name="line.202"></a>
+<span class="sourceLineNo">203</span>            String memberName = request.getParameter("member");<a name="line.203"></a>
+<span class="sourceLineNo">204</span>            boolean fail = true;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            Member member = query.getSchemaReader(true).getMemberByUniqueName(<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                Util.parseIdentifier(memberName), fail);<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            if (true) {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                throw new UnsupportedOperationException(<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                    "query.toggleDrillState(member) has been de-supported");<a name="line.209"></a>
+<span class="sourceLineNo">210</span>            }<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        } else {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>            throw Util.newInternal("unkown operation '" + operation + "'");<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        }<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        rc.setQuery(query);<a name="line.214"></a>
+<span class="sourceLineNo">215</span>        String redirect = request.getParameter("redirect");<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        if (redirect == null) {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>            redirect = "/adhoc.jsp";<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        }<a name="line.218"></a>
+<span class="sourceLineNo">219</span>        response.setHeader("Content-Type", "text/html");<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        getServletContext().getRequestDispatcher(redirect).include(<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            request, response);<a name="line.221"></a>
+<span class="sourceLineNo">222</span>    }<a name="line.222"></a>
+<span class="sourceLineNo">223</span><a name="line.223"></a>
+<span class="sourceLineNo">224</span>    /**<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     * Handles the HTTP &lt;code&gt;GET&lt;/code&gt; method.<a name="line.225"></a>
+<span class="sourceLineNo">226</span>     *<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     * @param request servlet request<a name="line.227"></a>
+<span class="sourceLineNo">228</span>     * @param response servlet response<a name="line.228"></a>
+<span class="sourceLineNo">229</span>     */<a name="line.229"></a>
+<span class="sourceLineNo">230</span>    protected void doGet(<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        HttpServletRequest request, HttpServletResponse response)<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        throws ServletException, java.io.IOException<a name="line.232"></a>
+<span class="sourceLineNo">233</span>    {<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        processRequest(request, response);<a name="line.234"></a>
+<span class="sourceLineNo">235</span>    }<a name="line.235"></a>
+<span class="sourceLineNo">236</span><a name="line.236"></a>
+<span class="sourceLineNo">237</span>    /**<a name="line.237"></a>
+<span class="sourceLineNo">238</span>     * Handles the HTTP &lt;code&gt;POST&lt;/code&gt; method.<a name="line.238"></a>
+<span class="sourceLineNo">239</span>     *<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     * @param request servlet request<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     * @param response servlet response<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     */<a name="line.242"></a>
+<span class="sourceLineNo">243</span>    protected void doPost(<a name="line.243"></a>
+<span class="sourceLineNo">244</span>        HttpServletRequest request, HttpServletResponse response)<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        throws ServletException, java.io.IOException<a name="line.245"></a>
+<span class="sourceLineNo">246</span>    {<a name="line.246"></a>
+<span class="sourceLineNo">247</span>        processRequest(request, response);<a name="line.247"></a>
+<span class="sourceLineNo">248</span>    }<a name="line.248"></a>
+<span class="sourceLineNo">249</span><a name="line.249"></a>
+<span class="sourceLineNo">250</span>    /**<a name="line.250"></a>
+<span class="sourceLineNo">251</span>     * Returns a short description of the servlet.<a name="line.251"></a>
+<span class="sourceLineNo">252</span>     */<a name="line.252"></a>
+<span class="sourceLineNo">253</span>    public String getServletInfo() {<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        return "Process an MDX query and return the result formatted as an "<a name="line.254"></a>
+<span class="sourceLineNo">255</span>            + "HTML table";<a name="line.255"></a>
+<span class="sourceLineNo">256</span>    }<a name="line.256"></a>
+<span class="sourceLineNo">257</span><a name="line.257"></a>
+<span class="sourceLineNo">258</span>}<a name="line.258"></a>
+<span class="sourceLineNo">259</span><a name="line.259"></a>
+<span class="sourceLineNo">260</span>// End MdxQueryServlet.java<a name="line.260"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,695 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2005-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2011 Pentaho<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.olap.fun;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.calc.*;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.calc.impl.AbstractDoubleCalc;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.calc.impl.ValueCalc;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import mondrian.mdx.ResolvedFunCall;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import mondrian.olap.*;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>import java.util.*;<a name="line.19"></a>
+<span class="sourceLineNo">020</span><a name="line.20"></a>
+<span class="sourceLineNo">021</span>/**<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * Abstract base class for definitions of linear regression functions.<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * @see InterceptFunDef<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * @see PointFunDef<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * @see R2FunDef<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * @see SlopeFunDef<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * @see VarianceFunDef<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * &lt;h2&gt;Correlation coefficient&lt;/h2&gt;<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * &lt;p&gt;&lt;i&gt;Correlation coefficient&lt;/i&gt;&lt;/p&gt;<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *<a name="line.32"></a>
+<span class="sourceLineNo">033</span> * &lt;p&gt;The correlation coefficient, r, ranges from -1 to  + 1. The<a name="line.33"></a>
+<span class="sourceLineNo">034</span> * nonparametric Spearman correlation coefficient, abbreviated rs, has<a name="line.34"></a>
+<span class="sourceLineNo">035</span> * the same range.&lt;/p&gt;<a name="line.35"></a>
+<span class="sourceLineNo">036</span> *<a name="line.36"></a>
+<span class="sourceLineNo">037</span> * &lt;table border="1" cellpadding="6" cellspacing="0"&gt;<a name="line.37"></a>
+<span class="sourceLineNo">038</span> *   &lt;tr&gt;<a name="line.38"></a>
+<span class="sourceLineNo">039</span> *     &lt;td&gt;Value of r (or rs)&lt;/td&gt;<a name="line.39"></a>
+<span class="sourceLineNo">040</span> *     &lt;td&gt;Interpretation&lt;/td&gt;<a name="line.40"></a>
+<span class="sourceLineNo">041</span> *   &lt;/tr&gt;<a name="line.41"></a>
+<span class="sourceLineNo">042</span> *   &lt;tr&gt;<a name="line.42"></a>
+<span class="sourceLineNo">043</span> *     &lt;td valign="top"&gt;r= 0&lt;/td&gt;<a name="line.43"></a>
+<span class="sourceLineNo">044</span> *<a name="line.44"></a>
+<span class="sourceLineNo">045</span> *     &lt;td&gt;The two variables do not vary together at all.&lt;/td&gt;<a name="line.45"></a>
+<span class="sourceLineNo">046</span> *   &lt;/tr&gt;<a name="line.46"></a>
+<span class="sourceLineNo">047</span> *   &lt;tr&gt;<a name="line.47"></a>
+<span class="sourceLineNo">048</span> *     &lt;td valign="top"&gt;0 &amp;gt; r &amp;gt; 1&lt;/td&gt;<a name="line.48"></a>
+<span class="sourceLineNo">049</span> *     &lt;td&gt;<a name="line.49"></a>
+<span class="sourceLineNo">050</span> *       &lt;p&gt;The two variables tend to increase or decrease together.&lt;/p&gt;<a name="line.50"></a>
+<span class="sourceLineNo">051</span> *     &lt;/td&gt;<a name="line.51"></a>
+<span class="sourceLineNo">052</span> *   &lt;/tr&gt;<a name="line.52"></a>
+<span class="sourceLineNo">053</span> *   &lt;tr&gt;<a name="line.53"></a>
+<span class="sourceLineNo">054</span> *     &lt;td valign="top"&gt;r = 1.0&lt;/td&gt;<a name="line.54"></a>
+<span class="sourceLineNo">055</span> *     &lt;td&gt;<a name="line.55"></a>
+<span class="sourceLineNo">056</span> *       &lt;p&gt;Perfect correlation.&lt;/p&gt;<a name="line.56"></a>
+<span class="sourceLineNo">057</span> *     &lt;/td&gt;<a name="line.57"></a>
+<span class="sourceLineNo">058</span> *   &lt;/tr&gt;<a name="line.58"></a>
+<span class="sourceLineNo">059</span> *<a name="line.59"></a>
+<span class="sourceLineNo">060</span> *   &lt;tr&gt;<a name="line.60"></a>
+<span class="sourceLineNo">061</span> *     &lt;td valign="top"&gt;-1 &amp;gt; r &amp;gt; 0&lt;/td&gt;<a name="line.61"></a>
+<span class="sourceLineNo">062</span> *     &lt;td&gt;<a name="line.62"></a>
+<span class="sourceLineNo">063</span> *       &lt;p&gt;One variable increases as the other decreases.&lt;/p&gt;<a name="line.63"></a>
+<span class="sourceLineNo">064</span> *     &lt;/td&gt;<a name="line.64"></a>
+<span class="sourceLineNo">065</span> *   &lt;/tr&gt;<a name="line.65"></a>
+<span class="sourceLineNo">066</span> *<a name="line.66"></a>
+<span class="sourceLineNo">067</span> *   &lt;tr&gt;<a name="line.67"></a>
+<span class="sourceLineNo">068</span> *     &lt;td valign="top"&gt;r = -1.0&lt;/td&gt;<a name="line.68"></a>
+<span class="sourceLineNo">069</span> *     &lt;td&gt;<a name="line.69"></a>
+<span class="sourceLineNo">070</span> *       &lt;p&gt;&lt;/p&gt;<a name="line.70"></a>
+<span class="sourceLineNo">071</span> *       &lt;p&gt;Perfect negative or inverse correlation.&lt;/p&gt;<a name="line.71"></a>
+<span class="sourceLineNo">072</span> *     &lt;/td&gt;<a name="line.72"></a>
+<span class="sourceLineNo">073</span> *   &lt;/tr&gt;<a name="line.73"></a>
+<span class="sourceLineNo">074</span> * &lt;/table&gt;<a name="line.74"></a>
+<span class="sourceLineNo">075</span> *<a name="line.75"></a>
+<span class="sourceLineNo">076</span> * &lt;p&gt;If r or rs is far from zero, there are four possible explanations:&lt;/p&gt;<a name="line.76"></a>
+<span class="sourceLineNo">077</span> * &lt;p&gt;The X variable helps determine the value of the Y variable.&lt;/p&gt;<a name="line.77"></a>
+<span class="sourceLineNo">078</span> * &lt;ul&gt;<a name="line.78"></a>
+<span class="sourceLineNo">079</span> *   &lt;li&gt;The Y variable helps determine the value of the X variable.<a name="line.79"></a>
+<span class="sourceLineNo">080</span> *   &lt;li&gt;Another variable influences both X and Y.<a name="line.80"></a>
+<span class="sourceLineNo">081</span> *   &lt;li&gt;X and Y don't really correlate at all, and you just<a name="line.81"></a>
+<span class="sourceLineNo">082</span> *       happened to observe such a strong correlation by chance. The P value<a name="line.82"></a>
+<span class="sourceLineNo">083</span> *       determines how often this could occur.<a name="line.83"></a>
+<span class="sourceLineNo">084</span> * &lt;/ul&gt;<a name="line.84"></a>
+<span class="sourceLineNo">085</span> * &lt;p&gt;&lt;i&gt;r2 &lt;/i&gt;&lt;/p&gt;<a name="line.85"></a>
+<span class="sourceLineNo">086</span> *<a name="line.86"></a>
+<span class="sourceLineNo">087</span> * &lt;p&gt;Perhaps the best way to interpret the value of r is to square it to<a name="line.87"></a>
+<span class="sourceLineNo">088</span> * calculate r2. Statisticians call this quantity the coefficient of<a name="line.88"></a>
+<span class="sourceLineNo">089</span> * determination, but scientists call it r squared. It is has a value<a name="line.89"></a>
+<span class="sourceLineNo">090</span> * that ranges from zero to one, and is the fraction of the variance in<a name="line.90"></a>
+<span class="sourceLineNo">091</span> * the two variables that is shared. For example, if r2=0.59, then 59% of<a name="line.91"></a>
+<span class="sourceLineNo">092</span> * the variance in X can be explained by variation in Y. &amp;nbsp;Likewise,<a name="line.92"></a>
+<span class="sourceLineNo">093</span> * 59% of the variance in Y can be explained by (or goes along with)<a name="line.93"></a>
+<span class="sourceLineNo">094</span> * variation in X. More simply, 59% of the variance is shared between X<a name="line.94"></a>
+<span class="sourceLineNo">095</span> * and Y.&lt;/p&gt;<a name="line.95"></a>
+<span class="sourceLineNo">096</span> *<a name="line.96"></a>
+<span class="sourceLineNo">097</span> * &lt;p&gt;(&lt;a href="http://www.graphpad.com/articles/interpret/corl_n_linear_reg/correlation.htm"&gt;Source&lt;/a&gt;).<a name="line.97"></a>
+<span class="sourceLineNo">098</span> *<a name="line.98"></a>
+<span class="sourceLineNo">099</span> * &lt;p&gt;Also see: &lt;a href="http://mathworld.wolfram.com/LeastSquaresFitting.html"&gt;least squares fitting&lt;/a&gt;.<a name="line.99"></a>
+<span class="sourceLineNo">100</span> */<a name="line.100"></a>
+<span class="sourceLineNo">101</span><a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>public abstract class LinReg extends FunDefBase {<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    /** Code for the specific function. */<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    final int regType;<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>    public static final int Point = 0;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    public static final int R2 = 1;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    public static final int Intercept = 2;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    public static final int Slope = 3;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>    public static final int Variance = 4;<a name="line.111"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
+<span class="sourceLineNo">113</span>    static final Resolver InterceptResolver =<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        new ReflectiveMultiResolver(<a name="line.114"></a>
+<span class="sourceLineNo">115</span>            "LinRegIntercept",<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            "LinRegIntercept(&lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric Expression&gt;])",<a name="line.116"></a>
+<span class="sourceLineNo">117</span>            "Calculates the linear regression of a set and returns the value of b in the regression line y = ax + b.",<a name="line.117"></a>
+<span class="sourceLineNo">118</span>            new String[]{"fnxn", "fnxnn"},<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            InterceptFunDef.class);<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>    static final Resolver PointResolver =<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        new ReflectiveMultiResolver(<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            "LinRegPoint",<a name="line.123"></a>
+<span class="sourceLineNo">124</span>            "LinRegPoint(&lt;Numeric Expression&gt;, &lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric Expression&gt;])",<a name="line.124"></a>
+<span class="sourceLineNo">125</span>            "Calculates the linear regression of a set and returns the value of y in the regression line y = ax + b.",<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            new String[]{"fnnxn", "fnnxnn"},<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            PointFunDef.class);<a name="line.127"></a>
+<span class="sourceLineNo">128</span><a name="line.128"></a>
+<span class="sourceLineNo">129</span>    static final Resolver SlopeResolver =<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        new ReflectiveMultiResolver(<a name="line.130"></a>
+<span class="sourceLineNo">131</span>            "LinRegSlope",<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            "LinRegSlope(&lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric Expression&gt;])",<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            "Calculates the linear regression of a set and returns the value of a in the regression line y = ax + b.",<a name="line.133"></a>
+<span class="sourceLineNo">134</span>            new String[]{"fnxn", "fnxnn"},<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            SlopeFunDef.class);<a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span>    static final Resolver R2Resolver =<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        new ReflectiveMultiResolver(<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            "LinRegR2",<a name="line.139"></a>
+<span class="sourceLineNo">140</span>            "LinRegR2(&lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric Expression&gt;])",<a name="line.140"></a>
+<span class="sourceLineNo">141</span>            "Calculates the linear regression of a set and returns R2 (the coefficient of determination).",<a name="line.141"></a>
+<span class="sourceLineNo">142</span>            new String[]{"fnxn", "fnxnn"},<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            R2FunDef.class);<a name="line.143"></a>
+<span class="sourceLineNo">144</span><a name="line.144"></a>
+<span class="sourceLineNo">145</span>    static final Resolver VarianceResolver =<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        new ReflectiveMultiResolver(<a name="line.146"></a>
+<span class="sourceLineNo">147</span>            "LinRegVariance",<a name="line.147"></a>
+<span class="sourceLineNo">148</span>            "LinRegVariance(&lt;Set&gt;, &lt;Numeric Expression&gt;[, &lt;Numeric Expression&gt;])",<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            "Calculates the linear regression of a set and returns the variance associated with the regression line y = ax + b.",<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            new String[]{"fnxn", "fnxnn"},<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            VarianceFunDef.class);<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        final ListCalc listCalc = compiler.compileList(call.getArg(0));<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        final DoubleCalc yCalc = compiler.compileDouble(call.getArg(1));<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        final DoubleCalc xCalc =<a name="line.157"></a>
+<span class="sourceLineNo">158</span>            call.getArgCount() &gt; 2<a name="line.158"></a>
+<span class="sourceLineNo">159</span>            ? compiler.compileDouble(call.getArg(2))<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            : new ValueCalc(call);<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        return new LinRegCalc(call, listCalc, yCalc, xCalc, regType);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>    }<a name="line.162"></a>
+<span class="sourceLineNo">163</span><a name="line.163"></a>
+<span class="sourceLineNo">164</span>    /////////////////////////////////////////////////////////////////////////<a name="line.164"></a>
+<span class="sourceLineNo">165</span>    //<a name="line.165"></a>
+<span class="sourceLineNo">166</span>    // Helper<a name="line.166"></a>
+<span class="sourceLineNo">167</span>    //<a name="line.167"></a>
+<span class="sourceLineNo">168</span>    /////////////////////////////////////////////////////////////////////////<a name="line.168"></a>
+<span class="sourceLineNo">169</span>    static class Value {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        private List xs;<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        private List ys;<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        /**<a name="line.172"></a>
+<span class="sourceLineNo">173</span>         * The intercept for the linear regression model. Initialized<a name="line.173"></a>
+<span class="sourceLineNo">174</span>         * following a call to accuracy.<a name="line.174"></a>
+<span class="sourceLineNo">175</span>         */<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        double intercept;<a name="line.176"></a>
+<span class="sourceLineNo">177</span><a name="line.177"></a>
+<span class="sourceLineNo">178</span>        /**<a name="line.178"></a>
+<span class="sourceLineNo">179</span>         * The slope for the linear regression model. Initialized following a<a name="line.179"></a>
+<span class="sourceLineNo">180</span>         * call to accuracy.<a name="line.180"></a>
+<span class="sourceLineNo">181</span>         */<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        double slope;<a name="line.182"></a>
+<span class="sourceLineNo">183</span><a name="line.183"></a>
+<span class="sourceLineNo">184</span>         /** the coefficient of determination */<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        double rSquared = Double.MAX_VALUE;<a name="line.185"></a>
+<span class="sourceLineNo">186</span><a name="line.186"></a>
+<span class="sourceLineNo">187</span>        /** variance = sum square diff mean / n - 1 */<a name="line.187"></a>
+<span class="sourceLineNo">188</span>        double variance = Double.MAX_VALUE;<a name="line.188"></a>
+<span class="sourceLineNo">189</span><a name="line.189"></a>
+<span class="sourceLineNo">190</span>        Value(double intercept, double slope, List xs, List ys) {<a name="line.190"></a>
+<span class="sourceLineNo">191</span>            this.intercept = intercept;<a name="line.191"></a>
+<span class="sourceLineNo">192</span>            this.slope = slope;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>            this.xs = xs;<a name="line.193"></a>
+<span class="sourceLineNo">194</span>            this.ys = ys;<a name="line.194"></a>
+<span class="sourceLineNo">195</span>        }<a name="line.195"></a>
+<span class="sourceLineNo">196</span><a name="line.196"></a>
+<span class="sourceLineNo">197</span>        public double getIntercept() {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>            return this.intercept;<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        }<a name="line.199"></a>
+<span class="sourceLineNo">200</span><a name="line.200"></a>
+<span class="sourceLineNo">201</span>        public double getSlope() {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>            return this.slope;<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        }<a name="line.203"></a>
+<span class="sourceLineNo">204</span><a name="line.204"></a>
+<span class="sourceLineNo">205</span>        public double getRSquared() {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            return this.rSquared;<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        }<a name="line.207"></a>
+<span class="sourceLineNo">208</span><a name="line.208"></a>
+<span class="sourceLineNo">209</span>        /**<a name="line.209"></a>
+<span class="sourceLineNo">210</span>         * strength of the correlation<a name="line.210"></a>
+<span class="sourceLineNo">211</span>         *<a name="line.211"></a>
+<span class="sourceLineNo">212</span>         * @param rSquared Strength of the correlation<a name="line.212"></a>
+<span class="sourceLineNo">213</span>         */<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        public void setRSquared(double rSquared) {<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            this.rSquared = rSquared;<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        }<a name="line.216"></a>
+<span class="sourceLineNo">217</span><a name="line.217"></a>
+<span class="sourceLineNo">218</span>        public double getVariance() {<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            return this.variance;<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        }<a name="line.220"></a>
+<span class="sourceLineNo">221</span><a name="line.221"></a>
+<span class="sourceLineNo">222</span>        public void setVariance(double variance) {<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            this.variance = variance;<a name="line.223"></a>
+<span class="sourceLineNo">224</span>        }<a name="line.224"></a>
+<span class="sourceLineNo">225</span><a name="line.225"></a>
+<span class="sourceLineNo">226</span>        public String toString() {<a name="line.226"></a>
+<span class="sourceLineNo">227</span>            return "LinReg.Value: slope of "<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                + slope<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                + " and an intercept of " + intercept<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                + ". That is, y="<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                + intercept<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                + (slope &gt; 0.0 ? " +" : " ")<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                + slope<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                + " * x.";<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        }<a name="line.235"></a>
+<span class="sourceLineNo">236</span>    }<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span>    /**<a name="line.238"></a>
+<span class="sourceLineNo">239</span>     * Definition of the &lt;code&gt;LinRegIntercept&lt;/code&gt; MDX function.<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     *<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     * &lt;p&gt;Synopsis:<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     *<a name="line.242"></a>
+<span class="sourceLineNo">243</span>     * &lt;blockquote&gt;&lt;code&gt;LinRegIntercept(&amp;lt;Numeric Expression&amp;gt;,<a name="line.243"></a>
+<span class="sourceLineNo">244</span>     * &amp;lt;Set&amp;gt;, &amp;lt;Numeric Expression&amp;gt;[, &amp;lt;Numeric<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     * Expression&amp;gt;])&lt;/code&gt;&lt;/blockquote&gt;<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     */<a name="line.246"></a>
+<span class="sourceLineNo">247</span>    public static class InterceptFunDef extends LinReg {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>        public InterceptFunDef(FunDef funDef) {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>            super(funDef, Intercept);<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        }<a name="line.250"></a>
+<span class="sourceLineNo">251</span>    }<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>    /**<a name="line.253"></a>
+<span class="sourceLineNo">254</span>     * Definition of the &lt;code&gt;LinRegPoint&lt;/code&gt; MDX function.<a name="line.254"></a>
+<span class="sourceLineNo">255</span>     *<a name="line.255"></a>
+<span class="sourceLineNo">256</span>     * &lt;p&gt;Synopsis:<a name="line.256"></a>
+<span class="sourceLineNo">257</span>     *<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     * &lt;blockquote&gt;&lt;code&gt;LinRegPoint(&amp;lt;Numeric Expression&amp;gt;,<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     * &amp;lt;Set&amp;gt;, &amp;lt;Numeric Expression&amp;gt;[, &amp;lt;Numeric<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     * Expression&amp;gt;])&lt;/code&gt;&lt;/blockquote&gt;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     */<a name="line.261"></a>
+<span class="sourceLineNo">262</span>    public static class PointFunDef extends LinReg {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>        public PointFunDef(FunDef funDef) {<a name="line.263"></a>
+<span class="sourceLineNo">264</span>            super(funDef, Point);<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        }<a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span>        public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            final DoubleCalc xPointCalc =<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                compiler.compileDouble(call.getArg(0));<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            final ListCalc listCalc = compiler.compileList(call.getArg(1));<a name="line.270"></a>
+<span class="sourceLineNo">271</span>            final DoubleCalc yCalc = compiler.compileDouble(call.getArg(2));<a name="line.271"></a>
+<span class="sourceLineNo">272</span>            final DoubleCalc xCalc =<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                call.getArgCount() &gt; 3<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                ? compiler.compileDouble(call.getArg(3))<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                : new ValueCalc(call);<a name="line.275"></a>
+<span class="sourceLineNo">276</span>            return new PointCalc(<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                call, xPointCalc, listCalc, yCalc, xCalc);<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        }<a name="line.278"></a>
+<span class="sourceLineNo">279</span>    }<a name="line.279"></a>
+<span class="sourceLineNo">280</span><a name="line.280"></a>
+<span class="sourceLineNo">281</span>    private static class PointCalc extends AbstractDoubleCalc {<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        private final DoubleCalc xPointCalc;<a name="line.282"></a>
+<span class="sourceLineNo">283</span>        private final ListCalc listCalc;<a name="line.283"></a>
+<span class="sourceLineNo">284</span>        private final DoubleCalc yCalc;<a name="line.284"></a>
+<span class="sourceLineNo">285</span>        private final DoubleCalc xCalc;<a name="line.285"></a>
+<span class="sourceLineNo">286</span><a name="line.286"></a>
+<span class="sourceLineNo">287</span>        public PointCalc(<a name="line.287"></a>
+<span class="sourceLineNo">288</span>            ResolvedFunCall call,<a name="line.288"></a>
+<span class="sourceLineNo">289</span>            DoubleCalc xPointCalc,<a name="line.289"></a>
+<span class="sourceLineNo">290</span>            ListCalc listCalc,<a name="line.290"></a>
+<span class="sourceLineNo">291</span>            DoubleCalc yCalc,<a name="line.291"></a>
+<span class="sourceLineNo">292</span>            DoubleCalc xCalc)<a name="line.292"></a>
+<span class="sourceLineNo">293</span>        {<a name="line.293"></a>
+<span class="sourceLineNo">294</span>            super(call, new Calc[]{xPointCalc, listCalc, yCalc, xCalc});<a name="line.294"></a>
+<span class="sourceLineNo">295</span>            this.xPointCalc = xPointCalc;<a name="line.295"></a>
+<span class="sourceLineNo">296</span>            this.listCalc = listCalc;<a name="line.296"></a>
+<span class="sourceLineNo">297</span>            this.yCalc = yCalc;<a name="line.297"></a>
+<span class="sourceLineNo">298</span>            this.xCalc = xCalc;<a name="line.298"></a>
+<span class="sourceLineNo">299</span>        }<a name="line.299"></a>
+<span class="sourceLineNo">300</span><a name="line.300"></a>
+<span class="sourceLineNo">301</span>        public double evaluateDouble(Evaluator evaluator) {<a name="line.301"></a>
+<span class="sourceLineNo">302</span>            double xPoint = xPointCalc.evaluateDouble(evaluator);<a name="line.302"></a>
+<span class="sourceLineNo">303</span>            Value value = process(evaluator, listCalc, yCalc, xCalc);<a name="line.303"></a>
+<span class="sourceLineNo">304</span>            if (value == null) {<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                return FunUtil.DoubleNull;<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            }<a name="line.306"></a>
+<span class="sourceLineNo">307</span>            // use first arg to generate y position<a name="line.307"></a>
+<span class="sourceLineNo">308</span>            double yPoint =<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                xPoint * value.getSlope()<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                + value.getIntercept();<a name="line.310"></a>
+<span class="sourceLineNo">311</span>            return yPoint;<a name="line.311"></a>
+<span class="sourceLineNo">312</span>        }<a name="line.312"></a>
+<span class="sourceLineNo">313</span>    }<a name="line.313"></a>
+<span class="sourceLineNo">314</span><a name="line.314"></a>
+<span class="sourceLineNo">315</span>    /**<a name="line.315"></a>
+<span class="sourceLineNo">316</span>     * Definition of the &lt;code&gt;LinRegSlope&lt;/code&gt; MDX function.<a name="line.316"></a>
+<span class="sourceLineNo">317</span>     *<a name="line.317"></a>
+<span class="sourceLineNo">318</span>     * &lt;p&gt;Synopsis:<a name="line.318"></a>
+<span class="sourceLineNo">319</span>     *<a name="line.319"></a>
+<span class="sourceLineNo">320</span>     * &lt;blockquote&gt;&lt;code&gt;LinRegSlope(&amp;lt;Numeric Expression&amp;gt;,<a name="line.320"></a>
+<span class="sourceLineNo">321</span>     * &amp;lt;Set&amp;gt;, &amp;lt;Numeric Expression&amp;gt;[, &amp;lt;Numeric<a name="line.321"></a>
+<span class="sourceLineNo">322</span>     * Expression&amp;gt;])&lt;/code&gt;&lt;/blockquote&gt;<a name="line.322"></a>
+<span class="sourceLineNo">323</span>     */<a name="line.323"></a>
+<span class="sourceLineNo">324</span>    public static class SlopeFunDef extends LinReg {<a name="line.324"></a>
+<span class="sourceLineNo">325</span>        public SlopeFunDef(FunDef funDef) {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>            super(funDef, Slope);<a name="line.326"></a>
+<span class="sourceLineNo">327</span>        }<a name="line.327"></a>
+<span class="sourceLineNo">328</span>    }<a name="line.328"></a>
+<span class="sourceLineNo">329</span><a name="line.329"></a>
+<span class="sourceLineNo">330</span>    /**<a name="line.330"></a>
+<span class="sourceLineNo">331</span>     * Definition of the &lt;code&gt;LinRegR2&lt;/code&gt; MDX function.<a name="line.331"></a>
+<span class="sourceLineNo">332</span>     *<a name="line.332"></a>
+<span class="sourceLineNo">333</span>     * &lt;p&gt;Synopsis:<a name="line.333"></a>
+<span class="sourceLineNo">334</span>     *<a name="line.334"></a>
+<span class="sourceLineNo">335</span>     * &lt;blockquote&gt;&lt;code&gt;LinRegR2(&amp;lt;Numeric Expression&amp;gt;,<a name="line.335"></a>
+<span class="sourceLineNo">336</span>     * &amp;lt;Set&amp;gt;, &amp;lt;Numeric Expression&amp;gt;[, &amp;lt;Numeric<a name="line.336"></a>
+<span class="sourceLineNo">337</span>     * Expression&amp;gt;])&lt;/code&gt;&lt;/blockquote&gt;<a name="line.337"></a>
+<span class="sourceLineNo">338</span>     */<a name="line.338"></a>
+<span class="sourceLineNo">339</span>    public static class R2FunDef extends LinReg {<a name="line.339"></a>
+<span class="sourceLineNo">340</span>        public R2FunDef(FunDef funDef) {<a name="line.340"></a>
+<span class="sourceLineNo">341</span>            super(funDef, R2);<a name="line.341"></a>
+<span class="sourceLineNo">342</span>        }<a name="line.342"></a>
+<span class="sourceLineNo">343</span>    }<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>    /**<a name="line.345"></a>
+<span class="sourceLineNo">346</span>     * Definition of the &lt;code&gt;LinRegVariance&lt;/code&gt; MDX function.<a name="line.346"></a>
+<span class="sourceLineNo">347</span>     *<a name="line.347"></a>
+<span class="sourceLineNo">348</span>     * &lt;p&gt;Synopsis:<a name="line.348"></a>
+<span class="sourceLineNo">349</span>     *<a name="line.349"></a>
+<span class="sourceLineNo">350</span>     * &lt;blockquote&gt;&lt;code&gt;LinRegVariance(&amp;lt;Numeric Expression&amp;gt;,<a name="line.350"></a>
+<span class="sourceLineNo">351</span>     * &amp;lt;Set&amp;gt;, &amp;lt;Numeric Expression&amp;gt;[, &amp;lt;Numeric<a name="line.351"></a>
+<span class="sourceLineNo">352</span>     * Expression&amp;gt;])&lt;/code&gt;&lt;/blockquote&gt;<a name="line.352"></a>
+<span class="sourceLineNo">353</span>     */<a name="line.353"></a>
+<span class="sourceLineNo">354</span>    public static class VarianceFunDef extends LinReg {<a name="line.354"></a>
+<span class="sourceLineNo">355</span>        public VarianceFunDef(FunDef funDef) {<a name="line.355"></a>
+<span class="sourceLineNo">356</span>            super(funDef, Variance);<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        }<a name="line.357"></a>
+<span class="sourceLineNo">358</span>    }<a name="line.358"></a>
+<span class="sourceLineNo">359</span><a name="line.359"></a>
+<span class="sourceLineNo">360</span>    protected static void debug(String type, String msg) {<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        // comment out for no output<a name="line.361"></a>
+<span class="sourceLineNo">362</span>// RME<a name="line.362"></a>
+<span class="sourceLineNo">363</span>        //System.out.println(type + ": " +msg);<a name="line.363"></a>
+<span class="sourceLineNo">364</span>    }<a name="line.364"></a>
+<span class="sourceLineNo">365</span><a name="line.365"></a>
+<span class="sourceLineNo">366</span><a name="line.366"></a>
+<span class="sourceLineNo">367</span>    protected LinReg(FunDef funDef, int regType) {<a name="line.367"></a>
+<span class="sourceLineNo">368</span>        super(funDef);<a name="line.368"></a>
+<span class="sourceLineNo">369</span>        this.regType = regType;<a name="line.369"></a>
+<span class="sourceLineNo">370</span>    }<a name="line.370"></a>
+<span class="sourceLineNo">371</span><a name="line.371"></a>
+<span class="sourceLineNo">372</span>    protected static LinReg.Value process(<a name="line.372"></a>
+<span class="sourceLineNo">373</span>        Evaluator evaluator,<a name="line.373"></a>
+<span class="sourceLineNo">374</span>        ListCalc listCalc,<a name="line.374"></a>
+<span class="sourceLineNo">375</span>        DoubleCalc yCalc,<a name="line.375"></a>
+<span class="sourceLineNo">376</span>        DoubleCalc xCalc)<a name="line.376"></a>
+<span class="sourceLineNo">377</span>    {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>        final int savepoint = evaluator.savepoint();<a name="line.378"></a>
+<span class="sourceLineNo">379</span>        TupleList members;<a name="line.379"></a>
+<span class="sourceLineNo">380</span>        try {<a name="line.380"></a>
+<span class="sourceLineNo">381</span>            evaluator.setNonEmpty(false);<a name="line.381"></a>
+<span class="sourceLineNo">382</span>            members = listCalc.evaluateList(evaluator);<a name="line.382"></a>
+<span class="sourceLineNo">383</span>        } finally {<a name="line.383"></a>
+<span class="sourceLineNo">384</span>            evaluator.restore(savepoint);<a name="line.384"></a>
+<span class="sourceLineNo">385</span>        }<a name="line.385"></a>
+<span class="sourceLineNo">386</span>        SetWrapper[] sws;<a name="line.386"></a>
+<span class="sourceLineNo">387</span>        try {<a name="line.387"></a>
+<span class="sourceLineNo">388</span>            sws =<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                evaluateSet(<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                    evaluator, members, new DoubleCalc[] {yCalc, xCalc});<a name="line.390"></a>
+<span class="sourceLineNo">391</span>        } finally {<a name="line.391"></a>
+<span class="sourceLineNo">392</span>            evaluator.restore(savepoint);<a name="line.392"></a>
+<span class="sourceLineNo">393</span>        }<a name="line.393"></a>
+<span class="sourceLineNo">394</span>        SetWrapper swY = sws[0];<a name="line.394"></a>
+<span class="sourceLineNo">395</span>        SetWrapper swX = sws[1];<a name="line.395"></a>
+<span class="sourceLineNo">396</span><a name="line.396"></a>
+<span class="sourceLineNo">397</span>        if (swY.errorCount &gt; 0) {<a name="line.397"></a>
+<span class="sourceLineNo">398</span>            debug("LinReg.process", "ERROR error(s) count ="  + swY.errorCount);<a name="line.398"></a>
+<span class="sourceLineNo">399</span>            // TODO: throw exception<a name="line.399"></a>
+<span class="sourceLineNo">400</span>            return null;<a name="line.400"></a>
+<span class="sourceLineNo">401</span>        } else if (swY.v.size() == 0) {<a name="line.401"></a>
+<span class="sourceLineNo">402</span>            return null;<a name="line.402"></a>
+<span class="sourceLineNo">403</span>        }<a name="line.403"></a>
+<span class="sourceLineNo">404</span><a name="line.404"></a>
+<span class="sourceLineNo">405</span>        return linearReg(swX.v, swY.v);<a name="line.405"></a>
+<span class="sourceLineNo">406</span>    }<a name="line.406"></a>
+<span class="sourceLineNo">407</span><a name="line.407"></a>
+<span class="sourceLineNo">408</span>    public static LinReg.Value accuracy(LinReg.Value value) {<a name="line.408"></a>
+<span class="sourceLineNo">409</span>        // for variance<a name="line.409"></a>
+<span class="sourceLineNo">410</span>        double sumErrSquared = 0.0;<a name="line.410"></a>
+<span class="sourceLineNo">411</span><a name="line.411"></a>
+<span class="sourceLineNo">412</span>        double sumErr = 0.0;<a name="line.412"></a>
+<span class="sourceLineNo">413</span><a name="line.413"></a>
+<span class="sourceLineNo">414</span>        // for r2<a name="line.414"></a>
+<span class="sourceLineNo">415</span>        // data<a name="line.415"></a>
+<span class="sourceLineNo">416</span>        double sumSquaredY = 0.0;<a name="line.416"></a>
+<span class="sourceLineNo">417</span>        double sumY = 0.0;<a name="line.417"></a>
+<span class="sourceLineNo">418</span>        // predicted<a name="line.418"></a>
+<span class="sourceLineNo">419</span>        double sumSquaredYF = 0.0;<a name="line.419"></a>
+<span class="sourceLineNo">420</span>        double sumYF = 0.0;<a name="line.420"></a>
+<span class="sourceLineNo">421</span><a name="line.421"></a>
+<span class="sourceLineNo">422</span>        // Obtain the forecast values for this model<a name="line.422"></a>
+<span class="sourceLineNo">423</span>        List yfs = forecast(value);<a name="line.423"></a>
+<span class="sourceLineNo">424</span><a name="line.424"></a>
+<span class="sourceLineNo">425</span>        // Calculate the Sum of the Absolute Errors<a name="line.425"></a>
+<span class="sourceLineNo">426</span>        Iterator ity = value.ys.iterator();<a name="line.426"></a>
+<span class="sourceLineNo">427</span>        Iterator ityf = yfs.iterator();<a name="line.427"></a>
+<span class="sourceLineNo">428</span>        while (ity.hasNext()) {<a name="line.428"></a>
+<span class="sourceLineNo">429</span>            // Get next data point<a name="line.429"></a>
+<span class="sourceLineNo">430</span>            Double dy = (Double) ity.next();<a name="line.430"></a>
+<span class="sourceLineNo">431</span>            if (dy == null) {<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                continue;<a name="line.432"></a>
+<span class="sourceLineNo">433</span>            }<a name="line.433"></a>
+<span class="sourceLineNo">434</span>            Double dyf = (Double) ityf.next();<a name="line.434"></a>
+<span class="sourceLineNo">435</span>            if (dyf == null) {<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                continue;<a name="line.436"></a>
+<span class="sourceLineNo">437</span>            }<a name="line.437"></a>
+<span class="sourceLineNo">438</span><a name="line.438"></a>
+<span class="sourceLineNo">439</span>            double y = dy.doubleValue();<a name="line.439"></a>
+<span class="sourceLineNo">440</span>            double yf = dyf.doubleValue();<a name="line.440"></a>
+<span class="sourceLineNo">441</span><a name="line.441"></a>
+<span class="sourceLineNo">442</span>            // Calculate error in forecast, and update sums appropriately<a name="line.442"></a>
+<span class="sourceLineNo">443</span><a name="line.443"></a>
+<span class="sourceLineNo">444</span>            // the y residual or error<a name="line.444"></a>
+<span class="sourceLineNo">445</span>            double error = yf - y;<a name="line.445"></a>
+<span class="sourceLineNo">446</span><a name="line.446"></a>
+<span class="sourceLineNo">447</span>            sumErr += error;<a name="line.447"></a>
+<span class="sourceLineNo">448</span>            sumErrSquared += error * error;<a name="line.448"></a>
+<span class="sourceLineNo">449</span><a name="line.449"></a>
+<span class="sourceLineNo">450</span>            sumY += y;<a name="line.450"></a>
+<span class="sourceLineNo">451</span>            sumSquaredY += (y * y);<a name="line.451"></a>
+<span class="sourceLineNo">452</span><a name="line.452"></a>
+<span class="sourceLineNo">453</span>            sumYF =+ yf;<a name="line.453"></a>
+<span class="sourceLineNo">454</span>            sumSquaredYF =+ (yf * yf);<a name="line.454"></a>
+<span class="sourceLineNo">455</span>        }<a name="line.455"></a>
+<span class="sourceLineNo">456</span><a name="line.456"></a>
+<span class="sourceLineNo">457</span><a name="line.457"></a>
+<span class="sourceLineNo">458</span>        // Initialize the accuracy indicators<a name="line.458"></a>
+<span class="sourceLineNo">459</span>        int n = value.ys.size();<a name="line.459"></a>
+<span class="sourceLineNo">460</span><a name="line.460"></a>
+<span class="sourceLineNo">461</span>        // Variance<a name="line.461"></a>
+<span class="sourceLineNo">462</span>        // The estimate the value of the error variance is a measure of<a name="line.462"></a>
+<span class="sourceLineNo">463</span>        // variability of the y values about the estimated line.<a name="line.463"></a>
+<span class="sourceLineNo">464</span>        // http://home.ubalt.edu/ntsbarsh/Business-stat/opre504.htm<a name="line.464"></a>
+<span class="sourceLineNo">465</span>        // s2 = SSE/(n-2) = sum (y - yf)2 /(n-2)<a name="line.465"></a>
+<span class="sourceLineNo">466</span>        if (n &gt; 2) {<a name="line.466"></a>
+<span class="sourceLineNo">467</span>            double variance = sumErrSquared / (n - 2);<a name="line.467"></a>
+<span class="sourceLineNo">468</span><a name="line.468"></a>
+<span class="sourceLineNo">469</span>            value.setVariance(variance);<a name="line.469"></a>
+<span class="sourceLineNo">470</span>        }<a name="line.470"></a>
+<span class="sourceLineNo">471</span><a name="line.471"></a>
+<span class="sourceLineNo">472</span>        // R2<a name="line.472"></a>
+<span class="sourceLineNo">473</span>        // R2 = 1 - (SSE/SST)<a name="line.473"></a>
+<span class="sourceLineNo">474</span>        // SSE = sum square error = Sum((error-MSE)*(error-MSE))<a name="line.474"></a>
+<span class="sourceLineNo">475</span>        // MSE = mean error = Sum(error)/n<a name="line.475"></a>
+<span class="sourceLineNo">476</span>        // SST = sum square y diff = Sum((y-MST)*(y-MST))<a name="line.476"></a>
+<span class="sourceLineNo">477</span>        // MST = mean y = Sum(y)/n<a name="line.477"></a>
+<span class="sourceLineNo">478</span>        double MSE = sumErr / n;<a name="line.478"></a>
+<span class="sourceLineNo">479</span>        double MST = sumY / n;<a name="line.479"></a>
+<span class="sourceLineNo">480</span>        double SSE = 0.0;<a name="line.480"></a>
+<span class="sourceLineNo">481</span>        double SST = 0.0;<a name="line.481"></a>
+<span class="sourceLineNo">482</span>        ity = value.ys.iterator();<a name="line.482"></a>
+<span class="sourceLineNo">483</span>        ityf = yfs.iterator();<a name="line.483"></a>
+<span class="sourceLineNo">484</span>        while (ity.hasNext()) {<a name="line.484"></a>
+<span class="sourceLineNo">485</span>            // Get next data point<a name="line.485"></a>
+<span class="sourceLineNo">486</span>            Double dy = (Double) ity.next();<a name="line.486"></a>
+<span class="sourceLineNo">487</span>            if (dy == null) {<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                continue;<a name="line.488"></a>
+<span class="sourceLineNo">489</span>            }<a name="line.489"></a>
+<span class="sourceLineNo">490</span>            Double dyf = (Double) ityf.next();<a name="line.490"></a>
+<span class="sourceLineNo">491</span>            if (dyf == null) {<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                continue;<a name="line.492"></a>
+<span class="sourceLineNo">493</span>            }<a name="line.493"></a>
+<span class="sourceLineNo">494</span><a name="line.494"></a>
+<span class="sourceLineNo">495</span>            double y = dy.doubleValue();<a name="line.495"></a>
+<span class="sourceLineNo">496</span>            double yf = dyf.doubleValue();<a name="line.496"></a>
+<span class="sourceLineNo">497</span><a name="line.497"></a>
+<span class="sourceLineNo">498</span>            double error = yf - y;<a name="line.498"></a>
+<span class="sourceLineNo">499</span>            SSE += (error - MSE) * (error - MSE);<a name="line.499"></a>
+<span class="sourceLineNo">500</span>            SST += (y - MST) * (y - MST);<a name="line.500"></a>
+<span class="sourceLineNo">501</span>        }<a name="line.501"></a>
+<span class="sourceLineNo">502</span>        if (SST != 0.0) {<a name="line.502"></a>
+<span class="sourceLineNo">503</span>            double rSquared =  1 - (SSE / SST);<a name="line.503"></a>
+<span class="sourceLineNo">504</span><a name="line.504"></a>
+<span class="sourceLineNo">505</span>            value.setRSquared(rSquared);<a name="line.505"></a>
+<span class="sourceLineNo">506</span>        }<a name="line.506"></a>
+<span class="sourceLineNo">507</span><a name="line.507"></a>
+<span class="sourceLineNo">508</span><a name="line.508"></a>
+<span class="sourceLineNo">509</span>        return value;<a name="line.509"></a>
+<span class="sourceLineNo">510</span>    }<a name="line.510"></a>
+<span class="sourceLineNo">511</span><a name="line.511"></a>
+<span class="sourceLineNo">512</span>    public static LinReg.Value linearReg(List xlist, List ylist) {<a name="line.512"></a>
+<span class="sourceLineNo">513</span>        // y and x have same number of points<a name="line.513"></a>
+<span class="sourceLineNo">514</span>        int size = ylist.size();<a name="line.514"></a>
+<span class="sourceLineNo">515</span>        double sumX = 0.0;<a name="line.515"></a>
+<span class="sourceLineNo">516</span>        double sumY = 0.0;<a name="line.516"></a>
+<span class="sourceLineNo">517</span>        double sumXX = 0.0;<a name="line.517"></a>
+<span class="sourceLineNo">518</span>        double sumXY = 0.0;<a name="line.518"></a>
+<span class="sourceLineNo">519</span><a name="line.519"></a>
+<span class="sourceLineNo">520</span>        debug("LinReg.linearReg", "ylist.size()=" + ylist.size());<a name="line.520"></a>
+<span class="sourceLineNo">521</span>        debug("LinReg.linearReg", "xlist.size()=" + xlist.size());<a name="line.521"></a>
+<span class="sourceLineNo">522</span>        int n = 0;<a name="line.522"></a>
+<span class="sourceLineNo">523</span>        for (int i = 0; i &lt; size; i++) {<a name="line.523"></a>
+<span class="sourceLineNo">524</span>            Object yo = ylist.get(i);<a name="line.524"></a>
+<span class="sourceLineNo">525</span>            Object xo = xlist.get(i);<a name="line.525"></a>
+<span class="sourceLineNo">526</span>            if ((yo == null) || (xo == null)) {<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                continue;<a name="line.527"></a>
+<span class="sourceLineNo">528</span>            }<a name="line.528"></a>
+<span class="sourceLineNo">529</span>            n++;<a name="line.529"></a>
+<span class="sourceLineNo">530</span>            double y = ((Double) yo).doubleValue();<a name="line.530"></a>
+<span class="sourceLineNo">531</span>            double x = ((Double) xo).doubleValue();<a name="line.531"></a>
+<span class="sourceLineNo">532</span><a name="line.532"></a>
+<span class="sourceLineNo">533</span>            debug("LinReg.linearReg", " " + i + " (" + x + "," + y + ")");<a name="line.533"></a>
+<span class="sourceLineNo">534</span>            sumX += x;<a name="line.534"></a>
+<span class="sourceLineNo">535</span>            sumY += y;<a name="line.535"></a>
+<span class="sourceLineNo">536</span>            sumXX += x * x;<a name="line.536"></a>
+<span class="sourceLineNo">537</span>            sumXY += x * y;<a name="line.537"></a>
+<span class="sourceLineNo">538</span>        }<a name="line.538"></a>
+<span class="sourceLineNo">539</span><a name="line.539"></a>
+<span class="sourceLineNo">540</span>        double xMean = sumX / n;<a name="line.540"></a>
+<span class="sourceLineNo">541</span>        double yMean = sumY / n;<a name="line.541"></a>
+<span class="sourceLineNo">542</span><a name="line.542"></a>
+<span class="sourceLineNo">543</span>        debug("LinReg.linearReg", "yMean=" + yMean);<a name="line.543"></a>
+<span class="sourceLineNo">544</span>        debug(<a name="line.544"></a>
+<span class="sourceLineNo">545</span>            "LinReg.linearReg",<a name="line.545"></a>
+<span class="sourceLineNo">546</span>            "(n*sumXX - sumX*sumX)=" + (n * sumXX - sumX * sumX));<a name="line.546"></a>
+<span class="sourceLineNo">547</span>        // The regression line is the line that minimizes the variance of the<a name="line.547"></a>
+<span class="sourceLineNo">548</span>        // errors. The mean error is zero; so, this means that it minimizes the<a name="line.548"></a>
+<span class="sourceLineNo">549</span>        // sum of the squares errors.<a name="line.549"></a>
+<span class="sourceLineNo">550</span>        double slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);<a name="line.550"></a>
+<span class="sourceLineNo">551</span>        double intercept = yMean - slope * xMean;<a name="line.551"></a>
+<span class="sourceLineNo">552</span><a name="line.552"></a>
+<span class="sourceLineNo">553</span>        LinReg.Value value = new LinReg.Value(intercept, slope, xlist, ylist);<a name="line.553"></a>
+<span class="sourceLineNo">554</span>        debug("LinReg.linearReg", "value=" + value);<a name="line.554"></a>
+<span class="sourceLineNo">555</span><a name="line.555"></a>
+<span class="sourceLineNo">556</span>        return value;<a name="line.556"></a>
+<span class="sourceLineNo">557</span>    }<a name="line.557"></a>
+<span class="sourceLineNo">558</span><a name="line.558"></a>
+<span class="sourceLineNo">559</span><a name="line.559"></a>
+<span class="sourceLineNo">560</span>    public static List forecast(LinReg.Value value) {<a name="line.560"></a>
+<span class="sourceLineNo">561</span>        List yfs = new ArrayList(value.xs.size());<a name="line.561"></a>
+<span class="sourceLineNo">562</span><a name="line.562"></a>
+<span class="sourceLineNo">563</span>        Iterator it = value.xs.iterator();<a name="line.563"></a>
+<span class="sourceLineNo">564</span>        while (it.hasNext()) {<a name="line.564"></a>
+<span class="sourceLineNo">565</span>            Double d = (Double) it.next();<a name="line.565"></a>
+<span class="sourceLineNo">566</span>            // If the value is missing we still must put a place<a name="line.566"></a>
+<span class="sourceLineNo">567</span>            // holder in the y axis, otherwise there is a discontinuity<a name="line.567"></a>
+<span class="sourceLineNo">568</span>            // between the data and the fit.<a name="line.568"></a>
+<span class="sourceLineNo">569</span>            if (d == null) {<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                yfs.add(null);<a name="line.570"></a>
+<span class="sourceLineNo">571</span>            } else {<a name="line.571"></a>
+<span class="sourceLineNo">572</span>                double x = d.doubleValue();<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                double yf = value.intercept + value.slope * x;<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                yfs.add(new Double(yf));<a name="line.574"></a>
+<span class="sourceLineNo">575</span>            }<a name="line.575"></a>
+<span class="sourceLineNo">576</span>        }<a name="line.576"></a>
+<span class="sourceLineNo">577</span><a name="line.577"></a>
+<span class="sourceLineNo">578</span>        return yfs;<a name="line.578"></a>
+<span class="sourceLineNo">579</span>    }<a name="line.579"></a>
+<span class="sourceLineNo">580</span><a name="line.580"></a>
+<span class="sourceLineNo">581</span>    private static class LinRegCalc extends AbstractDoubleCalc {<a name="line.581"></a>
+<span class="sourceLineNo">582</span>        private final ListCalc listCalc;<a name="line.582"></a>
+<span class="sourceLineNo">583</span>        private final DoubleCalc yCalc;<a name="line.583"></a>
+<span class="sourceLineNo">584</span>        private final DoubleCalc xCalc;<a name="line.584"></a>
+<span class="sourceLineNo">585</span>        private final int regType;<a name="line.585"></a>
+<span class="sourceLineNo">586</span><a name="line.586"></a>
+<span class="sourceLineNo">587</span>        public LinRegCalc(<a name="line.587"></a>
+<span class="sourceLineNo">588</span>            ResolvedFunCall call,<a name="line.588"></a>
+<span class="sourceLineNo">589</span>            ListCalc listCalc,<a name="line.589"></a>
+<span class="sourceLineNo">590</span>            DoubleCalc yCalc,<a name="line.590"></a>
+<span class="sourceLineNo">591</span>            DoubleCalc xCalc,<a name="line.591"></a>
+<span class="sourceLineNo">592</span>            int regType)<a name="line.592"></a>
+<span class="sourceLineNo">593</span>        {<a name="line.593"></a>
+<span class="sourceLineNo">594</span>            super(call, new Calc[]{listCalc, yCalc, xCalc});<a name="line.594"></a>
+<span class="sourceLineNo">595</span>            this.listCalc = listCalc;<a name="line.595"></a>
+<span class="sourceLineNo">596</span>            this.yCalc = yCalc;<a name="line.596"></a>
+<span class="sourceLineNo">597</span>            this.xCalc = xCalc;<a name="line.597"></a>
+<span class="sourceLineNo">598</span>            this.regType = regType;<a name="line.598"></a>
+<span class="sourceLineNo">599</span>        }<a name="line.599"></a>
+<span class="sourceLineNo">600</span><a name="line.600"></a>
+<span class="sourceLineNo">601</span>        public double evaluateDouble(Evaluator evaluator) {<a name="line.601"></a>
+<span class="sourceLineNo">602</span>            Value value = process(evaluator, listCalc, yCalc, xCalc);<a name="line.602"></a>
+<span class="sourceLineNo">603</span>            if (value == null) {<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                return FunUtil.DoubleNull;<a name="line.604"></a>
+<span class="sourceLineNo">605</span>            }<a name="line.605"></a>
+<span class="sourceLineNo">606</span>            switch (regType) {<a name="line.606"></a>
+<span class="sourceLineNo">607</span>            case Intercept:<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                return value.getIntercept();<a name="line.608"></a>
+<span class="sourceLineNo">609</span>            case Slope:<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                return value.getSlope();<a name="line.610"></a>
+<span class="sourceLineNo">611</span>            case Variance:<a name="line.611"></a>
+<span class="sourceLineNo">612</span>                return value.getVariance();<a name="line.612"></a>
+<span class="sourceLineNo">613</span>            case R2:<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                return value.getRSquared();<a name="line.614"></a>
+<span class="sourceLineNo">615</span>            default:<a name="line.615"></a>
+<span class="sourceLineNo">616</span>            case Point:<a name="line.616"></a>
+<span class="sourceLineNo">617</span>                throw Util.newInternal("unexpected value " + regType);<a name="line.617"></a>
+<span class="sourceLineNo">618</span>            }<a name="line.618"></a>
+<span class="sourceLineNo">619</span>        }<a name="line.619"></a>
+<span class="sourceLineNo">620</span>    }<a name="line.620"></a>
+<span class="sourceLineNo">621</span>}<a name="line.621"></a>
+<span class="sourceLineNo">622</span><a name="line.622"></a>
+<span class="sourceLineNo">623</span>// End LinReg.java<a name="line.623"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2006-2011 Pentaho<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.calc;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import mondrian.olap.Evaluator;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.olap.Hierarchy;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.olap.type.Type;<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span>/**<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * &lt;code&gt;Calc&lt;/code&gt; is the base class for all calculable expressions.<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * &lt;h3&gt;Logical and physical expression languages&lt;/h3&gt;<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * Mondrian has two expression languages:&lt;ul&gt;<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * &lt;li&gt;The logical language of parsed MDX fragments ({@link mondrian.olap.Exp}).<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * &lt;li&gt;The phyiscal language of compiled expressions ({@link Calc}).<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * &lt;/ul&gt;&lt;/p&gt;<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * The two languages allow us to separate logical (how an<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * MDX expression was specified) from physical (how it is to be evaluated).<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * The physical language is more strongly typed, and certain constructs which<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * are implicit in the logical language (such as the addition of calls<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * to the &lt;code&gt;&amp;lt;Member&amp;gt;.CurrentMember&lt;/code&gt; function) are made<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * explicit in the physical language.&lt;p/&gt;<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *<a name="line.32"></a>
+<span class="sourceLineNo">033</span> * &lt;h3&gt;Compilation&lt;/h3&gt;<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *<a name="line.34"></a>
+<span class="sourceLineNo">035</span> * Expressions are generally created from using an expression compiler<a name="line.35"></a>
+<span class="sourceLineNo">036</span> * ({@link ExpCompiler}). There are often more than one evaluation strategy<a name="line.36"></a>
+<span class="sourceLineNo">037</span> * for a given expression, and compilation process gives us an opportunity to<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * choose the optimal one.&lt;p/&gt;<a name="line.38"></a>
+<span class="sourceLineNo">039</span> *<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * &lt;h3&gt;Implementing expressions&lt;/h3&gt;<a name="line.40"></a>
+<span class="sourceLineNo">041</span> *<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * The &lt;code&gt;Calc&lt;/code&gt; interface has sub-interfaces for various types:<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * {@link IntegerCalc},<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * {@link BooleanCalc},<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * {@link DoubleCalc},<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * {@link StringCalc} are scalar expressions;<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * {@link MemberCalc},<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * {@link LevelCalc},<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * {@link HierarchyCalc},<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * {@link DimensionCalc} yield elements of the OLAP model.&lt;p/&gt;<a name="line.50"></a>
+<span class="sourceLineNo">051</span> *<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * Each of these sub-interfaces has an abstract implementation:<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * {@link mondrian.calc.impl.AbstractIntegerCalc},<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * {@link mondrian.calc.impl.AbstractBooleanCalc},<a name="line.54"></a>
+<span class="sourceLineNo">055</span> * {@link mondrian.calc.impl.AbstractDoubleCalc},<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * {@link mondrian.calc.impl.AbstractStringCalc},<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * {@link mondrian.calc.impl.AbstractMemberCalc},<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * {@link mondrian.calc.impl.AbstractLevelCalc},<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * {@link mondrian.calc.impl.AbstractHierarchyCalc},<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * {@link mondrian.calc.impl.AbstractDimensionCalc}.&lt;p/&gt;<a name="line.60"></a>
+<span class="sourceLineNo">061</span> *<a name="line.61"></a>
+<span class="sourceLineNo">062</span> * {@link mondrian.calc.impl.GenericCalc} is an adapter which implements all of these interfaces<a name="line.62"></a>
+<span class="sourceLineNo">063</span> * and will try to convert any given result to the correct type. Use it<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * sparingly: if you know the expected result type, it is better to write a<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * class which implements a specific &lt;code&gt;&lt;em&gt;Type&lt;/em&gt;Calc&lt;/code&gt; interface.<a name="line.65"></a>
+<span class="sourceLineNo">066</span> *<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * @author jhyde<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * @since Sep 26, 2005<a name="line.68"></a>
+<span class="sourceLineNo">069</span> */<a name="line.69"></a>
+<span class="sourceLineNo">070</span>public interface Calc {<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    /**<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     * Evaluates this expression.<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     * @param evaluator Provides dimensional context in which to evaluate<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *                  this expression<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     * @return Result of expression evaluation<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     */<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    Object evaluate(Evaluator evaluator);<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>    /**<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * Returns whether this expression depends upon a given hierarchy.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     * &lt;p&gt;If it does not depend on the hierarchy, then re-evaluating the<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     * expression with a different member of this context must produce the<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     * same answer.&lt;p/&gt;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     * Some examples:&lt;ul&gt;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     * &lt;li&gt;The expression<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     * &lt;blockquote&gt;&lt;code&gt;[Measures].[Unit Sales]&lt;/code&gt;&lt;/blockquote&gt;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     * depends on all dimensions except &lt;code&gt;[Measures]&lt;/code&gt;.<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     *<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     * &lt;li&gt;The boolean expression<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     * &lt;blockquote&gt;&lt;code&gt;([Measures].[Unit Sales],<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     * [Time].[1997]) &amp;gt; 1000&lt;/code&gt;&lt;/blockquote&gt;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     * depends on all hierarchies except [Measures] and [Time].<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     *<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     * &lt;li&gt;The list expression<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     * &lt;blockquote&gt;&lt;code&gt;Filter([Store].[USA].Children,<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     * [Measures].[Unit Sales] &amp;lt; 50)&lt;/code&gt;&lt;/pre&gt;&lt;/blockquote&gt;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     * depends upon all hierarchies &lt;em&gt;except&lt;/em&gt; [Store] and [Measures].<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     * How so? Normally the scalar expression would depend upon all hierarchies<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     * except [Measures], but the &lt;code&gt;Filter&lt;/code&gt; function sets the [Store]<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     * context before evaluating the scalar expression, so it is not inherited<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     * from the surrounding context.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     * &lt;/ul&gt;&lt;p/&gt;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     *<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     * @param hierarchy Hierarchy<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     * @return Whether this expression's result depends upon the current member<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *   of the hierarchy<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     */<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    boolean dependsOn(Hierarchy hierarchy);<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>    /**<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     * Returns the type of this expression.<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     */<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    Type getType();<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>    /**<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     * Prints this expression, by accepting a visiting {@link CalcWriter}.<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     *<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     * @param calcWriter Writer<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     */<a name="line.124"></a>
+<span class="sourceLineNo">125</span>    void accept(CalcWriter calcWriter);<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>    /**<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     * Returns style in which the result of evaluating this expression is<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     * returned.<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     * &lt;p&gt;One application of this method is for the compiler to figure out<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     * whether the compiled expression is returning a mutable list. If a mutable<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     * list is required, the compiler can create a mutable copy.<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     *<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     * @see ExpCompiler#compileList(mondrian.olap.Exp, boolean)<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     */<a name="line.136"></a>
+<span class="sourceLineNo">137</span>    ResultStyle getResultStyle();<a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span>    boolean isWrapperFor(java.lang.Class&lt;?&gt; iface);<a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span>    &lt;T&gt; T unwrap(java.lang.Class&lt;T&gt; iface);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>}<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>// End Calc.java<a name="line.144"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,137 @@
+table
+	{
+	width: 100%;
+	border-collapse: collapse;
+	background-color: white;
+	color: black;
+	font: 10pt verdana, arial;
+	margin-bottom: 25%; /* %, px, em, ex ? */
+	}
+
+tr.subhead
+	{
+	background-color: #cccccc;
+	}
+
+th
+	{
+	padding: 0 3%;
+	}
+
+th.alt
+	{
+	background-color: black;
+	color: white;
+	padding: 3% 3% 2%;
+	}
+
+td
+	{
+	padding: 0 3%;
+	}
+
+tr.alt
+	{
+	background-color: #eeeeee;
+	}
+
+h1
+	{
+	font: 24pt verdana, arial;
+	margin: 0;
+	}
+
+h2
+	{
+	font: 18pt verdana, arial;
+	margin: 0;
+	}
+
+h3
+	{
+	font: 12pt verdana, arial;
+	margin: 0;
+	}
+
+th a
+	{
+	color: #00008b;
+	font: 8pt verdana, arial;
+	}
+
+a
+	{
+	color: #00008b;
+	text-decoration: none;
+	}
+
+a:hover
+	{
+	color: #00008b;
+	text-decoration: underline;
+	}
+
+div.outer
+	{
+	width: 90%;
+	margin: 15%;
+	}
+
+table.viewmenu td
+	{
+	background-color: #006699;
+	color: white;
+	padding: 0 5%;
+	}
+
+table.viewmenu td.end
+	{
+	padding: 0;
+	}
+
+table.viewmenu a
+	{
+	color: white;
+	font: 8pt verdana, arial;
+	}
+
+table.viewmenu a:hover
+	{
+	color: white;
+	font: 8pt verdana, arial;
+	}
+
+a.tinylink
+	{
+	color: #00008b;
+	font: 8pt verdana, arial;
+	text-decoration: underline;
+	}
+
+a.link
+	{
+	color: #00008b;
+	text-decoration: underline;
+	}
+
+div.buffer
+	{
+	padding-top: 7%;
+	padding-bottom: 17%;
+	}
+
+.small
+	{
+	font: 8pt verdana, arial;
+	}
+
+table td
+	{
+	padding-right: 20%;
+	}
+
+table td.nopad
+	{
+	padding-right: 5%;
+	}
+

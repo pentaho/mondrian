@@ -1,0 +1,2381 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="../../../../misc/Meta.xsl" ?>
+<!--
+  == This software is subject to the terms of the Eclipse Public License v1.0
+  == Agreement, available at the following URL:
+  == http://www.eclipse.org/legal/epl-v10.html.
+  == You must accept the terms of that agreement to use this software.
+  ==
+  == Copyright (C) 2001-2005 Julian Hyde
+  == Copyright (C) 2005-2011 Pentaho and others
+  == All Rights Reserved.
+  ==
+  == This file defines an MMM schema for an Olap schema.
+  -->
+<Model
+ name="mondrian"
+ dtdName="mondrian.dtd"
+ className="MondrianDef"
+ packageName="mondrian.olap"
+ importName="mondrian.rolap.sql.SqlQuery"
+ root="Schema"
+ version="1.0">
+    <Doc>
+This is the XML model for Mondrian schemas.
+<p/>
+Revision is $Id$
+    </Doc>
+
+    <!-- Schema ========================================================== -->
+    <Element type="Schema">
+        <Doc>
+            <p>A schema is a collection of cubes and virtual cubes.
+            It can also contain shared dimensions (for use by those
+            cubes), named sets, roles, and declarations of
+            user-defined functions.</p>
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>Name of this schema</Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this schema.
+            </Doc>
+        </Attribute>
+        <Attribute name="measuresCaption" required="false">
+            <Doc>
+                Label for the measures dimension.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="defaultRole" required="false">
+            <Doc>The name of the default role for connections to this schema</Doc>
+        </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
+        <Array name="parameters" type="Parameter">
+            <Doc>
+                This schema's parameter definitions.
+            </Doc>
+        </Array>
+        <Array name="dimensions" type="Dimension">
+            <Doc>
+                Shared dimensions in this schema.
+            </Doc>
+        </Array>
+        <Array name="cubes" type="Cube">
+            <Doc>
+                Cubes in this schema.
+            </Doc>
+        </Array>
+        <Array name="virtualCubes" type="VirtualCube">
+            <Doc>
+                Virtual cubes in this schema.
+            </Doc>
+        </Array>
+        <Array name="namedSets" type="NamedSet">
+            <Doc>
+                Named sets in this schema.
+            </Doc>
+        </Array>
+        <Array name="roles" type="Role">
+            <Doc>
+                Roles in this schema.
+            </Doc>
+        </Array>
+        <Array name="userDefinedFunctions" type="UserDefinedFunction">
+            <Doc>
+                Declarations of user-defined functions in this schema.
+            </Doc>
+        </Array>
+        <Code><![CDATA[
+            Cube getCube(String cubeName) {
+                for (int i = 0; i < cubes.length; i++) {
+                    if (cubes[i].name.equals(cubeName)) {
+                        return cubes[i];
+                    }
+                }
+                throw Util.newInternal("Cannot find cube '" + cubeName + "'");
+            }
+            Dimension getPublicDimension(String dimensionName) {
+                for (int i = 0; i < dimensions.length; i++) {
+                    if (dimensions[i].name.equals(dimensionName)) {
+                        return dimensions[i];
+                    }
+                }
+                throw Util.newInternal(
+                    "Cannot find public dimension '" + dimensionName + "'");
+            }]]>
+        </Code>
+    </Element>
+
+    <!-- CubeDimension ==================================================== -->
+    <Element type="CubeDimension" abstract="true">
+        <Doc>
+            A CubeDimension is either a usage of a Dimension ('shared
+            dimension', in MSOLAP parlance), or a 'private dimension'.
+        </Doc>
+        <Attribute name="name" required="true"/>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the Dimension's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this dimension is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this dimension.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="foreignKey">
+            <Doc>
+                The name of the column in the fact table which joins
+                to the leaf level of this dimension. Required in a
+                private Dimension or a DimensionUsage, but not in a
+                public Dimension.
+            </Doc>
+        </Attribute>
+        <Attribute name="highCardinality" type="Boolean" default="false">
+            <Doc>
+                Flag to mark this dimension as a high cardinality one
+                and avoid caching.
+            </Doc>
+        </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
+        <Code><![CDATA[
+            /**
+             * Looks up the base dimension of this dimension. If this is a
+             * usage of a shared dimension, returns the referenced dimension;
+             * otherwise returns the dimension itself.
+             *
+             * <p>Never returns null; if the dimension cannot be
+             * found, throws an error.
+             *
+             * @param schema Schema, never null
+             * @pre schema != null
+             * @post return != null
+             */
+            public abstract Dimension getDimension(Schema schema);]]>
+        </Code>
+    </Element>
+
+    <!-- Cube ============================================================ -->
+    <Element type="Cube">
+        <Doc>
+            Definition of a cube.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this cube.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the cube's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this cube is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this cube.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="defaultMeasure" required="false">
+            <Doc>
+                The name of the measure that would be taken as the default
+                measure of the cube.
+            </Doc>
+        </Attribute>
+        <Attribute name="cache" type="Boolean" default="true">
+            <Doc>
+                Should the Fact table data for this Cube be cached
+                by Mondrian or not. The default action is to cache
+                the data.
+            </Doc>
+        </Attribute>
+        <Attribute name="enabled" type="Boolean"
+                    required="false" default="true">
+            <Doc>
+                Whether element is enabled - if true, then the Cube is
+                realized otherwise it is ignored.
+            </Doc>
+        </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
+        <Object name="fact" type="Relation" required="true">
+            <Doc>
+                The fact table is the source of all measures in this cube. If
+                this is a <code>Table</code> and the schema name is not
+                present, table name is left unqualified.
+            </Doc>
+        </Object>
+        <Array name="dimensions" type="CubeDimension"><Doc></Doc></Array>
+        <Array name="measures" type="Measure"><Doc></Doc></Array>
+        <Array name="calculatedMembers" type="CalculatedMember">
+            <Doc>
+                Calculated members in this cube.
+            </Doc>
+        </Array>
+        <Array name="namedSets" type="NamedSet">
+            <Doc>
+                Named sets in this cube.
+            </Doc>
+        </Array>
+        <Code><![CDATA[
+            public boolean isEnabled() {
+                return enabled.booleanValue();
+            }
+            Dimension getDimension(Schema xmlSchema, String dimensionName) {
+                for (int i = 0; i < dimensions.length; i++) {
+                    if (dimensions[i].name.equals(dimensionName)) {
+                        return dimensions[i].getDimension(xmlSchema);
+                    }
+                }
+                throw Util.newInternal(
+                    "Cannot find dimension '" + dimensionName + "' in cube '" +
+                    name + "'");
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <!-- VirtualCube ====================================================== -->
+    <Element type="VirtualCube">
+        <Doc>
+            A <code>VirtualCube</code> is a set of dimensions and
+            measures gleaned from other cubes.
+        </Doc>
+        <Attribute name="enabled" type="Boolean"
+                    required="false" default="true">
+            <Doc>
+                Whether this element is enabled - if true, then the Virtual
+                Cube is realized otherwise it is ignored.
+            </Doc>
+        </Attribute>
+        <Attribute name="name"><Doc></Doc></Attribute>
+        <Attribute name="defaultMeasure" required="false">
+            <Doc>The name of the measure that would be taken as the default
+                measure of the cube.
+            </Doc>
+         </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the cube's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this cube is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this virtual cube.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
+        <Object name="cubeUsage" type="CubeUsages"><Doc></Doc></Object>
+        <Array name="dimensions" type="VirtualCubeDimension"><Doc></Doc></Array>
+        <Array name="measures" type="VirtualCubeMeasure"><Doc></Doc></Array>
+        <Array name="calculatedMembers" type="CalculatedMember">
+            <Doc>
+                Calculated members that belong to this virtual cube.
+                (Calculated members inherited from other cubes should not be
+                in this list.)
+            </Doc>
+        </Array>
+        <Array name="namedSets" type="NamedSet">
+            <Doc>
+                Named sets in this cube.
+            </Doc>
+        </Array>
+        <Code><![CDATA[
+            public boolean isEnabled() {
+                return enabled.booleanValue();
+            }]]>
+        </Code>
+    </Element>
+
+    <!-- CubeUsages ============================================= -->
+    <Element type="CubeUsages">
+        <Doc>
+            List of base cubes used by the virtual cube.
+        </Doc>
+        <Array name="cubeUsages" type="CubeUsage" min="1"><Doc></Doc></Array>
+    </Element>
+
+    <!-- CubeUsage ============================================= -->
+    <Element type="CubeUsage">
+        <Attribute name="cubeName" required="true">
+            <Doc>
+                Name of the cube which the virtualCube uses.
+            </Doc>
+        </Attribute>
+        <Attribute name="ignoreUnrelatedDimensions" type="Boolean" default="false">
+            <Doc>
+                Unrelated dimensions to measures in this cube will be pushed to
+                top level member.
+            </Doc>
+        </Attribute>
+    </Element>
+
+    <!-- VirtualCubeDimension ============================================= -->
+    <Element type="VirtualCubeDimension" class="CubeDimension">
+        <Doc>
+            A VirtualCubeDimension is a usage of a Dimension in a VirtualCube.
+        </Doc>
+        <Attribute name="cubeName">
+            <Doc>
+                Name of the cube which the dimension belongs to, or
+                unspecified if the dimension is shared.
+            </Doc>
+        </Attribute>
+        <Attribute name="name">
+            <Doc>
+                Name of the dimension.
+            </Doc>
+        </Attribute>
+        <Code><![CDATA[
+            // implement CubeDimension
+            public Dimension getDimension(Schema schema) {
+                Util.assertPrecondition(schema != null, "schema != null");
+                if (cubeName == null) {
+                    return schema.getPublicDimension(name);
+                } else {
+                    Cube cube = schema.getCube(cubeName);
+                    return cube.getDimension(schema, name);
+                }
+            }]]>
+        </Code>
+    </Element>
+
+    <!-- VirtualCubeMeasure =============================================== -->
+    <Element type="VirtualCubeMeasure">
+        <Doc>
+            A VirtualCubeMeasure is a usage of a Measure in a VirtualCube.
+        </Doc>
+        <Attribute name="cubeName">
+            <Doc>
+                Name of the cube which the measure belongs to.
+            </Doc>
+        </Attribute>
+        <Attribute name="name">
+            <Doc>
+                Unique name of the measure within its cube.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean" required="false">
+            <Doc>
+                Whether this member is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
+    </Element>
+
+    <!-- DimensionUsage =================================================== -->
+    <Element type="DimensionUsage" class="CubeDimension">
+        <Doc>
+            A <code>DimensionUsage</code> is usage of a shared
+            Dimension within the context of a cube.
+        </Doc>
+        <Attribute name="source" required="true">
+            <Doc>Name of the source dimension. Must be a dimension in
+            this schema. Case-sensitive.</Doc>
+        </Attribute>
+        <Attribute name="level" required="false">
+            <Doc>
+                Name of the level to join to. If not specified, joins to the
+                lowest level of the dimension.
+            </Doc>
+        </Attribute>
+        <Attribute name="usagePrefix" required="false">
+            <Doc>
+                If present, then this is prepended to the Dimension column
+                names during the building of collapse dimension aggregates
+                allowing 1) different dimension usages to be disambiguated
+                during aggregate table recognition and 2) multiple shared
+                dimensions that have common column names to be disambiguated.
+            </Doc>
+        </Attribute>
+        <Code><![CDATA[
+            // implement CubeDimension
+            public Dimension getDimension(Schema schema) {
+                Util.assertPrecondition(schema != null, "schema != null");
+                for (int i = 0; i < schema.dimensions.length; i++) {
+                    if (schema.dimensions[i].name.equals(source)) {
+                        return schema.dimensions[i];
+                    }
+                }
+                throw Util.newInternal(
+                    "Cannot find shared dimension '" + source + "'");
+            }]]>
+        </Code>
+    </Element>
+
+    <!-- Dimension ======================================================== -->
+    <Element type="Dimension" class="CubeDimension">
+        <Doc>
+            A <code>Dimension</code> is a collection of hierarchies. There are
+            two kinds: a <dfn>public</dfn> dimension belongs to a
+            <code>Schema</code>, and be used by several cubes; a
+            <dfn>private</dfn> dimension belongs to a
+            <code>Cube</code>. The <code>foreignKey</code> field is only
+            applicable to private dimensions.
+        </Doc>
+        <Attribute name="name" required="true"><Doc></Doc></Attribute>
+        <Attribute name="type" required="false">
+            <Doc>
+                The dimension's type may be one of "Standard" or "Time". A
+                <dfn>time</dfn>
+                dimension will allow the use of the MDX time functions (WTD,
+                YTD, QTD, <i>etc.</i>). Use a <dfn>standard</dfn> dimension
+                if the dimension is not a time-related dimension. The default
+                value is <code>"Standard"</code>.
+            </Doc>
+            <Value>StandardDimension</Value>
+            <Value>TimeDimension</Value>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the dimensions's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this dimension.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="usagePrefix" required="false">
+            <Doc>
+                If present, then this is prepended to the Dimension column
+                names during the building of collapse dimension aggregates
+                allowing 1) different dimensions to be disambiguated
+                during aggregate table recognition.
+                This should only be set for private dimensions.
+            </Doc>
+        </Attribute>
+
+        <Array name="hierarchies" type="Hierarchy"><Doc></Doc></Array>
+        <Code>
+            // implement CubeDimension
+            public Dimension getDimension(Schema schema) {
+                Util.assertPrecondition(schema != null, "schema != null");
+                return this;
+            }
+
+            // Return the dimension's enumerated type.
+            public DimensionType getDimensionType() {
+                if (type == null) {
+                    return null; //DimensionType.StandardDimension;
+                } else {
+                    return DimensionType.valueOf(type);
+                }
+            }
+        </Code>
+    </Element>
+
+    <Element type="Hierarchy">
+        <Doc>
+            Defines a hierarchy.
+
+            <p/>You must specify at most one <code>&lt;Relation&gt;</code>
+            or <code>memberReaderClass</code>. If you specify none, the
+            hierarchy is assumed to come from the same fact table of the
+            current cube.
+        </Doc>
+        <Attribute name="name" required="false">
+            <Doc>
+                Name of the hierarchy. If this is not specified, the hierarchy
+                has the same name as its dimension.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this hierarchy is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
+        <Attribute name="hasAll" type="Boolean" required="true">
+            <Doc>
+                Whether this hierarchy has an 'all' member.
+            </Doc>
+        </Attribute>
+        <Attribute name="allMemberName" required="false">
+            <Doc>
+                Name of the 'all' member. If this attribute is not specified,
+                the all member is named 'All <i>hierarchyName</i>', for
+                example, 'All Store'.
+            </Doc>
+        </Attribute>
+        <Attribute name="allMemberCaption" required="false">
+            <Doc>
+                A string being displayed instead as the all member's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="allLevelName" required="false">
+            <Doc>
+                Name of the 'all' level. If this attribute is not specified,
+                the all member is named '(All)'.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="primaryKey">
+            <Doc>
+                The name of the column which identifies members, and
+                which is referenced by rows in the fact table.
+                If not specified, the key of the lowest level is used.
+                See also <code>CubeDimension.foreignKey</code>.
+            </Doc>
+        </Attribute>
+        <Attribute name="primaryKeyTable">
+            <Doc>
+                The name of the table which contains <code>primaryKey</code>.
+                If the hierarchy has only one table, defaults to that;
+                it is required.
+            </Doc>
+        </Attribute>
+        <Attribute name="defaultMember"><Doc></Doc></Attribute>
+        <Attribute name="memberReaderClass">
+            <Doc>
+                Name of the custom member reader class. Must implement
+                the <a href="api/mondrian/rolap/MemberReader.html">mondrian.rolap.MemberReader</a> interface.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string to be displayed in the user interface.
+                If not specified, the hierarchy's name is used.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this hierarchy.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="uniqueKeyLevelName" required="false">
+            <Doc>
+		        Should be set to the level (if such a level exists) at which depth it is known
+		        that all members have entirely unique rows, allowing SQL GROUP BY clauses to
+                be completely eliminated from the query.
+            </Doc>
+        </Attribute>
+
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
+        <Object name="relation" type="RelationOrJoin">
+            <Doc>
+                The {@link MondrianDef.Table table},
+                {@link MondrianDef.Join set of tables},
+                {@link MondrianDef.View SQL statement}, or
+                {@link MondrianDef.InlineTable inline table}
+                which populates this hierarchy.
+            </Doc>
+        </Object>
+        <Array name="levels" type="Level"><Doc></Doc></Array>
+        <Array name="memberReaderParameters" type="MemberReaderParameter"/>
+    </Element>
+
+    <Element type="Level">
+        <Attribute name="approxRowCount" required="false">
+            <Doc>
+                The estimated number of members in this level.
+                Setting this property improves the performance of
+                MDSCHEMA_LEVELS, MDSCHEMA_HIERARCHIES and
+                MDSCHEMA_DIMENSIONS XMLA requests
+            </Doc>
+        </Attribute>
+        <Attribute name="name" required="true"><Doc></Doc></Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this level is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
+        <Attribute name="table" required="false">
+            <Doc>
+                The name of the table that the column comes from. If
+                this hierarchy is based upon just one table, defaults to
+                the name of that table; otherwise, it is required.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="column">
+            <Doc>
+                The name of the column which holds the unique identifier of
+                this level.
+            </Doc>
+        </Attribute>
+        <Attribute name="nameColumn">
+            <Doc>
+                The name of the column which holds the user identifier of
+                this level.
+            </Doc>
+        </Attribute>
+
+        <Attribute name="ordinalColumn" required="false">
+            <Doc>
+                The name of the column which holds member
+                ordinals.  If this column is not specified, the
+                key column is used for ordering.
+            </Doc>
+        </Attribute>
+        <Attribute name="parentColumn" required="false">
+            <Doc>
+                The name of the column which references the parent member in
+                a parent-child hierarchy.
+            </Doc>
+        </Attribute>
+        <Attribute name="nullParentValue" required="false">
+            <Doc>
+                Value which identifies null parents in a parent-child
+                hierarchy. Typical values are 'NULL' and '0'.
+            </Doc>
+        </Attribute>
+        <Attribute name="type" default="String">
+            <Doc>
+                Indicates the type of this level's key column:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+                When generating SQL statements, Mondrian
+                encloses values for String columns in quotation marks,
+                but leaves values for Integer and Numeric columns un-quoted.
+
+                <p/>Date, Time, and Timestamp values are quoted according to the
+                SQL dialect. For a SQL-compliant dialect, the values appear
+                prefixed by their typename, for example, "DATE '2006-06-01'".
+            </Doc>
+            <Value>String</Value>
+            <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
+        </Attribute>
+        <Attribute name="internalType" required="false">
+            <Doc>
+                Indicates the Java type that Mondrian uses to store this
+                level's key column. It also determines the JDBC method that
+                Mondrian will call to retrieve the column; for example, if the
+                Java type is 'int', Mondrian will call 'ResultSet.getInt(int)'.
+
+                <p/>Usually this attribute is not needed, because Mondrian can
+                choose a sensible type based on the type of the database
+                column.
+
+                <p/>Allowable values are: 'int', 'long', 'Object', 'String'.
+            </Doc>
+            <Value>int</Value>
+            <Value>long</Value>
+            <Value>Object</Value>
+            <Value>String</Value>
+        </Attribute>
+        <Attribute name="uniqueMembers" type="Boolean" default="false">
+            <Doc>
+                Whether members are unique across all parents. For
+                example, zipcodes are unique across all states. The
+                first level's members are always unique.
+            </Doc>
+        </Attribute>
+        <Attribute name="levelType" required="false" default="Regular">
+            <Doc>
+                Whether this is a regular or a time-related level.
+                The value makes a difference to time-related functions
+                such as YTD (year-to-date).
+
+                <p>The "TimeHalfYear" value is deprecated and will be removed
+                 in mondrian-4.0; use "TimeHalfYears" instead.</p>
+            </Doc>
+            <Value>Regular</Value>
+            <Value>TimeYears</Value>
+            <Value>TimeHalfYears</Value>
+            <Value>TimeHalfYear</Value>
+            <Value>TimeQuarters</Value>
+            <Value>TimeMonths</Value>
+            <Value>TimeWeeks</Value>
+            <Value>TimeDays</Value>
+            <Value>TimeHours</Value>
+            <Value>TimeMinutes</Value>
+            <Value>TimeSeconds</Value>
+            <Value>TimeUndefined</Value>
+        </Attribute>
+        <Attribute name="hideMemberIf" default="Never">
+            <Doc>
+                Condition which determines whether a member of this level
+                is hidden. If a hierarchy has one or more levels with hidden
+                members, then it is possible that not all leaf members are the
+                same distance from the root, and it is termed a <dfn>ragged
+                hierarchy</dfn>.
+
+                <p>Allowable values are:
+                <code>Never</code> (a member always appears; the default);
+                <code>IfBlankName</code> (a member doesn't appear if its name
+                is null, empty or all whitespace); and
+                <code>IfParentsName</code> (a member appears unless its name
+                matches the parent's.</p>
+            </Doc>
+            <Value>Never</Value>
+            <Value>IfBlankName</Value>
+            <Value>IfParentsName</Value>
+        </Attribute>
+        <Attribute name="formatter" required="false">
+            <Doc>
+                Name of a formatter class for the member labels being displayed.
+                The class must implement the mondrian.spi.MemberFormatter
+                interface.
+
+                <p>This attribute is deprecated. Please use a nested
+                MemberFormatter element.</p>
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the level's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this level.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="captionColumn" required="false">
+            <Doc>
+                The name of the column which holds the caption for
+                members.
+            </Doc>
+        </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
+        <Object name="keyExp" type="KeyExpression" required="false">
+            <Doc>
+                The SQL expression used to populate this level's key.
+            </Doc>
+        </Object>
+        <Object name="nameExp" type="NameExpression" required="false">
+            <Doc>
+                The SQL expression used to populate this level's name. If not
+                specified, the level's key is used.
+            </Doc>
+        </Object>
+        <Object name="captionExp" type="CaptionExpression" required="false">
+            <Doc>
+                The SQL expression used to populate this level's caption. If not
+                specified, the level's name is used.
+            </Doc>
+        </Object>
+        <Object name="ordinalExp" type="OrdinalExpression" required="false">
+            <Doc>
+                The SQL expression used to populate this level's ordinal.
+            </Doc>
+        </Object>
+        <Object name="parentExp" type="ParentExpression" required="false">
+            <Doc>
+                The SQL expression used to join to the parent member in a
+                parent-child hierarchy.
+            </Doc>
+        </Object>
+        <Object name="memberFormatter" type="MemberFormatter" required="false">
+            <Doc>
+                Member formatter.
+            </Doc>
+        </Object>
+        <Object name="closure" type="Closure" required="false"/>
+        <Array name="properties" type="Property" min="0"/>
+        <Code>
+            public Expression getKeyExp() {
+                if (keyExp != null) {
+                    return keyExp;
+                } else if (column != null) {
+                    return new Column(table, column);
+                } else {
+                    return null;
+                }
+            }
+
+            public Expression getNameExp() {
+                if (nameExp != null) {
+                    return nameExp;
+                } else if (nameColumn != null) {
+                    return new Column(table, nameColumn);
+                } else {
+                    return null;
+                }
+            }
+
+            public Expression getCaptionExp() {
+                if (captionExp != null) {
+                    return captionExp;
+                } else if (captionColumn != null) {
+                    return new Column(table, captionColumn);
+                } else {
+                    return null;
+                }
+            }
+
+            public Expression getOrdinalExp() {
+                if (ordinalExp != null) {
+                    return ordinalExp;
+                } else if (ordinalColumn != null) {
+                    return new Column(table, ordinalColumn);
+                } else {
+                    return null;
+                }
+            }
+
+            public Expression getParentExp() {
+                if (parentExp != null) {
+                    return parentExp;
+                } else if (parentColumn != null) {
+                    return new Column(table, parentColumn);
+                } else {
+                    return null;
+                }
+            }
+
+            public Expression getPropertyExp(int i) {
+                return new Column(table, properties[i].column);
+            }
+
+            public mondrian.spi.Dialect.Datatype getDatatype() {
+                return mondrian.spi.Dialect.Datatype.valueOf(type);
+            }
+        </Code>
+    </Element>
+
+    <Element type="Closure">
+        <Doc>
+            Specifies the transitive closure of a parent-child hierarchy.
+            Optional, but recommended for better performance.
+            The closure is provided as a set of (parent/child) pairs:
+            since it is the transitive closure these are actually (ancestor/descendant) pairs.
+        </Doc>
+        <Attribute name="parentColumn" required="true"/>
+        <Attribute name="childColumn" required="true"/>
+        <Object name="table" type="Table" required="true"/>
+    </Element>
+
+    <Element type="Property">
+        <Doc>
+            Member property.
+        </Doc>
+        <Attribute name="name"><Doc></Doc></Attribute>
+        <Attribute name="column"><Doc></Doc></Attribute>
+        <Attribute name="type" default="String">
+            <Doc>
+                Data type of this property:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+            </Doc>
+            <Value>String</Value>
+            <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
+        </Attribute>
+        <Attribute name="formatter" required="false">
+            <Doc>
+                <p>Name of a formatter class for the appropriate property value
+                being displayed.</p>
+
+                <p>The class must implement the mondrian.spi.PropertyFormatter
+                interface.</p>
+
+                <p>This attribute is deprecated. Please use a nested
+                PropertyFormatter element.</p>
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this member property.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="dependsOnLevelValue" required="false" type="Boolean">
+            <Doc>
+		        Should be set to true if the value of the property is functionally dependent on
+		        the level value.  This permits the associated property column to be omitted from
+		        the GROUP BY clause (if the database permits columns in the SELECT that are not
+                in the GROUP BY).  This can be a significant performance enhancement on some
+                databases, such as MySQL.
+            </Doc>
+        </Attribute>
+        <Object name="propertyFormatter" type="PropertyFormatter" required="false">
+            <Doc>
+                Property formatter.
+            </Doc>
+        </Object>
+    </Element>
+
+    <Element type="Measure">
+        <Attribute name="name" required="true">
+            <Doc>Name of this measure.</Doc>
+        </Attribute>
+        <Attribute name="column" required="false">
+            <Doc>
+                Column which is source of this measure's values.
+                If not specified, a measure expression must be specified.
+            </Doc>
+        </Attribute>
+        <Attribute name="datatype" required="false">
+            <Doc>
+                The datatype of this measure:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+
+                <p/>The default datatype of a measure is
+                'Integer' if the measure's aggregator is 'Count',
+                otherwise it is 'Numeric'.
+            </Doc>
+            <Value>String</Value>
+            <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
+        </Attribute>
+        <Attribute name="formatString">
+            <Doc>
+                Format string with which to format cells of this measure. For
+                more details, see the <a href="api/mondrian/util/Format.html">mondrian.util.Format</a> class.
+            </Doc>
+        </Attribute>
+        <Attribute name="aggregator" required="true">
+            <Doc>
+                Aggregation function. Allowed values are "sum", "count", "min",
+                "max", "avg", and "distinct-count". ("distinct count" is allowed
+                for backwards compatibility, but is deprecated because XML
+                enumerated attributes in a DTD cannot legally contain spaces.)
+            </Doc>
+        </Attribute>
+        <Attribute name="formatter" required="false">
+            <Doc>
+                <p>Name of a formatter class for the appropriate cell being
+                displayed.</p>
+
+                <p>The class must implement the
+                mondrian.spi.CellFormatter interface.</p>
+
+                <p>This attribute is deprecated. Please use a nested
+                CellFormatter element.</p>
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this measure.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean" required="false">
+            <Doc>
+                Whether this member is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
+        <Object name="measureExp" type="MeasureExpression" required="false">
+            <Doc>
+                The SQL expression used to calculate a measure.
+                Must be specified if a source column is not specified.
+            </Doc>
+        </Object>
+        <Object name="cellFormatter" type="CellFormatter" required="false">
+            <Doc>
+                Cell formatter.
+            </Doc>
+        </Object>
+        <Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
+    </Element>
+
+    <Element type="CalculatedMember">
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this calculated member.
+            </Doc>
+        </Attribute>
+        <Attribute name="formatString">
+            <Doc>
+                Format string with which to format cells of this member. For
+                more details, see {@link mondrian.util.Format}.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this calculated member.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="formula" required="false">
+            <Doc>
+                MDX expression which gives the value of this member.
+                Equivalent to the Formula sub-element.
+            </Doc>
+        </Attribute>
+        <Attribute name="dimension" required="false">
+            <Doc>
+                <p>Name of the dimension that this member belongs to.</p>
+                <p>Deprecated: use {@code hierarchy} attribute instead.</p>
+            </Doc>
+        </Attribute>
+        <Attribute name="hierarchy" required="false">
+            <Doc>
+                <p>Name of the hierarchy that this member belongs to.</p>
+            </Doc>
+        </Attribute>
+        <Attribute name="parent" required="false">
+            <Doc>
+                Fully-qualified name of the parent member.
+                If not specified, the member will be at the lowest level
+                (besides the 'all' level) in the hierarchy.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean" required="false">
+            <Doc>
+                Whether this member is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
+        <Object name="formulaElement" type="Formula" required="false">
+            <Doc>
+                MDX expression which gives the value of this member.
+            </Doc>
+        </Object>
+        <Object name="cellFormatter" type="CellFormatter" required="false">
+            <Doc>
+                Cell formatter.
+            </Doc>
+        </Object>
+        <Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
+        <Code>
+            /**
+              * Returns the formula, looking for a sub-element called
+              * "Formula" first, then looking for an attribute called
+              * "formula".
+              */
+            public String getFormula() {
+                if (formulaElement != null) {
+                    return formulaElement.cdata;
+                } else {
+                    return formula;
+                }
+            }
+            /**
+              * Returns the format string, looking for a property called
+              * "FORMAT_STRING" first, then looking for an attribute called
+              * "formatString".
+              */
+            public String getFormatString() {
+                for (CalculatedMemberProperty prop : memberProperties) {
+                    if (prop.name.equals(
+                        mondrian.olap.Property.FORMAT_STRING.name))
+                    {
+                        return prop.value;
+                    }
+                }
+                return formatString;
+            }
+        </Code>
+    </Element>
+
+    <Element type="CalculatedMemberProperty">
+        <Doc>
+            Property of a calculated member defined against a cube.
+            It must have either an expression or a value.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this member property.
+            </Doc>
+        </Attribute>
+         <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the name of this calculated
+                member property.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this calculated member property.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="expression">
+            <Doc>
+                MDX expression which defines the value of this property.
+                If the expression is a constant string, you could enclose it in
+                quotes, or just specify the 'value' attribute instead.
+            </Doc>
+        </Attribute>
+        <Attribute name="value">
+            <Doc>
+                Value of this property.
+                If the value is not constant, specify the 'expression' attribute
+                instead.
+            </Doc>
+        </Attribute>
+    </Element>
+
+    <Element type="NamedSet">
+        <Doc><![CDATA[
+            <p>Defines a named set which can be used in queries in the
+            same way as a set defined using a WITH SET clause.</p>
+
+            <p>A named set can be defined against a particular cube,
+            or can be global to a schema. If it is defined against a
+            cube, it is only available to queries which use that cube.</p>
+
+            <p>A named set defined against a cube is not inherited by
+            a virtual cubes defined against that cube. (But you can
+            define a named set against a virtual cube.)</p>
+
+            <p>A named set defined against a schema is available in
+            all cubes and virtual cubes in that schema. However, it is
+            only valid if the cube contains dimensions with the names
+            required to make the formula valid.</p>]]>
+
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this named set.
+            </Doc>
+        </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                Caption of this named set.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this named set.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="formula" required="false">
+            <Doc>
+                MDX expression which gives the value of this set.
+                Equivalent to the Formula sub-element.
+            </Doc>
+        </Attribute>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
+        <Object name="formulaElement" type="Formula" required="false">
+            <Doc>
+                MDX expression which gives the value of this set.
+            </Doc>
+        </Object>
+        <Code>
+            /**
+              * Returns the formula, looking for a sub-element called
+              * "Formula" first, then looking for an attribute called
+              * "formula".
+              */
+            public String getFormula() {
+                if (formulaElement != null) {
+                    return formulaElement.cdata;
+                } else {
+                    return formula;
+                }
+            }
+        </Code>
+    </Element>
+
+    <Element type="Formula">
+        <CData/>
+    </Element>
+
+    <Element type="MemberReaderParameter">
+        <Doc>Not used</Doc>
+        <Attribute name="name"/>
+        <Attribute name="value"/>
+    </Element>
+
+    <Element type="RelationOrJoin" abstract="true">
+        <Doc>A table or a join</Doc>
+        <Code>
+            public abstract Relation find(String seekAlias);
+            public boolean equals(Object o) {
+                return this == o;
+            }
+            public int hashCode() {
+                return System.identityHashCode(this);
+            }
+        </Code>
+    </Element>
+
+    <Element type="Relation" class="RelationOrJoin" abstract="true">
+        <Doc>A table, inline table or view</Doc>
+        <Code>
+            public abstract String getAlias();
+        </Code>
+    </Element>
+
+    <Element type="View" class="Relation">
+        <Doc>
+            A collection of SQL statements, one per dialect.
+        </Doc>
+        <Attribute name="alias" required="true"/>
+        <Array name="selects" type="SQL" min="1"/>
+        <Code>
+            /**
+             * Copy constructor.
+             */
+            public View(View view) {
+                this.alias = view.alias;
+                this.selects = view.selects.clone();
+            }
+            public String toString() {
+                return selects[0].cdata;
+            }
+
+            public View find(String seekAlias) {
+                if (seekAlias.equals(alias)) {
+                    return this;
+                } else {
+                    return null;
+                }
+            }
+
+            public String getAlias() {
+                return alias;
+            }
+
+            public SqlQuery.CodeSet getCodeSet() {
+                return SQL.toCodeSet(selects);
+            }
+
+            public void addCode(String dialect, String code) {
+                if (selects == null) {
+                    selects = new SQL[1];
+                } else {
+                    SQL[] olds = selects;
+                    selects = new SQL[olds.length + 1];
+                    System.arraycopy(olds, 0, selects, 0, olds.length);
+                }
+                SQL sql = new SQL();
+                sql.dialect = dialect;
+                sql.cdata = code;
+                selects[selects.length - 1] = sql;
+            }
+
+            public boolean equals(Object o) {
+                if (o instanceof View) {
+                    View that = (View) o;
+                    if (!this.alias.equals(that.alias)) {
+                        return false;
+                    }
+                    if (this.selects == null || that.selects == null || this.selects.length != that.selects.length) {
+                        return false;
+                    }
+                    for (int i = 0; i &lt; selects.length; i++) {
+                        if (!Util.equals(this.selects[i].dialect, that.selects[i].dialect)
+                            || !Util.equals(this.selects[i].cdata, that.selects[i].cdata))
+                        {
+                            return false;
+                        }
+                    }
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            </Code>
+    </Element>
+
+    <Element type="SQL">
+        <Attribute name="dialect" required="true" default="generic">
+            <Doc>
+                Dialect of SQL the view is intended for. Valid values include,
+                but are not limited to:
+                <ul>
+                <li>generic</li>
+                <li>access</li>
+                <li>db2</li>
+                <li>derby</li>
+                <li>firebird</li>
+                <li>hsqldb</li>
+                <li>mssql</li>
+                <li>mysql</li>
+                <li>oracle</li>
+                <li>postgres</li>
+                <li>sybase</li>
+                <li>teradata</li>
+                <li>ingres</li>
+                <li>infobright</li>
+                <li>luciddb</li>
+                <li>vertica</li>
+                <li>neoview</li>
+                </ul>
+            </Doc>
+        </Attribute>
+        <CData/>
+        <Code><![CDATA[
+            public int hashCode() {
+                return dialect.hashCode();
+            }
+
+            public boolean equals(Object obj) {
+                if (!(obj instanceof SQL)) {
+                    return false;
+                }
+                SQL that = (SQL) obj;
+                return this.dialect.equals(that.dialect) &&
+                        Util.equals(this.cdata, that.cdata);
+            }
+
+            /**
+             * Converts an array of SQL to a
+             * {@link mondrian.rolap.sql.SqlQuery.CodeSet} object.
+             */
+            public static SqlQuery.CodeSet toCodeSet(SQL[] sqls) {
+                SqlQuery.CodeSet codeSet = new SqlQuery.CodeSet();
+                for (SQL sql : sqls) {
+                    codeSet.put(sql.dialect, sql.cdata);
+                }
+                return codeSet;
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Join" class="RelationOrJoin">
+        <Attribute name="leftAlias">
+            <Doc>
+                Defaults to left's alias if left is a table, otherwise
+                required.
+            </Doc>
+        </Attribute>
+        <Attribute name="leftKey" required="true"/>
+        <Attribute name="rightAlias">
+            <Doc>
+                Defaults to right's alias if right is a table, otherwise
+                required.
+            </Doc>
+        </Attribute>
+        <Attribute name="rightKey" required="true"/>
+        <Object name="left" type="RelationOrJoin" required="true"/>
+        <Object name="right" type="RelationOrJoin" required="true"/>
+        <Code>
+            /** Convenience constructor. */
+            public Join(
+                String leftAlias,
+                String leftKey,
+                RelationOrJoin left,
+                String rightAlias, 
+                String rightKey,
+                RelationOrJoin right)
+            {
+                this.leftAlias = leftAlias;
+                this.leftKey = leftKey;
+                this.left = left;
+                this.rightAlias = rightAlias;
+                this.rightKey = rightKey;
+                this.right = right;
+            }
+            /**
+              * Returns the alias of the left join key, defaulting to left's
+              * alias if left is a table.
+              */
+            public String getLeftAlias() {
+                if (leftAlias != null) {
+                    return leftAlias;
+                }
+                if (left instanceof Relation) {
+                    return ((Relation) left).getAlias();
+                }
+                throw Util.newInternal(
+                    "alias is required because " + left + " is not a table");
+            }
+            /**
+              * Returns the alias of the right join key, defaulting to right's
+              * alias if right is a table.
+              */
+            public String getRightAlias() {
+                if (rightAlias != null) {
+                    return rightAlias;
+                }
+                if (right instanceof Relation) {
+                    return ((Relation) right).getAlias();
+                }
+                if (right instanceof Join) {
+                    return ((Join) right).getLeftAlias();
+                }
+                throw Util.newInternal(
+                    "alias is required because " + right + " is not a table");
+            }
+            public String toString() {
+                return "(" + left + ") join (" + right + ") on " +
+                    leftAlias + "." + leftKey + " = " +
+                    rightAlias + "." + rightKey;
+            }
+            public Relation find(String seekAlias) {
+                Relation relation = left.find(seekAlias);
+                if (relation == null) {
+                    relation = right.find(seekAlias);
+                }
+                return relation;
+            }
+        </Code>
+    </Element>
+
+    <Element type="Table" class="Relation">
+        <Attribute name="name" required="true"/>
+        <Attribute name="schema">
+            <Doc>
+                Optional qualifier for <code>table</code>.
+            </Doc>
+        </Attribute>
+        <Attribute name="alias">
+            <Doc>
+                Alias to be used with this table when it is used to
+                form queries. If not specified, defaults to the table
+                name, but in any case, must be unique within the
+                schema. (You can use the same table in different
+                hierarchies, but it must have different aliases.)
+            </Doc>
+        </Attribute>
+        <Object name="filter" type="SQL" required="false">
+        <Doc>
+          The SQL WHERE clause expression to be appended to any select statement
+        </Doc>
+        </Object>
+        <Array name="aggExcludes" type="AggExclude" required="false"/>
+        <Array name="aggTables" type="AggTable" required="false"/>
+        <Array name="tableHints" type="Hint" required="false">
+            <Doc>
+                Table optimization hints; may be ignored by dialect.
+            </Doc>
+        </Array>
+
+        <Code><![CDATA[
+            private java.util.Map<String,String> hintMap;
+            /** Convenience constructor. */
+            public Table(Table table) {
+                this(table.schema, table.name, table.alias, table.tableHints);
+            }
+            public Table(String schema, String name, String alias, Hint[] tablehints) {
+                this();
+                this.schema = schema;
+                this.name = name;
+                this.alias = alias;
+                this.hintMap = buildHintMap(tablehints);
+            }
+
+            public Table(Table tbl, String possibleName) {
+                this(tbl.schema, tbl.name, possibleName, tbl.tableHints);
+                
+                // Remake the filter with the new alias
+                if (tbl.filter != null) {
+                    this.filter = new SQL();
+                    this.filter.dialect = tbl.filter.dialect;
+                     if (tbl.filter.cdata != null) {
+                        this.filter.cdata =
+                            tbl.filter.cdata.replace(
+                                tbl.alias == null
+                                    ? tbl.name
+                                    : tbl.alias,
+                                possibleName);
+                    }
+                }
+            }
+            
+            private java.util.Map<String,String> buildHintMap(Hint[] th) {
+                java.util.Map<String,String> h =
+                    new java.util.HashMap<String,String>();
+                if (th != null) {
+                    for (int i = 0; i < th.length; i++) {
+                        h.put(th[i].type, th[i].cdata);
+                    }
+                }
+                return h;
+            }
+            /** Returns the alias or, if it is null, the table name. */
+            public String getAlias() {
+                return (alias != null) ? alias : name;
+            }
+            public String toString() {
+                return (schema == null) ?
+                    name :
+                    schema + "." + name;
+            }
+            public Table find(String seekAlias) {
+                return seekAlias.equals(name) ? this :
+                    (alias != null) && seekAlias.equals(alias) ? this :
+                    null;
+            }
+            public boolean equals(Object o) {
+                if (o instanceof Table) {
+                    Table that = (Table) o;
+                    return this.name.equals(that.name) &&
+                        Util.equals(this.alias, that.alias) &&
+                        Util.equals(this.schema, that.schema);
+                } else {
+                    return false;
+                }
+            }
+            public int hashCode() {
+                return toString().hashCode();
+            }
+            public String getFilter() {
+                return (filter == null) ? null : filter.cdata;
+            }
+            public AggExclude[] getAggExcludes() {
+                return aggExcludes;
+            }
+            public AggTable[] getAggTables() {
+                return aggTables;
+            }
+            public java.util.Map<String,String> getHintMap() {
+                if (hintMap == null) {
+                    hintMap = buildHintMap(this.tableHints);
+                }
+                return hintMap;
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Hint">
+        <Doc>
+            Dialect-specific table optimization hints.
+        </Doc>
+        <Attribute name="type" required="true">
+            <Doc>
+                Type of hint, interpreted and applied on a per-dialect basis.
+            </Doc>
+        </Attribute>
+        <CData/>
+    </Element>
+
+    <Element type="InlineTable" class="Relation">
+        <Attribute name="alias">
+            <Doc>
+                Alias to be used with this table when it is used to
+                form queries. If not specified, defaults to the table
+                name, but in any case, must be unique within the
+                schema. (You can use the same table in different
+                hierarchies, but it must have different aliases.)
+            </Doc>
+        </Attribute>
+        <Object name="columnDefs" type="ColumnDefs" required="true"/>
+        <Object name="rows" type="Rows" required="true"/>
+        <Code><![CDATA[
+            /** Convenience constructor. */
+            public InlineTable(InlineTable inlineTable) {
+                this.alias = inlineTable.alias;
+                this.columnDefs = new ColumnDefs();
+                this.columnDefs.array = inlineTable.columnDefs.array.clone();
+                this.rows = new Rows();
+                this.rows.array = inlineTable.rows.array.clone();
+            }
+            public String getAlias() {
+                return alias;
+            }
+            public String toString() {
+                return "<inline data>";
+            }
+            public InlineTable find(String seekAlias) {
+                return seekAlias.equals(this.alias) ? this : null;
+            }
+            public boolean equals(Object o) {
+                if (o instanceof InlineTable) {
+                    InlineTable that = (InlineTable) o;
+                    return this.alias.equals(that.alias);
+                } else {
+                    return false;
+                }
+            }
+            public int hashCode() {
+                return toString().hashCode();
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="ColumnDefs">
+        <Doc>Holder for an array of ColumnDef elements</Doc>
+        <Array name="array" type="ColumnDef"/>
+    </Element>
+
+    <Element type="ColumnDef">
+        <Doc>
+            Column definition for an inline table.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of the column.
+            </Doc>
+        </Attribute>
+        <Attribute name="type" required="true">
+            <Doc>
+                Type of the column:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+            </Doc>
+            <Value>String</Value>
+            <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
+        </Attribute>
+    </Element>
+
+    <Element type="Rows">
+        <Doc>Holder for an array of Row elements</Doc>
+        <Array name="array" type="Row"/>
+    </Element>
+
+    <Element type="Row">
+        <Doc>
+            Row definition for an inline table.
+            Must have one Column for each ColumnDef in the InlineTable.
+        </Doc>
+        <Array name="values" type="Value"/>
+    </Element>
+
+    <Element type="Value">
+        <Doc>
+            Column value for an inline table.
+            The CDATA holds the value of the column.
+        </Doc>
+        <Attribute name="column" required="true">
+            <Doc>
+                Name of the column.
+            </Doc>
+        </Attribute>
+        <CData/>
+    </Element>
+
+    <!-- AggTable ======================================================= -->
+    <Element type="AggTable" abstract="true">
+        <Doc>
+            A definition of an aggregate table for a base fact table.
+            This aggregate table must be in the same schema as the
+            base fact table.
+        </Doc>
+        <Attribute name="ignorecase" type="Boolean" required="false"
+                default="true" >
+            <Doc>
+                Whether or not the match should ignore case.
+            </Doc>
+        </Attribute>
+        <Object name="factcount" type="AggFactCount" required="true">
+            <Doc>
+                What does the fact_count column look like.
+            </Doc>
+        </Object>
+        <Array name="ignoreColumns" type="AggIgnoreColumn"/>
+        <Array name="foreignKeys" type="AggForeignKey"/>
+        <Array name="measures" type="AggMeasure"/>
+        <Array name="levels" type="AggLevel"/>
+        <Code>
+            public boolean isIgnoreCase() {
+                return ignorecase.booleanValue();
+            }
+            public AggFactCount getAggFactCount() {
+                return factcount;
+            }
+            public AggIgnoreColumn[] getAggIgnoreColumns() {
+                return ignoreColumns;
+            }
+            public AggForeignKey[] getAggForeignKeys() {
+                return foreignKeys;
+            }
+            public AggMeasure[] getAggMeasures() {
+                return measures;
+            }
+            public AggLevel[] getAggLevels() {
+                return levels;
+            }
+        </Code>
+    </Element>
+
+    <Element type="AggName" class="AggTable">
+        <Attribute name="name" required="true">
+            <Doc>
+                The Table name of a Specific aggregate table.
+            </Doc>
+        </Attribute>
+        <Attribute name="approxRowCount" required="false">
+            <Doc>
+                The estimated number of rows in this aggregation
+                table. Setting this property improves the
+                performance of the aggregation optimizer and
+                prevents it from issuing a 'select count(*)'
+                query over the aggregation table.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getNameAttribute() {
+                return name;
+            }
+            public String getApproxRowCountAttribute() {
+                return approxRowCount;
+            }
+        </Code>
+    </Element>
+
+    <Element type="AggPattern" class="AggTable">
+        <Attribute name="pattern" required="true">
+            <Doc>
+                A Table pattern used to define a set of aggregate tables.
+            </Doc>
+        </Attribute>
+        <Array name="excludes" type="AggExclude"/>
+        <Code>
+            public String getPattern() {
+                return pattern;
+            }
+            public AggExclude[] getAggExcludes() {
+                return excludes;
+            }
+        </Code>
+    </Element>
+
+    <Element type="AggExclude">
+        <Attribute name="pattern" required="false">
+            <Doc>
+                A Table pattern not to be matched.
+            </Doc>
+        </Attribute>
+        <Attribute name="name" required="false">
+            <Doc>
+                The Table name not to be matched.
+            </Doc>
+        </Attribute>
+        <Attribute name="ignorecase" type="Boolean" required="false"
+                default="true" >
+            <Doc>
+                Whether or not the match should ignore case.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getNameAttribute() {
+                return name;
+            }
+            public String getPattern() {
+                return pattern;
+            }
+            public boolean isIgnoreCase() {
+                return ignorecase.booleanValue();
+            }
+        </Code>
+    </Element>
+
+    <Element type="AggColumnName" abstract="true">
+        <Attribute name="column" required="true">
+            <Doc>
+                The name of the fact count column.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getColumnName() {
+                return column;
+            }
+        </Code>
+    </Element>
+
+    <Element type="AggFactCount" class= "AggColumnName"/>
+
+    <Element type="AggIgnoreColumn" class= "AggColumnName"/>
+
+    <Element type="AggForeignKey">
+        <Doc>
+            The name of the column mapping from base fact table foreign key
+            to aggregate table foreign key.
+        </Doc>
+        <Attribute name="factColumn" required="true">
+            <Doc>
+                The name of the base fact table foreign key.
+            </Doc>
+        </Attribute>
+        <Attribute name="aggColumn" required="true">
+            <Doc>
+                The name of the aggregate table foreign key.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getFactFKColumnName() {
+                return factColumn;
+            }
+            public String getAggregateFKColumnName() {
+                return aggColumn;
+            }
+        </Code>
+    </Element>
+    <Element type="AggLevel">
+        <Attribute name="column" required="true">
+            <Doc>
+                The name of the column mapping to the level name.
+            </Doc>
+        </Attribute>
+        <Attribute name="name" required="true">
+            <Doc>
+                The name of the Dimension Hierarchy level.
+            </Doc>
+        </Attribute>
+        <Attribute name="collapsed" required="false" type="Boolean" default="true">
+            <Doc>
+                Whether this is a collapsed level. The parents of that level
+                are also present in the aggregation table.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getNameAttribute() {
+                return name;
+            }
+            public String getColumnName() {
+                return column;
+            }
+            public boolean isCollapsed() {
+                return collapsed;
+            }
+        </Code>
+    </Element>
+
+    <Element type="AggMeasure">
+        <Attribute name="column" required="true">
+            <Doc>
+                The name of the column mapping to the measure name.
+            </Doc>
+        </Attribute>
+        <Attribute name="name" required="true">
+            <Doc>
+                The name of the Cube measure.
+            </Doc>
+        </Attribute>
+        <Code>
+            public String getNameAttribute() {
+                return name;
+            }
+            public String getColumn() {
+                return column;
+            }
+        </Code>
+    </Element>
+
+
+    <Class class="Expression">
+        <Code>
+            public abstract String getExpression(SqlQuery query);
+            public abstract String getGenericExpression();
+            public abstract String getTableAlias();
+        </Code>
+    </Class>
+
+    <Element type="Column" class="Expression">
+        <Attribute name="table">
+            <Doc>
+                Alias of the table which contains this column. Not required if
+                the query only has one table.
+            </Doc>
+        </Attribute>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of the column.
+            </Doc>
+        </Attribute>
+        <Code><![CDATA[
+            private String genericExpression;
+
+            /** Convenience constructor. */
+            public Column(String table, String name) {
+                this();
+                Util.assertTrue(name != null);
+                this.table = table;
+                this.name = name;
+                this.genericExpression = table == null ? name : (table + "." + name);
+            }
+
+            public String getExpression(SqlQuery query) {
+                return query.getDialect().quoteIdentifier(table, name);
+            }
+
+            public String getGenericExpression() {
+                return genericExpression;
+            }
+
+            public String getColumnName() {
+                return name;
+            }
+            public String getTableAlias() {
+                return table;
+            }
+            public int hashCode() {
+                return name.hashCode() ^ (table==null ? 0 : table.hashCode());
+            }
+
+            public boolean equals(Object obj) {
+                if (!(obj instanceof Column)) {
+                    return false;
+                }
+                Column that = (Column) obj;
+                return this.name.equals(that.name) &&
+                        Util.equals(this.table, that.table);
+            }]]>
+        </Code>
+    </Element>
+
+    <Element type="ExpressionView" class="Expression" abstract="true">
+        <Doc>
+            A collection of SQL expressions, one per dialect.
+        </Doc>
+        <Array name="expressions" type="SQL" min="1"/>
+        <Code><![CDATA[
+            public String toString() {
+                return expressions[0].cdata;
+            }
+
+            public String getExpression(SqlQuery query) {
+                return SQL.toCodeSet(expressions).chooseQuery(query.getDialect());
+            }
+
+            public String getGenericExpression() {
+                for (int i = 0; i < expressions.length; i++) {
+                    if (expressions[i].dialect.equals("generic")) {
+                        return expressions[i].cdata;
+                    }
+                }
+                return expressions[0].cdata;
+            }
+
+            public String getTableAlias() {
+                return null;
+            }
+
+            public int hashCode() {
+                int h = 17;
+                for (int i = 0; i < expressions.length; i++) {
+                    h = 37 * h + expressions[i].hashCode();
+                }
+                return h;
+            }
+
+            public boolean equals(Object obj) {
+                if (!(obj instanceof ExpressionView)) {
+                    return false;
+                }
+                ExpressionView that = (ExpressionView) obj;
+                if (this.expressions.length != that.expressions.length) {
+                    return false;
+                }
+                for (int i = 0; i < expressions.length; i++) {
+                    if (! this.expressions[i].equals(that.expressions[i])) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="KeyExpression" class="ExpressionView"/>
+    <Element type="ParentExpression" class="ExpressionView"/>
+    <Element type="OrdinalExpression" class="ExpressionView"/>
+    <Element type="NameExpression" class="ExpressionView"/>
+    <Element type="CaptionExpression" class="ExpressionView"/>
+    <Element type="MeasureExpression" class="ExpressionView"/>
+
+    <!-- Access control =================================================== -->
+    <Element type="Role">
+        <Doc>
+            A role defines an access-control profile. It has a series of grants
+            (or denials) for schema elements.
+        </Doc>
+        <Attribute name="name" required="true"/>
+        <Object name="annotations" type="Annotations" required="false">
+            <Doc>Contains values of user-defined properties.</Doc>
+        </Object>
+        <Array name="schemaGrants" type="SchemaGrant"/>
+        <Object name="union" type="Union" required="false" />
+    </Element>
+
+    <Class class="Grant">
+        <Attribute name="access" required="true">
+            <Doc>Values correspond to <code>Access</code>.</Doc>
+            <Value>all</Value>
+            <Value>custom</Value>
+            <Value>none</Value>
+            <Value>all_dimensions</Value>
+        </Attribute>
+    </Class>
+
+    <Element class="Grant" type="SchemaGrant">
+        <Doc>
+            Grants (or denies) this role access to this schema.
+            <code>access</code> may be "all", "all_dimensions", "custom"
+            or "none".
+            If <code>access</code> is "all_dimensions", the role has access
+            to all dimensions but still needs explicit access to cubes.
+            If <code>access</code> is "custom", no access will be inherited by
+            cubes for which no explicit rule is set.
+            If <code>access</code> is "all_dimensions", an implicut access is
+            given to all dimensions of the schema's cubes, provided the cube's
+            access attribute is either "custom" or "all".
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Schema, int)">mondrian.olap.Role#grant(mondrian.olap.Schema,int)</a>.
+        </Doc>
+        <Array name="cubeGrants" type="CubeGrant"/>
+    </Element>
+
+    <Element class="Grant" type="CubeGrant">
+        <Doc>
+            Grants (or denies) this role access to a cube.
+            <code>access</code> may be "all", "custom", or "none".
+            If <code>access</code> is "custom", no access will be inherited
+            by the dimensions of this cube, unless the parent SchemaGrant is
+            set to "ALL_DIMENSIONS".
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Cube, int)">mondrian.olap.Role#grant(mondrian.olap.Cube,int)</a>.
+        </Doc>
+        <Attribute name="cube" required="true">
+            <Doc>The unique name of the cube</Doc>
+        </Attribute>
+        <Array name="dimensionGrants" type="DimensionGrant"/>
+        <Array name="hierarchyGrants" type="HierarchyGrant"/>
+    </Element>
+
+    <Element class="Grant" type="DimensionGrant">
+        <Doc>
+            Grants (or denies) this role access to a dimension.
+            <code>access</code> may be "all", "custom" or "none".
+            Note that a role is implicitly given access to a dimension when it
+            is given "ALL" acess to a cube.
+            If <code>access</code> is "custom", no access will be inherited
+            by the hierarchies of this dimension.
+            If the parent schema <code>access</code> is "ALL_DIMENSIONS",
+            this timension will inherit <code>access</code> "ALL".
+            See also the "all_dimensions" option of the "SchemaGrant" element.
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Dimension, int)">mondrian.olap.Role#grant(mondrian.olap.Dimension,int)</a>.
+        </Doc>
+        <Attribute name="dimension" required="true">
+            <Doc>The unique name of the dimension</Doc>
+        </Attribute>
+    </Element>
+
+    <Element class="Grant" type="HierarchyGrant">
+        <Doc>
+            Grants (or denies) this role access to a hierarchy.
+            <code>access</code> may be "all", "custom" or "none".
+            If <code>access</code> is "custom", you may also specify the
+            attributes <code>topLevel</code>, <code>bottomLevel</code>, and
+            the member grants.
+            If <code>access</code> is "custom", the child levels of this
+            hierarchy will not inherit access rights from this hierarchy,
+            should there be no explicit rules defined for the said child level.
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)">mondrian.olap.Role#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)</a>.
+        </Doc>
+        <Attribute name="hierarchy" required="true">
+            <Doc>The unique name of the hierarchy</Doc>
+        </Attribute>
+        <Attribute name="topLevel" required="false">
+            <Doc>Unique name of the highest level of the hierarchy from which
+            this role is allowed to see members. May only be specified if
+            the <code>HierarchyGrant.access</code> is "custom". If not
+            specified, role can see members up to the top level.</Doc>
+        </Attribute>
+        <Attribute name="bottomLevel" required="false">
+            <Doc>Unique name of the lowest level of the hierarchy from which
+            this role is allowed to see members. May only be specified if
+            the <code>HierarchyGrant.access</code> is "custom". If not
+            specified, role can see members down to the leaf level.</Doc>
+        </Attribute>
+        <Attribute name="rollupPolicy" required="false">
+            <Doc>Policy which determines how cell values are calculated if
+                not all of the children of the current cell are visible to
+                the current role. Allowable values are 'full' (the default),
+                'partial', and 'hidden'.</Doc>
+        </Attribute>
+        <Array name="memberGrants" type="MemberGrant"/>
+    </Element>
+
+    <Element type="MemberGrant">
+        <Doc>
+            Grants (or denies) this role access to a member.
+            The children of this member inherit that access.
+            You can implicitly see a member if you can see any of its children.
+            See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Member, int)">mondrian.olap.Role#grant(mondrian.olap.Member,int)</a>.
+        </Doc>
+        <Attribute name="member" required="true">
+            <Doc>The unique name of the member</Doc>
+        </Attribute>
+        <Attribute name="access" required="true">
+            <Value>all</Value>
+            <Value>none</Value>
+        </Attribute>
+    </Element>
+
+    <!-- Union ============================================================ -->
+    <Element type="Union">
+        <Doc>
+            Body of a Role definition which defines a Role to be the union
+            of several Roles. The RoleUsage elements must refer to Roles that
+            have been declared earlier in this schema file.
+        </Doc>
+        <Array name="roleUsages" type="RoleUsage" required="true"/>
+    </Element>
+
+    <!-- RoleUsage ======================================================== -->
+    <Element type="RoleUsage">
+        <Doc>
+            Usage of a Role in a union Role.
+        </Doc>
+        <Attribute name="roleName" required="true"/>
+    </Element>
+
+    <!-- UserDefinedFunction ============================================== -->
+    <Element type="UserDefinedFunction">
+        <Doc>
+            A <code>UserDefinedFunction</code> is a function which
+            extends the MDX language. It must be implemented by a Java
+            class which implements the interface
+            <a href="api/mondrian/spi/UserDefinedFunction.html">mondrian.spi.UserDefinedFunction</a>.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>Name with which the user-defined function will be referenced in MDX expressions.</Doc>
+        </Attribute>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implemenets this user-defined function.
+                Must implement the <code>mondrian.spi.UserDefinedFunction</code>
+                interface.
+            </Doc>
+        </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this user-defined function.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
+    </Element>
+
+    <Element type="Parameter">
+        <Doc>
+            A <code>Parameter</code> defines a schema parameter.
+            It can be referenced from an MDX statement using the <code>ParamRef</code>
+            function and, if not final, its value can be overridden.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of this parameter.
+            </Doc>
+        </Attribute>
+        <Attribute name="description" required="false">
+            <Doc>
+                Description of this parameter.
+            </Doc>
+        </Attribute>
+        <Attribute name="type" default="String" required="true">
+            <Doc>
+                Indicates the type of this parameter:
+                String, Numeric, Integer, Boolean, Date, Time, Timestamp, or Member.
+            </Doc>
+            <Value>String</Value>
+            <Value>Numeric</Value>
+            <Value>Integer</Value>
+            <Value>Boolean</Value>
+            <Value>Date</Value>
+            <Value>Time</Value>
+            <Value>Timestamp</Value>
+            <Value>Member</Value>
+        </Attribute>
+        <Attribute name="modifiable" type="Boolean" required="false" default="true">
+            <Doc>
+                If false, statement cannot change the value of this parameter;
+                the parameter becomes effectively constant (provided that its default
+                value expression always returns the same value).
+                Default is true.
+            </Doc>
+        </Attribute>
+        <Attribute name="defaultValue" type="String" required="false">
+            <Doc>
+                Expression for the default value of this parameter.
+            </Doc>
+        </Attribute>
+    </Element>
+
+    <Element type="Annotations">
+        <Doc>Holder for an array of Annotation elements</Doc>
+        <Array name="array" type="Annotation"/>
+    </Element>
+
+    <Element type="Annotation">
+        <Doc>
+            User-defined property value.
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>
+                Name of the annotation.
+            </Doc>
+        </Attribute>
+        <CData/>
+    </Element>
+
+    <Element type="Script">
+        <Doc>
+            Script fragment to implement an SPI such as user-defined function,
+            member formatter, cell formatter.
+        </Doc>
+        <Attribute name="language" required="false" default="JavaScript">
+            <Doc>
+                The language of the script. Must be a supported scripting
+                language in the current JVM. See
+                {@link javax.script.ScriptEngineManager}.
+                Default value is 'JavaScript'.
+            </Doc>
+        </Attribute>
+        <CData/>
+    </Element>
+
+    <Element type="CellFormatter">
+        <Doc>
+            Plugin that formats the values of cells.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="api/mondrian/spi/CellFormatter.html">mondrian.spi.CellFormatter</a>,
+            or by a script.
+        </Doc>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implemenets this cell formatter.
+                Must implement the <code>mondrian.spi.CellFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this cell formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
+    </Element>
+
+    <Element type="MemberFormatter">
+        <Doc>
+            Plugin that formats members.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="api/mondrian/spi/MemberFormatter.html">mondrian.spi.MemberFormatter</a>,
+            or by a script.
+        </Doc>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implemenets this member formatter.
+                Must implement the <code>mondrian.spi.MemberFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this member formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
+    </Element>
+
+    <Element type="PropertyFormatter">
+        <Doc>
+            Plugin that formats properties.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="api/mondrian/spi/PropertyFormatter.html">mondrian.spi.PropertyFormatter</a>,
+            or by a script.
+        </Doc>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implemenets this property formatter.
+                Must implement the <code>mondrian.spi.PropertyFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this property formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
+    </Element>
+</Model>
+
+<!-- End Mondrian.xml -->

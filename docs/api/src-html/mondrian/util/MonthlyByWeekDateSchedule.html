@@ -1,0 +1,968 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2002-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2011 Pentaho<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.util;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import java.sql.Time;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import java.util.*;<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span>/**<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * A &lt;code&gt;Schedule&lt;/code&gt; generates a series of time events.<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * &lt;p&gt; Create a schedule using one of the factory methods:&lt;ul&gt;<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * &lt;li&gt;{@link #createOnce},&lt;/li&gt;<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * &lt;li&gt;{@link #createDaily},&lt;/li&gt;<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * &lt;li&gt;{@link #createWeekly},&lt;/li&gt;<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * &lt;li&gt;{@link #createMonthlyByDay},&lt;/li&gt;<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * &lt;li&gt;{@link #createMonthlyByWeek}.&lt;/li&gt;&lt;/ul&gt;<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * &lt;p&gt; Then use the {@link #nextOccurrence} method to find the next occurrence<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * after a particular point in time.<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * &lt;p&gt; The &lt;code&gt;begin&lt;/code&gt; and &lt;code&gt;end&lt;/code&gt; parameters represent the<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * points in time between which the schedule is active. Both are optional.<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * However, if a schedule type supports a &lt;code&gt;period&lt;/code&gt; parameter, and<a name="line.31"></a>
+<span class="sourceLineNo">032</span> * you supply a value greater than 1, &lt;code&gt;begin&lt;/code&gt; is used to determine<a name="line.32"></a>
+<span class="sourceLineNo">033</span> * the start of the cycle. If &lt;code&gt;begin&lt;/code&gt; is not specified, the cycle<a name="line.33"></a>
+<span class="sourceLineNo">034</span> * starts at the epoch (January 1st, 1970).<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *<a name="line.35"></a>
+<span class="sourceLineNo">036</span> * &lt;p&gt; The {@link Date} parameters in this API -- &lt;code&gt;begin&lt;/code&gt; and<a name="line.36"></a>
+<span class="sourceLineNo">037</span> * &lt;code&gt;end&lt;/code&gt;, the &lt;code&gt;time&lt;/code&gt; parameter to {@link #createOnce},<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * and the &lt;code&gt;earliestDate&lt;/code&gt; parameter and value returned from {@link<a name="line.38"></a>
+<span class="sourceLineNo">039</span> * #nextOccurrence} -- always represent a point in time (GMT), not a local<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * time.  If a schedule is to start at 12 noon Tokyo time, April 1st, 2002, it<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * is the application's reponsibility to convert this into a UTC {@link Date}<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * value.<a name="line.42"></a>
+<span class="sourceLineNo">043</span> *<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * @author jhyde<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * @since May 7, 2002<a name="line.45"></a>
+<span class="sourceLineNo">046</span> */<a name="line.46"></a>
+<span class="sourceLineNo">047</span>public class Schedule {<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>    // members<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>    private DateSchedule dateSchedule;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>    private TimeSchedule timeSchedule;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>    private TimeZone tz;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>    private Date begin;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>    private Date end;<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>    // constants<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>    /**<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     * Indicates that a schedule should fire on the last day of the month.<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     * @see #createMonthlyByDay<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     */<a name="line.62"></a>
+<span class="sourceLineNo">063</span>    public static final int LAST_DAY_OF_MONTH = 0;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    /**<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     * Indicates that a schedule should fire on the last week of the month.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     * @see #createMonthlyByWeek<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     */<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    public static final int LAST_WEEK_OF_MONTH = 0;<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>    static final TimeZone utcTimeZone = TimeZone.getTimeZone("UTC");<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>    static final int allDaysOfWeekBitmap =<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        (1 &lt;&lt; Calendar.MONDAY)<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        | (1 &lt;&lt; Calendar.TUESDAY)<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        | (1 &lt;&lt; Calendar.WEDNESDAY)<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        | (1 &lt;&lt; Calendar.THURSDAY)<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        | (1 &lt;&lt; Calendar.FRIDAY)<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        | (1 &lt;&lt; Calendar.SATURDAY)<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        | (1 &lt;&lt; Calendar.SUNDAY);<a name="line.79"></a>
+<span class="sourceLineNo">080</span>    static final int allDaysOfMonthBitmap =<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        0xefffFffe // bits 1..31<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        | (1 &lt;&lt; LAST_DAY_OF_MONTH);<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    static final int allWeeksOfMonthBitmap =<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        0x0000003e // bits 1..5<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        | (1 &lt;&lt; LAST_WEEK_OF_MONTH);<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>    // constructor(s) and factory methods<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>    /**<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     * Please use the factory methods {@link #createDaily} etc. to create a<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     * Schedule.<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     */<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    private Schedule(<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        DateSchedule dateSchedule,<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        TimeSchedule timeSchedule,<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        TimeZone tz,<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        Date begin,<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        Date end)<a name="line.98"></a>
+<span class="sourceLineNo">099</span>    {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        this.dateSchedule = dateSchedule;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        this.timeSchedule = timeSchedule;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        this.tz = tz;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        this.begin = begin;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        this.end = end;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    }<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>    /**<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     * Creates a calendar which fires only once.<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     * @param date date and time to fire, must be UTC<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     * @param tz timezone<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     * @pre tz != null<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     * @pre date != null<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     * @post return != null<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     */<a name="line.116"></a>
+<span class="sourceLineNo">117</span>    public static Schedule createOnce(Date date, TimeZone tz) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        Calendar calendar = ScheduleUtil.createCalendar(date);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        Time timeOfDay = ScheduleUtil.createTime(<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            calendar.get(Calendar.HOUR_OF_DAY),<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            calendar.get(Calendar.MINUTE),<a name="line.121"></a>
+<span class="sourceLineNo">122</span>            calendar.get(Calendar.SECOND));<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        calendar.add(Calendar.SECOND, 1);<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        Date datePlusDelta = calendar.getTime();<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        return createDaily(date, datePlusDelta, tz, timeOfDay, 1);<a name="line.125"></a>
+<span class="sourceLineNo">126</span>    }<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>    /**<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     * Creates a calendar which fires every day.<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     * @param begin open lower bound, may be null, must be UTC<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     * @param end closed upper bound, may be null, must be UTC<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     * @param tz timezone<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     * @param timeOfDay time at which to fire<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     * @param period causes the schedule to fire every &lt;code&gt;period&lt;/code&gt;<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     *     days. If &lt;code&gt;period&lt;/code&gt; is greater than 1, the cycle starts<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     *     at the begin point of the schedule, or at the epoch (1 January,<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     *     1970) if &lt;code&gt;begin&lt;/code&gt; is not specified.<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     *<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     * @pre tz != null<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     * @pre period &gt; 0<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     * @post return != null<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     */<a name="line.143"></a>
+<span class="sourceLineNo">144</span>    public static Schedule createDaily(<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        Date begin,<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        Date end,<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        TimeZone tz,<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        Time timeOfDay,<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        int period)<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        DateSchedule dateSchedule =<a name="line.151"></a>
+<span class="sourceLineNo">152</span>            new DailyDateSchedule(<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                begin == null ? null : ScheduleUtil.createCalendar(begin),<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                period);<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        return new Schedule(<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            dateSchedule,<a name="line.156"></a>
+<span class="sourceLineNo">157</span>            new OnceTimeSchedule(ScheduleUtil.createTimeCalendar(timeOfDay)),<a name="line.157"></a>
+<span class="sourceLineNo">158</span>            tz,<a name="line.158"></a>
+<span class="sourceLineNo">159</span>            begin,<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            end);<a name="line.160"></a>
+<span class="sourceLineNo">161</span>    }<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span>    /**<a name="line.163"></a>
+<span class="sourceLineNo">164</span>     * Creates a calendar which fires on particular days each week.<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     *<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     * @param tz timezone<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     * @param daysOfWeekBitmap a bitmap of day values, for example<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     *     &lt;code&gt;(1 &lt;&lt; {@link Calendar#TUESDAY}) |<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     *           (1 &lt;&lt; {@link Calendar#THURSDAY})&lt;/code&gt; to fire on Tuesdays<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     *     and Thursdays<a name="line.170"></a>
+<span class="sourceLineNo">171</span>     * @param timeOfDay time at which to fire<a name="line.171"></a>
+<span class="sourceLineNo">172</span>     * @param begin open lower bound, may be null<a name="line.172"></a>
+<span class="sourceLineNo">173</span>     * @param end closed upper bound, may be null<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     * @param period causes the schedule to be active every &lt;code&gt;period&lt;/code&gt;<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     *     weeks. If &lt;code&gt;period&lt;/code&gt; is greater than 1, the cycle starts<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     *     at the begin point of the schedule, or at the epoch (1 January,<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     *     1970) if &lt;code&gt;begin&lt;/code&gt; is not specified.<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     *<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     * @pre tz != null<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     * @pre period &gt; 0<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     * @post return != null<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     */<a name="line.182"></a>
+<span class="sourceLineNo">183</span>    public static Schedule createWeekly(<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        Date begin,<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        Date end,<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        TimeZone tz,<a name="line.186"></a>
+<span class="sourceLineNo">187</span>        Time timeOfDay,<a name="line.187"></a>
+<span class="sourceLineNo">188</span>        int period,<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        int daysOfWeekBitmap)<a name="line.189"></a>
+<span class="sourceLineNo">190</span>    {<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        DateSchedule dateSchedule =<a name="line.191"></a>
+<span class="sourceLineNo">192</span>            new WeeklyDateSchedule(<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                begin == null ? null : ScheduleUtil.createCalendar(begin),<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                period,<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                daysOfWeekBitmap);<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        return new Schedule(<a name="line.196"></a>
+<span class="sourceLineNo">197</span>            dateSchedule,<a name="line.197"></a>
+<span class="sourceLineNo">198</span>            new OnceTimeSchedule(ScheduleUtil.createTimeCalendar(timeOfDay)),<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            tz,<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            begin,<a name="line.200"></a>
+<span class="sourceLineNo">201</span>            end);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>    }<a name="line.202"></a>
+<span class="sourceLineNo">203</span><a name="line.203"></a>
+<span class="sourceLineNo">204</span>    /**<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     * Creates a calendar which fires on particular days of each month.<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     * For example,&lt;blockquote&gt;<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     *<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     * &lt;pre&gt;createMonthlyByDay(<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     *     null, null, TimeZone.getTimeZone("PST"), 1,<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     *     (1 &lt;&lt; 12) | (1 &lt;&lt; 14) | (1 &lt;&lt; {@link #LAST_DAY_OF_MONTH}))&lt;/pre&gt;<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     *<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     * &lt;/blockquote&gt; creates a schedule which fires on the 12th, 14th and last<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     * day of the month.<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     *<a name="line.214"></a>
+<span class="sourceLineNo">215</span>     * @param begin open lower bound, may be null<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     * @param end closed upper bound, may be null<a name="line.216"></a>
+<span class="sourceLineNo">217</span>     * @param tz timezone<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     * @param daysOfMonthBitmap a bitmap of day values, may include<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     *     {@link #LAST_DAY_OF_MONTH}<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     * @param timeOfDay time at which to fire<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     * @param period causes the schedule to be active every &lt;code&gt;period&lt;/code&gt;<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     *     months. If &lt;code&gt;period&lt;/code&gt; is greater than 1, the cycle starts<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     *     at the begin point of the schedule, or at the epoch (1 January,<a name="line.223"></a>
+<span class="sourceLineNo">224</span>     *     1970) if &lt;code&gt;begin&lt;/code&gt; is not specified.<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     *<a name="line.225"></a>
+<span class="sourceLineNo">226</span>     * @pre tz != null<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     * @pre period &gt; 0<a name="line.227"></a>
+<span class="sourceLineNo">228</span>     * @post return != null<a name="line.228"></a>
+<span class="sourceLineNo">229</span>     */<a name="line.229"></a>
+<span class="sourceLineNo">230</span>    public static Schedule createMonthlyByDay(<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        Date begin,<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        Date end,<a name="line.232"></a>
+<span class="sourceLineNo">233</span>        TimeZone tz,<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        Time timeOfDay,<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        int period,<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        int daysOfMonthBitmap)<a name="line.236"></a>
+<span class="sourceLineNo">237</span>    {<a name="line.237"></a>
+<span class="sourceLineNo">238</span>        DateSchedule dateSchedule =<a name="line.238"></a>
+<span class="sourceLineNo">239</span>            new MonthlyByDayDateSchedule(<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                begin == null ? null : ScheduleUtil.createCalendar(begin),<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                period, daysOfMonthBitmap);<a name="line.241"></a>
+<span class="sourceLineNo">242</span>        return new Schedule(<a name="line.242"></a>
+<span class="sourceLineNo">243</span>            dateSchedule,<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            new OnceTimeSchedule(ScheduleUtil.createTimeCalendar(timeOfDay)),<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            tz,<a name="line.245"></a>
+<span class="sourceLineNo">246</span>            begin,<a name="line.246"></a>
+<span class="sourceLineNo">247</span>            end);<a name="line.247"></a>
+<span class="sourceLineNo">248</span>    }<a name="line.248"></a>
+<span class="sourceLineNo">249</span><a name="line.249"></a>
+<span class="sourceLineNo">250</span>    /**<a name="line.250"></a>
+<span class="sourceLineNo">251</span>     * Creates a calendar which fires on particular days of particular weeks of<a name="line.251"></a>
+<span class="sourceLineNo">252</span>     * a month. For example,&lt;blockquote&gt;<a name="line.252"></a>
+<span class="sourceLineNo">253</span>     *<a name="line.253"></a>
+<span class="sourceLineNo">254</span>     * &lt;pre&gt;createMonthlyByWeek(<a name="line.254"></a>
+<span class="sourceLineNo">255</span>     *     null, null, TimeZone.getTimeZone("PST"),<a name="line.255"></a>
+<span class="sourceLineNo">256</span>     *     (1 &lt;&lt; Calendar.TUESDAY) | (1 &lt;&lt; Calendar.THURSDAY),<a name="line.256"></a>
+<span class="sourceLineNo">257</span>     *     (1 &lt;&lt; 2) | (1 &lt;&lt; {@link #LAST_WEEK_OF_MONTH})&lt;/pre&gt;<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     *<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     * &lt;/blockquote&gt; creates a schedule which fires on the 2nd and last Tuesday<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     * and Thursday of the month.<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     *<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     * @param begin open lower bound, may be null<a name="line.262"></a>
+<span class="sourceLineNo">263</span>     * @param end closed upper bound, may be null<a name="line.263"></a>
+<span class="sourceLineNo">264</span>     * @param tz timezone<a name="line.264"></a>
+<span class="sourceLineNo">265</span>     * @param daysOfWeekBitmap a bitmap of day values, for example<a name="line.265"></a>
+<span class="sourceLineNo">266</span>     *     &lt;code&gt;(1 &lt;&lt; Calendar.TUESDAY) | (1 &lt;&lt; Calendar.THURSDAY)&lt;/code&gt;<a name="line.266"></a>
+<span class="sourceLineNo">267</span>     * @param weeksOfMonthBitmap a bitmap of week values (may include<a name="line.267"></a>
+<span class="sourceLineNo">268</span>     *     {@link #LAST_WEEK_OF_MONTH}<a name="line.268"></a>
+<span class="sourceLineNo">269</span>     * @param timeOfDay time at which to fire<a name="line.269"></a>
+<span class="sourceLineNo">270</span>     * @param period causes the schedule be active every &lt;code&gt;period&lt;/code&gt;<a name="line.270"></a>
+<span class="sourceLineNo">271</span>     *     months. If &lt;code&gt;period&lt;/code&gt; is greater than 1, the cycle starts<a name="line.271"></a>
+<span class="sourceLineNo">272</span>     *     at the begin point of the schedule, or at the epoch (1 January,<a name="line.272"></a>
+<span class="sourceLineNo">273</span>     *     1970) if &lt;code&gt;begin&lt;/code&gt; is not specified.<a name="line.273"></a>
+<span class="sourceLineNo">274</span>     *<a name="line.274"></a>
+<span class="sourceLineNo">275</span>     * @pre tz != null<a name="line.275"></a>
+<span class="sourceLineNo">276</span>     * @pre period &gt; 0<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     * @post return != null<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     */<a name="line.278"></a>
+<span class="sourceLineNo">279</span>    public static Schedule createMonthlyByWeek(<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        Date begin,<a name="line.280"></a>
+<span class="sourceLineNo">281</span>        Date end,<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        TimeZone tz,<a name="line.282"></a>
+<span class="sourceLineNo">283</span>        Time timeOfDay,<a name="line.283"></a>
+<span class="sourceLineNo">284</span>        int period,<a name="line.284"></a>
+<span class="sourceLineNo">285</span>        int daysOfWeekBitmap,<a name="line.285"></a>
+<span class="sourceLineNo">286</span>        int weeksOfMonthBitmap)<a name="line.286"></a>
+<span class="sourceLineNo">287</span>    {<a name="line.287"></a>
+<span class="sourceLineNo">288</span>        DateSchedule dateSchedule =<a name="line.288"></a>
+<span class="sourceLineNo">289</span>            new MonthlyByWeekDateSchedule(<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                begin == null ? null : ScheduleUtil.createCalendar(begin),<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                period,<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                daysOfWeekBitmap,<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                weeksOfMonthBitmap);<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        return new Schedule(<a name="line.294"></a>
+<span class="sourceLineNo">295</span>            dateSchedule,<a name="line.295"></a>
+<span class="sourceLineNo">296</span>            new OnceTimeSchedule(ScheduleUtil.createTimeCalendar(timeOfDay)),<a name="line.296"></a>
+<span class="sourceLineNo">297</span>            tz,<a name="line.297"></a>
+<span class="sourceLineNo">298</span>            begin,<a name="line.298"></a>
+<span class="sourceLineNo">299</span>            end);<a name="line.299"></a>
+<span class="sourceLineNo">300</span>    }<a name="line.300"></a>
+<span class="sourceLineNo">301</span><a name="line.301"></a>
+<span class="sourceLineNo">302</span>    /**<a name="line.302"></a>
+<span class="sourceLineNo">303</span>     * Returns the next occurrence of this schedule after a given date. If<a name="line.303"></a>
+<span class="sourceLineNo">304</span>     * &lt;code&gt;after&lt;/code&gt; is null, returns the first occurrence. If there are<a name="line.304"></a>
+<span class="sourceLineNo">305</span>     * no further occurrences, returns null.<a name="line.305"></a>
+<span class="sourceLineNo">306</span>     *<a name="line.306"></a>
+<span class="sourceLineNo">307</span>     * @param after if not null, returns the first occurrence after this<a name="line.307"></a>
+<span class="sourceLineNo">308</span>     *    point in time; if null, returns the first occurrence ever.<a name="line.308"></a>
+<span class="sourceLineNo">309</span>     * @param strict If &lt;code&gt;after&lt;/code&gt; is an occurrence,<a name="line.309"></a>
+<span class="sourceLineNo">310</span>     *     &lt;code&gt;strict&lt;/code&gt; determines whether this method returns it, or<a name="line.310"></a>
+<span class="sourceLineNo">311</span>     *     the next occurrence. If &lt;code&gt;strict&lt;/code&gt; is true, the value<a name="line.311"></a>
+<span class="sourceLineNo">312</span>     *     returned is strictly greater than &lt;code&gt;after&lt;/code&gt;.<a name="line.312"></a>
+<span class="sourceLineNo">313</span>     */<a name="line.313"></a>
+<span class="sourceLineNo">314</span>    public Date nextOccurrence(Date after, boolean strict) {<a name="line.314"></a>
+<span class="sourceLineNo">315</span>        if (after == null<a name="line.315"></a>
+<span class="sourceLineNo">316</span>            || begin != null &amp;&amp; begin.after(after))<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        {<a name="line.317"></a>
+<span class="sourceLineNo">318</span>            after = begin;<a name="line.318"></a>
+<span class="sourceLineNo">319</span>            strict = false;<a name="line.319"></a>
+<span class="sourceLineNo">320</span>        }<a name="line.320"></a>
+<span class="sourceLineNo">321</span>        if (after == null) {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>            after = new Date(0);<a name="line.322"></a>
+<span class="sourceLineNo">323</span>        }<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        Date next = nextOccurrence0(after, strict);<a name="line.324"></a>
+<span class="sourceLineNo">325</span>        // if there is an upper bound, and this is not STRICTLY before it,<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        // there's no next occurrence<a name="line.326"></a>
+<span class="sourceLineNo">327</span>        if (next != null<a name="line.327"></a>
+<span class="sourceLineNo">328</span>            &amp;&amp; end != null<a name="line.328"></a>
+<span class="sourceLineNo">329</span>            &amp;&amp; !next.before(end))<a name="line.329"></a>
+<span class="sourceLineNo">330</span>        {<a name="line.330"></a>
+<span class="sourceLineNo">331</span>            next = null;<a name="line.331"></a>
+<span class="sourceLineNo">332</span>        }<a name="line.332"></a>
+<span class="sourceLineNo">333</span>        return next;<a name="line.333"></a>
+<span class="sourceLineNo">334</span>    }<a name="line.334"></a>
+<span class="sourceLineNo">335</span><a name="line.335"></a>
+<span class="sourceLineNo">336</span>    private Date nextOccurrence0(Date after, boolean strict) {<a name="line.336"></a>
+<span class="sourceLineNo">337</span>        Calendar next = ScheduleUtil.createCalendar(after);<a name="line.337"></a>
+<span class="sourceLineNo">338</span>        if (tz == null || tz.getID().equals("GMT")) {<a name="line.338"></a>
+<span class="sourceLineNo">339</span>            return nextOccurrence1(next, strict);<a name="line.339"></a>
+<span class="sourceLineNo">340</span>        } else {<a name="line.340"></a>
+<span class="sourceLineNo">341</span>            int offset;<a name="line.341"></a>
+<span class="sourceLineNo">342</span>            if (next == null) {<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                offset = tz.getRawOffset();<a name="line.343"></a>
+<span class="sourceLineNo">344</span>            } else {<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                offset = ScheduleUtil.timezoneOffset(tz, next);<a name="line.345"></a>
+<span class="sourceLineNo">346</span>            }<a name="line.346"></a>
+<span class="sourceLineNo">347</span>            // Add the offset to the calendar, so that the calendar looks like<a name="line.347"></a>
+<span class="sourceLineNo">348</span>            // the local time (even though it is still in GMT). Suppose an<a name="line.348"></a>
+<span class="sourceLineNo">349</span>            // event runs at 12:00 JST each day. At 02:00 GMT they ask for the<a name="line.349"></a>
+<span class="sourceLineNo">350</span>            // next event. We convert this to local time, 11:00 JST, by adding<a name="line.350"></a>
+<span class="sourceLineNo">351</span>            // the 9 hour offset. We will convert the result back to GMT by<a name="line.351"></a>
+<span class="sourceLineNo">352</span>            // subtracting the offset.<a name="line.352"></a>
+<span class="sourceLineNo">353</span>            next.add(Calendar.MILLISECOND, offset);<a name="line.353"></a>
+<span class="sourceLineNo">354</span>            Date result = nextOccurrence1(next, strict);<a name="line.354"></a>
+<span class="sourceLineNo">355</span>            if (result == null) {<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                return null;<a name="line.356"></a>
+<span class="sourceLineNo">357</span>            }<a name="line.357"></a>
+<span class="sourceLineNo">358</span>            Calendar resultCalendar = ScheduleUtil.createCalendar(result);<a name="line.358"></a>
+<span class="sourceLineNo">359</span>            int offset2 = ScheduleUtil.timezoneOffset(tz, resultCalendar);<a name="line.359"></a>
+<span class="sourceLineNo">360</span>            // Shift the result back again.<a name="line.360"></a>
+<span class="sourceLineNo">361</span>            resultCalendar.add(Calendar.MILLISECOND, -offset2);<a name="line.361"></a>
+<span class="sourceLineNo">362</span>            return resultCalendar.getTime();<a name="line.362"></a>
+<span class="sourceLineNo">363</span>        }<a name="line.363"></a>
+<span class="sourceLineNo">364</span>    }<a name="line.364"></a>
+<span class="sourceLineNo">365</span><a name="line.365"></a>
+<span class="sourceLineNo">366</span>    private Date nextOccurrence1(Calendar earliest, boolean strict) {<a name="line.366"></a>
+<span class="sourceLineNo">367</span>        Calendar earliestDay = ScheduleUtil.floor(earliest);<a name="line.367"></a>
+<span class="sourceLineNo">368</span>        Calendar earliestTime = ScheduleUtil.getTime(earliest);<a name="line.368"></a>
+<span class="sourceLineNo">369</span>        // first, try a later time on the same day<a name="line.369"></a>
+<span class="sourceLineNo">370</span>        Calendar nextDay = dateSchedule.nextOccurrence(earliestDay, false);<a name="line.370"></a>
+<span class="sourceLineNo">371</span>        Calendar nextTime = timeSchedule.nextOccurrence(earliestTime, strict);<a name="line.371"></a>
+<span class="sourceLineNo">372</span>        if (nextTime == null) {<a name="line.372"></a>
+<span class="sourceLineNo">373</span>            // next, try the first time on a later day<a name="line.373"></a>
+<span class="sourceLineNo">374</span>            nextDay = dateSchedule.nextOccurrence(earliestDay, true);<a name="line.374"></a>
+<span class="sourceLineNo">375</span>            nextTime =<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                timeSchedule.nextOccurrence(ScheduleUtil.midnightTime, false);<a name="line.376"></a>
+<span class="sourceLineNo">377</span>        }<a name="line.377"></a>
+<span class="sourceLineNo">378</span>        if (nextDay == null || nextTime == null) {<a name="line.378"></a>
+<span class="sourceLineNo">379</span>            return null;<a name="line.379"></a>
+<span class="sourceLineNo">380</span>        }<a name="line.380"></a>
+<span class="sourceLineNo">381</span>        nextDay.set(Calendar.HOUR_OF_DAY, nextTime.get(Calendar.HOUR_OF_DAY));<a name="line.381"></a>
+<span class="sourceLineNo">382</span>        nextDay.set(Calendar.MINUTE, nextTime.get(Calendar.MINUTE));<a name="line.382"></a>
+<span class="sourceLineNo">383</span>        nextDay.set(Calendar.SECOND, nextTime.get(Calendar.SECOND));<a name="line.383"></a>
+<span class="sourceLineNo">384</span>        nextDay.set(Calendar.MILLISECOND, nextTime.get(Calendar.MILLISECOND));<a name="line.384"></a>
+<span class="sourceLineNo">385</span>        return nextDay.getTime();<a name="line.385"></a>
+<span class="sourceLineNo">386</span>    }<a name="line.386"></a>
+<span class="sourceLineNo">387</span>}<a name="line.387"></a>
+<span class="sourceLineNo">388</span><a name="line.388"></a>
+<span class="sourceLineNo">389</span>/**<a name="line.389"></a>
+<span class="sourceLineNo">390</span> * A &lt;code&gt;TimeSchedule&lt;/code&gt; generates a series of times within a day.<a name="line.390"></a>
+<span class="sourceLineNo">391</span> */<a name="line.391"></a>
+<span class="sourceLineNo">392</span>interface TimeSchedule {<a name="line.392"></a>
+<span class="sourceLineNo">393</span>    /**<a name="line.393"></a>
+<span class="sourceLineNo">394</span>     * Returns the next occurrence at or after &lt;code&gt;after&lt;/code&gt;. If<a name="line.394"></a>
+<span class="sourceLineNo">395</span>     * &lt;code&gt;after&lt;/code&gt; is null, returns the first occurrence. If there are<a name="line.395"></a>
+<span class="sourceLineNo">396</span>     * no further occurrences, returns null.<a name="line.396"></a>
+<span class="sourceLineNo">397</span>     *<a name="line.397"></a>
+<span class="sourceLineNo">398</span>     * @param strict if true, return time must be after &lt;code&gt;after&lt;/code&gt;, not<a name="line.398"></a>
+<span class="sourceLineNo">399</span>     *     equal to it<a name="line.399"></a>
+<span class="sourceLineNo">400</span>     */<a name="line.400"></a>
+<span class="sourceLineNo">401</span>    Calendar nextOccurrence(Calendar earliest, boolean strict);<a name="line.401"></a>
+<span class="sourceLineNo">402</span>}<a name="line.402"></a>
+<span class="sourceLineNo">403</span><a name="line.403"></a>
+<span class="sourceLineNo">404</span>/**<a name="line.404"></a>
+<span class="sourceLineNo">405</span> * A &lt;code&gt;OnceTimeSchedule&lt;/code&gt; fires at one and only one time.<a name="line.405"></a>
+<span class="sourceLineNo">406</span> */<a name="line.406"></a>
+<span class="sourceLineNo">407</span>class OnceTimeSchedule implements TimeSchedule {<a name="line.407"></a>
+<span class="sourceLineNo">408</span>    Calendar time;<a name="line.408"></a>
+<span class="sourceLineNo">409</span>    OnceTimeSchedule(Calendar time) {<a name="line.409"></a>
+<span class="sourceLineNo">410</span>        ScheduleUtil.assertTrue(time != null);<a name="line.410"></a>
+<span class="sourceLineNo">411</span>        ScheduleUtil.assertTrue(ScheduleUtil.isTime(time));<a name="line.411"></a>
+<span class="sourceLineNo">412</span>        this.time = time;<a name="line.412"></a>
+<span class="sourceLineNo">413</span>    }<a name="line.413"></a>
+<span class="sourceLineNo">414</span><a name="line.414"></a>
+<span class="sourceLineNo">415</span>    public Calendar nextOccurrence(Calendar after, boolean strict) {<a name="line.415"></a>
+<span class="sourceLineNo">416</span>        if (after == null) {<a name="line.416"></a>
+<span class="sourceLineNo">417</span>            return time;<a name="line.417"></a>
+<span class="sourceLineNo">418</span>        }<a name="line.418"></a>
+<span class="sourceLineNo">419</span>        if (time.after(after)) {<a name="line.419"></a>
+<span class="sourceLineNo">420</span>            return time;<a name="line.420"></a>
+<span class="sourceLineNo">421</span>        }<a name="line.421"></a>
+<span class="sourceLineNo">422</span>        if (!strict &amp;&amp; time.equals(after)) {<a name="line.422"></a>
+<span class="sourceLineNo">423</span>            return time;<a name="line.423"></a>
+<span class="sourceLineNo">424</span>        }<a name="line.424"></a>
+<span class="sourceLineNo">425</span>        return null;<a name="line.425"></a>
+<span class="sourceLineNo">426</span>    }<a name="line.426"></a>
+<span class="sourceLineNo">427</span>}<a name="line.427"></a>
+<span class="sourceLineNo">428</span><a name="line.428"></a>
+<span class="sourceLineNo">429</span>/**<a name="line.429"></a>
+<span class="sourceLineNo">430</span> * A &lt;code&gt;DateSchedule&lt;/code&gt; returns a series of dates.<a name="line.430"></a>
+<span class="sourceLineNo">431</span> */<a name="line.431"></a>
+<span class="sourceLineNo">432</span>interface DateSchedule {<a name="line.432"></a>
+<span class="sourceLineNo">433</span>    /**<a name="line.433"></a>
+<span class="sourceLineNo">434</span>     * Returns the next date when this schedule fires.<a name="line.434"></a>
+<span class="sourceLineNo">435</span>     *<a name="line.435"></a>
+<span class="sourceLineNo">436</span>     * @pre earliest != null<a name="line.436"></a>
+<span class="sourceLineNo">437</span>     */<a name="line.437"></a>
+<span class="sourceLineNo">438</span>    Calendar nextOccurrence(Calendar earliest, boolean strict);<a name="line.438"></a>
+<span class="sourceLineNo">439</span>};<a name="line.439"></a>
+<span class="sourceLineNo">440</span><a name="line.440"></a>
+<span class="sourceLineNo">441</span>/**<a name="line.441"></a>
+<span class="sourceLineNo">442</span> * A &lt;code&gt;DailyDateSchedule&lt;/code&gt; fires every day.<a name="line.442"></a>
+<span class="sourceLineNo">443</span> */<a name="line.443"></a>
+<span class="sourceLineNo">444</span>class DailyDateSchedule implements DateSchedule {<a name="line.444"></a>
+<span class="sourceLineNo">445</span>    int period;<a name="line.445"></a>
+<span class="sourceLineNo">446</span>    int beginOrdinal;<a name="line.446"></a>
+<span class="sourceLineNo">447</span>    DailyDateSchedule(Calendar begin, int period) {<a name="line.447"></a>
+<span class="sourceLineNo">448</span>        this.period = period;<a name="line.448"></a>
+<span class="sourceLineNo">449</span>        ScheduleUtil.assertTrue(period &gt; 0, "period must be positive");<a name="line.449"></a>
+<span class="sourceLineNo">450</span>        this.beginOrdinal = ScheduleUtil.julianDay(<a name="line.450"></a>
+<span class="sourceLineNo">451</span>            begin == null ? ScheduleUtil.epochDay : begin);<a name="line.451"></a>
+<span class="sourceLineNo">452</span>    }<a name="line.452"></a>
+<span class="sourceLineNo">453</span><a name="line.453"></a>
+<span class="sourceLineNo">454</span>    public Calendar nextOccurrence(Calendar day, boolean strict) {<a name="line.454"></a>
+<span class="sourceLineNo">455</span>        day = (Calendar) day.clone();<a name="line.455"></a>
+<span class="sourceLineNo">456</span>        if (strict) {<a name="line.456"></a>
+<span class="sourceLineNo">457</span>            day.add(Calendar.DATE, 1);<a name="line.457"></a>
+<span class="sourceLineNo">458</span>        }<a name="line.458"></a>
+<span class="sourceLineNo">459</span>        while (true) {<a name="line.459"></a>
+<span class="sourceLineNo">460</span>            int ordinal = ScheduleUtil.julianDay(day);<a name="line.460"></a>
+<span class="sourceLineNo">461</span>            if ((ordinal - beginOrdinal) % period == 0) {<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                return day;<a name="line.462"></a>
+<span class="sourceLineNo">463</span>            }<a name="line.463"></a>
+<span class="sourceLineNo">464</span>            day.add(Calendar.DATE, 1);<a name="line.464"></a>
+<span class="sourceLineNo">465</span>        }<a name="line.465"></a>
+<span class="sourceLineNo">466</span>    }<a name="line.466"></a>
+<span class="sourceLineNo">467</span>}<a name="line.467"></a>
+<span class="sourceLineNo">468</span><a name="line.468"></a>
+<span class="sourceLineNo">469</span>/**<a name="line.469"></a>
+<span class="sourceLineNo">470</span> * A &lt;code&gt;WeeklyDateSchedule&lt;/code&gt; fires every week. A bitmap indicates<a name="line.470"></a>
+<span class="sourceLineNo">471</span> * which days of the week it fires.<a name="line.471"></a>
+<span class="sourceLineNo">472</span> */<a name="line.472"></a>
+<span class="sourceLineNo">473</span>class WeeklyDateSchedule implements DateSchedule {<a name="line.473"></a>
+<span class="sourceLineNo">474</span>    int period;<a name="line.474"></a>
+<span class="sourceLineNo">475</span>    int beginOrdinal;<a name="line.475"></a>
+<span class="sourceLineNo">476</span>    int daysOfWeekBitmap;<a name="line.476"></a>
+<span class="sourceLineNo">477</span><a name="line.477"></a>
+<span class="sourceLineNo">478</span>    WeeklyDateSchedule(Calendar begin, int period, int daysOfWeekBitmap) {<a name="line.478"></a>
+<span class="sourceLineNo">479</span>        this.period = period;<a name="line.479"></a>
+<span class="sourceLineNo">480</span>        ScheduleUtil.assertTrue(period &gt; 0, "period must be positive");<a name="line.480"></a>
+<span class="sourceLineNo">481</span>        this.beginOrdinal = ScheduleUtil.julianDay(<a name="line.481"></a>
+<span class="sourceLineNo">482</span>            begin == null ? ScheduleUtil.epochDay : begin) / 7;<a name="line.482"></a>
+<span class="sourceLineNo">483</span>        this.daysOfWeekBitmap = daysOfWeekBitmap;<a name="line.483"></a>
+<span class="sourceLineNo">484</span>        ScheduleUtil.assertTrue(<a name="line.484"></a>
+<span class="sourceLineNo">485</span>            (daysOfWeekBitmap &amp; Schedule.allDaysOfWeekBitmap) != 0,<a name="line.485"></a>
+<span class="sourceLineNo">486</span>            "weekly schedule must have at least one day set");<a name="line.486"></a>
+<span class="sourceLineNo">487</span>        ScheduleUtil.assertTrue(<a name="line.487"></a>
+<span class="sourceLineNo">488</span>            (daysOfWeekBitmap &amp; Schedule.allDaysOfWeekBitmap)<a name="line.488"></a>
+<span class="sourceLineNo">489</span>            == daysOfWeekBitmap,<a name="line.489"></a>
+<span class="sourceLineNo">490</span>            "weekly schedule has bad bits set: " + daysOfWeekBitmap);<a name="line.490"></a>
+<span class="sourceLineNo">491</span>    }<a name="line.491"></a>
+<span class="sourceLineNo">492</span><a name="line.492"></a>
+<span class="sourceLineNo">493</span>    public Calendar nextOccurrence(Calendar earliest, boolean strict) {<a name="line.493"></a>
+<span class="sourceLineNo">494</span>        earliest = (Calendar) earliest.clone();<a name="line.494"></a>
+<span class="sourceLineNo">495</span>        if (strict) {<a name="line.495"></a>
+<span class="sourceLineNo">496</span>            earliest.add(Calendar.DATE, 1);<a name="line.496"></a>
+<span class="sourceLineNo">497</span>        }<a name="line.497"></a>
+<span class="sourceLineNo">498</span>        int i = 7 + period; // should be enough<a name="line.498"></a>
+<span class="sourceLineNo">499</span>        while (i-- &gt; 0) {<a name="line.499"></a>
+<span class="sourceLineNo">500</span>            int dayOfWeek = earliest.get(Calendar.DAY_OF_WEEK);<a name="line.500"></a>
+<span class="sourceLineNo">501</span>            if ((daysOfWeekBitmap &amp; (1 &lt;&lt; dayOfWeek)) != 0) {<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                int ordinal = ScheduleUtil.julianDay(earliest) / 7;<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                if ((ordinal - beginOrdinal) % period == 0) {<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                    return earliest;<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                }<a name="line.505"></a>
+<span class="sourceLineNo">506</span>            }<a name="line.506"></a>
+<span class="sourceLineNo">507</span>            earliest.add(Calendar.DATE, 1);<a name="line.507"></a>
+<span class="sourceLineNo">508</span>        }<a name="line.508"></a>
+<span class="sourceLineNo">509</span>        throw ScheduleUtil.newInternal(<a name="line.509"></a>
+<span class="sourceLineNo">510</span>            "weekly date schedule is looping -- maybe the bitmap is empty: "<a name="line.510"></a>
+<span class="sourceLineNo">511</span>            + daysOfWeekBitmap);<a name="line.511"></a>
+<span class="sourceLineNo">512</span>    }<a name="line.512"></a>
+<span class="sourceLineNo">513</span>}<a name="line.513"></a>
+<span class="sourceLineNo">514</span><a name="line.514"></a>
+<span class="sourceLineNo">515</span>/**<a name="line.515"></a>
+<span class="sourceLineNo">516</span> * A &lt;code&gt;MonthlyByDayDateSchedule&lt;/code&gt; fires on a particular set of days<a name="line.516"></a>
+<span class="sourceLineNo">517</span> * every month.<a name="line.517"></a>
+<span class="sourceLineNo">518</span> */<a name="line.518"></a>
+<span class="sourceLineNo">519</span>class MonthlyByDayDateSchedule implements DateSchedule {<a name="line.519"></a>
+<span class="sourceLineNo">520</span>    int period;<a name="line.520"></a>
+<span class="sourceLineNo">521</span>    int beginMonth;<a name="line.521"></a>
+<span class="sourceLineNo">522</span>    int daysOfMonthBitmap;<a name="line.522"></a>
+<span class="sourceLineNo">523</span><a name="line.523"></a>
+<span class="sourceLineNo">524</span>    MonthlyByDayDateSchedule(<a name="line.524"></a>
+<span class="sourceLineNo">525</span>        Calendar begin,<a name="line.525"></a>
+<span class="sourceLineNo">526</span>        int period,<a name="line.526"></a>
+<span class="sourceLineNo">527</span>        int daysOfMonthBitmap)<a name="line.527"></a>
+<span class="sourceLineNo">528</span>    {<a name="line.528"></a>
+<span class="sourceLineNo">529</span>        this.period = period;<a name="line.529"></a>
+<span class="sourceLineNo">530</span>        ScheduleUtil.assertTrue(period &gt; 0, "period must be positive");<a name="line.530"></a>
+<span class="sourceLineNo">531</span>        this.beginMonth = begin == null ? 0 : monthOrdinal(begin);<a name="line.531"></a>
+<span class="sourceLineNo">532</span>        this.daysOfMonthBitmap = daysOfMonthBitmap;<a name="line.532"></a>
+<span class="sourceLineNo">533</span>        ScheduleUtil.assertTrue(<a name="line.533"></a>
+<span class="sourceLineNo">534</span>            (daysOfMonthBitmap &amp; Schedule.allDaysOfMonthBitmap) != 0,<a name="line.534"></a>
+<span class="sourceLineNo">535</span>            "monthly day schedule must have at least one day set");<a name="line.535"></a>
+<span class="sourceLineNo">536</span>        ScheduleUtil.assertTrue(<a name="line.536"></a>
+<span class="sourceLineNo">537</span>            (daysOfMonthBitmap &amp; Schedule.allDaysOfMonthBitmap)<a name="line.537"></a>
+<span class="sourceLineNo">538</span>            == daysOfMonthBitmap,<a name="line.538"></a>
+<span class="sourceLineNo">539</span>            "monthly schedule has bad bits set: " + daysOfMonthBitmap);<a name="line.539"></a>
+<span class="sourceLineNo">540</span>    }<a name="line.540"></a>
+<span class="sourceLineNo">541</span><a name="line.541"></a>
+<span class="sourceLineNo">542</span>    public Calendar nextOccurrence(Calendar earliest, boolean strict) {<a name="line.542"></a>
+<span class="sourceLineNo">543</span>        earliest = (Calendar) earliest.clone();<a name="line.543"></a>
+<span class="sourceLineNo">544</span>        if (strict) {<a name="line.544"></a>
+<span class="sourceLineNo">545</span>            earliest.add(Calendar.DATE, 1);<a name="line.545"></a>
+<span class="sourceLineNo">546</span>        }<a name="line.546"></a>
+<span class="sourceLineNo">547</span>        int i = 31 + period; // should be enough<a name="line.547"></a>
+<span class="sourceLineNo">548</span>        while (i-- &gt; 0) {<a name="line.548"></a>
+<span class="sourceLineNo">549</span>            int month = monthOrdinal(earliest);<a name="line.549"></a>
+<span class="sourceLineNo">550</span>            if ((month - beginMonth) % period != 0) {<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                // not this month! move to first of next month<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                earliest.set(Calendar.DAY_OF_MONTH, 1);<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                earliest.add(Calendar.MONTH, 1);<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                continue;<a name="line.554"></a>
+<span class="sourceLineNo">555</span>            }<a name="line.555"></a>
+<span class="sourceLineNo">556</span>            int dayOfMonth = earliest.get(Calendar.DAY_OF_MONTH);<a name="line.556"></a>
+<span class="sourceLineNo">557</span>            if ((daysOfMonthBitmap &amp; (1 &lt;&lt; dayOfMonth)) != 0) {<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                return earliest;<a name="line.558"></a>
+<span class="sourceLineNo">559</span>            }<a name="line.559"></a>
+<span class="sourceLineNo">560</span>            earliest.add(Calendar.DATE, 1);<a name="line.560"></a>
+<span class="sourceLineNo">561</span>            if ((daysOfMonthBitmap &amp; (1 &lt;&lt; Schedule.LAST_DAY_OF_MONTH)) != 0<a name="line.561"></a>
+<span class="sourceLineNo">562</span>                &amp;&amp; earliest.get(Calendar.DAY_OF_MONTH) == 1)<a name="line.562"></a>
+<span class="sourceLineNo">563</span>            {<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                // They want us to fire on the last day of the month, and<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                // now we're at the first day of the month, so we must have<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                // been at the last. Backtrack and return it.<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                earliest.add(Calendar.DATE, -1);<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                return earliest;<a name="line.568"></a>
+<span class="sourceLineNo">569</span>            }<a name="line.569"></a>
+<span class="sourceLineNo">570</span>        }<a name="line.570"></a>
+<span class="sourceLineNo">571</span>        throw ScheduleUtil.newInternal(<a name="line.571"></a>
+<span class="sourceLineNo">572</span>            "monthly-by-day date schedule is looping -- maybe "<a name="line.572"></a>
+<span class="sourceLineNo">573</span>            + "the bitmap is empty: " + daysOfMonthBitmap);<a name="line.573"></a>
+<span class="sourceLineNo">574</span>    }<a name="line.574"></a>
+<span class="sourceLineNo">575</span><a name="line.575"></a>
+<span class="sourceLineNo">576</span>    private static int monthOrdinal(Calendar earliest) {<a name="line.576"></a>
+<span class="sourceLineNo">577</span>        return earliest.get(Calendar.YEAR) * 12<a name="line.577"></a>
+<span class="sourceLineNo">578</span>            + earliest.get(Calendar.MONTH);<a name="line.578"></a>
+<span class="sourceLineNo">579</span>    }<a name="line.579"></a>
+<span class="sourceLineNo">580</span>}<a name="line.580"></a>
+<span class="sourceLineNo">581</span><a name="line.581"></a>
+<span class="sourceLineNo">582</span>/**<a name="line.582"></a>
+<span class="sourceLineNo">583</span> * A &lt;code&gt;MonthlyByWeekDateSchedule&lt;/code&gt; fires on particular days of<a name="line.583"></a>
+<span class="sourceLineNo">584</span> * particular weeks of a month.<a name="line.584"></a>
+<span class="sourceLineNo">585</span> */<a name="line.585"></a>
+<span class="sourceLineNo">586</span>class MonthlyByWeekDateSchedule implements DateSchedule {<a name="line.586"></a>
+<span class="sourceLineNo">587</span>    int period;<a name="line.587"></a>
+<span class="sourceLineNo">588</span>    int beginMonth;<a name="line.588"></a>
+<span class="sourceLineNo">589</span>    int daysOfWeekBitmap;<a name="line.589"></a>
+<span class="sourceLineNo">590</span>    int weeksOfMonthBitmap;<a name="line.590"></a>
+<span class="sourceLineNo">591</span><a name="line.591"></a>
+<span class="sourceLineNo">592</span>    MonthlyByWeekDateSchedule(<a name="line.592"></a>
+<span class="sourceLineNo">593</span>        Calendar begin,<a name="line.593"></a>
+<span class="sourceLineNo">594</span>        int period,<a name="line.594"></a>
+<span class="sourceLineNo">595</span>        int daysOfWeekBitmap,<a name="line.595"></a>
+<span class="sourceLineNo">596</span>        int weeksOfMonthBitmap)<a name="line.596"></a>
+<span class="sourceLineNo">597</span>    {<a name="line.597"></a>
+<span class="sourceLineNo">598</span>        this.period = period;<a name="line.598"></a>
+<span class="sourceLineNo">599</span>        ScheduleUtil.assertTrue(period &gt; 0, "period must be positive");<a name="line.599"></a>
+<span class="sourceLineNo">600</span>        this.beginMonth = begin == null ? 0 : monthOrdinal(begin);<a name="line.600"></a>
+<span class="sourceLineNo">601</span>        this.daysOfWeekBitmap = daysOfWeekBitmap;<a name="line.601"></a>
+<span class="sourceLineNo">602</span>        ScheduleUtil.assertTrue(<a name="line.602"></a>
+<span class="sourceLineNo">603</span>            (daysOfWeekBitmap &amp; Schedule.allDaysOfWeekBitmap) != 0,<a name="line.603"></a>
+<span class="sourceLineNo">604</span>            "weekly schedule must have at least one day set");<a name="line.604"></a>
+<span class="sourceLineNo">605</span>        ScheduleUtil.assertTrue(<a name="line.605"></a>
+<span class="sourceLineNo">606</span>            (daysOfWeekBitmap &amp; Schedule.allDaysOfWeekBitmap)<a name="line.606"></a>
+<span class="sourceLineNo">607</span>            == daysOfWeekBitmap,<a name="line.607"></a>
+<span class="sourceLineNo">608</span>            "weekly schedule has bad bits set: " + daysOfWeekBitmap);<a name="line.608"></a>
+<span class="sourceLineNo">609</span>        this.weeksOfMonthBitmap = weeksOfMonthBitmap;<a name="line.609"></a>
+<span class="sourceLineNo">610</span>        ScheduleUtil.assertTrue(<a name="line.610"></a>
+<span class="sourceLineNo">611</span>            (weeksOfMonthBitmap &amp; Schedule.allWeeksOfMonthBitmap) != 0,<a name="line.611"></a>
+<span class="sourceLineNo">612</span>            "weeks of month schedule must have at least one week set");<a name="line.612"></a>
+<span class="sourceLineNo">613</span>        ScheduleUtil.assertTrue(<a name="line.613"></a>
+<span class="sourceLineNo">614</span>            (weeksOfMonthBitmap &amp; Schedule.allWeeksOfMonthBitmap)<a name="line.614"></a>
+<span class="sourceLineNo">615</span>            == weeksOfMonthBitmap,<a name="line.615"></a>
+<span class="sourceLineNo">616</span>            "week of month schedule has bad bits set: "<a name="line.616"></a>
+<span class="sourceLineNo">617</span>            + weeksOfMonthBitmap);<a name="line.617"></a>
+<span class="sourceLineNo">618</span>    }<a name="line.618"></a>
+<span class="sourceLineNo">619</span><a name="line.619"></a>
+<span class="sourceLineNo">620</span>    public Calendar nextOccurrence(Calendar earliest, boolean strict) {<a name="line.620"></a>
+<span class="sourceLineNo">621</span>        earliest = (Calendar) earliest.clone();<a name="line.621"></a>
+<span class="sourceLineNo">622</span>        if (strict) {<a name="line.622"></a>
+<span class="sourceLineNo">623</span>            earliest.add(Calendar.DATE, 1);<a name="line.623"></a>
+<span class="sourceLineNo">624</span>        }<a name="line.624"></a>
+<span class="sourceLineNo">625</span>         // should be enough... worst case is '5th Monday of every 3rd month'<a name="line.625"></a>
+<span class="sourceLineNo">626</span>        int i = 365 + period;<a name="line.626"></a>
+<span class="sourceLineNo">627</span>        while (i-- &gt; 0) {<a name="line.627"></a>
+<span class="sourceLineNo">628</span>            int month = monthOrdinal(earliest);<a name="line.628"></a>
+<span class="sourceLineNo">629</span>            if ((month - beginMonth) % period != 0) {<a name="line.629"></a>
+<span class="sourceLineNo">630</span>                // not this month! move to first of next month<a name="line.630"></a>
+<span class="sourceLineNo">631</span>                earliest.set(Calendar.DAY_OF_MONTH, 1);<a name="line.631"></a>
+<span class="sourceLineNo">632</span>                earliest.add(Calendar.MONTH, 1);<a name="line.632"></a>
+<span class="sourceLineNo">633</span>                continue;<a name="line.633"></a>
+<span class="sourceLineNo">634</span>            }<a name="line.634"></a>
+<span class="sourceLineNo">635</span>            // is it one of the days we're interested in?<a name="line.635"></a>
+<span class="sourceLineNo">636</span>            int dayOfWeek = earliest.get(Calendar.DAY_OF_WEEK);<a name="line.636"></a>
+<span class="sourceLineNo">637</span>            if ((daysOfWeekBitmap &amp; (1 &lt;&lt; dayOfWeek)) != 0) {<a name="line.637"></a>
+<span class="sourceLineNo">638</span>                // is it the Yth occurrence of day X?<a name="line.638"></a>
+<span class="sourceLineNo">639</span>                int dayOfMonth = earliest.get(Calendar.DAY_OF_MONTH);<a name="line.639"></a>
+<span class="sourceLineNo">640</span>                int weekOfMonth = (dayOfMonth + 6) / 7; // 1-based<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                if ((weeksOfMonthBitmap &amp; (1 &lt;&lt; weekOfMonth)) != 0) {<a name="line.641"></a>
+<span class="sourceLineNo">642</span>                    return earliest;<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                }<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                // is it the last occurrence of day X?<a name="line.644"></a>
+<span class="sourceLineNo">645</span>                if ((weeksOfMonthBitmap &amp; (1 &lt;&lt; Schedule.LAST_WEEK_OF_MONTH))<a name="line.645"></a>
+<span class="sourceLineNo">646</span>                    != 0)<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                {<a name="line.647"></a>
+<span class="sourceLineNo">648</span>                    // we're in the last week of the month iff a week later is<a name="line.648"></a>
+<span class="sourceLineNo">649</span>                    // in the first week of the next month<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                    earliest.add(Calendar.WEEK_OF_MONTH, 1);<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                    boolean isLast = earliest.get(Calendar.DAY_OF_MONTH) &lt;= 7;<a name="line.651"></a>
+<span class="sourceLineNo">652</span>                    earliest.add(Calendar.WEEK_OF_MONTH, -1);<a name="line.652"></a>
+<span class="sourceLineNo">653</span>                    if (isLast) {<a name="line.653"></a>
+<span class="sourceLineNo">654</span>                        return earliest;<a name="line.654"></a>
+<span class="sourceLineNo">655</span>                    }<a name="line.655"></a>
+<span class="sourceLineNo">656</span>                }<a name="line.656"></a>
+<span class="sourceLineNo">657</span>            }<a name="line.657"></a>
+<span class="sourceLineNo">658</span>            earliest.add(Calendar.DATE, 1);<a name="line.658"></a>
+<span class="sourceLineNo">659</span>        }<a name="line.659"></a>
+<span class="sourceLineNo">660</span>        throw ScheduleUtil.newInternal(<a name="line.660"></a>
+<span class="sourceLineNo">661</span>            "monthy-by-week date schedule is cyclic");<a name="line.661"></a>
+<span class="sourceLineNo">662</span>    }<a name="line.662"></a>
+<span class="sourceLineNo">663</span><a name="line.663"></a>
+<span class="sourceLineNo">664</span>    private static int monthOrdinal(Calendar earliest) {<a name="line.664"></a>
+<span class="sourceLineNo">665</span>        return earliest.get(Calendar.YEAR) * 12<a name="line.665"></a>
+<span class="sourceLineNo">666</span>            + earliest.get(Calendar.MONTH);<a name="line.666"></a>
+<span class="sourceLineNo">667</span>    }<a name="line.667"></a>
+<span class="sourceLineNo">668</span>}<a name="line.668"></a>
+<span class="sourceLineNo">669</span><a name="line.669"></a>
+<span class="sourceLineNo">670</span>/**<a name="line.670"></a>
+<span class="sourceLineNo">671</span> * Utility functions for {@link Schedule} and supporting classes.<a name="line.671"></a>
+<span class="sourceLineNo">672</span> */<a name="line.672"></a>
+<span class="sourceLineNo">673</span>class ScheduleUtil {<a name="line.673"></a>
+<span class="sourceLineNo">674</span>    static final Calendar epochDay = ScheduleUtil.createCalendar(new Date(0));<a name="line.674"></a>
+<span class="sourceLineNo">675</span>    static final Calendar midnightTime =<a name="line.675"></a>
+<span class="sourceLineNo">676</span>        ScheduleUtil.createTimeCalendar(0, 0, 0);<a name="line.676"></a>
+<span class="sourceLineNo">677</span><a name="line.677"></a>
+<span class="sourceLineNo">678</span>    public static void assertTrue(boolean b) {<a name="line.678"></a>
+<span class="sourceLineNo">679</span>        if (!b) {<a name="line.679"></a>
+<span class="sourceLineNo">680</span>            throw new Error("assertion failed");<a name="line.680"></a>
+<span class="sourceLineNo">681</span>        }<a name="line.681"></a>
+<span class="sourceLineNo">682</span>    }<a name="line.682"></a>
+<span class="sourceLineNo">683</span><a name="line.683"></a>
+<span class="sourceLineNo">684</span>    public static void assertTrue(boolean b, String s) {<a name="line.684"></a>
+<span class="sourceLineNo">685</span>        if (!b) {<a name="line.685"></a>
+<span class="sourceLineNo">686</span>            throw new Error("assertion failed: " + s);<a name="line.686"></a>
+<span class="sourceLineNo">687</span>        }<a name="line.687"></a>
+<span class="sourceLineNo">688</span>    }<a name="line.688"></a>
+<span class="sourceLineNo">689</span><a name="line.689"></a>
+<span class="sourceLineNo">690</span>    public static Error newInternal() {<a name="line.690"></a>
+<span class="sourceLineNo">691</span>        return new Error("internal error");<a name="line.691"></a>
+<span class="sourceLineNo">692</span>    }<a name="line.692"></a>
+<span class="sourceLineNo">693</span><a name="line.693"></a>
+<span class="sourceLineNo">694</span>    public static Error newInternal(Throwable e, String s) {<a name="line.694"></a>
+<span class="sourceLineNo">695</span>        return new Error("internal error '" + e + "': " + s);<a name="line.695"></a>
+<span class="sourceLineNo">696</span>    }<a name="line.696"></a>
+<span class="sourceLineNo">697</span><a name="line.697"></a>
+<span class="sourceLineNo">698</span>    public static Error newInternal(String s) {<a name="line.698"></a>
+<span class="sourceLineNo">699</span>        return new Error("internal error: " + s);<a name="line.699"></a>
+<span class="sourceLineNo">700</span>    }<a name="line.700"></a>
+<span class="sourceLineNo">701</span><a name="line.701"></a>
+<span class="sourceLineNo">702</span>    public static boolean lessThan(Time t1, Time t2, boolean strict) {<a name="line.702"></a>
+<span class="sourceLineNo">703</span>        if (strict) {<a name="line.703"></a>
+<span class="sourceLineNo">704</span>            return t1.getTime() &lt; t2.getTime();<a name="line.704"></a>
+<span class="sourceLineNo">705</span>        } else {<a name="line.705"></a>
+<span class="sourceLineNo">706</span>            return t1.getTime() &lt;= t2.getTime();<a name="line.706"></a>
+<span class="sourceLineNo">707</span>        }<a name="line.707"></a>
+<span class="sourceLineNo">708</span>    }<a name="line.708"></a>
+<span class="sourceLineNo">709</span><a name="line.709"></a>
+<span class="sourceLineNo">710</span>    public static boolean lessThan(Date d1, Date d2, boolean strict) {<a name="line.710"></a>
+<span class="sourceLineNo">711</span>        if (strict) {<a name="line.711"></a>
+<span class="sourceLineNo">712</span>            return d1.getTime() &lt; d2.getTime();<a name="line.712"></a>
+<span class="sourceLineNo">713</span>        } else {<a name="line.713"></a>
+<span class="sourceLineNo">714</span>            return d1.getTime() &lt;= d2.getTime();<a name="line.714"></a>
+<span class="sourceLineNo">715</span>        }<a name="line.715"></a>
+<span class="sourceLineNo">716</span>    }<a name="line.716"></a>
+<span class="sourceLineNo">717</span><a name="line.717"></a>
+<span class="sourceLineNo">718</span>    public static boolean is0000(Calendar calendar) {<a name="line.718"></a>
+<span class="sourceLineNo">719</span>        return calendar.get(Calendar.HOUR_OF_DAY) == 0<a name="line.719"></a>
+<span class="sourceLineNo">720</span>            &amp;&amp; calendar.get(Calendar.MINUTE) == 0<a name="line.720"></a>
+<span class="sourceLineNo">721</span>            &amp;&amp; calendar.get(Calendar.SECOND) == 0<a name="line.721"></a>
+<span class="sourceLineNo">722</span>            &amp;&amp; calendar.get(Calendar.MILLISECOND) == 0;<a name="line.722"></a>
+<span class="sourceLineNo">723</span>    }<a name="line.723"></a>
+<span class="sourceLineNo">724</span><a name="line.724"></a>
+<span class="sourceLineNo">725</span>    public static boolean isTime(Calendar calendar) {<a name="line.725"></a>
+<span class="sourceLineNo">726</span>        return calendar.get(Calendar.YEAR)<a name="line.726"></a>
+<span class="sourceLineNo">727</span>            == ScheduleUtil.epochDay.get(Calendar.YEAR)<a name="line.727"></a>
+<span class="sourceLineNo">728</span>            &amp;&amp; calendar.get(Calendar.DAY_OF_YEAR)<a name="line.728"></a>
+<span class="sourceLineNo">729</span>            == ScheduleUtil.epochDay.get(Calendar.DAY_OF_YEAR);<a name="line.729"></a>
+<span class="sourceLineNo">730</span>    }<a name="line.730"></a>
+<span class="sourceLineNo">731</span><a name="line.731"></a>
+<span class="sourceLineNo">732</span>    /**<a name="line.732"></a>
+<span class="sourceLineNo">733</span>     * Returns a calendar rounded down to the previous midnight.<a name="line.733"></a>
+<span class="sourceLineNo">734</span>     */<a name="line.734"></a>
+<span class="sourceLineNo">735</span>    public static Calendar floor(Calendar calendar) {<a name="line.735"></a>
+<span class="sourceLineNo">736</span>        if (calendar == null) {<a name="line.736"></a>
+<span class="sourceLineNo">737</span>            return null;<a name="line.737"></a>
+<span class="sourceLineNo">738</span>        }<a name="line.738"></a>
+<span class="sourceLineNo">739</span>        calendar = (Calendar) calendar.clone();<a name="line.739"></a>
+<span class="sourceLineNo">740</span>        calendar.set(Calendar.HOUR_OF_DAY, 0);<a name="line.740"></a>
+<span class="sourceLineNo">741</span>        calendar.set(Calendar.MINUTE, 0);<a name="line.741"></a>
+<span class="sourceLineNo">742</span>        calendar.set(Calendar.SECOND, 0);<a name="line.742"></a>
+<span class="sourceLineNo">743</span>        calendar.set(Calendar.MILLISECOND, 0);<a name="line.743"></a>
+<span class="sourceLineNo">744</span>        return calendar;<a name="line.744"></a>
+<span class="sourceLineNo">745</span>    }<a name="line.745"></a>
+<span class="sourceLineNo">746</span><a name="line.746"></a>
+<span class="sourceLineNo">747</span>    /**<a name="line.747"></a>
+<span class="sourceLineNo">748</span>     * Returns a calendar rounded up to the next midnight, unless it is already<a name="line.748"></a>
+<span class="sourceLineNo">749</span>     * midnight.<a name="line.749"></a>
+<span class="sourceLineNo">750</span>     */<a name="line.750"></a>
+<span class="sourceLineNo">751</span>    public static Calendar ceiling(Calendar calendar) {<a name="line.751"></a>
+<span class="sourceLineNo">752</span>        if (calendar == null) {<a name="line.752"></a>
+<span class="sourceLineNo">753</span>            return null;<a name="line.753"></a>
+<span class="sourceLineNo">754</span>        }<a name="line.754"></a>
+<span class="sourceLineNo">755</span>        if (is0000(calendar)) {<a name="line.755"></a>
+<span class="sourceLineNo">756</span>            return calendar;<a name="line.756"></a>
+<span class="sourceLineNo">757</span>        }<a name="line.757"></a>
+<span class="sourceLineNo">758</span>        calendar = (Calendar) calendar.clone();<a name="line.758"></a>
+<span class="sourceLineNo">759</span>        calendar.add(Calendar.DATE, 1);<a name="line.759"></a>
+<span class="sourceLineNo">760</span>        return calendar;<a name="line.760"></a>
+<span class="sourceLineNo">761</span>    }<a name="line.761"></a>
+<span class="sourceLineNo">762</span><a name="line.762"></a>
+<span class="sourceLineNo">763</span>    /**<a name="line.763"></a>
+<span class="sourceLineNo">764</span>     * Extracts the time part of a date. Given a null date, returns null.<a name="line.764"></a>
+<span class="sourceLineNo">765</span>     */<a name="line.765"></a>
+<span class="sourceLineNo">766</span>    public static Calendar getTime(Calendar calendar) {<a name="line.766"></a>
+<span class="sourceLineNo">767</span>        if (calendar == null) {<a name="line.767"></a>
+<span class="sourceLineNo">768</span>            return null;<a name="line.768"></a>
+<span class="sourceLineNo">769</span>        }<a name="line.769"></a>
+<span class="sourceLineNo">770</span>        return createTimeCalendar(<a name="line.770"></a>
+<span class="sourceLineNo">771</span>            calendar.get(Calendar.HOUR_OF_DAY),<a name="line.771"></a>
+<span class="sourceLineNo">772</span>            calendar.get(Calendar.MINUTE),<a name="line.772"></a>
+<span class="sourceLineNo">773</span>            calendar.get(Calendar.SECOND));<a name="line.773"></a>
+<span class="sourceLineNo">774</span>    }<a name="line.774"></a>
+<span class="sourceLineNo">775</span><a name="line.775"></a>
+<span class="sourceLineNo">776</span>    /**<a name="line.776"></a>
+<span class="sourceLineNo">777</span>     * Creates a calendar in UTC, and initializes it to &lt;code&gt;date&lt;/code&gt;.<a name="line.777"></a>
+<span class="sourceLineNo">778</span>     *<a name="line.778"></a>
+<span class="sourceLineNo">779</span>     * @pre date != null<a name="line.779"></a>
+<span class="sourceLineNo">780</span>     * @post return != null<a name="line.780"></a>
+<span class="sourceLineNo">781</span>     */<a name="line.781"></a>
+<span class="sourceLineNo">782</span>    public static Calendar createCalendar(Date date) {<a name="line.782"></a>
+<span class="sourceLineNo">783</span>        Calendar calendar = Calendar.getInstance();<a name="line.783"></a>
+<span class="sourceLineNo">784</span>        calendar.setTimeZone(Schedule.utcTimeZone);<a name="line.784"></a>
+<span class="sourceLineNo">785</span>        calendar.setTime(date);<a name="line.785"></a>
+<span class="sourceLineNo">786</span>        return calendar;<a name="line.786"></a>
+<span class="sourceLineNo">787</span>    }<a name="line.787"></a>
+<span class="sourceLineNo">788</span><a name="line.788"></a>
+<span class="sourceLineNo">789</span>    /**<a name="line.789"></a>
+<span class="sourceLineNo">790</span>     * Creates a calendar in UTC, and initializes it to a given year, month,<a name="line.790"></a>
+<span class="sourceLineNo">791</span>     * day, hour, minute, second. &lt;b&gt;NOTE: month is 1-based&lt;/b&gt;<a name="line.791"></a>
+<span class="sourceLineNo">792</span>     */<a name="line.792"></a>
+<span class="sourceLineNo">793</span>    public static Calendar createCalendar(<a name="line.793"></a>
+<span class="sourceLineNo">794</span>        int year,<a name="line.794"></a>
+<span class="sourceLineNo">795</span>        int month,<a name="line.795"></a>
+<span class="sourceLineNo">796</span>        int day,<a name="line.796"></a>
+<span class="sourceLineNo">797</span>        int hour,<a name="line.797"></a>
+<span class="sourceLineNo">798</span>        int minute,<a name="line.798"></a>
+<span class="sourceLineNo">799</span>        int second)<a name="line.799"></a>
+<span class="sourceLineNo">800</span>    {<a name="line.800"></a>
+<span class="sourceLineNo">801</span>        Calendar calendar = Calendar.getInstance();<a name="line.801"></a>
+<span class="sourceLineNo">802</span>        calendar.setTimeZone(Schedule.utcTimeZone);<a name="line.802"></a>
+<span class="sourceLineNo">803</span>        calendar.toString(); // calls complete()<a name="line.803"></a>
+<span class="sourceLineNo">804</span>        calendar.set(Calendar.YEAR, year);<a name="line.804"></a>
+<span class="sourceLineNo">805</span>        calendar.set(Calendar.MONTH, month - 1); // CONVERT TO 0-BASED!!<a name="line.805"></a>
+<span class="sourceLineNo">806</span>        calendar.set(Calendar.DAY_OF_MONTH, day);<a name="line.806"></a>
+<span class="sourceLineNo">807</span>        calendar.set(Calendar.HOUR_OF_DAY, hour);<a name="line.807"></a>
+<span class="sourceLineNo">808</span>        calendar.set(Calendar.MINUTE, minute);<a name="line.808"></a>
+<span class="sourceLineNo">809</span>        calendar.set(Calendar.SECOND, second);<a name="line.809"></a>
+<span class="sourceLineNo">810</span>        calendar.set(Calendar.MILLISECOND, 0);<a name="line.810"></a>
+<span class="sourceLineNo">811</span>        return calendar;<a name="line.811"></a>
+<span class="sourceLineNo">812</span>    }<a name="line.812"></a>
+<span class="sourceLineNo">813</span><a name="line.813"></a>
+<span class="sourceLineNo">814</span>    /**<a name="line.814"></a>
+<span class="sourceLineNo">815</span>     * Creates a calendar from a time. Milliseconds are ignored.<a name="line.815"></a>
+<span class="sourceLineNo">816</span>     *<a name="line.816"></a>
+<span class="sourceLineNo">817</span>     * @pre time != null<a name="line.817"></a>
+<span class="sourceLineNo">818</span>     * @post return != null<a name="line.818"></a>
+<span class="sourceLineNo">819</span>     */<a name="line.819"></a>
+<span class="sourceLineNo">820</span>    public static Calendar createTimeCalendar(Time time) {<a name="line.820"></a>
+<span class="sourceLineNo">821</span>        Calendar calendar = (Calendar) ScheduleUtil.epochDay.clone();<a name="line.821"></a>
+<span class="sourceLineNo">822</span>        calendar.setTimeZone(Schedule.utcTimeZone);<a name="line.822"></a>
+<span class="sourceLineNo">823</span>        calendar.setTime(time);<a name="line.823"></a>
+<span class="sourceLineNo">824</span>        return createTimeCalendar(<a name="line.824"></a>
+<span class="sourceLineNo">825</span>            calendar.get(Calendar.HOUR_OF_DAY),<a name="line.825"></a>
+<span class="sourceLineNo">826</span>            calendar.get(Calendar.MINUTE),<a name="line.826"></a>
+<span class="sourceLineNo">827</span>            calendar.get(Calendar.SECOND));<a name="line.827"></a>
+<span class="sourceLineNo">828</span>    }<a name="line.828"></a>
+<span class="sourceLineNo">829</span><a name="line.829"></a>
+<span class="sourceLineNo">830</span>    /**<a name="line.830"></a>
+<span class="sourceLineNo">831</span>     * Creates a calendar and sets it to a given hours, minutes, seconds.<a name="line.831"></a>
+<span class="sourceLineNo">832</span>     */<a name="line.832"></a>
+<span class="sourceLineNo">833</span>    public static Calendar createTimeCalendar(<a name="line.833"></a>
+<span class="sourceLineNo">834</span>        int hours,<a name="line.834"></a>
+<span class="sourceLineNo">835</span>        int minutes,<a name="line.835"></a>
+<span class="sourceLineNo">836</span>        int seconds)<a name="line.836"></a>
+<span class="sourceLineNo">837</span>    {<a name="line.837"></a>
+<span class="sourceLineNo">838</span>        Calendar calendar = (Calendar) ScheduleUtil.epochDay.clone();<a name="line.838"></a>
+<span class="sourceLineNo">839</span>        calendar.set(Calendar.HOUR_OF_DAY, hours);<a name="line.839"></a>
+<span class="sourceLineNo">840</span>        calendar.set(Calendar.MINUTE, minutes);<a name="line.840"></a>
+<span class="sourceLineNo">841</span>        calendar.set(Calendar.SECOND, seconds);<a name="line.841"></a>
+<span class="sourceLineNo">842</span>        calendar.set(Calendar.MILLISECOND, 0);<a name="line.842"></a>
+<span class="sourceLineNo">843</span>        return calendar;<a name="line.843"></a>
+<span class="sourceLineNo">844</span>    }<a name="line.844"></a>
+<span class="sourceLineNo">845</span><a name="line.845"></a>
+<span class="sourceLineNo">846</span>    /**<a name="line.846"></a>
+<span class="sourceLineNo">847</span>     * Creates a calendar and sets it to a given year, month, date.<a name="line.847"></a>
+<span class="sourceLineNo">848</span>     */<a name="line.848"></a>
+<span class="sourceLineNo">849</span>    public static Calendar createDateCalendar(<a name="line.849"></a>
+<span class="sourceLineNo">850</span>        int year, int month, int dayOfMonth)<a name="line.850"></a>
+<span class="sourceLineNo">851</span>    {<a name="line.851"></a>
+<span class="sourceLineNo">852</span>        Calendar calendar = Calendar.getInstance();<a name="line.852"></a>
+<span class="sourceLineNo">853</span>        calendar.setTimeZone(Schedule.utcTimeZone);<a name="line.853"></a>
+<span class="sourceLineNo">854</span>        calendar.set(Calendar.YEAR, year);<a name="line.854"></a>
+<span class="sourceLineNo">855</span>        calendar.set(Calendar.MONTH, month);<a name="line.855"></a>
+<span class="sourceLineNo">856</span>        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);<a name="line.856"></a>
+<span class="sourceLineNo">857</span>        return calendar;<a name="line.857"></a>
+<span class="sourceLineNo">858</span>    }<a name="line.858"></a>
+<span class="sourceLineNo">859</span>    /**<a name="line.859"></a>
+<span class="sourceLineNo">860</span>     * Creates a {@link java.sql.Time}<a name="line.860"></a>
+<span class="sourceLineNo">861</span>     */<a name="line.861"></a>
+<span class="sourceLineNo">862</span>    public static Time createTime(int hour, int minutes, int second) {<a name="line.862"></a>
+<span class="sourceLineNo">863</span>        return new Time(<a name="line.863"></a>
+<span class="sourceLineNo">864</span>            createTimeCalendar(hour, minutes, second).getTime().getTime());<a name="line.864"></a>
+<span class="sourceLineNo">865</span>    }<a name="line.865"></a>
+<span class="sourceLineNo">866</span>    /**<a name="line.866"></a>
+<span class="sourceLineNo">867</span>     * Returns the julian day number of a given date. (Is there a better way<a name="line.867"></a>
+<span class="sourceLineNo">868</span>     * to do this?)<a name="line.868"></a>
+<span class="sourceLineNo">869</span>     */<a name="line.869"></a>
+<span class="sourceLineNo">870</span>    public static int julianDay(Calendar calendar) {<a name="line.870"></a>
+<span class="sourceLineNo">871</span>        int year = calendar.get(Calendar.YEAR),<a name="line.871"></a>
+<span class="sourceLineNo">872</span>            day = calendar.get(Calendar.DAY_OF_YEAR),<a name="line.872"></a>
+<span class="sourceLineNo">873</span>            leapDays = (year / 4) - (year / 100) + (year / 400);<a name="line.873"></a>
+<span class="sourceLineNo">874</span>        return year * 365 + leapDays + day;<a name="line.874"></a>
+<span class="sourceLineNo">875</span>    }<a name="line.875"></a>
+<span class="sourceLineNo">876</span>    /**<a name="line.876"></a>
+<span class="sourceLineNo">877</span>     * Returns the offset from UTC in milliseconds in this timezone on a given<a name="line.877"></a>
+<span class="sourceLineNo">878</span>     * date.<a name="line.878"></a>
+<span class="sourceLineNo">879</span>     */<a name="line.879"></a>
+<span class="sourceLineNo">880</span>    public static int timezoneOffset(TimeZone tz, Calendar calendar) {<a name="line.880"></a>
+<span class="sourceLineNo">881</span>        return tz.getOffset(<a name="line.881"></a>
+<span class="sourceLineNo">882</span>            calendar.get(Calendar.ERA),<a name="line.882"></a>
+<span class="sourceLineNo">883</span>            calendar.get(Calendar.YEAR),<a name="line.883"></a>
+<span class="sourceLineNo">884</span>            calendar.get(Calendar.MONTH),<a name="line.884"></a>
+<span class="sourceLineNo">885</span>            calendar.get(Calendar.DAY_OF_MONTH),<a name="line.885"></a>
+<span class="sourceLineNo">886</span>            calendar.get(Calendar.DAY_OF_WEEK),<a name="line.886"></a>
+<span class="sourceLineNo">887</span>            (1000<a name="line.887"></a>
+<span class="sourceLineNo">888</span>             * (60<a name="line.888"></a>
+<span class="sourceLineNo">889</span>                * (60 * calendar.get(Calendar.HOUR_OF_DAY)<a name="line.889"></a>
+<span class="sourceLineNo">890</span>                   + calendar.get(Calendar.MINUTE))<a name="line.890"></a>
+<span class="sourceLineNo">891</span>                + calendar.get(Calendar.SECOND))<a name="line.891"></a>
+<span class="sourceLineNo">892</span>             + calendar.get(Calendar.MILLISECOND)));<a name="line.892"></a>
+<span class="sourceLineNo">893</span>    }<a name="line.893"></a>
+<span class="sourceLineNo">894</span>}<a name="line.894"></a>
+<span class="sourceLineNo">895</span><a name="line.895"></a>
+<span class="sourceLineNo">896</span>// End Schedule.java<a name="line.896"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

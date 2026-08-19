@@ -1,0 +1,288 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2003-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2012 Pentaho<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.rolap;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import java.lang.ref.SoftReference;<a name="line.13"></a>
+<span class="sourceLineNo">014</span><a name="line.14"></a>
+<span class="sourceLineNo">015</span>/**<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * &lt;code&gt;RolapConnectionProperties&lt;/code&gt; enumerates the allowable values of<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * keywords in a Mondrian connect string.<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * &lt;p&gt;&lt;b&gt;Note to developers&lt;/b&gt;: If you add or modify a connection-string<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * property, you must also modify the<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * &lt;a target="_top"<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * href="{@docRoot}/../configuration.html#Connect_string_properties"&gt;<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * Configuration Specification&lt;/a&gt;.<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * @author jhyde, Mar 18, 2003<a name="line.25"></a>
+<span class="sourceLineNo">026</span> */<a name="line.26"></a>
+<span class="sourceLineNo">027</span>public enum RolapConnectionProperties {<a name="line.27"></a>
+<span class="sourceLineNo">028</span>    /**<a name="line.28"></a>
+<span class="sourceLineNo">029</span>     * The "Provider" property must have the value &lt;code&gt;"Mondrian"&lt;/code&gt;.<a name="line.29"></a>
+<span class="sourceLineNo">030</span>     */<a name="line.30"></a>
+<span class="sourceLineNo">031</span>    Provider,<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>    /**<a name="line.33"></a>
+<span class="sourceLineNo">034</span>     * The "Jdbc" property is the URL of the JDBC database where the data is<a name="line.34"></a>
+<span class="sourceLineNo">035</span>     * stored. You must specify either {@link #DataSource} or {@code #Jdbc}.<a name="line.35"></a>
+<span class="sourceLineNo">036</span>     */<a name="line.36"></a>
+<span class="sourceLineNo">037</span>    Jdbc,<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>    /**<a name="line.39"></a>
+<span class="sourceLineNo">040</span>     * The "JdbcDrivers" property is a comma-separated list of JDBC driver<a name="line.40"></a>
+<span class="sourceLineNo">041</span>     * classes, for example,<a name="line.41"></a>
+<span class="sourceLineNo">042</span>     * &lt;code&gt;"sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver"&lt;/code&gt;.<a name="line.42"></a>
+<span class="sourceLineNo">043</span>     */<a name="line.43"></a>
+<span class="sourceLineNo">044</span>    JdbcDrivers,<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>    /**<a name="line.46"></a>
+<span class="sourceLineNo">047</span>     * The "JdbcUser" property is the name of the user to log on to the JDBC<a name="line.47"></a>
+<span class="sourceLineNo">048</span>     * database. (You don't need to specify this parameter if it is already<a name="line.48"></a>
+<span class="sourceLineNo">049</span>     * specified in the JDBC URL.)<a name="line.49"></a>
+<span class="sourceLineNo">050</span>     */<a name="line.50"></a>
+<span class="sourceLineNo">051</span>    JdbcUser,<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>    /**<a name="line.53"></a>
+<span class="sourceLineNo">054</span>     * The "JdbcPassword" property is the password to log on to the JDBC<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     * database. (You don't need to specify this parameter if it is already<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     * specified in the JDBC URL.)<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     */<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    JdbcPassword,<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>    /**<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     * The "Catalog" property is the URL of the catalog, an XML file which<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     * describes the schema: cubes, hierarchies, and so forth.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     * Catalogs are described in &lt;a target="_top"<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     * href="{@docRoot}/../schema.html"&gt;the Schema Guide&lt;/a&gt;.<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     * See also {@link #CatalogContent}.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     */<a name="line.66"></a>
+<span class="sourceLineNo">067</span>    Catalog,<a name="line.67"></a>
+<span class="sourceLineNo">068</span><a name="line.68"></a>
+<span class="sourceLineNo">069</span>    /**<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     * The "CatalogContent" property is an XML string representing the schema:<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     * cubes, hierarchies, and so forth.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     * Catalogs are described in &lt;a target="_top"<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     * href="{@docRoot}/../schema.html"&gt;the Schema Guide&lt;/a&gt;.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     * &lt;p&gt;When using this property, quote its value with either single or<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     * double quotes, then escape all occurrences of that character within the<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     * catalog content by using double single/double quotes. ie:<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * &lt;p&gt;&amp;nbsp;&amp;nbsp;CatalogContent="&amp;lt;Schema name=""My Schema""/&amp;gt;"<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     *<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * &lt;p&gt;See also {@link #Catalog}.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     */<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    CatalogContent,<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>    /**<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     * The "CatalogName" property is not used. If, in future, we support<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     * multiple catalogs, this property will specify which catalog to use.<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     * See also {@link #Catalog}.<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     */<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    CatalogName,<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>    /**<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     * The "DataSource" property is the name of a data source class. It must<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     * implement the {@link javax.sql.DataSource} interface.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     * You must specify either {@code DataSource} or {@link #Jdbc}.<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     */<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    DataSource,<a name="line.97"></a>
+<span class="sourceLineNo">098</span><a name="line.98"></a>
+<span class="sourceLineNo">099</span>    /**<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     * The "PoolNeeded" property tells Mondrian whether to add a layer of<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     * connection pooling.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     * &lt;p&gt;If no value is specified, we assume that:&lt;ul&gt;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     * &lt;li&gt;connections created via the {@link #Jdbc} property are not pooled,<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *     and therefore need to be pooled,<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     * &lt;li&gt;connections created via the {@link #DataSource} are already pooled.<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     * &lt;/ul&gt;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     */<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    PoolNeeded,<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>    /**<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     * The "Role" property is the name of the {@link mondrian.olap.Role role}<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     * to adopt. If not specified, the connection uses a role which has access<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     * to every object in the schema.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     */<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    Role,<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>    /**<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     * Allows to work with dynamically changing schema. If this property is set<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     * to &lt;code&gt;true&lt;/code&gt; and schema content has changed (previous checksum<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     * doesn't equal with current), schema would be reloaded. Could be used in<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     * combination with &lt;code&gt;DynamicSchemaProcessor&lt;/code&gt; property<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     */<a name="line.123"></a>
+<span class="sourceLineNo">124</span>    UseContentChecksum,<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>    /**<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     * The "UseSchemaPool" property disables the schema cache. If false, the<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     * schema is not shared with connections which have a textually identical<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     * schema. Default is "true".<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     */<a name="line.130"></a>
+<span class="sourceLineNo">131</span>    UseSchemaPool,<a name="line.131"></a>
+<span class="sourceLineNo">132</span><a name="line.132"></a>
+<span class="sourceLineNo">133</span>    /**<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     * The name of a class implementing the<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     * {@link mondrian.spi.DynamicSchemaProcessor} interface.<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     * A dynamic schema processor is called at runtime in order to modify the<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     * schema content.<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     */<a name="line.138"></a>
+<span class="sourceLineNo">139</span>    DynamicSchemaProcessor,<a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span>    /**<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     * The "Locale" property is the requested Locale for the<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     * LocalizingDynamicSchemaProcessor.  Example values are "en",<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     * "en_US", "hu". If Locale is not specified, then the name of system's<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     * default will be used, as per {@link java.util.Locale#getDefault()}.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     */<a name="line.146"></a>
+<span class="sourceLineNo">147</span>    Locale,<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>    /**<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     * The name of a class implementing the<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     * {@link mondrian.spi.DataSourceChangeListener} interface.<a name="line.151"></a>
+<span class="sourceLineNo">152</span>     * A data source change listener is used to flush the cache of<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     * mondrian every time the datasource is changed.<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     */<a name="line.154"></a>
+<span class="sourceLineNo">155</span>    DataSourceChangeListener,<a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>    /**<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     * The "Ignore" property is a boolean value. If true, mondrian ignores<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     * warnings and non-fatal errors while loading the schema. The resulting<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     * errors can be obtained by calling<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     * {@link mondrian.olap.Schema#getWarnings}.<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     */<a name="line.162"></a>
+<span class="sourceLineNo">163</span>    Ignore,<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span>    /**<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     * The "Instance" property is the unique identifier of a mondrian server<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     * running in the current JVM. If there are multiple mondrian servers, it<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     * ensures that the connection belongs to the correct one.<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     */<a name="line.169"></a>
+<span class="sourceLineNo">170</span>    Instance,<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>    /**<a name="line.172"></a>
+<span class="sourceLineNo">173</span>     * The "JdbcConnectionUuid" property is the unique identifier for the<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     * underlying JDBC connection. If defined, Mondrian will assume that two<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     * connections bearing the same JdbcConnectionUuid point to identical<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     * databases without looking at any other properties.<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     */<a name="line.177"></a>
+<span class="sourceLineNo">178</span>    JdbcConnectionUuid,<a name="line.178"></a>
+<span class="sourceLineNo">179</span><a name="line.179"></a>
+<span class="sourceLineNo">180</span>    /**<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     * The "PinSchemaTimeout" defines how much time must Mondrian<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     * keep a hard reference to schema objects within the pool of schemas.<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     *<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     * &lt;p&gt;After the timeout is reached, the hard reference will be cleared<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     * and the schema will be made a candidate for garbage collection. If the<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     * timeout wasn't reached yet and a second query requires the same schema,<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     * the timeout will be re-computed from the time of the second access and<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     * a new hard reference is established until the new timer reaches its end.<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     *<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     * &lt;p&gt;If the timeout is equal to zero, the schema will get<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     * pinned permanently. It is inadvisable to use this mode when using<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     * a DynamicSchemaProcessor at the risk of filling up the memory.<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     *<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     * &lt;p&gt;If the timeout is a negative value, the reference will behave<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     * the same as a {@link SoftReference}. This is the default behavior.<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     *<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     * &lt;p&gt;The timeout value must be provided as a String representing<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     * both the time value and the time unit. For example, 1 second is<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     * represented as "1s". Valid time units are [d, h, m, s, ms],<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     * representing respectively days, hours, minutes, seconds and<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     * milliseconds.<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     *<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     * &lt;p&gt;Defaults to "-1s".<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     */<a name="line.204"></a>
+<span class="sourceLineNo">205</span>    PinSchemaTimeout;<a name="line.205"></a>
+<span class="sourceLineNo">206</span><a name="line.206"></a>
+<span class="sourceLineNo">207</span>    /**<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     * Any property beginning with this value will be added to the<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     * JDBC connection properties, after removing this prefix. This<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     * allows you to specify connection properties without a URL.<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     */<a name="line.211"></a>
+<span class="sourceLineNo">212</span>    public static final String JdbcPropertyPrefix = "jdbc.";<a name="line.212"></a>
+<span class="sourceLineNo">213</span><a name="line.213"></a>
+<span class="sourceLineNo">214</span>}<a name="line.214"></a>
+<span class="sourceLineNo">215</span><a name="line.215"></a>
+<span class="sourceLineNo">216</span>// End RolapConnectionProperties.java<a name="line.216"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

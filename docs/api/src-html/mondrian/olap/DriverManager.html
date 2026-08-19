@@ -1,0 +1,191 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2002-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2010 Pentaho and others<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.olap;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.rolap.RolapConnection;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.rolap.RolapConnectionProperties;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.spi.CatalogLocator;<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>import javax.sql.DataSource;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>/**<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * The basic service for managing a set of OLAP drivers.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * @author jhyde<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * @since 15 January, 2002<a name="line.23"></a>
+<span class="sourceLineNo">024</span> */<a name="line.24"></a>
+<span class="sourceLineNo">025</span>public class DriverManager {<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span>    public DriverManager() {<a name="line.27"></a>
+<span class="sourceLineNo">028</span>    }<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>    /**<a name="line.30"></a>
+<span class="sourceLineNo">031</span>     * Creates a connection to a Mondrian OLAP Engine<a name="line.31"></a>
+<span class="sourceLineNo">032</span>     * using a connect string<a name="line.32"></a>
+<span class="sourceLineNo">033</span>     * and a catalog locator.<a name="line.33"></a>
+<span class="sourceLineNo">034</span>     *<a name="line.34"></a>
+<span class="sourceLineNo">035</span>     * @param connectString Connect string of the form<a name="line.35"></a>
+<span class="sourceLineNo">036</span>     *   'property=value;property=value;...'.<a name="line.36"></a>
+<span class="sourceLineNo">037</span>     *   See {@link mondrian.olap.Util#parseConnectString} for more details of the format.<a name="line.37"></a>
+<span class="sourceLineNo">038</span>     *   See {@link mondrian.rolap.RolapConnectionProperties} for a list of<a name="line.38"></a>
+<span class="sourceLineNo">039</span>     *   allowed properties.<a name="line.39"></a>
+<span class="sourceLineNo">040</span>     * @param locator Use to locate real catalog url by a customized<a name="line.40"></a>
+<span class="sourceLineNo">041</span>     *   configuration value. If &lt;code&gt;null&lt;/code&gt;, leave the catalog url<a name="line.41"></a>
+<span class="sourceLineNo">042</span>     *   unchanged.<a name="line.42"></a>
+<span class="sourceLineNo">043</span>     * @return A {@link Connection}, never null<a name="line.43"></a>
+<span class="sourceLineNo">044</span>     */<a name="line.44"></a>
+<span class="sourceLineNo">045</span>    public static Connection getConnection(<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        String connectString,<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        CatalogLocator locator)<a name="line.47"></a>
+<span class="sourceLineNo">048</span>    {<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        Util.PropertyList properties = Util.parseConnectString(connectString);<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        return getConnection(properties, locator);<a name="line.50"></a>
+<span class="sourceLineNo">051</span>    }<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>    /**<a name="line.53"></a>
+<span class="sourceLineNo">054</span>     * Creates a connection to a Mondrian OLAP Engine.<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     *<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     * @param properties Collection of properties which define the location<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     *   of the connection.<a name="line.57"></a>
+<span class="sourceLineNo">058</span>     *   See {@link mondrian.rolap.RolapConnection} for a list of allowed properties.<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     * @param locator Use to locate real catalog url by a customized<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     *   configuration value. If &lt;code&gt;null&lt;/code&gt;, leave the catalog url<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     *   unchanged.<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     * @return A {@link Connection}, never null<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     */<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    public static Connection getConnection(<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        Util.PropertyList properties,<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        CatalogLocator locator)<a name="line.66"></a>
+<span class="sourceLineNo">067</span>    {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        return getConnection(properties, locator, null);<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    }<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>    /**<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     * Creates a connection to a Mondrian OLAP Engine<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     * using a list of connection properties,<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     * a catalog locator,<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     * and a JDBC data source.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     *<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     * @param properties Collection of properties which define the location<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *   of the connection.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     *   See {@link mondrian.rolap.RolapConnection} for a list of allowed properties.<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     * @param locator Use to locate real catalog url by a customized<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     *   configuration value. If &lt;code&gt;null&lt;/code&gt;, leave the catalog url<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *   unchanged.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     * @param dataSource - if not null an external DataSource to be used<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *        by Mondrian<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     * @return A {@link Connection}, never null<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     */<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    public static Connection getConnection(<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        Util.PropertyList properties,<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        CatalogLocator locator,<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        DataSource dataSource)<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        String provider = properties.get("PROVIDER", "mondrian");<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        if (!provider.equalsIgnoreCase("mondrian")) {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>            throw Util.newError("Provider not recognized: " + provider);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        }<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        final String instance =<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            properties.get(RolapConnectionProperties.Instance.name());<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        MondrianServer server = MondrianServer.forId(instance);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        if (server == null) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            throw Util.newError("Unknown server instance: " + instance);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        }<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        if (locator == null) {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            locator = server.getCatalogLocator();<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        }<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        if (locator != null) {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>            String catalog = properties.get(<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                RolapConnectionProperties.Catalog.name());<a name="line.107"></a>
+<span class="sourceLineNo">108</span>            properties.put(<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                RolapConnectionProperties.Catalog.name(),<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                locator.locate(catalog));<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        }<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        final RolapConnection connection =<a name="line.112"></a>
+<span class="sourceLineNo">113</span>            new RolapConnection(server, properties, dataSource);<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        server.addConnection(connection);<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        return connection;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    }<a name="line.116"></a>
+<span class="sourceLineNo">117</span>}<a name="line.117"></a>
+<span class="sourceLineNo">118</span><a name="line.118"></a>
+<span class="sourceLineNo">119</span>// End DriverManager.java<a name="line.119"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

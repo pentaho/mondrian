@@ -1,0 +1,98 @@
+#screenTabs {
+float:left;
+width: 100%;
+min-height: 1px;
+height: 1px;
+background:#ffffff url("../img/icons/tabs/bg.gif") repeat-x bottom;
+}
+
+td > #screenTabs { 
+height: auto;
+}
+
+#tabs {
+float:left;
+width:620px;
+line-height:normal;
+white-space: nowrap;
+background:#ffffff url("../img/icons/tabs/bg.gif") repeat-x bottom;
+}
+
+#tabs ul {
+margin:0;
+padding: 0px 10px 10px 10px;
+list-style:none;
+}
+
+#tabs a {
+display: block;
+background:url("../img/icons/tabs/right.gif") no-repeat right top;
+padding:5px 9px 4px 4px;
+vertical-align: baseline;
+text-decoration: none;
+color: #000000;
+width:.1em;
+}
+
+#tabs > ul a {
+width: auto;
+}
+
+#tabs a:hover,
+#tabs a:visited,
+#tabs a:active {
+text-decoration: none;
+color: #000000;
+}
+
+#tabs li {
+float:left;
+background:url("../img/icons/tabs/left.gif") no-repeat left top;
+margin:0;
+padding:0 0 0 2px;
+border-bottom: solid 1px #776655;
+}
+
+#tabs li#current {
+border-width: 0;
+}
+
+#tabs #current {
+background-image:url("../img/icons/tabs/left_on.gif");
+margin-left: -3px;
+}
+#tabs #current a {
+background-image:url("../img/icons/tabs/right_on.gif");
+padding:3px 9px 7px 6px;
+vertical-align: baseline;
+}
+
+#tabs .last a {
+background-image:url("../img/icons/tabs/right_last.gif");
+}
+
+#tabs .first {
+background-image:url("../img/icons/tabs/left_first.gif");
+}
+
+#tabs .first#current {
+margin-left: 0;
+}
+
+#tabs li:hover {
+background-position: 0% -150px;
+cursor: pointer;
+}
+
+#tabs li:hover a {
+background-position: 100% -150px;
+}
+
+#tabs li.first:hover {
+background-position: top left;
+}
+
+#tabs a:hover {
+background-position: 100% -150px;
+}
+

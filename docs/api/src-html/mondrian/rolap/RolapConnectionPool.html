@@ -1,0 +1,310 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2003-2006 Robin Bagot and others<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2003-2005 Julian Hyde<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// Copyright (C) 2005-2010 Pentaho<a name="line.9"></a>
+<span class="sourceLineNo">010</span>// All Rights Reserved.<a name="line.10"></a>
+<span class="sourceLineNo">011</span>*/<a name="line.11"></a>
+<span class="sourceLineNo">012</span>package mondrian.rolap;<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.olap.Util;<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span>import org.apache.commons.dbcp.*;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import org.apache.commons.pool.ObjectPool;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import org.apache.commons.pool.impl.GenericObjectPool;<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>import java.util.*;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import javax.sql.DataSource;<a name="line.21"></a>
+<span class="sourceLineNo">022</span><a name="line.22"></a>
+<span class="sourceLineNo">023</span>/**<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * Singleton class that holds a connection pool.<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * Call RolapConnectionPool.instance().getPoolingDataSource(connectionFactory)<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * to get a DataSource in return that is a pooled data source.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * @author jhyde<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * @author Robin Bagot<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * @since 7 July, 2003<a name="line.30"></a>
+<span class="sourceLineNo">031</span> */<a name="line.31"></a>
+<span class="sourceLineNo">032</span>class RolapConnectionPool {<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>    public static RolapConnectionPool instance() {<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        return instance;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>    }<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>    private static final RolapConnectionPool instance =<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        new RolapConnectionPool();<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>    private final Map&lt;Object, ObjectPool&gt; mapConnectKeyToPool =<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        new HashMap&lt;Object, ObjectPool&gt;();<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>    private final Map&lt;Object, DataSource&gt; dataSourceMap =<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        new WeakHashMap&lt;Object, DataSource&gt;();<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span>    private RolapConnectionPool() {<a name="line.47"></a>
+<span class="sourceLineNo">048</span>    }<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>    /**<a name="line.51"></a>
+<span class="sourceLineNo">052</span>     * Sets up a pooling data source for connection pooling.<a name="line.52"></a>
+<span class="sourceLineNo">053</span>     * This can be used if the application server does not have a pooling<a name="line.53"></a>
+<span class="sourceLineNo">054</span>     * dataSource already configured.<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     *<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     * &lt;p&gt;This takes a normal jdbc connection string, and requires a jdbc<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     * driver to be loaded, and then uses a<a name="line.57"></a>
+<span class="sourceLineNo">058</span>     * {@link DriverManagerConnectionFactory} to create connections to the<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     * database.<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     *<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     * &lt;p&gt;An alternative method of configuring a pooling driver is to use an<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     * external configuration file. See the the Apache jakarta-commons<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     * commons-pool documentation.<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     *<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     * @param key Identifies which connection factory to use. A typical key is<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *   a JDBC connect string, since each JDBC connect string requires a<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *   different connection factory.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     * @param connectionFactory Creates connections from an underlying<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *   JDBC connect string or DataSource<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     * @return a pooling DataSource object<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     */<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    public synchronized DataSource getPoolingDataSource(<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        Object key,<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        ConnectionFactory connectionFactory)<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        ObjectPool connectionPool = getPool(key, connectionFactory);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        // create pooling datasource<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        return new PoolingDataSource(connectionPool);<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    }<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>    /**<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     * Clears the connection pool for testing purposes<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     */<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    void clearPool() {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        mapConnectKeyToPool.clear();<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    }<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>    public synchronized DataSource getDriverManagerPoolingDataSource(<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        String jdbcConnectString,<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        Properties jdbcProperties)<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        // First look for a data source with identical specification. This in<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        // turn helps us to use the cache of Dialect objects.<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>        // Need to include user name to define the pool key as some DBMSs<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        // like Oracle don't include schemas in the JDBC URL - instead the<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        // user drives the schema. This makes JDBC pools act like JNDI pools,<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        // with, in effect, a pool per DB user.<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>        List&lt;Object&gt; key =<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            Arrays.&lt;Object&gt;asList(<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                "DriverManagerPoolingDataSource",<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                jdbcConnectString,<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                jdbcProperties);<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        DataSource dataSource = dataSourceMap.get(key);<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        if (dataSource != null) {<a name="line.106"></a>
+<span class="sourceLineNo">107</span>            return dataSource;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        }<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>        // use the DriverManagerConnectionFactory to create connections<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        ConnectionFactory connectionFactory =<a name="line.111"></a>
+<span class="sourceLineNo">112</span>            new DriverManagerConnectionFactory(<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                jdbcConnectString,<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                jdbcProperties);<a name="line.114"></a>
+<span class="sourceLineNo">115</span><a name="line.115"></a>
+<span class="sourceLineNo">116</span>        try {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>            String propertyString = jdbcProperties.toString();<a name="line.117"></a>
+<span class="sourceLineNo">118</span>            dataSource = getPoolingDataSource(<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                jdbcConnectString + propertyString,<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                connectionFactory);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        } catch (Throwable e) {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>            throw Util.newInternal(<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                e,<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                "Error while creating connection pool (with URI "<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                + jdbcConnectString + ")");<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        }<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        dataSourceMap.put(key, dataSource);<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        return dataSource;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>    }<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>    public synchronized DataSource getDataSourcePoolingDataSource(<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        DataSource dataSource,<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        String dataSourceName,<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        String jdbcUser,<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        String jdbcPassword)<a name="line.135"></a>
+<span class="sourceLineNo">136</span>    {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        // First look for a data source with identical specification. This in<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        // turn helps us to use the cache of Dialect objects.<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        List&lt;Object&gt; key =<a name="line.139"></a>
+<span class="sourceLineNo">140</span>            Arrays.asList(<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                "DataSourcePoolingDataSource",<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                dataSource,<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                jdbcUser,<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                jdbcPassword);<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        DataSource pooledDataSource = dataSourceMap.get(key);<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        if (pooledDataSource != null) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>            return pooledDataSource;<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        }<a name="line.148"></a>
+<span class="sourceLineNo">149</span><a name="line.149"></a>
+<span class="sourceLineNo">150</span>        ConnectionFactory connectionFactory;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        if (jdbcUser != null || jdbcPassword != null) {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>            connectionFactory =<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                new DataSourceConnectionFactory(<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                    dataSource, jdbcUser, jdbcPassword);<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        } else {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            connectionFactory =<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                new DataSourceConnectionFactory(dataSource);<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        }<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        try {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            pooledDataSource =<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                getPoolingDataSource(<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                    dataSourceName,<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                    connectionFactory);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        } catch (Exception e) {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            throw Util.newInternal(<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                e,<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                "Error while creating connection pool (with URI "<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                + dataSourceName + ")");<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        }<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        dataSourceMap.put(key, pooledDataSource);<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        return dataSource;<a name="line.171"></a>
+<span class="sourceLineNo">172</span>    }<a name="line.172"></a>
+<span class="sourceLineNo">173</span><a name="line.173"></a>
+<span class="sourceLineNo">174</span>    /**<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     * Gets or creates a connection pool for a particular connect<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     * specification.<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     */<a name="line.177"></a>
+<span class="sourceLineNo">178</span>    private synchronized ObjectPool getPool(<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        Object key,<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        ConnectionFactory connectionFactory)<a name="line.180"></a>
+<span class="sourceLineNo">181</span>    {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        ObjectPool connectionPool = mapConnectKeyToPool.get(key);<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        if (connectionPool == null) {<a name="line.183"></a>
+<span class="sourceLineNo">184</span>            // use GenericObjectPool, which provides for resource limits<a name="line.184"></a>
+<span class="sourceLineNo">185</span>            connectionPool = new GenericObjectPool(<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                null, // PoolableObjectFactory, can be null<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                50, // max active<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                GenericObjectPool.WHEN_EXHAUSTED_BLOCK, // action when exhausted<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                3000, // max wait (milli seconds)<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                10, // max idle<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                false, // test on borrow<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                false, // test on return<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                60000, // time between eviction runs (millis)<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                5, // number to test on eviction run<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                30000, // min evictable idle time (millis)<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                true); // test while idle<a name="line.196"></a>
+<span class="sourceLineNo">197</span><a name="line.197"></a>
+<span class="sourceLineNo">198</span>            // create a PoolableConnectionFactory<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            AbandonedConfig abandonedConfig = new AbandonedConfig();<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            // flag to remove abandoned connections from pool<a name="line.200"></a>
+<span class="sourceLineNo">201</span>            abandonedConfig.setRemoveAbandoned(true);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>            // timeout (seconds) before removing abandoned connections<a name="line.202"></a>
+<span class="sourceLineNo">203</span>            abandonedConfig.setRemoveAbandonedTimeout(300);<a name="line.203"></a>
+<span class="sourceLineNo">204</span>            // Flag to log stack traces for application code which abandoned a<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            // Statement or Connection<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            abandonedConfig.setLogAbandoned(true);<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            PoolableConnectionFactory poolableConnectionFactory =<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                new PoolableConnectionFactory(<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                    // the connection factory<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                    connectionFactory,<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                    // the object pool<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                    connectionPool,<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                    // statement pool factory for pooling prepared statements,<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                    // or null for no pooling<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                    null,<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                    // validation query (must return at least 1 row e.g. Oracle:<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                    // select count(*) from dual) to test connection, can be<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                    // null<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                    null,<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                    // default "read only" setting for borrowed connections<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                    false,<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                    // default "auto commit" setting for returned connections<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                    true,<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                    // AbandonedConfig object configures how to handle abandoned<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                    // connections<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                    abandonedConfig);<a name="line.226"></a>
+<span class="sourceLineNo">227</span><a name="line.227"></a>
+<span class="sourceLineNo">228</span>            // "poolableConnectionFactory" has registered itself with<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            // "connectionPool", somehow, so we don't need the value any more.<a name="line.229"></a>
+<span class="sourceLineNo">230</span>            Util.discard(poolableConnectionFactory);<a name="line.230"></a>
+<span class="sourceLineNo">231</span>            mapConnectKeyToPool.put(key, connectionPool);<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        }<a name="line.232"></a>
+<span class="sourceLineNo">233</span>        return connectionPool;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>    }<a name="line.234"></a>
+<span class="sourceLineNo">235</span><a name="line.235"></a>
+<span class="sourceLineNo">236</span>}<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span>// End RolapConnectionPool.java<a name="line.238"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

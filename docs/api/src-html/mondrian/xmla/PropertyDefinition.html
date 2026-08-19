@@ -1,0 +1,347 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2003-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2011 Pentaho<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.xmla;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.olap.MondrianServer;<a name="line.13"></a>
+<span class="sourceLineNo">014</span><a name="line.14"></a>
+<span class="sourceLineNo">015</span>import org.olap4j.impl.Olap4jUtil;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import org.olap4j.metadata.XmlaConstants;<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>import java.util.Set;<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>/**<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * Defines an XML for Analysis Property.<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * @author jhyde<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * @since May 2, 2003<a name="line.24"></a>
+<span class="sourceLineNo">025</span> */<a name="line.25"></a>
+<span class="sourceLineNo">026</span>public enum PropertyDefinition {<a name="line.26"></a>
+<span class="sourceLineNo">027</span>    AxisFormat(<a name="line.27"></a>
+<span class="sourceLineNo">028</span>        RowsetDefinition.Type.Enumeration,<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        Olap4jUtil.enumSetAllOf(XmlaConstants.AxisFormat.class),<a name="line.29"></a>
+<span class="sourceLineNo">030</span>        XmlaConstants.Access.Write,<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        "",<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        XmlaConstants.Method.EXECUTE,<a name="line.32"></a>
+<span class="sourceLineNo">033</span>        "Determines the format used within an MDDataSet result set to describe the axes of the multidimensional dataset. This property can have the values listed in the following table: TupleFormat (default), ClusterFormat, CustomFormat."),<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>    BeginRange(<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        RowsetDefinition.Type.Integer,<a name="line.36"></a>
+<span class="sourceLineNo">037</span>        null,<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        XmlaConstants.Access.Write,<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        "-1",<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        XmlaConstants.Method.EXECUTE,<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        "Contains a zero-based integer value corresponding to a CellOrdinal attribute value. (The CellOrdinal attribute is part of the Cell element in the CellData section of MDDataSet.)\n"<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        + "Used together with the EndRange property, the client application can use this property to restrict an OLAP dataset returned by a command to a specific range of cells. If -1 is specified, all cells up to the cell specified in the EndRange property are returned.\n"<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        + "The default value for this property is -1."),<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>    Catalog(<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        RowsetDefinition.Type.String,<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        null,<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        XmlaConstants.Access.ReadWrite,<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        "",<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        XmlaConstants.Method.DISCOVER_AND_EXECUTE,<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        "When establishing a session with an Analysis Services instance to send an XMLA command, this property is equivalent to the OLE DB property, DBPROP_INIT_CATALOG.\n"<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        + "When you set this property during a session to change the current database for the session, this property is equivalent to the OLE DB property, DBPROP_CURRENTCATALOG.\n"<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        + "The default value for this property is an empty string."),<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>    Content(<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        RowsetDefinition.Type.EnumString,<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        Olap4jUtil.enumSetAllOf(XmlaConstants.Content.class),<a name="line.57"></a>
+<span class="sourceLineNo">058</span>        XmlaConstants.Access.Write,<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        XmlaConstants.Content.DEFAULT.name(),<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        XmlaConstants.Method.DISCOVER_AND_EXECUTE,<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        "An enumerator that specifies what type of data is returned in the result set.\n"<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        + "None: Allows the structure of the command to be verified, but not executed. Analogous to using Prepare to check syntax, and so on.\n"<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        + "Schema: Contains the XML schema (which indicates column information, and so on) that relates to the requested query.\n"<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        + "Data: Contains only the data that was requested.\n"<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        + "SchemaData: Returns both the schema information as well as the data."),<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>    Cube(<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        RowsetDefinition.Type.String,<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        null,<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        XmlaConstants.Access.ReadWrite,<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        "",<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        XmlaConstants.Method.EXECUTE,<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        "The cube context for the Command parameter. If the command contains a cube name (such as an MDX FROM clause) the setting of this property is ignored."),<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>    DataSourceInfo(<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        RowsetDefinition.Type.String,<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        null,<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        XmlaConstants.Access.ReadWrite,<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        "",<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        XmlaConstants.Method.DISCOVER_AND_EXECUTE,<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        "A string containing provider specific information, required to access the data source."),<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>    // Mondrian-specific extension to XMLA.<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    Deep(<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        RowsetDefinition.Type.Boolean,<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        null,<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        XmlaConstants.Access.ReadWrite,<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        "",<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        XmlaConstants.Method.DISCOVER,<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        "In an MDSCHEMA_CUBES request, whether to include sub-elements "<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        + "(dimensions, hierarchies, levels, measures, named sets) of each "<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        + "cube."),<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>    // Mondrian-specific extension to XMLA.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    EmitInvisibleMembers(<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        RowsetDefinition.Type.Boolean,<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        null,<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        XmlaConstants.Access.ReadWrite,<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        "",<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        XmlaConstants.Method.DISCOVER,<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        "Whether to include members whose VISIBLE property is false, or "<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        + "measures whose MEASURE_IS_VISIBLE property is false."),<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>    EndRange(<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        RowsetDefinition.Type.Integer,<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        null,<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        XmlaConstants.Access.Write,<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        "-1",<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        XmlaConstants.Method.EXECUTE,<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        "An integer value corresponding to a CellOrdinal used to restrict an MDDataSet returned by a command to a specific range of cells. Used in conjunction with the BeginRange property. If unspecified, all cells are returned in the rowset. The value -1 means unspecified."),<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>    Format(<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        RowsetDefinition.Type.EnumString,<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        Olap4jUtil.enumSetAllOf(XmlaConstants.Format.class),<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        XmlaConstants.Access.Write,<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        "Native",<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        XmlaConstants.Method.DISCOVER_AND_EXECUTE,<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        "Enumerator that determines the format of the returned result set. Values include:\n"<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        + "Tabular: a flat or hierarchical rowset. Similar to the XML RAW format in SQL. The Format property should be set to Tabular for OLE DB for Data Mining commands.\n"<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        + "Multidimensional: Indicates that the result set will use the MDDataSet format (Execute method only).\n"<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        + "Native: The client does not request a specific format, so the provider may return the format  appropriate to the query. (The actual result type is identified by namespace of the result.)"),<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>    LocaleIdentifier(<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        RowsetDefinition.Type.UnsignedInteger,<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        null,<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        XmlaConstants.Access.ReadWrite,<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        "None",<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        XmlaConstants.Method.DISCOVER_AND_EXECUTE,<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        "Use this to read or set the numeric locale identifier for this request. The default is provider-specific.\n"<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        + "For the complete hexadecimal list of language identifiers, search on \"Language Identifiers\" in the MSDN Library at http://www.msdn.microsoft.com.\n"<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        + "As an extension to the XMLA standard, Mondrian also allows locale codes as specified by ISO-639 and ISO-3166 and as used by Java; for example 'en-US'.\n"),<a name="line.131"></a>
+<span class="sourceLineNo">132</span><a name="line.132"></a>
+<span class="sourceLineNo">133</span>    MDXSupport(<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        RowsetDefinition.Type.EnumString,<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        Olap4jUtil.enumSetAllOf(XmlaConstants.MdxSupport.class),<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        XmlaConstants.Access.Read,<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        "Core",<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        XmlaConstants.Method.DISCOVER,<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        "Enumeration that describes the degree of MDX support. At initial release Core is the only value in the enumeration. In future releases, other values will be defined for this enumeration."),<a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span>    Password(<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        RowsetDefinition.Type.String,<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        null,<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        org.olap4j.metadata.XmlaConstants.Access.Read,<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        "",<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        XmlaConstants.Method.DISCOVER_AND_EXECUTE,<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        "This property is deprecated in XMLA 1.1. To support legacy applications, the provider accepts but ignores the Password property setting when it is used with the Discover and Execute method"),<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>    ProviderName(<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        RowsetDefinition.Type.String,<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        null,<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        XmlaConstants.Access.Read,<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        "Mondrian XML for Analysis Provider",<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        XmlaConstants.Method.DISCOVER,<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        "The XML for Analysis Provider name."),<a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>    ProviderVersion(<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        RowsetDefinition.Type.String,<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        null,<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        XmlaConstants.Access.Read,<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        MondrianServer.forId(null).getVersion().getVersionString(),<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        XmlaConstants.Method.DISCOVER,<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        "The version of the Mondrian XMLA Provider"),<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span>    // Mondrian-specific extension to XMLA.<a name="line.165"></a>
+<span class="sourceLineNo">166</span>    /**<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     * @see Enumeration.ResponseMimeType<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     */<a name="line.168"></a>
+<span class="sourceLineNo">169</span>    ResponseMimeType(<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        RowsetDefinition.Type.String,<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        null,<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        XmlaConstants.Access.ReadWrite,<a name="line.172"></a>
+<span class="sourceLineNo">173</span>        "None",<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        XmlaConstants.Method.DISCOVER_AND_EXECUTE,<a name="line.174"></a>
+<span class="sourceLineNo">175</span>        "Accepted mime type for RPC response; accepted are 'text/xml' "<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        + "(default), 'application/xml' (equivalent to 'text/xml'), or "<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        + "'application/json'. If not specified, value in the 'Accept' header "<a name="line.177"></a>
+<span class="sourceLineNo">178</span>        + "of the HTTP request is used."),<a name="line.178"></a>
+<span class="sourceLineNo">179</span><a name="line.179"></a>
+<span class="sourceLineNo">180</span>    StateSupport(<a name="line.180"></a>
+<span class="sourceLineNo">181</span>        RowsetDefinition.Type.EnumString,<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        Olap4jUtil.enumSetAllOf(XmlaConstants.StateSupport.class),<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        XmlaConstants.Access.Read,<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        "None",<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        XmlaConstants.Method.DISCOVER,<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        "Property that specifies the degree of support in the provider for state. For information about state in XML for Analysis, see \"Support for Statefulness in XML for Analysis.\" Minimum enumeration values are as follows:\n"<a name="line.186"></a>
+<span class="sourceLineNo">187</span>        + "None - No support for sessions or stateful operations.\n"<a name="line.187"></a>
+<span class="sourceLineNo">188</span>        + "Sessions - Provider supports sessions."),<a name="line.188"></a>
+<span class="sourceLineNo">189</span><a name="line.189"></a>
+<span class="sourceLineNo">190</span>    Timeout(<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        RowsetDefinition.Type.UnsignedInteger,<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        null,<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        XmlaConstants.Access.ReadWrite,<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        "Undefined",<a name="line.194"></a>
+<span class="sourceLineNo">195</span>        XmlaConstants.Method.DISCOVER_AND_EXECUTE,<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        "A numeric time-out specifying in seconds the amount of time to wait for a request to be successful."),<a name="line.196"></a>
+<span class="sourceLineNo">197</span><a name="line.197"></a>
+<span class="sourceLineNo">198</span>    UserName(<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        RowsetDefinition.Type.String,<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        null,<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        XmlaConstants.Access.Read,<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        "",<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        XmlaConstants.Method.DISCOVER_AND_EXECUTE,<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        "Returns the UserName the server associates with the command.\n"<a name="line.204"></a>
+<span class="sourceLineNo">205</span>        + "This property is deprecated as writeable in XMLA 1.1. To support legacy applications, servers accept but ignore the password setting when it is used with the Execute method."),<a name="line.205"></a>
+<span class="sourceLineNo">206</span><a name="line.206"></a>
+<span class="sourceLineNo">207</span>    VisualMode(<a name="line.207"></a>
+<span class="sourceLineNo">208</span>        RowsetDefinition.Type.Enumeration,<a name="line.208"></a>
+<span class="sourceLineNo">209</span>        Olap4jUtil.enumSetAllOf(XmlaConstants.VisualMode.class),<a name="line.209"></a>
+<span class="sourceLineNo">210</span>        XmlaConstants.Access.Write,<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        Integer.toString(XmlaConstants.VisualMode.VISUAL.ordinal()),<a name="line.211"></a>
+<span class="sourceLineNo">212</span>        XmlaConstants.Method.DISCOVER_AND_EXECUTE,<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        "This property is equivalent to the OLE DB property, MDPROP_VISUALMODE.\n"<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        + "The default value for this property is zero (0), equivalent to DBPROPVAL_VISUAL_MODE_DEFAULT."),<a name="line.214"></a>
+<span class="sourceLineNo">215</span><a name="line.215"></a>
+<span class="sourceLineNo">216</span>    // mondrian-specific property for advanced drill-through<a name="line.216"></a>
+<span class="sourceLineNo">217</span>    TableFields(<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        RowsetDefinition.Type.String,<a name="line.218"></a>
+<span class="sourceLineNo">219</span>        null,<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        XmlaConstants.Access.Read,<a name="line.220"></a>
+<span class="sourceLineNo">221</span>        "",<a name="line.221"></a>
+<span class="sourceLineNo">222</span>        XmlaConstants.Method.DISCOVER_AND_EXECUTE,<a name="line.222"></a>
+<span class="sourceLineNo">223</span>        "List of fields to return for drill-through.\n"<a name="line.223"></a>
+<span class="sourceLineNo">224</span>        + "The default value of this property is the empty string,"<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        + "in which case, all fields are returned."),<a name="line.225"></a>
+<span class="sourceLineNo">226</span><a name="line.226"></a>
+<span class="sourceLineNo">227</span>    // mondrian-specific property for advanced drill-through<a name="line.227"></a>
+<span class="sourceLineNo">228</span>    AdvancedFlag(<a name="line.228"></a>
+<span class="sourceLineNo">229</span>        RowsetDefinition.Type.Boolean,<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        null,<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        XmlaConstants.Access.Read,<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        "false",<a name="line.232"></a>
+<span class="sourceLineNo">233</span>        XmlaConstants.Method.DISCOVER_AND_EXECUTE,<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        "");<a name="line.234"></a>
+<span class="sourceLineNo">235</span><a name="line.235"></a>
+<span class="sourceLineNo">236</span>    final RowsetDefinition.Type type;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>    final Set&lt;? extends Enum&gt; enumSet;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>    final XmlaConstants.Access access;<a name="line.238"></a>
+<span class="sourceLineNo">239</span>    final XmlaConstants.Method usage;<a name="line.239"></a>
+<span class="sourceLineNo">240</span>    final String value;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>    final String description;<a name="line.241"></a>
+<span class="sourceLineNo">242</span><a name="line.242"></a>
+<span class="sourceLineNo">243</span>    PropertyDefinition(<a name="line.243"></a>
+<span class="sourceLineNo">244</span>        RowsetDefinition.Type type,<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        Set&lt;? extends Enum&gt; enumSet,<a name="line.245"></a>
+<span class="sourceLineNo">246</span>        XmlaConstants.Access access,<a name="line.246"></a>
+<span class="sourceLineNo">247</span>        String value,<a name="line.247"></a>
+<span class="sourceLineNo">248</span>        XmlaConstants.Method usage,<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        String description)<a name="line.249"></a>
+<span class="sourceLineNo">250</span>    {<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        // Line endings must be UNIX style (LF) not Windows style (LF+CR).<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        // Thus the client will receive the same XML, regardless<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        // of the server O/S.<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        assert description.indexOf('\r') == -1;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        assert value.indexOf('\r') == -1;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        assert (enumSet != null) == type.isEnum();<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        this.type = type;<a name="line.257"></a>
+<span class="sourceLineNo">258</span>        this.enumSet = enumSet;<a name="line.258"></a>
+<span class="sourceLineNo">259</span>        this.access = access;<a name="line.259"></a>
+<span class="sourceLineNo">260</span>        this.usage = usage;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>        this.value = value;<a name="line.261"></a>
+<span class="sourceLineNo">262</span>        this.description = description;<a name="line.262"></a>
+<span class="sourceLineNo">263</span>    }<a name="line.263"></a>
+<span class="sourceLineNo">264</span><a name="line.264"></a>
+<span class="sourceLineNo">265</span>    /**<a name="line.265"></a>
+<span class="sourceLineNo">266</span>     * Returns the description of this PropertyDefinition.<a name="line.266"></a>
+<span class="sourceLineNo">267</span>     *<a name="line.267"></a>
+<span class="sourceLineNo">268</span>     * @return description<a name="line.268"></a>
+<span class="sourceLineNo">269</span>     */<a name="line.269"></a>
+<span class="sourceLineNo">270</span>    public String getDescription() {<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        return description;<a name="line.271"></a>
+<span class="sourceLineNo">272</span>    }<a name="line.272"></a>
+<span class="sourceLineNo">273</span>}<a name="line.273"></a>
+<span class="sourceLineNo">274</span><a name="line.274"></a>
+<span class="sourceLineNo">275</span>// End PropertyDefinition.java<a name="line.275"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

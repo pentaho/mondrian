@@ -1,0 +1,1111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2002-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2012 Pentaho and others<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>//<a name="line.10"></a>
+<span class="sourceLineNo">011</span>// jhyde, Mar 21, 2002<a name="line.11"></a>
+<span class="sourceLineNo">012</span>*/<a name="line.12"></a>
+<span class="sourceLineNo">013</span>package mondrian.rolap.sql;<a name="line.13"></a>
+<span class="sourceLineNo">014</span><a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.olap.*;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import mondrian.rolap.*;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import mondrian.spi.Dialect;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import mondrian.spi.DialectManager;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import mondrian.util.Pair;<a name="line.19"></a>
+<span class="sourceLineNo">020</span><a name="line.20"></a>
+<span class="sourceLineNo">021</span>import java.util.*;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import javax.sql.DataSource;<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>/**<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * &lt;code&gt;SqlQuery&lt;/code&gt; allows us to build a &lt;code&gt;select&lt;/code&gt;<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * statement and generate it in database-specific SQL syntax.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * &lt;p&gt; Notable differences in database syntax are:&lt;dl&gt;<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * &lt;dt&gt; Identifier quoting &lt;/dt&gt;<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * &lt;dd&gt; Oracle (and all JDBC-compliant drivers) uses double-quotes,<a name="line.31"></a>
+<span class="sourceLineNo">032</span> * for example &lt;code&gt;select * from "emp"&lt;/code&gt;. Access prefers brackets,<a name="line.32"></a>
+<span class="sourceLineNo">033</span> * for example &lt;code&gt;select * from [emp]&lt;/code&gt;. mySQL allows single- and<a name="line.33"></a>
+<span class="sourceLineNo">034</span> * double-quotes for string literals, and therefore does not allow<a name="line.34"></a>
+<span class="sourceLineNo">035</span> * identifiers to be quoted, for example &lt;code&gt;select 'foo', "bar" from<a name="line.35"></a>
+<span class="sourceLineNo">036</span> * emp&lt;/code&gt;. &lt;/dd&gt;<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * &lt;dt&gt; AS in from clause &lt;/dt&gt;<a name="line.38"></a>
+<span class="sourceLineNo">039</span> * &lt;dd&gt; Oracle doesn't like AS in the from * clause, for example<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * &lt;code&gt;select from emp as e&lt;/code&gt; vs. &lt;code&gt;select * from emp<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * e&lt;/code&gt;. &lt;/dd&gt;<a name="line.41"></a>
+<span class="sourceLineNo">042</span> *<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * &lt;dt&gt; Column aliases &lt;/dt&gt;<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * &lt;dd&gt; Some databases require that every column in the select list<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * has a valid alias. If the expression is an expression containing<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * non-alphanumeric characters, an explicit alias is needed. For example,<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * Oracle will barfs at &lt;code&gt;select empno + 1 from emp&lt;/code&gt;. &lt;/dd&gt;<a name="line.47"></a>
+<span class="sourceLineNo">048</span> *<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * &lt;dt&gt; Parentheses around table names &lt;/dt&gt;<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * &lt;dd&gt; Oracle doesn't like &lt;code&gt;select * from (emp)&lt;/code&gt; &lt;/dd&gt;<a name="line.50"></a>
+<span class="sourceLineNo">051</span> *<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * &lt;dt&gt; Queries in FROM clause &lt;/dt&gt;<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * &lt;dd&gt; PostgreSQL and hsqldb don't allow, for example, &lt;code&gt;select * from<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * (select * from emp) as e&lt;/code&gt;.&lt;/dd&gt;<a name="line.54"></a>
+<span class="sourceLineNo">055</span> *<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * &lt;dt&gt; Uniqueness of index names &lt;/dt&gt;<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * &lt;dd&gt; In PostgreSQL and Oracle, index names must be unique within the<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * database; in Access and hsqldb, they must merely be unique within their<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * table &lt;/dd&gt;<a name="line.59"></a>
+<span class="sourceLineNo">060</span> *<a name="line.60"></a>
+<span class="sourceLineNo">061</span> * &lt;dt&gt; Datatypes &lt;/dt&gt;<a name="line.61"></a>
+<span class="sourceLineNo">062</span> * &lt;dd&gt; In Oracle, BIT is CHAR(1), TIMESTAMP is DATE.<a name="line.62"></a>
+<span class="sourceLineNo">063</span> *      In PostgreSQL, DOUBLE is DOUBLE PRECISION, BIT is BOOL. &lt;/dd&gt;<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * &lt;/ul&gt;<a name="line.64"></a>
+<span class="sourceLineNo">065</span> *<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * &lt;p&gt;<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * NOTE: Instances of this class are NOT thread safe so the user must make<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * sure this is accessed by only one thread at a time.<a name="line.68"></a>
+<span class="sourceLineNo">069</span> *<a name="line.69"></a>
+<span class="sourceLineNo">070</span> * @author jhyde<a name="line.70"></a>
+<span class="sourceLineNo">071</span> */<a name="line.71"></a>
+<span class="sourceLineNo">072</span>public class SqlQuery {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    /** Controls the formatting of the sql string. */<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    private final boolean generateFormattedSql;<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>    private boolean distinct;<a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span>    private final ClauseList select;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    private final FromClauseList from;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>    private final ClauseList where;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    private final ClauseList groupBy;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>    private final ClauseList having;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    private final ClauseList orderBy;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    private final List&lt;ClauseList&gt; groupingSets;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>    private final ClauseList groupingFunctions;<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>    private final List&lt;SqlStatement.Type&gt; types =<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        new ArrayList&lt;SqlStatement.Type&gt;();<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>    /** Controls whether table optimization hints are used */<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    private boolean allowHints;<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>    /**<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     * This list is used to keep track of what aliases have been  used in the<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     * FROM clause. One might think that a java.util.Set would be a more<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     * appropriate Collection type, but if you only have a couple of "from<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     * aliases", then iterating over a list is faster than doing a hash lookup<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     * (as is used in java.util.HashSet).<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     */<a name="line.99"></a>
+<span class="sourceLineNo">100</span>    private final List&lt;String&gt; fromAliases;<a name="line.100"></a>
+<span class="sourceLineNo">101</span><a name="line.101"></a>
+<span class="sourceLineNo">102</span>    /** The SQL dialect this query is to be generated in. */<a name="line.102"></a>
+<span class="sourceLineNo">103</span>    private final Dialect dialect;<a name="line.103"></a>
+<span class="sourceLineNo">104</span><a name="line.104"></a>
+<span class="sourceLineNo">105</span>    /** Scratch buffer. Clear it before use. */<a name="line.105"></a>
+<span class="sourceLineNo">106</span>    private final StringBuilder buf;<a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span>    private final Set&lt;MondrianDef.Relation&gt; relations =<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        new HashSet&lt;MondrianDef.Relation&gt;();<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>    private final Map&lt;MondrianDef.Relation, MondrianDef.RelationOrJoin&gt;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        mapRelationToRoot =<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        new HashMap&lt;MondrianDef.Relation, MondrianDef.RelationOrJoin&gt;();<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>    private final Map&lt;MondrianDef.RelationOrJoin, List&lt;RelInfo&gt;&gt;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        mapRootToRelations =<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        new HashMap&lt;MondrianDef.RelationOrJoin, List&lt;RelInfo&gt;&gt;();<a name="line.117"></a>
+<span class="sourceLineNo">118</span><a name="line.118"></a>
+<span class="sourceLineNo">119</span>    private final Map&lt;String, String&gt; columnAliases =<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        new HashMap&lt;String, String&gt;();<a name="line.120"></a>
+<span class="sourceLineNo">121</span><a name="line.121"></a>
+<span class="sourceLineNo">122</span>    private static final String INDENT = "    ";<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>    /**<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     * Base constructor used by all other constructors to create an empty<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     * instance.<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     *<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     * @param dialect Dialect<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     * @param formatted Whether to generate SQL formatted on multiple lines<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     */<a name="line.130"></a>
+<span class="sourceLineNo">131</span>    public SqlQuery(Dialect dialect, boolean formatted) {<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        assert dialect != null;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        this.generateFormattedSql = formatted;<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>        // both select and from allow duplications<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        this.select = new ClauseList(true);<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        this.from = new FromClauseList(true);<a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span>        this.groupingFunctions = new ClauseList(false);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        this.where = new ClauseList(false);<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        this.groupBy = new ClauseList(false);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        this.having = new ClauseList(false);<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        this.orderBy = new ClauseList(false);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        this.fromAliases = new ArrayList&lt;String&gt;();<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        this.buf = new StringBuilder(128);<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        this.groupingSets = new ArrayList&lt;ClauseList&gt;();<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        this.dialect = dialect;<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>        // REVIEW emcdermid 10-Jul-2009: It might be okay to allow<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        // hints in all cases, but for initial implementation this<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        // allows us to them on selectively in specific situations.<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        // Usage will likely expand with experimentation.<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        this.allowHints = false;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>    }<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>    /**<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     * Creates a SqlQuery using a given dialect and inheriting the formatting<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     * preferences from {@link MondrianProperties#GenerateFormattedSql}<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     * property.<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     *<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     * @param dialect Dialect<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     */<a name="line.162"></a>
+<span class="sourceLineNo">163</span>    public SqlQuery(Dialect dialect) {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        this(<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            dialect,<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            MondrianProperties.instance().GenerateFormattedSql.get());<a name="line.166"></a>
+<span class="sourceLineNo">167</span>    }<a name="line.167"></a>
+<span class="sourceLineNo">168</span><a name="line.168"></a>
+<span class="sourceLineNo">169</span>    /**<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     * Creates an empty &lt;code&gt;SqlQuery&lt;/code&gt; with the same environment as this<a name="line.170"></a>
+<span class="sourceLineNo">171</span>     * one. (As per the Gang of Four 'prototype' pattern.)<a name="line.171"></a>
+<span class="sourceLineNo">172</span>     */<a name="line.172"></a>
+<span class="sourceLineNo">173</span>    public SqlQuery cloneEmpty()<a name="line.173"></a>
+<span class="sourceLineNo">174</span>    {<a name="line.174"></a>
+<span class="sourceLineNo">175</span>        return new SqlQuery(dialect);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>    }<a name="line.176"></a>
+<span class="sourceLineNo">177</span><a name="line.177"></a>
+<span class="sourceLineNo">178</span>    public void setDistinct(final boolean distinct) {<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        this.distinct = distinct;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>    }<a name="line.180"></a>
+<span class="sourceLineNo">181</span><a name="line.181"></a>
+<span class="sourceLineNo">182</span>    /**<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     * Chooses whether table optimization hints may be used<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     * (assuming the dialect supports it).<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     *<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     * @param t True to allow hints to be used, false otherwise<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     */<a name="line.187"></a>
+<span class="sourceLineNo">188</span>    public void setAllowHints(boolean t) {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        this.allowHints = t;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>    }<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>    /**<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     * Adds a subquery to the FROM clause of this Query with a given alias.<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     * If the query already exists it either, depending on<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     * &lt;code&gt;failIfExists&lt;/code&gt;, throws an exception or does not add the query<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     * and returns false.<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     *<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     * @param query Subquery<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     * @param alias (if not null, must not be zero length).<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     * @param failIfExists if true, throws exception if alias already exists<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     * @return true if query *was* added<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     *<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     * @pre alias != null<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     */<a name="line.204"></a>
+<span class="sourceLineNo">205</span>    public boolean addFromQuery(<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        final String query,<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        final String alias,<a name="line.207"></a>
+<span class="sourceLineNo">208</span>        final boolean failIfExists)<a name="line.208"></a>
+<span class="sourceLineNo">209</span>    {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>        assert alias != null;<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        assert alias.length() &gt; 0;<a name="line.211"></a>
+<span class="sourceLineNo">212</span><a name="line.212"></a>
+<span class="sourceLineNo">213</span>        if (fromAliases.contains(alias)) {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            if (failIfExists) {<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                throw Util.newInternal(<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                    "query already contains alias '" + alias + "'");<a name="line.216"></a>
+<span class="sourceLineNo">217</span>            } else {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                return false;<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            }<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        }<a name="line.220"></a>
+<span class="sourceLineNo">221</span><a name="line.221"></a>
+<span class="sourceLineNo">222</span>        buf.setLength(0);<a name="line.222"></a>
+<span class="sourceLineNo">223</span><a name="line.223"></a>
+<span class="sourceLineNo">224</span>        buf.append('(');<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        buf.append(query);<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        buf.append(')');<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        if (dialect.allowsAs()) {<a name="line.227"></a>
+<span class="sourceLineNo">228</span>            buf.append(" as ");<a name="line.228"></a>
+<span class="sourceLineNo">229</span>        } else {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>            buf.append(' ');<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        }<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        dialect.quoteIdentifier(alias, buf);<a name="line.232"></a>
+<span class="sourceLineNo">233</span>        fromAliases.add(alias);<a name="line.233"></a>
+<span class="sourceLineNo">234</span><a name="line.234"></a>
+<span class="sourceLineNo">235</span>        from.add(buf.toString());<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        return true;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>    }<a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span>    /**<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     * Adds &lt;code&gt;[schema.]table AS alias&lt;/code&gt; to the FROM clause.<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     *<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     * @param schema schema name; may be null<a name="line.242"></a>
+<span class="sourceLineNo">243</span>     * @param name table name<a name="line.243"></a>
+<span class="sourceLineNo">244</span>     * @param alias table alias, may not be null<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     *              (if not null, must not be zero length).<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     * @param filter Extra filter condition, or null<a name="line.246"></a>
+<span class="sourceLineNo">247</span>     * @param hints table optimization hints, if any<a name="line.247"></a>
+<span class="sourceLineNo">248</span>     * @param failIfExists Whether to throw a RuntimeException if from clause<a name="line.248"></a>
+<span class="sourceLineNo">249</span>     *   already contains this alias<a name="line.249"></a>
+<span class="sourceLineNo">250</span>     *<a name="line.250"></a>
+<span class="sourceLineNo">251</span>     * @pre alias != null<a name="line.251"></a>
+<span class="sourceLineNo">252</span>     * @return true if table was added<a name="line.252"></a>
+<span class="sourceLineNo">253</span>     */<a name="line.253"></a>
+<span class="sourceLineNo">254</span>    boolean addFromTable(<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        final String schema,<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        final String name,<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        final String alias,<a name="line.257"></a>
+<span class="sourceLineNo">258</span>        final String filter,<a name="line.258"></a>
+<span class="sourceLineNo">259</span>        final Map hints,<a name="line.259"></a>
+<span class="sourceLineNo">260</span>        final boolean failIfExists)<a name="line.260"></a>
+<span class="sourceLineNo">261</span>    {<a name="line.261"></a>
+<span class="sourceLineNo">262</span>        if (fromAliases.contains(alias)) {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>            if (failIfExists) {<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                throw Util.newInternal(<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                    "query already contains alias '" + alias + "'");<a name="line.265"></a>
+<span class="sourceLineNo">266</span>            } else {<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                return false;<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            }<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        }<a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span>        buf.setLength(0);<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        dialect.quoteIdentifier(buf, schema, name);<a name="line.272"></a>
+<span class="sourceLineNo">273</span>        if (alias != null) {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            Util.assertTrue(alias.length() &gt; 0);<a name="line.274"></a>
+<span class="sourceLineNo">275</span><a name="line.275"></a>
+<span class="sourceLineNo">276</span>            if (dialect.allowsAs()) {<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                buf.append(" as ");<a name="line.277"></a>
+<span class="sourceLineNo">278</span>            } else {<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                buf.append(' ');<a name="line.279"></a>
+<span class="sourceLineNo">280</span>            }<a name="line.280"></a>
+<span class="sourceLineNo">281</span>            dialect.quoteIdentifier(alias, buf);<a name="line.281"></a>
+<span class="sourceLineNo">282</span>            fromAliases.add(alias);<a name="line.282"></a>
+<span class="sourceLineNo">283</span>        }<a name="line.283"></a>
+<span class="sourceLineNo">284</span><a name="line.284"></a>
+<span class="sourceLineNo">285</span>        if (this.allowHints) {<a name="line.285"></a>
+<span class="sourceLineNo">286</span>            dialect.appendHintsAfterFromClause(buf, hints);<a name="line.286"></a>
+<span class="sourceLineNo">287</span>        }<a name="line.287"></a>
+<span class="sourceLineNo">288</span><a name="line.288"></a>
+<span class="sourceLineNo">289</span>        from.add(buf.toString());<a name="line.289"></a>
+<span class="sourceLineNo">290</span><a name="line.290"></a>
+<span class="sourceLineNo">291</span>        if (filter != null) {<a name="line.291"></a>
+<span class="sourceLineNo">292</span>            // append filter condition to where clause<a name="line.292"></a>
+<span class="sourceLineNo">293</span>            addWhere("(", filter, ")");<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        }<a name="line.294"></a>
+<span class="sourceLineNo">295</span>        return true;<a name="line.295"></a>
+<span class="sourceLineNo">296</span>    }<a name="line.296"></a>
+<span class="sourceLineNo">297</span><a name="line.297"></a>
+<span class="sourceLineNo">298</span>    public void addFrom(<a name="line.298"></a>
+<span class="sourceLineNo">299</span>        final SqlQuery sqlQuery,<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        final String alias,<a name="line.300"></a>
+<span class="sourceLineNo">301</span>        final boolean failIfExists)<a name="line.301"></a>
+<span class="sourceLineNo">302</span>    {<a name="line.302"></a>
+<span class="sourceLineNo">303</span>        addFromQuery(sqlQuery.toString(), alias, failIfExists);<a name="line.303"></a>
+<span class="sourceLineNo">304</span>    }<a name="line.304"></a>
+<span class="sourceLineNo">305</span><a name="line.305"></a>
+<span class="sourceLineNo">306</span>    /**<a name="line.306"></a>
+<span class="sourceLineNo">307</span>     * Adds a relation to a query, adding appropriate join conditions, unless<a name="line.307"></a>
+<span class="sourceLineNo">308</span>     * it is already present.<a name="line.308"></a>
+<span class="sourceLineNo">309</span>     *<a name="line.309"></a>
+<span class="sourceLineNo">310</span>     * &lt;p&gt;Returns whether the relation was added to the query.<a name="line.310"></a>
+<span class="sourceLineNo">311</span>     *<a name="line.311"></a>
+<span class="sourceLineNo">312</span>     * @param relation Relation to add<a name="line.312"></a>
+<span class="sourceLineNo">313</span>     * @param alias Alias of relation. If null, uses relation's alias.<a name="line.313"></a>
+<span class="sourceLineNo">314</span>     * @param failIfExists Whether to fail if relation is already present<a name="line.314"></a>
+<span class="sourceLineNo">315</span>     * @return true, if relation *was* added to query<a name="line.315"></a>
+<span class="sourceLineNo">316</span>     */<a name="line.316"></a>
+<span class="sourceLineNo">317</span>    public boolean addFrom(<a name="line.317"></a>
+<span class="sourceLineNo">318</span>        final MondrianDef.RelationOrJoin relation,<a name="line.318"></a>
+<span class="sourceLineNo">319</span>        final String alias,<a name="line.319"></a>
+<span class="sourceLineNo">320</span>        final boolean failIfExists)<a name="line.320"></a>
+<span class="sourceLineNo">321</span>    {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        registerRootRelation(relation);<a name="line.322"></a>
+<span class="sourceLineNo">323</span><a name="line.323"></a>
+<span class="sourceLineNo">324</span>        if (relation instanceof MondrianDef.Relation) {<a name="line.324"></a>
+<span class="sourceLineNo">325</span>            MondrianDef.Relation relation1 = (MondrianDef.Relation) relation;<a name="line.325"></a>
+<span class="sourceLineNo">326</span>            if (relations.add(relation1)<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                &amp;&amp; !MondrianProperties.instance()<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                .FilterChildlessSnowflakeMembers.get())<a name="line.328"></a>
+<span class="sourceLineNo">329</span>            {<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                // This relation is new to this query. Add a join to any other<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                // relation in the same dimension.<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                //<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                // (If FilterChildlessSnowflakeMembers were false,<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                // this would be unnecessary. Adding a relation automatically<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                // adds all relations between it and the fact table.)<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                MondrianDef.RelationOrJoin root =<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                    mapRelationToRoot.get(relation1);<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                List&lt;MondrianDef.Relation&gt; relationsCopy =<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                    new ArrayList&lt;MondrianDef.Relation&gt;(relations);<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                for (MondrianDef.Relation relation2 : relationsCopy) {<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                    if (relation2 != relation1<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                        &amp;&amp; mapRelationToRoot.get(relation2) == root)<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                    {<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                        addJoinBetween(root, relation1, relation2);<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                    }<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                }<a name="line.346"></a>
+<span class="sourceLineNo">347</span>            }<a name="line.347"></a>
+<span class="sourceLineNo">348</span>        }<a name="line.348"></a>
+<span class="sourceLineNo">349</span><a name="line.349"></a>
+<span class="sourceLineNo">350</span>        if (relation instanceof MondrianDef.View) {<a name="line.350"></a>
+<span class="sourceLineNo">351</span>            final MondrianDef.View view = (MondrianDef.View) relation;<a name="line.351"></a>
+<span class="sourceLineNo">352</span>            final String viewAlias =<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                (alias == null)<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                ? view.getAlias()<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                : alias;<a name="line.355"></a>
+<span class="sourceLineNo">356</span>            final String sqlString = view.getCodeSet().chooseQuery(dialect);<a name="line.356"></a>
+<span class="sourceLineNo">357</span>            return addFromQuery(sqlString, viewAlias, false);<a name="line.357"></a>
+<span class="sourceLineNo">358</span><a name="line.358"></a>
+<span class="sourceLineNo">359</span>        } else if (relation instanceof MondrianDef.InlineTable) {<a name="line.359"></a>
+<span class="sourceLineNo">360</span>            final MondrianDef.Relation relation1 =<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                RolapUtil.convertInlineTableToRelation(<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                    (MondrianDef.InlineTable) relation, dialect);<a name="line.362"></a>
+<span class="sourceLineNo">363</span>            return addFrom(relation1, alias, failIfExists);<a name="line.363"></a>
+<span class="sourceLineNo">364</span><a name="line.364"></a>
+<span class="sourceLineNo">365</span>        } else if (relation instanceof MondrianDef.Table) {<a name="line.365"></a>
+<span class="sourceLineNo">366</span>            final MondrianDef.Table table = (MondrianDef.Table) relation;<a name="line.366"></a>
+<span class="sourceLineNo">367</span>            final String tableAlias =<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                (alias == null)<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                ? table.getAlias()<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                : alias;<a name="line.370"></a>
+<span class="sourceLineNo">371</span>            return addFromTable(<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                table.schema,<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                table.name,<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                tableAlias,<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                table.getFilter(),<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                table.getHintMap(),<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                failIfExists);<a name="line.377"></a>
+<span class="sourceLineNo">378</span><a name="line.378"></a>
+<span class="sourceLineNo">379</span>        } else if (relation instanceof MondrianDef.Join) {<a name="line.379"></a>
+<span class="sourceLineNo">380</span>            final MondrianDef.Join join = (MondrianDef.Join) relation;<a name="line.380"></a>
+<span class="sourceLineNo">381</span>            return addJoin(<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                join.left,<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                join.getLeftAlias(),<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                join.leftKey,<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                join.right,<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                join.getRightAlias(),<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                join.rightKey,<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                failIfExists);<a name="line.388"></a>
+<span class="sourceLineNo">389</span>        } else {<a name="line.389"></a>
+<span class="sourceLineNo">390</span>            throw Util.newInternal("bad relation type " + relation);<a name="line.390"></a>
+<span class="sourceLineNo">391</span>        }<a name="line.391"></a>
+<span class="sourceLineNo">392</span>    }<a name="line.392"></a>
+<span class="sourceLineNo">393</span><a name="line.393"></a>
+<span class="sourceLineNo">394</span>    private boolean addJoin(<a name="line.394"></a>
+<span class="sourceLineNo">395</span>        MondrianDef.RelationOrJoin left,<a name="line.395"></a>
+<span class="sourceLineNo">396</span>        String leftAlias,<a name="line.396"></a>
+<span class="sourceLineNo">397</span>        String leftKey,<a name="line.397"></a>
+<span class="sourceLineNo">398</span>        MondrianDef.RelationOrJoin right,<a name="line.398"></a>
+<span class="sourceLineNo">399</span>        String rightAlias,<a name="line.399"></a>
+<span class="sourceLineNo">400</span>        String rightKey,<a name="line.400"></a>
+<span class="sourceLineNo">401</span>        boolean failIfExists)<a name="line.401"></a>
+<span class="sourceLineNo">402</span>    {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>        boolean addLeft = addFrom(left, leftAlias, failIfExists);<a name="line.403"></a>
+<span class="sourceLineNo">404</span>        boolean addRight = addFrom(right, rightAlias, failIfExists);<a name="line.404"></a>
+<span class="sourceLineNo">405</span><a name="line.405"></a>
+<span class="sourceLineNo">406</span>        boolean added = addLeft || addRight;<a name="line.406"></a>
+<span class="sourceLineNo">407</span>        if (added) {<a name="line.407"></a>
+<span class="sourceLineNo">408</span>            buf.setLength(0);<a name="line.408"></a>
+<span class="sourceLineNo">409</span><a name="line.409"></a>
+<span class="sourceLineNo">410</span>            dialect.quoteIdentifier(buf, leftAlias, leftKey);<a name="line.410"></a>
+<span class="sourceLineNo">411</span>            buf.append(" = ");<a name="line.411"></a>
+<span class="sourceLineNo">412</span>            dialect.quoteIdentifier(buf, rightAlias, rightKey);<a name="line.412"></a>
+<span class="sourceLineNo">413</span>            final String condition = buf.toString();<a name="line.413"></a>
+<span class="sourceLineNo">414</span>            if (dialect.allowsJoinOn()) {<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                from.addOn(<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                    leftAlias, leftKey, rightAlias, rightKey,<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                    condition);<a name="line.417"></a>
+<span class="sourceLineNo">418</span>            } else {<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                addWhere(condition);<a name="line.419"></a>
+<span class="sourceLineNo">420</span>            }<a name="line.420"></a>
+<span class="sourceLineNo">421</span>        }<a name="line.421"></a>
+<span class="sourceLineNo">422</span>        return added;<a name="line.422"></a>
+<span class="sourceLineNo">423</span>    }<a name="line.423"></a>
+<span class="sourceLineNo">424</span><a name="line.424"></a>
+<span class="sourceLineNo">425</span>    private void addJoinBetween(<a name="line.425"></a>
+<span class="sourceLineNo">426</span>        MondrianDef.RelationOrJoin root,<a name="line.426"></a>
+<span class="sourceLineNo">427</span>        MondrianDef.Relation relation1,<a name="line.427"></a>
+<span class="sourceLineNo">428</span>        MondrianDef.Relation relation2)<a name="line.428"></a>
+<span class="sourceLineNo">429</span>    {<a name="line.429"></a>
+<span class="sourceLineNo">430</span>        List&lt;RelInfo&gt; relations = mapRootToRelations.get(root);<a name="line.430"></a>
+<span class="sourceLineNo">431</span>        int index1 = find(relations, relation1);<a name="line.431"></a>
+<span class="sourceLineNo">432</span>        int index2 = find(relations, relation2);<a name="line.432"></a>
+<span class="sourceLineNo">433</span>        assert index1 != -1;<a name="line.433"></a>
+<span class="sourceLineNo">434</span>        assert index2 != -1;<a name="line.434"></a>
+<span class="sourceLineNo">435</span>        int min = Math.min(index1, index2);<a name="line.435"></a>
+<span class="sourceLineNo">436</span>        int max = Math.max(index1, index2);<a name="line.436"></a>
+<span class="sourceLineNo">437</span>        for (int i = max - 1; i &gt;= min; i--) {<a name="line.437"></a>
+<span class="sourceLineNo">438</span>            RelInfo relInfo = relations.get(i);<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                addJoin(<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                    relInfo.relation,<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                    relInfo.leftAlias != null<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                        ? relInfo.leftAlias<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                        : relInfo.relation.getAlias(),<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                    relInfo.leftKey,<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                    relations.get(i + 1).relation,<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                    relInfo.rightAlias != null<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                        ? relInfo.rightAlias<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                        : relations.get(i + 1).relation.getAlias(),<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                    relInfo.rightKey,<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                    false);<a name="line.450"></a>
+<span class="sourceLineNo">451</span>        }<a name="line.451"></a>
+<span class="sourceLineNo">452</span>    }<a name="line.452"></a>
+<span class="sourceLineNo">453</span><a name="line.453"></a>
+<span class="sourceLineNo">454</span>    private int find(List&lt;RelInfo&gt; relations, MondrianDef.Relation relation) {<a name="line.454"></a>
+<span class="sourceLineNo">455</span>        for (int i = 0, n = relations.size(); i &lt; n; i++) {<a name="line.455"></a>
+<span class="sourceLineNo">456</span>            RelInfo relInfo = relations.get(i);<a name="line.456"></a>
+<span class="sourceLineNo">457</span>            if (relInfo.relation.equals(relation)) {<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                return i;<a name="line.458"></a>
+<span class="sourceLineNo">459</span>            }<a name="line.459"></a>
+<span class="sourceLineNo">460</span>        }<a name="line.460"></a>
+<span class="sourceLineNo">461</span>        return -1;<a name="line.461"></a>
+<span class="sourceLineNo">462</span>    }<a name="line.462"></a>
+<span class="sourceLineNo">463</span><a name="line.463"></a>
+<span class="sourceLineNo">464</span>    /**<a name="line.464"></a>
+<span class="sourceLineNo">465</span>     * Adds an expression to the select clause, automatically creating a<a name="line.465"></a>
+<span class="sourceLineNo">466</span>     * column alias.<a name="line.466"></a>
+<span class="sourceLineNo">467</span>     */<a name="line.467"></a>
+<span class="sourceLineNo">468</span>    public String addSelect(final String expression, SqlStatement.Type type) {<a name="line.468"></a>
+<span class="sourceLineNo">469</span>        // Some DB2 versions (AS/400) throw an error if a column alias is<a name="line.469"></a>
+<span class="sourceLineNo">470</span>        //  *not* used in a subsequent order by (Group by).<a name="line.470"></a>
+<span class="sourceLineNo">471</span>        // Derby fails on 'SELECT... HAVING' if column has alias.<a name="line.471"></a>
+<span class="sourceLineNo">472</span>        switch (dialect.getDatabaseProduct()) {<a name="line.472"></a>
+<span class="sourceLineNo">473</span>        case DB2_AS400:<a name="line.473"></a>
+<span class="sourceLineNo">474</span>        case DERBY:<a name="line.474"></a>
+<span class="sourceLineNo">475</span>            return addSelect(expression, type, null);<a name="line.475"></a>
+<span class="sourceLineNo">476</span>        default:<a name="line.476"></a>
+<span class="sourceLineNo">477</span>            return addSelect(expression, type, nextColumnAlias());<a name="line.477"></a>
+<span class="sourceLineNo">478</span>        }<a name="line.478"></a>
+<span class="sourceLineNo">479</span>    }<a name="line.479"></a>
+<span class="sourceLineNo">480</span><a name="line.480"></a>
+<span class="sourceLineNo">481</span>    /**<a name="line.481"></a>
+<span class="sourceLineNo">482</span>     * Adds an expression to the SELECT and GROUP BY clauses. Uses the alias in<a name="line.482"></a>
+<span class="sourceLineNo">483</span>     * the GROUP BY clause, if the dialect requires it.<a name="line.483"></a>
+<span class="sourceLineNo">484</span>     *<a name="line.484"></a>
+<span class="sourceLineNo">485</span>     * @param expression Expression<a name="line.485"></a>
+<span class="sourceLineNo">486</span>     * @return Alias of expression<a name="line.486"></a>
+<span class="sourceLineNo">487</span>     */<a name="line.487"></a>
+<span class="sourceLineNo">488</span>    public String addSelectGroupBy(<a name="line.488"></a>
+<span class="sourceLineNo">489</span>        final String expression,<a name="line.489"></a>
+<span class="sourceLineNo">490</span>        SqlStatement.Type type)<a name="line.490"></a>
+<span class="sourceLineNo">491</span>    {<a name="line.491"></a>
+<span class="sourceLineNo">492</span>        final String alias = addSelect(expression, type);<a name="line.492"></a>
+<span class="sourceLineNo">493</span>        addGroupBy(expression, alias);<a name="line.493"></a>
+<span class="sourceLineNo">494</span>        return alias;<a name="line.494"></a>
+<span class="sourceLineNo">495</span>    }<a name="line.495"></a>
+<span class="sourceLineNo">496</span><a name="line.496"></a>
+<span class="sourceLineNo">497</span>    public int getCurrentSelectListSize()<a name="line.497"></a>
+<span class="sourceLineNo">498</span>    {<a name="line.498"></a>
+<span class="sourceLineNo">499</span>        return select.size();<a name="line.499"></a>
+<span class="sourceLineNo">500</span>    }<a name="line.500"></a>
+<span class="sourceLineNo">501</span><a name="line.501"></a>
+<span class="sourceLineNo">502</span>    public String nextColumnAlias() {<a name="line.502"></a>
+<span class="sourceLineNo">503</span>        return "c" + select.size();<a name="line.503"></a>
+<span class="sourceLineNo">504</span>    }<a name="line.504"></a>
+<span class="sourceLineNo">505</span><a name="line.505"></a>
+<span class="sourceLineNo">506</span>    /**<a name="line.506"></a>
+<span class="sourceLineNo">507</span>     * Adds an expression to the select clause, with a specified type and<a name="line.507"></a>
+<span class="sourceLineNo">508</span>     * column alias.<a name="line.508"></a>
+<span class="sourceLineNo">509</span>     *<a name="line.509"></a>
+<span class="sourceLineNo">510</span>     * @param expression Expression<a name="line.510"></a>
+<span class="sourceLineNo">511</span>     * @param type Java type to be used to hold cursor column<a name="line.511"></a>
+<span class="sourceLineNo">512</span>     * @param alias Column alias (or null for no alias)<a name="line.512"></a>
+<span class="sourceLineNo">513</span>     * @return Column alias<a name="line.513"></a>
+<span class="sourceLineNo">514</span>     */<a name="line.514"></a>
+<span class="sourceLineNo">515</span>    public String addSelect(<a name="line.515"></a>
+<span class="sourceLineNo">516</span>        final String expression,<a name="line.516"></a>
+<span class="sourceLineNo">517</span>        final SqlStatement.Type type,<a name="line.517"></a>
+<span class="sourceLineNo">518</span>        String alias)<a name="line.518"></a>
+<span class="sourceLineNo">519</span>    {<a name="line.519"></a>
+<span class="sourceLineNo">520</span>        buf.setLength(0);<a name="line.520"></a>
+<span class="sourceLineNo">521</span><a name="line.521"></a>
+<span class="sourceLineNo">522</span>        buf.append(expression);<a name="line.522"></a>
+<span class="sourceLineNo">523</span>        if (alias != null) {<a name="line.523"></a>
+<span class="sourceLineNo">524</span>            buf.append(" as ");<a name="line.524"></a>
+<span class="sourceLineNo">525</span>            dialect.quoteIdentifier(alias, buf);<a name="line.525"></a>
+<span class="sourceLineNo">526</span>        }<a name="line.526"></a>
+<span class="sourceLineNo">527</span><a name="line.527"></a>
+<span class="sourceLineNo">528</span>        select.add(buf.toString());<a name="line.528"></a>
+<span class="sourceLineNo">529</span>        addType(type);<a name="line.529"></a>
+<span class="sourceLineNo">530</span>        columnAliases.put(expression, alias);<a name="line.530"></a>
+<span class="sourceLineNo">531</span>        return alias;<a name="line.531"></a>
+<span class="sourceLineNo">532</span>    }<a name="line.532"></a>
+<span class="sourceLineNo">533</span><a name="line.533"></a>
+<span class="sourceLineNo">534</span>    public String getAlias(String expression) {<a name="line.534"></a>
+<span class="sourceLineNo">535</span>        return columnAliases.get(expression);<a name="line.535"></a>
+<span class="sourceLineNo">536</span>    }<a name="line.536"></a>
+<span class="sourceLineNo">537</span><a name="line.537"></a>
+<span class="sourceLineNo">538</span>    public void addWhere(<a name="line.538"></a>
+<span class="sourceLineNo">539</span>        final String exprLeft,<a name="line.539"></a>
+<span class="sourceLineNo">540</span>        final String exprMid,<a name="line.540"></a>
+<span class="sourceLineNo">541</span>        final String exprRight)<a name="line.541"></a>
+<span class="sourceLineNo">542</span>    {<a name="line.542"></a>
+<span class="sourceLineNo">543</span>        int len = exprLeft.length() + exprMid.length() + exprRight.length();<a name="line.543"></a>
+<span class="sourceLineNo">544</span>        StringBuilder buf = new StringBuilder(len);<a name="line.544"></a>
+<span class="sourceLineNo">545</span><a name="line.545"></a>
+<span class="sourceLineNo">546</span>        buf.append(exprLeft);<a name="line.546"></a>
+<span class="sourceLineNo">547</span>        buf.append(exprMid);<a name="line.547"></a>
+<span class="sourceLineNo">548</span>        buf.append(exprRight);<a name="line.548"></a>
+<span class="sourceLineNo">549</span><a name="line.549"></a>
+<span class="sourceLineNo">550</span>        addWhere(buf.toString());<a name="line.550"></a>
+<span class="sourceLineNo">551</span>    }<a name="line.551"></a>
+<span class="sourceLineNo">552</span><a name="line.552"></a>
+<span class="sourceLineNo">553</span>    public void addWhere(RolapStar.Condition joinCondition) {<a name="line.553"></a>
+<span class="sourceLineNo">554</span>        String left = joinCondition.getLeft().getTableAlias();<a name="line.554"></a>
+<span class="sourceLineNo">555</span>        String right = joinCondition.getRight().getTableAlias();<a name="line.555"></a>
+<span class="sourceLineNo">556</span>        if (fromAliases.contains(left) &amp;&amp; fromAliases.contains(right)) {<a name="line.556"></a>
+<span class="sourceLineNo">557</span>            addWhere(<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                joinCondition.getLeft(this),<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                " = ",<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                joinCondition.getRight(this));<a name="line.560"></a>
+<span class="sourceLineNo">561</span>        }<a name="line.561"></a>
+<span class="sourceLineNo">562</span>    }<a name="line.562"></a>
+<span class="sourceLineNo">563</span><a name="line.563"></a>
+<span class="sourceLineNo">564</span>    public void addWhere(final String expression)<a name="line.564"></a>
+<span class="sourceLineNo">565</span>    {<a name="line.565"></a>
+<span class="sourceLineNo">566</span>        assert expression != null &amp;&amp; !expression.equals("");<a name="line.566"></a>
+<span class="sourceLineNo">567</span>        where.add(expression);<a name="line.567"></a>
+<span class="sourceLineNo">568</span>    }<a name="line.568"></a>
+<span class="sourceLineNo">569</span><a name="line.569"></a>
+<span class="sourceLineNo">570</span>    public void addGroupBy(final String expression)<a name="line.570"></a>
+<span class="sourceLineNo">571</span>    {<a name="line.571"></a>
+<span class="sourceLineNo">572</span>        assert expression != null &amp;&amp; !expression.equals("");<a name="line.572"></a>
+<span class="sourceLineNo">573</span>        groupBy.add(expression);<a name="line.573"></a>
+<span class="sourceLineNo">574</span>    }<a name="line.574"></a>
+<span class="sourceLineNo">575</span><a name="line.575"></a>
+<span class="sourceLineNo">576</span>    public void addGroupBy(final String expression, final String alias) {<a name="line.576"></a>
+<span class="sourceLineNo">577</span>        if (dialect.requiresGroupByAlias()) {<a name="line.577"></a>
+<span class="sourceLineNo">578</span>            addGroupBy(dialect.quoteIdentifier(alias));<a name="line.578"></a>
+<span class="sourceLineNo">579</span>        } else {<a name="line.579"></a>
+<span class="sourceLineNo">580</span>            addGroupBy(expression);<a name="line.580"></a>
+<span class="sourceLineNo">581</span>        }<a name="line.581"></a>
+<span class="sourceLineNo">582</span>    }<a name="line.582"></a>
+<span class="sourceLineNo">583</span><a name="line.583"></a>
+<span class="sourceLineNo">584</span>    public void addHaving(final String expression)<a name="line.584"></a>
+<span class="sourceLineNo">585</span>    {<a name="line.585"></a>
+<span class="sourceLineNo">586</span>        assert expression != null &amp;&amp; !expression.equals("");<a name="line.586"></a>
+<span class="sourceLineNo">587</span>        having.add(expression);<a name="line.587"></a>
+<span class="sourceLineNo">588</span>    }<a name="line.588"></a>
+<span class="sourceLineNo">589</span><a name="line.589"></a>
+<span class="sourceLineNo">590</span>    /**<a name="line.590"></a>
+<span class="sourceLineNo">591</span>     * Adds an item to the ORDER BY clause.<a name="line.591"></a>
+<span class="sourceLineNo">592</span>     *<a name="line.592"></a>
+<span class="sourceLineNo">593</span>     * @param expr the expr to order by<a name="line.593"></a>
+<span class="sourceLineNo">594</span>     * @param ascending sort direction<a name="line.594"></a>
+<span class="sourceLineNo">595</span>     * @param prepend whether to prepend to the current list of items<a name="line.595"></a>
+<span class="sourceLineNo">596</span>     * @param nullable whether the expression might be null<a name="line.596"></a>
+<span class="sourceLineNo">597</span>     */<a name="line.597"></a>
+<span class="sourceLineNo">598</span>    public void addOrderBy(<a name="line.598"></a>
+<span class="sourceLineNo">599</span>        String expr,<a name="line.599"></a>
+<span class="sourceLineNo">600</span>        boolean ascending,<a name="line.600"></a>
+<span class="sourceLineNo">601</span>        boolean prepend,<a name="line.601"></a>
+<span class="sourceLineNo">602</span>        boolean nullable)<a name="line.602"></a>
+<span class="sourceLineNo">603</span>    {<a name="line.603"></a>
+<span class="sourceLineNo">604</span>        this.addOrderBy(expr, ascending, prepend, nullable, true);<a name="line.604"></a>
+<span class="sourceLineNo">605</span>    }<a name="line.605"></a>
+<span class="sourceLineNo">606</span><a name="line.606"></a>
+<span class="sourceLineNo">607</span>    /**<a name="line.607"></a>
+<span class="sourceLineNo">608</span>     * Adds an item to the ORDER BY clause.<a name="line.608"></a>
+<span class="sourceLineNo">609</span>     *<a name="line.609"></a>
+<span class="sourceLineNo">610</span>     * @param expr the expr to order by<a name="line.610"></a>
+<span class="sourceLineNo">611</span>     * @param ascending sort direction<a name="line.611"></a>
+<span class="sourceLineNo">612</span>     * @param prepend whether to prepend to the current list of items<a name="line.612"></a>
+<span class="sourceLineNo">613</span>     * @param nullable whether the expression might be null<a name="line.613"></a>
+<span class="sourceLineNo">614</span>     * @param collateNullsLast whether null values should appear first or last.<a name="line.614"></a>
+<span class="sourceLineNo">615</span>     */<a name="line.615"></a>
+<span class="sourceLineNo">616</span>    public void addOrderBy(<a name="line.616"></a>
+<span class="sourceLineNo">617</span>        String expr,<a name="line.617"></a>
+<span class="sourceLineNo">618</span>        boolean ascending,<a name="line.618"></a>
+<span class="sourceLineNo">619</span>        boolean prepend,<a name="line.619"></a>
+<span class="sourceLineNo">620</span>        boolean nullable,<a name="line.620"></a>
+<span class="sourceLineNo">621</span>        boolean collateNullsLast)<a name="line.621"></a>
+<span class="sourceLineNo">622</span>    {<a name="line.622"></a>
+<span class="sourceLineNo">623</span>        String orderExpr =<a name="line.623"></a>
+<span class="sourceLineNo">624</span>            dialect.generateOrderItem(<a name="line.624"></a>
+<span class="sourceLineNo">625</span>                expr,<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                nullable,<a name="line.626"></a>
+<span class="sourceLineNo">627</span>                ascending,<a name="line.627"></a>
+<span class="sourceLineNo">628</span>                collateNullsLast);<a name="line.628"></a>
+<span class="sourceLineNo">629</span>        if (prepend) {<a name="line.629"></a>
+<span class="sourceLineNo">630</span>            orderBy.add(0, orderExpr);<a name="line.630"></a>
+<span class="sourceLineNo">631</span>        } else {<a name="line.631"></a>
+<span class="sourceLineNo">632</span>            orderBy.add(orderExpr);<a name="line.632"></a>
+<span class="sourceLineNo">633</span>        }<a name="line.633"></a>
+<span class="sourceLineNo">634</span>    }<a name="line.634"></a>
+<span class="sourceLineNo">635</span><a name="line.635"></a>
+<span class="sourceLineNo">636</span>    public String toString()<a name="line.636"></a>
+<span class="sourceLineNo">637</span>    {<a name="line.637"></a>
+<span class="sourceLineNo">638</span>        buf.setLength(0);<a name="line.638"></a>
+<span class="sourceLineNo">639</span>        toBuffer(buf, "");<a name="line.639"></a>
+<span class="sourceLineNo">640</span>        return buf.toString();<a name="line.640"></a>
+<span class="sourceLineNo">641</span>    }<a name="line.641"></a>
+<span class="sourceLineNo">642</span><a name="line.642"></a>
+<span class="sourceLineNo">643</span>    /**<a name="line.643"></a>
+<span class="sourceLineNo">644</span>     * Writes this SqlQuery to a StringBuilder with each clause on a separate<a name="line.644"></a>
+<span class="sourceLineNo">645</span>     * line, and with the specified indentation prefix.<a name="line.645"></a>
+<span class="sourceLineNo">646</span>     *<a name="line.646"></a>
+<span class="sourceLineNo">647</span>     * @param buf String builder<a name="line.647"></a>
+<span class="sourceLineNo">648</span>     * @param prefix Prefix for each line<a name="line.648"></a>
+<span class="sourceLineNo">649</span>     */<a name="line.649"></a>
+<span class="sourceLineNo">650</span>    public void toBuffer(StringBuilder buf, String prefix) {<a name="line.650"></a>
+<span class="sourceLineNo">651</span>        final String first = distinct ? "select distinct " : "select ";<a name="line.651"></a>
+<span class="sourceLineNo">652</span>        select.toBuffer(buf, generateFormattedSql, prefix, first, ", ", "", "");<a name="line.652"></a>
+<span class="sourceLineNo">653</span>        groupingFunctionsToBuffer(buf, prefix);<a name="line.653"></a>
+<span class="sourceLineNo">654</span>        from.toBuffer(<a name="line.654"></a>
+<span class="sourceLineNo">655</span>            buf, generateFormattedSql, prefix, " from ", ", ", "", "");<a name="line.655"></a>
+<span class="sourceLineNo">656</span>        where.toBuffer(<a name="line.656"></a>
+<span class="sourceLineNo">657</span>            buf, generateFormattedSql, prefix, " where ", " and ", "", "");<a name="line.657"></a>
+<span class="sourceLineNo">658</span>        if (groupingSets.isEmpty()) {<a name="line.658"></a>
+<span class="sourceLineNo">659</span>            groupBy.toBuffer(<a name="line.659"></a>
+<span class="sourceLineNo">660</span>                buf, generateFormattedSql, prefix, " group by ", ", ", "", "");<a name="line.660"></a>
+<span class="sourceLineNo">661</span>        } else {<a name="line.661"></a>
+<span class="sourceLineNo">662</span>            ClauseList.listToBuffer(<a name="line.662"></a>
+<span class="sourceLineNo">663</span>                buf,<a name="line.663"></a>
+<span class="sourceLineNo">664</span>                groupingSets,<a name="line.664"></a>
+<span class="sourceLineNo">665</span>                generateFormattedSql,<a name="line.665"></a>
+<span class="sourceLineNo">666</span>                prefix,<a name="line.666"></a>
+<span class="sourceLineNo">667</span>                " group by grouping sets (",<a name="line.667"></a>
+<span class="sourceLineNo">668</span>                ", ",<a name="line.668"></a>
+<span class="sourceLineNo">669</span>                ")");<a name="line.669"></a>
+<span class="sourceLineNo">670</span>        }<a name="line.670"></a>
+<span class="sourceLineNo">671</span>        having.toBuffer(<a name="line.671"></a>
+<span class="sourceLineNo">672</span>            buf, generateFormattedSql, prefix, " having ", " and ", "", "");<a name="line.672"></a>
+<span class="sourceLineNo">673</span>        orderBy.toBuffer(<a name="line.673"></a>
+<span class="sourceLineNo">674</span>            buf, generateFormattedSql, prefix, " order by ", ", ", "", "");<a name="line.674"></a>
+<span class="sourceLineNo">675</span>    }<a name="line.675"></a>
+<span class="sourceLineNo">676</span><a name="line.676"></a>
+<span class="sourceLineNo">677</span>    private void groupingFunctionsToBuffer(StringBuilder buf, String prefix) {<a name="line.677"></a>
+<span class="sourceLineNo">678</span>        if (groupingSets.isEmpty()) {<a name="line.678"></a>
+<span class="sourceLineNo">679</span>            return;<a name="line.679"></a>
+<span class="sourceLineNo">680</span>        }<a name="line.680"></a>
+<span class="sourceLineNo">681</span>        int n = 0;<a name="line.681"></a>
+<span class="sourceLineNo">682</span>        for (String groupingFunction : groupingFunctions) {<a name="line.682"></a>
+<span class="sourceLineNo">683</span>            if (generateFormattedSql) {<a name="line.683"></a>
+<span class="sourceLineNo">684</span>                buf.append(",")<a name="line.684"></a>
+<span class="sourceLineNo">685</span>                    .append(Util.nl)<a name="line.685"></a>
+<span class="sourceLineNo">686</span>                    .append(INDENT)<a name="line.686"></a>
+<span class="sourceLineNo">687</span>                    .append(prefix);<a name="line.687"></a>
+<span class="sourceLineNo">688</span>            } else {<a name="line.688"></a>
+<span class="sourceLineNo">689</span>                buf.append(", ");<a name="line.689"></a>
+<span class="sourceLineNo">690</span>            }<a name="line.690"></a>
+<span class="sourceLineNo">691</span>            buf.append("grouping(")<a name="line.691"></a>
+<span class="sourceLineNo">692</span>                .append(groupingFunction)<a name="line.692"></a>
+<span class="sourceLineNo">693</span>                .append(") as ");<a name="line.693"></a>
+<span class="sourceLineNo">694</span>            dialect.quoteIdentifier("g" + n++, buf);<a name="line.694"></a>
+<span class="sourceLineNo">695</span>        }<a name="line.695"></a>
+<span class="sourceLineNo">696</span>    }<a name="line.696"></a>
+<span class="sourceLineNo">697</span><a name="line.697"></a>
+<span class="sourceLineNo">698</span>    public Dialect getDialect() {<a name="line.698"></a>
+<span class="sourceLineNo">699</span>        return dialect;<a name="line.699"></a>
+<span class="sourceLineNo">700</span>    }<a name="line.700"></a>
+<span class="sourceLineNo">701</span><a name="line.701"></a>
+<span class="sourceLineNo">702</span>    public static SqlQuery newQuery(DataSource dataSource, String err) {<a name="line.702"></a>
+<span class="sourceLineNo">703</span>        final Dialect dialect =<a name="line.703"></a>
+<span class="sourceLineNo">704</span>            DialectManager.createDialect(dataSource, null);<a name="line.704"></a>
+<span class="sourceLineNo">705</span>        return new SqlQuery(dialect);<a name="line.705"></a>
+<span class="sourceLineNo">706</span>    }<a name="line.706"></a>
+<span class="sourceLineNo">707</span><a name="line.707"></a>
+<span class="sourceLineNo">708</span>    public void addGroupingSet(List&lt;String&gt; groupingColumnsExpr) {<a name="line.708"></a>
+<span class="sourceLineNo">709</span>        ClauseList groupingList = new ClauseList(false);<a name="line.709"></a>
+<span class="sourceLineNo">710</span>        for (String columnExp : groupingColumnsExpr) {<a name="line.710"></a>
+<span class="sourceLineNo">711</span>            groupingList.add(columnExp);<a name="line.711"></a>
+<span class="sourceLineNo">712</span>        }<a name="line.712"></a>
+<span class="sourceLineNo">713</span>        groupingSets.add(groupingList);<a name="line.713"></a>
+<span class="sourceLineNo">714</span>    }<a name="line.714"></a>
+<span class="sourceLineNo">715</span><a name="line.715"></a>
+<span class="sourceLineNo">716</span>    public void addGroupingFunction(String columnExpr) {<a name="line.716"></a>
+<span class="sourceLineNo">717</span>        groupingFunctions.add(columnExpr);<a name="line.717"></a>
+<span class="sourceLineNo">718</span><a name="line.718"></a>
+<span class="sourceLineNo">719</span>        // A grouping function will end up in the select clause implicitly. It<a name="line.719"></a>
+<span class="sourceLineNo">720</span>        // needs a corresponding type.<a name="line.720"></a>
+<span class="sourceLineNo">721</span>        types.add(null);<a name="line.721"></a>
+<span class="sourceLineNo">722</span>    }<a name="line.722"></a>
+<span class="sourceLineNo">723</span><a name="line.723"></a>
+<span class="sourceLineNo">724</span>    private void addType(SqlStatement.Type type) {<a name="line.724"></a>
+<span class="sourceLineNo">725</span>        types.add(type);<a name="line.725"></a>
+<span class="sourceLineNo">726</span>    }<a name="line.726"></a>
+<span class="sourceLineNo">727</span><a name="line.727"></a>
+<span class="sourceLineNo">728</span>    public Pair&lt;String, List&lt;SqlStatement.Type&gt;&gt; toSqlAndTypes() {<a name="line.728"></a>
+<span class="sourceLineNo">729</span>        assert types.size() == select.size() + groupingFunctions.size()<a name="line.729"></a>
+<span class="sourceLineNo">730</span>            : types.size() + " types, "<a name="line.730"></a>
+<span class="sourceLineNo">731</span>              + (select.size() + groupingFunctions.size())<a name="line.731"></a>
+<span class="sourceLineNo">732</span>              + " select items in query " + this;<a name="line.732"></a>
+<span class="sourceLineNo">733</span>        return Pair.of(toString(), types);<a name="line.733"></a>
+<span class="sourceLineNo">734</span>    }<a name="line.734"></a>
+<span class="sourceLineNo">735</span><a name="line.735"></a>
+<span class="sourceLineNo">736</span>    public void registerRootRelation(MondrianDef.RelationOrJoin root) {<a name="line.736"></a>
+<span class="sourceLineNo">737</span>        // REVIEW: In this method, we are building data structures about the<a name="line.737"></a>
+<span class="sourceLineNo">738</span>        // structure of a star schema. These should be built into the schema,<a name="line.738"></a>
+<span class="sourceLineNo">739</span>        // not constructed afresh for each SqlQuery. In mondrian-4.0,<a name="line.739"></a>
+<span class="sourceLineNo">740</span>        // these methods and the data structures 'mapRootToRelations',<a name="line.740"></a>
+<span class="sourceLineNo">741</span>        // 'relations', 'mapRelationToRoot' will disappear.<a name="line.741"></a>
+<span class="sourceLineNo">742</span>        if (mapRelationToRoot.containsKey(root)) {<a name="line.742"></a>
+<span class="sourceLineNo">743</span>            return;<a name="line.743"></a>
+<span class="sourceLineNo">744</span>        }<a name="line.744"></a>
+<span class="sourceLineNo">745</span>        if (mapRootToRelations.containsKey(root)) {<a name="line.745"></a>
+<span class="sourceLineNo">746</span>            return;<a name="line.746"></a>
+<span class="sourceLineNo">747</span>        }<a name="line.747"></a>
+<span class="sourceLineNo">748</span>        List&lt;RelInfo&gt; relations = new ArrayList&lt;RelInfo&gt;();<a name="line.748"></a>
+<span class="sourceLineNo">749</span>        flatten(relations, root, null, null, null, null);<a name="line.749"></a>
+<span class="sourceLineNo">750</span>        for (RelInfo relation : relations) {<a name="line.750"></a>
+<span class="sourceLineNo">751</span>            mapRelationToRoot.put(relation.relation, root);<a name="line.751"></a>
+<span class="sourceLineNo">752</span>        }<a name="line.752"></a>
+<span class="sourceLineNo">753</span>        mapRootToRelations.put(root, relations);<a name="line.753"></a>
+<span class="sourceLineNo">754</span>    }<a name="line.754"></a>
+<span class="sourceLineNo">755</span><a name="line.755"></a>
+<span class="sourceLineNo">756</span>    private void flatten(<a name="line.756"></a>
+<span class="sourceLineNo">757</span>        List&lt;RelInfo&gt; relations,<a name="line.757"></a>
+<span class="sourceLineNo">758</span>        MondrianDef.RelationOrJoin root,<a name="line.758"></a>
+<span class="sourceLineNo">759</span>        String leftKey,<a name="line.759"></a>
+<span class="sourceLineNo">760</span>        String leftAlias,<a name="line.760"></a>
+<span class="sourceLineNo">761</span>        String rightKey,<a name="line.761"></a>
+<span class="sourceLineNo">762</span>        String rightAlias)<a name="line.762"></a>
+<span class="sourceLineNo">763</span>    {<a name="line.763"></a>
+<span class="sourceLineNo">764</span>        if (root instanceof MondrianDef.Join) {<a name="line.764"></a>
+<span class="sourceLineNo">765</span>            MondrianDef.Join join = (MondrianDef.Join) root;<a name="line.765"></a>
+<span class="sourceLineNo">766</span>            flatten(<a name="line.766"></a>
+<span class="sourceLineNo">767</span>                relations, join.left, join.leftKey, join.leftAlias,<a name="line.767"></a>
+<span class="sourceLineNo">768</span>                join.rightKey, join.rightAlias);<a name="line.768"></a>
+<span class="sourceLineNo">769</span>            flatten(<a name="line.769"></a>
+<span class="sourceLineNo">770</span>                relations, join.right, leftKey, leftAlias, rightKey,<a name="line.770"></a>
+<span class="sourceLineNo">771</span>                rightAlias);<a name="line.771"></a>
+<span class="sourceLineNo">772</span>        } else {<a name="line.772"></a>
+<span class="sourceLineNo">773</span>            relations.add(<a name="line.773"></a>
+<span class="sourceLineNo">774</span>                new RelInfo(<a name="line.774"></a>
+<span class="sourceLineNo">775</span>                    (MondrianDef.Relation) root,<a name="line.775"></a>
+<span class="sourceLineNo">776</span>                    leftKey,<a name="line.776"></a>
+<span class="sourceLineNo">777</span>                    leftAlias,<a name="line.777"></a>
+<span class="sourceLineNo">778</span>                    rightKey,<a name="line.778"></a>
+<span class="sourceLineNo">779</span>                    rightAlias));<a name="line.779"></a>
+<span class="sourceLineNo">780</span>        }<a name="line.780"></a>
+<span class="sourceLineNo">781</span>    }<a name="line.781"></a>
+<span class="sourceLineNo">782</span><a name="line.782"></a>
+<span class="sourceLineNo">783</span>    private static class JoinOnClause {<a name="line.783"></a>
+<span class="sourceLineNo">784</span>        private final String condition;<a name="line.784"></a>
+<span class="sourceLineNo">785</span>        private final String left;<a name="line.785"></a>
+<span class="sourceLineNo">786</span>        private final String right;<a name="line.786"></a>
+<span class="sourceLineNo">787</span><a name="line.787"></a>
+<span class="sourceLineNo">788</span>        JoinOnClause(String condition, String left, String right) {<a name="line.788"></a>
+<span class="sourceLineNo">789</span>            this.condition = condition;<a name="line.789"></a>
+<span class="sourceLineNo">790</span>            this.left = left;<a name="line.790"></a>
+<span class="sourceLineNo">791</span>            this.right = right;<a name="line.791"></a>
+<span class="sourceLineNo">792</span>        }<a name="line.792"></a>
+<span class="sourceLineNo">793</span>    }<a name="line.793"></a>
+<span class="sourceLineNo">794</span><a name="line.794"></a>
+<span class="sourceLineNo">795</span>    static class FromClauseList extends ClauseList {<a name="line.795"></a>
+<span class="sourceLineNo">796</span>        private final List&lt;JoinOnClause&gt; joinOnClauses =<a name="line.796"></a>
+<span class="sourceLineNo">797</span>            new ArrayList&lt;JoinOnClause&gt;();<a name="line.797"></a>
+<span class="sourceLineNo">798</span><a name="line.798"></a>
+<span class="sourceLineNo">799</span>        FromClauseList(boolean allowsDups) {<a name="line.799"></a>
+<span class="sourceLineNo">800</span>            super(allowsDups);<a name="line.800"></a>
+<span class="sourceLineNo">801</span>        }<a name="line.801"></a>
+<span class="sourceLineNo">802</span><a name="line.802"></a>
+<span class="sourceLineNo">803</span>        public void addOn(<a name="line.803"></a>
+<span class="sourceLineNo">804</span>            String leftAlias,<a name="line.804"></a>
+<span class="sourceLineNo">805</span>            String leftKey,<a name="line.805"></a>
+<span class="sourceLineNo">806</span>            String rightAlias,<a name="line.806"></a>
+<span class="sourceLineNo">807</span>            String rightKey,<a name="line.807"></a>
+<span class="sourceLineNo">808</span>            String condition)<a name="line.808"></a>
+<span class="sourceLineNo">809</span>        {<a name="line.809"></a>
+<span class="sourceLineNo">810</span>            if (leftAlias == null &amp;&amp; rightAlias == null) {<a name="line.810"></a>
+<span class="sourceLineNo">811</span>                // do nothing<a name="line.811"></a>
+<span class="sourceLineNo">812</span>            } else if (leftAlias == null) {<a name="line.812"></a>
+<span class="sourceLineNo">813</span>                // left is the form of 'Table'.'column'<a name="line.813"></a>
+<span class="sourceLineNo">814</span>                leftAlias = rightAlias;<a name="line.814"></a>
+<span class="sourceLineNo">815</span>            } else if (rightAlias == null) {<a name="line.815"></a>
+<span class="sourceLineNo">816</span>                // Only left contains table name, Table.Column = abc<a name="line.816"></a>
+<span class="sourceLineNo">817</span>                // store the same name for right tables<a name="line.817"></a>
+<span class="sourceLineNo">818</span>                rightAlias = leftAlias;<a name="line.818"></a>
+<span class="sourceLineNo">819</span>            }<a name="line.819"></a>
+<span class="sourceLineNo">820</span>            joinOnClauses.add(<a name="line.820"></a>
+<span class="sourceLineNo">821</span>                new JoinOnClause(condition, leftAlias, rightAlias));<a name="line.821"></a>
+<span class="sourceLineNo">822</span>        }<a name="line.822"></a>
+<span class="sourceLineNo">823</span><a name="line.823"></a>
+<span class="sourceLineNo">824</span>        public void toBuffer(StringBuilder buf, List&lt;String&gt; fromAliases) {<a name="line.824"></a>
+<span class="sourceLineNo">825</span>            int n = 0;<a name="line.825"></a>
+<span class="sourceLineNo">826</span>            for (int i = 0; i &lt; size(); i++) {<a name="line.826"></a>
+<span class="sourceLineNo">827</span>                final String s = get(i);<a name="line.827"></a>
+<span class="sourceLineNo">828</span>                final String alias = fromAliases.get(i);<a name="line.828"></a>
+<span class="sourceLineNo">829</span>                if (n++ == 0) {<a name="line.829"></a>
+<span class="sourceLineNo">830</span>                    buf.append(" from ");<a name="line.830"></a>
+<span class="sourceLineNo">831</span>                    buf.append(s);<a name="line.831"></a>
+<span class="sourceLineNo">832</span>                } else {<a name="line.832"></a>
+<span class="sourceLineNo">833</span>                    // Add "JOIN t ON (a = b ,...)" to the FROM clause. If there<a name="line.833"></a>
+<span class="sourceLineNo">834</span>                    // is no JOIN clause matching this alias (or no JOIN clauses<a name="line.834"></a>
+<span class="sourceLineNo">835</span>                    // at all), append just ", t".<a name="line.835"></a>
+<span class="sourceLineNo">836</span>                    appendJoin(fromAliases.subList(0, i), s, alias, buf);<a name="line.836"></a>
+<span class="sourceLineNo">837</span>                }<a name="line.837"></a>
+<span class="sourceLineNo">838</span>            }<a name="line.838"></a>
+<span class="sourceLineNo">839</span>        }<a name="line.839"></a>
+<span class="sourceLineNo">840</span><a name="line.840"></a>
+<span class="sourceLineNo">841</span>        void appendJoin(<a name="line.841"></a>
+<span class="sourceLineNo">842</span>            final List&lt;String&gt; addedTables,<a name="line.842"></a>
+<span class="sourceLineNo">843</span>            final String from,<a name="line.843"></a>
+<span class="sourceLineNo">844</span>            final String alias,<a name="line.844"></a>
+<span class="sourceLineNo">845</span>            final StringBuilder buf)<a name="line.845"></a>
+<span class="sourceLineNo">846</span>        {<a name="line.846"></a>
+<span class="sourceLineNo">847</span>            int n = 0;<a name="line.847"></a>
+<span class="sourceLineNo">848</span>            // first check when the current table is on the left side<a name="line.848"></a>
+<span class="sourceLineNo">849</span>            for (JoinOnClause joinOnClause : joinOnClauses) {<a name="line.849"></a>
+<span class="sourceLineNo">850</span>                // the first table was added before join, it has to be handled<a name="line.850"></a>
+<span class="sourceLineNo">851</span>                // specially: Table.column = expression<a name="line.851"></a>
+<span class="sourceLineNo">852</span>                if ((addedTables.size() == 1<a name="line.852"></a>
+<span class="sourceLineNo">853</span>                     &amp;&amp; addedTables.get(0).equals(joinOnClause.left)<a name="line.853"></a>
+<span class="sourceLineNo">854</span>                     &amp;&amp; joinOnClause.left.equals(joinOnClause.right))<a name="line.854"></a>
+<span class="sourceLineNo">855</span>                    || (alias.equals(joinOnClause.left)<a name="line.855"></a>
+<span class="sourceLineNo">856</span>                        &amp;&amp; addedTables.contains(joinOnClause.right))<a name="line.856"></a>
+<span class="sourceLineNo">857</span>                    || (alias.equals(joinOnClause.right)<a name="line.857"></a>
+<span class="sourceLineNo">858</span>                        &amp;&amp; addedTables.contains(joinOnClause.left)))<a name="line.858"></a>
+<span class="sourceLineNo">859</span>                {<a name="line.859"></a>
+<span class="sourceLineNo">860</span>                    if (n++ == 0) {<a name="line.860"></a>
+<span class="sourceLineNo">861</span>                        buf.append(" join ").append(from).append(" on ");<a name="line.861"></a>
+<span class="sourceLineNo">862</span>                    } else {<a name="line.862"></a>
+<span class="sourceLineNo">863</span>                        buf.append(" and ");<a name="line.863"></a>
+<span class="sourceLineNo">864</span>                    }<a name="line.864"></a>
+<span class="sourceLineNo">865</span>                    buf.append(joinOnClause.condition);<a name="line.865"></a>
+<span class="sourceLineNo">866</span>                }<a name="line.866"></a>
+<span class="sourceLineNo">867</span>            }<a name="line.867"></a>
+<span class="sourceLineNo">868</span>            if (n == 0) {<a name="line.868"></a>
+<span class="sourceLineNo">869</span>                // No "JOIN ... ON" clause matching this alias (or maybe no<a name="line.869"></a>
+<span class="sourceLineNo">870</span>                // JOIN ... ON clauses at all, if this is a database that<a name="line.870"></a>
+<span class="sourceLineNo">871</span>                // doesn't support ANSI-join syntax). Append an old-style FROM<a name="line.871"></a>
+<span class="sourceLineNo">872</span>                // item separated by a comma.<a name="line.872"></a>
+<span class="sourceLineNo">873</span>                buf.append(joinOnClauses.isEmpty() ? ", " : " cross join ")<a name="line.873"></a>
+<span class="sourceLineNo">874</span>                    .append(from);<a name="line.874"></a>
+<span class="sourceLineNo">875</span>            }<a name="line.875"></a>
+<span class="sourceLineNo">876</span>        }<a name="line.876"></a>
+<span class="sourceLineNo">877</span>    }<a name="line.877"></a>
+<span class="sourceLineNo">878</span><a name="line.878"></a>
+<span class="sourceLineNo">879</span>    static class ClauseList extends ArrayList&lt;String&gt; {<a name="line.879"></a>
+<span class="sourceLineNo">880</span>        protected final boolean allowDups;<a name="line.880"></a>
+<span class="sourceLineNo">881</span><a name="line.881"></a>
+<span class="sourceLineNo">882</span>        ClauseList(final boolean allowDups) {<a name="line.882"></a>
+<span class="sourceLineNo">883</span>            this.allowDups = allowDups;<a name="line.883"></a>
+<span class="sourceLineNo">884</span>        }<a name="line.884"></a>
+<span class="sourceLineNo">885</span><a name="line.885"></a>
+<span class="sourceLineNo">886</span>        /**<a name="line.886"></a>
+<span class="sourceLineNo">887</span>         * Adds an element to this ClauseList if either duplicates are allowed<a name="line.887"></a>
+<span class="sourceLineNo">888</span>         * or if it has not already been added.<a name="line.888"></a>
+<span class="sourceLineNo">889</span>         *<a name="line.889"></a>
+<span class="sourceLineNo">890</span>         * @param element Element to add<a name="line.890"></a>
+<span class="sourceLineNo">891</span>         * @return whether element was added, per<a name="line.891"></a>
+<span class="sourceLineNo">892</span>         * {@link java.util.Collection#add(Object)}<a name="line.892"></a>
+<span class="sourceLineNo">893</span>         */<a name="line.893"></a>
+<span class="sourceLineNo">894</span>        public boolean add(final String element) {<a name="line.894"></a>
+<span class="sourceLineNo">895</span>            if (allowDups || !contains(element)) {<a name="line.895"></a>
+<span class="sourceLineNo">896</span>                return super.add(element);<a name="line.896"></a>
+<span class="sourceLineNo">897</span>            }<a name="line.897"></a>
+<span class="sourceLineNo">898</span>            return false;<a name="line.898"></a>
+<span class="sourceLineNo">899</span>        }<a name="line.899"></a>
+<span class="sourceLineNo">900</span><a name="line.900"></a>
+<span class="sourceLineNo">901</span>        final void toBuffer(<a name="line.901"></a>
+<span class="sourceLineNo">902</span>            StringBuilder buf,<a name="line.902"></a>
+<span class="sourceLineNo">903</span>            boolean generateFormattedSql,<a name="line.903"></a>
+<span class="sourceLineNo">904</span>            String prefix,<a name="line.904"></a>
+<span class="sourceLineNo">905</span>            String first,<a name="line.905"></a>
+<span class="sourceLineNo">906</span>            String sep,<a name="line.906"></a>
+<span class="sourceLineNo">907</span>            String last,<a name="line.907"></a>
+<span class="sourceLineNo">908</span>            String empty)<a name="line.908"></a>
+<span class="sourceLineNo">909</span>        {<a name="line.909"></a>
+<span class="sourceLineNo">910</span>            if (isEmpty()) {<a name="line.910"></a>
+<span class="sourceLineNo">911</span>                buf.append(empty);<a name="line.911"></a>
+<span class="sourceLineNo">912</span>                return;<a name="line.912"></a>
+<span class="sourceLineNo">913</span>            }<a name="line.913"></a>
+<span class="sourceLineNo">914</span>            first = foo(generateFormattedSql, prefix, first);<a name="line.914"></a>
+<span class="sourceLineNo">915</span>            sep = foo(generateFormattedSql, prefix, sep);<a name="line.915"></a>
+<span class="sourceLineNo">916</span>            toBuffer(buf, first, sep, last);<a name="line.916"></a>
+<span class="sourceLineNo">917</span>        }<a name="line.917"></a>
+<span class="sourceLineNo">918</span><a name="line.918"></a>
+<span class="sourceLineNo">919</span>        static String foo(<a name="line.919"></a>
+<span class="sourceLineNo">920</span>            boolean generateFormattedSql,<a name="line.920"></a>
+<span class="sourceLineNo">921</span>            String prefix,<a name="line.921"></a>
+<span class="sourceLineNo">922</span>            String s)<a name="line.922"></a>
+<span class="sourceLineNo">923</span>        {<a name="line.923"></a>
+<span class="sourceLineNo">924</span>            if (generateFormattedSql) {<a name="line.924"></a>
+<span class="sourceLineNo">925</span>                if (s.startsWith(" ")) {<a name="line.925"></a>
+<span class="sourceLineNo">926</span>                    // E.g. " and "<a name="line.926"></a>
+<span class="sourceLineNo">927</span>                    s = Util.nl + prefix + s.substring(1);<a name="line.927"></a>
+<span class="sourceLineNo">928</span>                }<a name="line.928"></a>
+<span class="sourceLineNo">929</span>                if (s.endsWith(" ")) {<a name="line.929"></a>
+<span class="sourceLineNo">930</span>                    // E.g. ", "<a name="line.930"></a>
+<span class="sourceLineNo">931</span>                    s =<a name="line.931"></a>
+<span class="sourceLineNo">932</span>                        s.substring(0, s.length() - 1) + Util.nl + prefix<a name="line.932"></a>
+<span class="sourceLineNo">933</span>                        +  INDENT;<a name="line.933"></a>
+<span class="sourceLineNo">934</span>                } else if (s.endsWith("(")) {<a name="line.934"></a>
+<span class="sourceLineNo">935</span>                    // E.g. "("<a name="line.935"></a>
+<span class="sourceLineNo">936</span>                    s = s + Util.nl + prefix + INDENT;<a name="line.936"></a>
+<span class="sourceLineNo">937</span>                }<a name="line.937"></a>
+<span class="sourceLineNo">938</span>            }<a name="line.938"></a>
+<span class="sourceLineNo">939</span>            return s;<a name="line.939"></a>
+<span class="sourceLineNo">940</span>        }<a name="line.940"></a>
+<span class="sourceLineNo">941</span><a name="line.941"></a>
+<span class="sourceLineNo">942</span>        final void toBuffer(<a name="line.942"></a>
+<span class="sourceLineNo">943</span>            final StringBuilder buf,<a name="line.943"></a>
+<span class="sourceLineNo">944</span>            final String first,<a name="line.944"></a>
+<span class="sourceLineNo">945</span>            final String sep,<a name="line.945"></a>
+<span class="sourceLineNo">946</span>            final String last)<a name="line.946"></a>
+<span class="sourceLineNo">947</span>        {<a name="line.947"></a>
+<span class="sourceLineNo">948</span>            int n = 0;<a name="line.948"></a>
+<span class="sourceLineNo">949</span>            buf.append(first);<a name="line.949"></a>
+<span class="sourceLineNo">950</span>            for (String s : this) {<a name="line.950"></a>
+<span class="sourceLineNo">951</span>                if (n++ &gt; 0) {<a name="line.951"></a>
+<span class="sourceLineNo">952</span>                    buf.append(sep);<a name="line.952"></a>
+<span class="sourceLineNo">953</span>                }<a name="line.953"></a>
+<span class="sourceLineNo">954</span>                buf.append(s);<a name="line.954"></a>
+<span class="sourceLineNo">955</span>            }<a name="line.955"></a>
+<span class="sourceLineNo">956</span>            buf.append(last);<a name="line.956"></a>
+<span class="sourceLineNo">957</span>        }<a name="line.957"></a>
+<span class="sourceLineNo">958</span><a name="line.958"></a>
+<span class="sourceLineNo">959</span>        static void listToBuffer(<a name="line.959"></a>
+<span class="sourceLineNo">960</span>            StringBuilder buf,<a name="line.960"></a>
+<span class="sourceLineNo">961</span>            List&lt;ClauseList&gt; clauseListList,<a name="line.961"></a>
+<span class="sourceLineNo">962</span>            boolean generateFormattedSql,<a name="line.962"></a>
+<span class="sourceLineNo">963</span>            String prefix,<a name="line.963"></a>
+<span class="sourceLineNo">964</span>            String first,<a name="line.964"></a>
+<span class="sourceLineNo">965</span>            String sep,<a name="line.965"></a>
+<span class="sourceLineNo">966</span>            String last)<a name="line.966"></a>
+<span class="sourceLineNo">967</span>        {<a name="line.967"></a>
+<span class="sourceLineNo">968</span>            first = foo(generateFormattedSql, prefix, first);<a name="line.968"></a>
+<span class="sourceLineNo">969</span>            sep = foo(generateFormattedSql, prefix, sep);<a name="line.969"></a>
+<span class="sourceLineNo">970</span>            buf.append(first);<a name="line.970"></a>
+<span class="sourceLineNo">971</span>            int n = 0;<a name="line.971"></a>
+<span class="sourceLineNo">972</span>            for (ClauseList clauseList : clauseListList) {<a name="line.972"></a>
+<span class="sourceLineNo">973</span>                if (n++ &gt; 0) {<a name="line.973"></a>
+<span class="sourceLineNo">974</span>                    buf.append(sep);<a name="line.974"></a>
+<span class="sourceLineNo">975</span>                }<a name="line.975"></a>
+<span class="sourceLineNo">976</span>                clauseList.toBuffer(<a name="line.976"></a>
+<span class="sourceLineNo">977</span>                    buf, false, prefix, "(", ", ", ")", "()");<a name="line.977"></a>
+<span class="sourceLineNo">978</span>            }<a name="line.978"></a>
+<span class="sourceLineNo">979</span>            buf.append(last);<a name="line.979"></a>
+<span class="sourceLineNo">980</span>        }<a name="line.980"></a>
+<span class="sourceLineNo">981</span>    }<a name="line.981"></a>
+<span class="sourceLineNo">982</span><a name="line.982"></a>
+<span class="sourceLineNo">983</span>    /**<a name="line.983"></a>
+<span class="sourceLineNo">984</span>     * Collection of alternative code for alternative dialects.<a name="line.984"></a>
+<span class="sourceLineNo">985</span>     */<a name="line.985"></a>
+<span class="sourceLineNo">986</span>    public static class CodeSet {<a name="line.986"></a>
+<span class="sourceLineNo">987</span>        private final Map&lt;String, String&gt; dialectCodes =<a name="line.987"></a>
+<span class="sourceLineNo">988</span>            new HashMap&lt;String, String&gt;();<a name="line.988"></a>
+<span class="sourceLineNo">989</span><a name="line.989"></a>
+<span class="sourceLineNo">990</span>        public String put(String dialect, String code) {<a name="line.990"></a>
+<span class="sourceLineNo">991</span>            return dialectCodes.put(dialect, code);<a name="line.991"></a>
+<span class="sourceLineNo">992</span>        }<a name="line.992"></a>
+<span class="sourceLineNo">993</span><a name="line.993"></a>
+<span class="sourceLineNo">994</span>        /**<a name="line.994"></a>
+<span class="sourceLineNo">995</span>         * Chooses the code variant which best matches the given Dialect.<a name="line.995"></a>
+<span class="sourceLineNo">996</span>         */<a name="line.996"></a>
+<span class="sourceLineNo">997</span>        public String chooseQuery(Dialect dialect) {<a name="line.997"></a>
+<span class="sourceLineNo">998</span>            String best = getBestName(dialect);<a name="line.998"></a>
+<span class="sourceLineNo">999</span>            String bestCode = dialectCodes.get(best);<a name="line.999"></a>
+<span class="sourceLineNo">1000</span>            if (bestCode != null) {<a name="line.1000"></a>
+<span class="sourceLineNo">1001</span>                return bestCode;<a name="line.1001"></a>
+<span class="sourceLineNo">1002</span>            }<a name="line.1002"></a>
+<span class="sourceLineNo">1003</span>            String genericCode = dialectCodes.get("generic");<a name="line.1003"></a>
+<span class="sourceLineNo">1004</span>            if (genericCode == null) {<a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>                throw Util.newError("View has no 'generic' variant");<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span>            }<a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>            return genericCode;<a name="line.1007"></a>
+<span class="sourceLineNo">1008</span>        }<a name="line.1008"></a>
+<span class="sourceLineNo">1009</span><a name="line.1009"></a>
+<span class="sourceLineNo">1010</span>        private static String getBestName(Dialect dialect) {<a name="line.1010"></a>
+<span class="sourceLineNo">1011</span>            return dialect.getDatabaseProduct().getFamily().name()<a name="line.1011"></a>
+<span class="sourceLineNo">1012</span>                .toLowerCase();<a name="line.1012"></a>
+<span class="sourceLineNo">1013</span>        }<a name="line.1013"></a>
+<span class="sourceLineNo">1014</span>    }<a name="line.1014"></a>
+<span class="sourceLineNo">1015</span><a name="line.1015"></a>
+<span class="sourceLineNo">1016</span>    private static class RelInfo {<a name="line.1016"></a>
+<span class="sourceLineNo">1017</span>        final MondrianDef.Relation relation;<a name="line.1017"></a>
+<span class="sourceLineNo">1018</span>        final String leftKey;<a name="line.1018"></a>
+<span class="sourceLineNo">1019</span>        final String leftAlias;<a name="line.1019"></a>
+<span class="sourceLineNo">1020</span>        final String rightKey;<a name="line.1020"></a>
+<span class="sourceLineNo">1021</span>        final String rightAlias;<a name="line.1021"></a>
+<span class="sourceLineNo">1022</span><a name="line.1022"></a>
+<span class="sourceLineNo">1023</span>        public RelInfo(<a name="line.1023"></a>
+<span class="sourceLineNo">1024</span>            MondrianDef.Relation relation,<a name="line.1024"></a>
+<span class="sourceLineNo">1025</span>            String leftKey,<a name="line.1025"></a>
+<span class="sourceLineNo">1026</span>            String leftAlias,<a name="line.1026"></a>
+<span class="sourceLineNo">1027</span>            String rightKey,<a name="line.1027"></a>
+<span class="sourceLineNo">1028</span>            String rightAlias)<a name="line.1028"></a>
+<span class="sourceLineNo">1029</span>        {<a name="line.1029"></a>
+<span class="sourceLineNo">1030</span>            this.relation = relation;<a name="line.1030"></a>
+<span class="sourceLineNo">1031</span>            this.leftKey = leftKey;<a name="line.1031"></a>
+<span class="sourceLineNo">1032</span>            this.leftAlias = leftAlias;<a name="line.1032"></a>
+<span class="sourceLineNo">1033</span>            this.rightKey = rightKey;<a name="line.1033"></a>
+<span class="sourceLineNo">1034</span>            this.rightAlias = rightAlias;<a name="line.1034"></a>
+<span class="sourceLineNo">1035</span>        }<a name="line.1035"></a>
+<span class="sourceLineNo">1036</span>    }<a name="line.1036"></a>
+<span class="sourceLineNo">1037</span>}<a name="line.1037"></a>
+<span class="sourceLineNo">1038</span><a name="line.1038"></a>
+<span class="sourceLineNo">1039</span>// End SqlQuery.java<a name="line.1039"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

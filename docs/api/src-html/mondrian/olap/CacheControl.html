@@ -1,0 +1,526 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2006-2009 Pentaho and others<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.olap;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import java.io.PrintWriter;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import java.util.List;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import java.util.Map;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import javax.sql.DataSource;<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>/**<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * API for controlling the contents of the cell cache and the member cache.<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * A {@link CellRegion} denotes a portion of the cell cache, and a<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * {@link MemberSet} denotes a portion of the member cache. Both caches can be<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * flushed, and the member cache can be edited.<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * &lt;p&gt;To create an instance of this interface, use<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * {@link mondrian.olap.Connection#getCacheControl}.&lt;/p&gt;<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * &lt;p&gt;Methods concerning cell cache:&lt;ul&gt;<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * &lt;li&gt;{@link #createMemberRegion(Member, boolean)}&lt;/li&gt;<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * &lt;li&gt;{@link #createMemberRegion(boolean, Member, boolean, Member, boolean)}&lt;/li&gt;<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * &lt;li&gt;{@link #createUnionRegion(mondrian.olap.CacheControl.CellRegion[])}&lt;/li&gt;<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * &lt;li&gt;{@link #createCrossjoinRegion(mondrian.olap.CacheControl.CellRegion[])}&lt;/li&gt;<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * &lt;li&gt;{@link #createMeasuresRegion(Cube)}&lt;/li&gt;<a name="line.31"></a>
+<span class="sourceLineNo">032</span> * &lt;li&gt;{@link #flush(mondrian.olap.CacheControl.CellRegion)}&lt;/li&gt;<a name="line.32"></a>
+<span class="sourceLineNo">033</span> * &lt;/ul&gt;&lt;/p&gt;<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *<a name="line.34"></a>
+<span class="sourceLineNo">035</span> * &lt;p&gt;Methods concerning member cache:&lt;ul&gt;<a name="line.35"></a>
+<span class="sourceLineNo">036</span> * &lt;li&gt;{@link #createMemberSet(Member, boolean)}&lt;/li&gt;<a name="line.36"></a>
+<span class="sourceLineNo">037</span> * &lt;li&gt;{@link #createMemberSet(boolean, Member, boolean, Member, boolean)}&lt;/li&gt;<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * &lt;li&gt;{@link #createAddCommand(Member)}&lt;/li&gt;<a name="line.38"></a>
+<span class="sourceLineNo">039</span> * &lt;li&gt;{@link #createDeleteCommand(Member)}&lt;/li&gt;<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * &lt;li&gt;{@link #createDeleteCommand(mondrian.olap.CacheControl.MemberSet)}&lt;/li&gt;<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * &lt;li&gt;{@link #createCompoundCommand(java.util.List)}&lt;/li&gt;<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * &lt;li&gt;{@link #createCompoundCommand(mondrian.olap.CacheControl.MemberEditCommand[])}&lt;/li&gt;<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * &lt;li&gt;{@link #createSetPropertyCommand(Member, String, Object)}&lt;/li&gt;<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * &lt;li&gt;{@link #createSetPropertyCommand(mondrian.olap.CacheControl.MemberSet,java.util.Map)}&lt;/li&gt;<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * &lt;li&gt;{@link #flush(mondrian.olap.CacheControl.MemberSet)}&lt;/li&gt;<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * &lt;li&gt;{@link #execute(mondrian.olap.CacheControl.MemberEditCommand)}&lt;/li&gt;<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * &lt;/ul&gt;&lt;/p&gt;<a name="line.47"></a>
+<span class="sourceLineNo">048</span> *<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * @author jhyde<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * @since Sep 27, 2006<a name="line.50"></a>
+<span class="sourceLineNo">051</span> */<a name="line.51"></a>
+<span class="sourceLineNo">052</span>public interface CacheControl {<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>    // cell cache control<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>    /**<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     * Creates a cell region consisting of a single member.<a name="line.57"></a>
+<span class="sourceLineNo">058</span>     *<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     * @param member the member<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     * @param descendants When true, include descendants of the member in the<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     *   region.<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     * @return the new cell region<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     */<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    CellRegion createMemberRegion(Member member, boolean descendants);<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>    /**<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     * Creates a cell region consisting of a range between two members.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     * &lt;p&gt;The members must belong to the same level of the same hierarchy.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     * One of the bounds may be null.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     * &lt;p&gt;For example, given<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     * &lt;code&gt;&lt;pre&gt;Member member97Q3; // [Time].[1997].[Q3]<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     * Member member98Q2; // [Time].[1998].[Q2]<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     * &lt;/pre&gt;&lt;/code&gt;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * then<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     *<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     * &lt;table border="1"&gt;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * &lt;tr&gt;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     * &lt;th&gt;Expression&lt;/th&gt;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     * &lt;th&gt;Meaning&lt;/th&gt;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     * &lt;/tr&gt;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     *<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     * &lt;tr&gt;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     * &lt;td&gt;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     * &lt;code&gt;createMemberRegion(true, member97Q3, true, member98Q2,<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     * false)&lt;/code&gt;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     * &lt;/td&gt;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     * &lt;td&gt;The members between 97Q3 and 98Q2, inclusive:&lt;br/&gt;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     * [Time].[1997].[Q3],&lt;br/&gt;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     * [Time].[1997].[Q4],&lt;br/&gt;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     * [Time].[1998].[Q1],&lt;br/&gt;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     * [Time].[1998].[Q2]&lt;/td&gt;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     * &lt;/tr&gt;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     *<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     * &lt;tr&gt;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     * &lt;td&gt;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     * &lt;code&gt;createMemberRegion(true, member97Q3, false, member98Q2,<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     * false)&lt;/code&gt;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     * &lt;/td&gt;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     * &lt;td&gt;The members between 97Q3 and 98Q2, exclusive:&lt;br/&gt;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     * [Time].[1997].[Q4],&lt;br/&gt;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     * [Time].[1998].[Q1]&lt;/td&gt;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     * &lt;/tr&gt;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     *<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     * &lt;tr&gt;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     * &lt;td&gt;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     * &lt;code&gt;createMemberRegion(true, member97Q3, false, member98Q2,<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     * false)&lt;/code&gt;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     * &lt;/td&gt;<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     * &lt;td&gt;The members between 97Q3 and 98Q2, including their descendants, and<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     * including the lower bound but not the upper bound:&lt;br/&gt;<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     * [Time].[1997].[Q3],&lt;br/&gt;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     * [Time].[1997].[Q3].[7],&lt;br/&gt;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     * [Time].[1997].[Q3].[8],&lt;br/&gt;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     * [Time].[1997].[Q3].[9],&lt;br/&gt;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     * [Time].[1997].[Q4],&lt;br/&gt;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     * [Time].[1997].[Q4].[10],&lt;br/&gt;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     * [Time].[1997].[Q4].[11],&lt;br/&gt;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     * [Time].[1997].[Q4].[12],&lt;br/&gt;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     * [Time].[1998].[Q1],&lt;br/&gt;<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     * [Time].[1998].[Q1].[1],&lt;br/&gt;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     * [Time].[1998].[Q1].[2],&lt;br/&gt;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     * [Time].[1998].[Q1].[3]&lt;/td&gt;<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     * &lt;/tr&gt;<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     * &lt;/table&gt;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     *<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     * @param lowerInclusive whether the the range includes the lower bound;<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     *   ignored if the lower bound is not specified<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     * @param lowerMember lower bound member.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     *   If null, takes all preceding members<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     * @param upperInclusive whether the the range includes the upper bound;<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     *   ignored if the upper bound is not specified<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     * @param upperMember upper bound member.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     *   If null, takes all preceding members<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     * @param descendants when true, include descendants of the member in the<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     *   region<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     * @return the new cell region<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     */<a name="line.141"></a>
+<span class="sourceLineNo">142</span>    CellRegion createMemberRegion(<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        boolean lowerInclusive,<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        Member lowerMember,<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        boolean upperInclusive,<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        Member upperMember,<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        boolean descendants);<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>    /**<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     * Forms the cartesian product of two or more cell regions.<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     * @param regions the operands<a name="line.151"></a>
+<span class="sourceLineNo">152</span>     * @return the cartesian product of the operands<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     */<a name="line.153"></a>
+<span class="sourceLineNo">154</span>    CellRegion createCrossjoinRegion(CellRegion... regions);<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>    /**<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     * Forms the union of two or more cell regions.<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     * The regions must have the same dimensionality.<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     *<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     * @param regions the operands<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     * @return the cartesian product of the operands<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span>     */<a name="line.163"></a>
+<span class="sourceLineNo">164</span>    CellRegion createUnionRegion(CellRegion... regions);<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>    /**<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     * Creates a region consisting of all measures in a given cube.<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     * @param cube a cube<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     * @return the region<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     */<a name="line.170"></a>
+<span class="sourceLineNo">171</span>    CellRegion createMeasuresRegion(Cube cube);<a name="line.171"></a>
+<span class="sourceLineNo">172</span><a name="line.172"></a>
+<span class="sourceLineNo">173</span>    /**<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     * Atomically flushes all the cells in the cell cache that correspond to<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     * measures in a cube and to a given region.<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     *<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     * @param region a region<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     */<a name="line.178"></a>
+<span class="sourceLineNo">179</span>    void flush(CellRegion region);<a name="line.179"></a>
+<span class="sourceLineNo">180</span><a name="line.180"></a>
+<span class="sourceLineNo">181</span>    /**<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     * Prints the state of the cell cache as it pertains to a given region.<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     * @param pw the output target<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     * @param region the CellRegion of interest<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     */<a name="line.185"></a>
+<span class="sourceLineNo">186</span>    void printCacheState(PrintWriter pw, CellRegion region);<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>    // member cache control<a name="line.188"></a>
+<span class="sourceLineNo">189</span><a name="line.189"></a>
+<span class="sourceLineNo">190</span>    /**<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     * Creates a member set containing either a single member, or a member and<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     * its descendants.<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     * @param member a member<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     * @param descendants when true, include descendants in the set<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     * @return the set<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     */<a name="line.196"></a>
+<span class="sourceLineNo">197</span>    MemberSet createMemberSet(Member member, boolean descendants);<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>    /**<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     * Creates a member set consisting of a range between two members.<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     * The members must belong to the same level of the same hierarchy. One of<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     * the bounds may be null. (Similar to {@link #createMemberRegion(boolean,<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     * Member, boolean, Member, boolean)}, which see for examples.)<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     *<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     * @param lowerInclusive whether the the range includes the lower bound;<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     *   ignored if the lower bound is not specified<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     * @param lowerMember lower bound member.<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     *   If null, takes all preceding members<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     * @param upperInclusive whether the the range includes the upper bound;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     *   ignored if the upper bound is not specified<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     * @param upperMember upper bound member.<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     *   If null, takes all preceding members<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     * @param descendants when true, include descendants of the member in the<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     *   region<a name="line.214"></a>
+<span class="sourceLineNo">215</span>     * @return the set<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     */<a name="line.216"></a>
+<span class="sourceLineNo">217</span>    MemberSet createMemberSet(<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        boolean lowerInclusive,<a name="line.218"></a>
+<span class="sourceLineNo">219</span>        Member lowerMember,<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        boolean upperInclusive,<a name="line.220"></a>
+<span class="sourceLineNo">221</span>        Member upperMember,<a name="line.221"></a>
+<span class="sourceLineNo">222</span>        boolean descendants);<a name="line.222"></a>
+<span class="sourceLineNo">223</span><a name="line.223"></a>
+<span class="sourceLineNo">224</span>    /**<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     * Forms the union of two or more member sets.<a name="line.225"></a>
+<span class="sourceLineNo">226</span>     *<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     * @param sets the operands<a name="line.227"></a>
+<span class="sourceLineNo">228</span>     * @return the union of the operands<a name="line.228"></a>
+<span class="sourceLineNo">229</span>     */<a name="line.229"></a>
+<span class="sourceLineNo">230</span>    MemberSet createUnionSet(MemberSet... sets);<a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span>    /**<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     * Filters a member set, keeping all members at a given Level.<a name="line.233"></a>
+<span class="sourceLineNo">234</span>     *<a name="line.234"></a>
+<span class="sourceLineNo">235</span>     * @param level Level<a name="line.235"></a>
+<span class="sourceLineNo">236</span>     * @param baseSet Member set<a name="line.236"></a>
+<span class="sourceLineNo">237</span>     * @return Member set with members not at the given level removed<a name="line.237"></a>
+<span class="sourceLineNo">238</span>     */<a name="line.238"></a>
+<span class="sourceLineNo">239</span>    MemberSet filter(Level level, MemberSet baseSet);<a name="line.239"></a>
+<span class="sourceLineNo">240</span><a name="line.240"></a>
+<span class="sourceLineNo">241</span>    /**<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     * Atomically flushes all members in the member cache which belong to a<a name="line.242"></a>
+<span class="sourceLineNo">243</span>     * given set.<a name="line.243"></a>
+<span class="sourceLineNo">244</span>     *<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     * @param set a set of members<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     */<a name="line.246"></a>
+<span class="sourceLineNo">247</span>    void flush(MemberSet set);<a name="line.247"></a>
+<span class="sourceLineNo">248</span><a name="line.248"></a>
+<span class="sourceLineNo">249</span>    /**<a name="line.249"></a>
+<span class="sourceLineNo">250</span>     * Prints the state of the member cache as it pertains to a given member<a name="line.250"></a>
+<span class="sourceLineNo">251</span>     * set.<a name="line.251"></a>
+<span class="sourceLineNo">252</span>     * @param pw the output target<a name="line.252"></a>
+<span class="sourceLineNo">253</span>     * @param set the MemberSet of interest<a name="line.253"></a>
+<span class="sourceLineNo">254</span>     */<a name="line.254"></a>
+<span class="sourceLineNo">255</span>    void printCacheState(PrintWriter pw, MemberSet set);<a name="line.255"></a>
+<span class="sourceLineNo">256</span><a name="line.256"></a>
+<span class="sourceLineNo">257</span><a name="line.257"></a>
+<span class="sourceLineNo">258</span>    // edit member cache contents<a name="line.258"></a>
+<span class="sourceLineNo">259</span><a name="line.259"></a>
+<span class="sourceLineNo">260</span>    /**<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     * Executes a command that edits the member cache.<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     * @param cmd the command<a name="line.262"></a>
+<span class="sourceLineNo">263</span>     */<a name="line.263"></a>
+<span class="sourceLineNo">264</span>    void execute(MemberEditCommand cmd);<a name="line.264"></a>
+<span class="sourceLineNo">265</span><a name="line.265"></a>
+<span class="sourceLineNo">266</span>    /**<a name="line.266"></a>
+<span class="sourceLineNo">267</span>     * Builds a compound command which is executed atomically.<a name="line.267"></a>
+<span class="sourceLineNo">268</span>     *<a name="line.268"></a>
+<span class="sourceLineNo">269</span>     * @param cmds a list of the component commands<a name="line.269"></a>
+<span class="sourceLineNo">270</span>     * @return the compound command<a name="line.270"></a>
+<span class="sourceLineNo">271</span>     */<a name="line.271"></a>
+<span class="sourceLineNo">272</span>    MemberEditCommand createCompoundCommand(List&lt;MemberEditCommand&gt; cmds);<a name="line.272"></a>
+<span class="sourceLineNo">273</span><a name="line.273"></a>
+<span class="sourceLineNo">274</span>    /**<a name="line.274"></a>
+<span class="sourceLineNo">275</span>     * Builds a compound command which is executed atomically.<a name="line.275"></a>
+<span class="sourceLineNo">276</span>     * @param cmds the component commands<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     * @return the compound command<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     */<a name="line.278"></a>
+<span class="sourceLineNo">279</span>    MemberEditCommand createCompoundCommand(MemberEditCommand... cmds);<a name="line.279"></a>
+<span class="sourceLineNo">280</span><a name="line.280"></a>
+<span class="sourceLineNo">281</span>    // commands to change the structure of the member cache<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>    /**<a name="line.283"></a>
+<span class="sourceLineNo">284</span>     * Creates a command to delete a member and its descendants from the member<a name="line.284"></a>
+<span class="sourceLineNo">285</span>     * cache.<a name="line.285"></a>
+<span class="sourceLineNo">286</span>     *<a name="line.286"></a>
+<span class="sourceLineNo">287</span>     * @param member the member<a name="line.287"></a>
+<span class="sourceLineNo">288</span>     * @return the command<a name="line.288"></a>
+<span class="sourceLineNo">289</span>     */<a name="line.289"></a>
+<span class="sourceLineNo">290</span>    MemberEditCommand createDeleteCommand(Member member);<a name="line.290"></a>
+<span class="sourceLineNo">291</span><a name="line.291"></a>
+<span class="sourceLineNo">292</span>    /**<a name="line.292"></a>
+<span class="sourceLineNo">293</span>     * Creates a command to delete a set of members from the member cache.<a name="line.293"></a>
+<span class="sourceLineNo">294</span>     *<a name="line.294"></a>
+<span class="sourceLineNo">295</span>     * @param memberSet the set<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     * @return the command<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     */<a name="line.297"></a>
+<span class="sourceLineNo">298</span>    MemberEditCommand createDeleteCommand(MemberSet memberSet);<a name="line.298"></a>
+<span class="sourceLineNo">299</span><a name="line.299"></a>
+<span class="sourceLineNo">300</span>    /**<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     * Creates a command to add a member to the cache. The added member and its<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     * parent must have the same Dimension and the correct Levels, Null parent<a name="line.302"></a>
+<span class="sourceLineNo">303</span>     * means add to the top level of its Dimension.<a name="line.303"></a>
+<span class="sourceLineNo">304</span>     *<a name="line.304"></a>
+<span class="sourceLineNo">305</span>     * &lt;p&gt;The ordinal position of the new member among its siblings is implied<a name="line.305"></a>
+<span class="sourceLineNo">306</span>     * by its properties.&lt;/p&gt;<a name="line.306"></a>
+<span class="sourceLineNo">307</span>     *<a name="line.307"></a>
+<span class="sourceLineNo">308</span>     * @param member the new member<a name="line.308"></a>
+<span class="sourceLineNo">309</span>     * @return the command<a name="line.309"></a>
+<span class="sourceLineNo">310</span>     *<a name="line.310"></a>
+<span class="sourceLineNo">311</span>     * @throws IllegalArgumentException if member null<a name="line.311"></a>
+<span class="sourceLineNo">312</span>     * or if member belongs to a parent-child hierarchy<a name="line.312"></a>
+<span class="sourceLineNo">313</span>     */<a name="line.313"></a>
+<span class="sourceLineNo">314</span>    MemberEditCommand createAddCommand(<a name="line.314"></a>
+<span class="sourceLineNo">315</span>        Member member) throws IllegalArgumentException;<a name="line.315"></a>
+<span class="sourceLineNo">316</span><a name="line.316"></a>
+<span class="sourceLineNo">317</span>    /**<a name="line.317"></a>
+<span class="sourceLineNo">318</span>     * Creates a command to Move a member (with its descendants) to a new<a name="line.318"></a>
+<span class="sourceLineNo">319</span>     * location, that is to a new parent.<a name="line.319"></a>
+<span class="sourceLineNo">320</span>     * @param member the member moved<a name="line.320"></a>
+<span class="sourceLineNo">321</span>     * @param loc    the new parent<a name="line.321"></a>
+<span class="sourceLineNo">322</span>     * @return the command<a name="line.322"></a>
+<span class="sourceLineNo">323</span>     *<a name="line.323"></a>
+<span class="sourceLineNo">324</span>     * @throws IllegalArgumentException if member is null,<a name="line.324"></a>
+<span class="sourceLineNo">325</span>     * or loc is null,<a name="line.325"></a>
+<span class="sourceLineNo">326</span>     * or member belongs to a parent-child hierarchy,<a name="line.326"></a>
+<span class="sourceLineNo">327</span>     * or if loc is incompatible with member<a name="line.327"></a>
+<span class="sourceLineNo">328</span>     */<a name="line.328"></a>
+<span class="sourceLineNo">329</span>    MemberEditCommand createMoveCommand(<a name="line.329"></a>
+<span class="sourceLineNo">330</span>        Member member,<a name="line.330"></a>
+<span class="sourceLineNo">331</span>        Member loc) throws IllegalArgumentException;<a name="line.331"></a>
+<span class="sourceLineNo">332</span><a name="line.332"></a>
+<span class="sourceLineNo">333</span>    // commands to change member properties<a name="line.333"></a>
+<span class="sourceLineNo">334</span><a name="line.334"></a>
+<span class="sourceLineNo">335</span>    /**<a name="line.335"></a>
+<span class="sourceLineNo">336</span>     * Creates a command to change one property of a member.<a name="line.336"></a>
+<span class="sourceLineNo">337</span>     *<a name="line.337"></a>
+<span class="sourceLineNo">338</span>     * @param member the member<a name="line.338"></a>
+<span class="sourceLineNo">339</span>     * @param name the property name<a name="line.339"></a>
+<span class="sourceLineNo">340</span>     * @param value the property value<a name="line.340"></a>
+<span class="sourceLineNo">341</span>     * @return the command<a name="line.341"></a>
+<span class="sourceLineNo">342</span>     * @throws IllegalArgumentException if the property is invalid for the<a name="line.342"></a>
+<span class="sourceLineNo">343</span>     *  member<a name="line.343"></a>
+<span class="sourceLineNo">344</span>     */<a name="line.344"></a>
+<span class="sourceLineNo">345</span>    MemberEditCommand createSetPropertyCommand(<a name="line.345"></a>
+<span class="sourceLineNo">346</span>        Member member,<a name="line.346"></a>
+<span class="sourceLineNo">347</span>        String name,<a name="line.347"></a>
+<span class="sourceLineNo">348</span>        Object value) throws IllegalArgumentException;<a name="line.348"></a>
+<span class="sourceLineNo">349</span><a name="line.349"></a>
+<span class="sourceLineNo">350</span>    /**<a name="line.350"></a>
+<span class="sourceLineNo">351</span>     * Creates a command to several properties changes over a set of<a name="line.351"></a>
+<span class="sourceLineNo">352</span>     * members. All members must belong to the same Level.<a name="line.352"></a>
+<span class="sourceLineNo">353</span>     *<a name="line.353"></a>
+<span class="sourceLineNo">354</span>     * @param set the set of members<a name="line.354"></a>
+<span class="sourceLineNo">355</span>     * @param propertyValues Collection of property-value pairs<a name="line.355"></a>
+<span class="sourceLineNo">356</span>     * @return the command<a name="line.356"></a>
+<span class="sourceLineNo">357</span>     * @throws IllegalArgumentException for an invalid property, or if all<a name="line.357"></a>
+<span class="sourceLineNo">358</span>     * members in the set do not belong to the same Level.<a name="line.358"></a>
+<span class="sourceLineNo">359</span>     */<a name="line.359"></a>
+<span class="sourceLineNo">360</span>    MemberEditCommand createSetPropertyCommand(<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        MemberSet set,<a name="line.361"></a>
+<span class="sourceLineNo">362</span>        Map&lt;String, Object&gt; propertyValues)<a name="line.362"></a>
+<span class="sourceLineNo">363</span>        throws IllegalArgumentException;<a name="line.363"></a>
+<span class="sourceLineNo">364</span><a name="line.364"></a>
+<span class="sourceLineNo">365</span>    // other<a name="line.365"></a>
+<span class="sourceLineNo">366</span><a name="line.366"></a>
+<span class="sourceLineNo">367</span>    /**<a name="line.367"></a>
+<span class="sourceLineNo">368</span>     * Prints a debug message.<a name="line.368"></a>
+<span class="sourceLineNo">369</span>     *<a name="line.369"></a>
+<span class="sourceLineNo">370</span>     * @param message the message<a name="line.370"></a>
+<span class="sourceLineNo">371</span>     */<a name="line.371"></a>
+<span class="sourceLineNo">372</span>    void trace(String message);<a name="line.372"></a>
+<span class="sourceLineNo">373</span><a name="line.373"></a>
+<span class="sourceLineNo">374</span>    /**<a name="line.374"></a>
+<span class="sourceLineNo">375</span>     * Tells if tracing is enabled.<a name="line.375"></a>
+<span class="sourceLineNo">376</span>     */<a name="line.376"></a>
+<span class="sourceLineNo">377</span>    boolean isTraceEnabled();<a name="line.377"></a>
+<span class="sourceLineNo">378</span><a name="line.378"></a>
+<span class="sourceLineNo">379</span>    /**<a name="line.379"></a>
+<span class="sourceLineNo">380</span>     * Flushes the cache which maps schema URLs to metadata.<a name="line.380"></a>
+<span class="sourceLineNo">381</span>     *<a name="line.381"></a>
+<span class="sourceLineNo">382</span>     * &lt;p&gt;This cache is referenced only when creating a new connection, so<a name="line.382"></a>
+<span class="sourceLineNo">383</span>     * existing connections will continue to use the same schema definition.<a name="line.383"></a>
+<span class="sourceLineNo">384</span>     *<a name="line.384"></a>
+<span class="sourceLineNo">385</span>     * &lt;p&gt;Flushing the schema cache will flush all aggregations and segments<a name="line.385"></a>
+<span class="sourceLineNo">386</span>     * associated to it as well.<a name="line.386"></a>
+<span class="sourceLineNo">387</span>     */<a name="line.387"></a>
+<span class="sourceLineNo">388</span>    void flushSchemaCache();<a name="line.388"></a>
+<span class="sourceLineNo">389</span><a name="line.389"></a>
+<span class="sourceLineNo">390</span>    /**<a name="line.390"></a>
+<span class="sourceLineNo">391</span>     * Flushes the given Schema instance from the pool. It resolves the<a name="line.391"></a>
+<span class="sourceLineNo">392</span>     * schema to flush by using its catalog URL, connection key and<a name="line.392"></a>
+<span class="sourceLineNo">393</span>     * JDBC username.<a name="line.393"></a>
+<span class="sourceLineNo">394</span>     *<a name="line.394"></a>
+<span class="sourceLineNo">395</span>     * &lt;p&gt;Flushing the schema cache will flush all aggregations and segments<a name="line.395"></a>
+<span class="sourceLineNo">396</span>     * associated to it as well.<a name="line.396"></a>
+<span class="sourceLineNo">397</span>     */<a name="line.397"></a>
+<span class="sourceLineNo">398</span>    void flushSchema(<a name="line.398"></a>
+<span class="sourceLineNo">399</span>        final String catalogUrl,<a name="line.399"></a>
+<span class="sourceLineNo">400</span>        final String connectionKey,<a name="line.400"></a>
+<span class="sourceLineNo">401</span>        final String jdbcUser,<a name="line.401"></a>
+<span class="sourceLineNo">402</span>        String dataSourceStr);<a name="line.402"></a>
+<span class="sourceLineNo">403</span><a name="line.403"></a>
+<span class="sourceLineNo">404</span>    /**<a name="line.404"></a>
+<span class="sourceLineNo">405</span>     * Flushes the given Schema instance from the pool. It resolves the<a name="line.405"></a>
+<span class="sourceLineNo">406</span>     * schema to flush by using its catalog URL and DataSource object.<a name="line.406"></a>
+<span class="sourceLineNo">407</span>     *<a name="line.407"></a>
+<span class="sourceLineNo">408</span>     * &lt;p&gt;Flushing the schema cache will flush all aggregations and segments<a name="line.408"></a>
+<span class="sourceLineNo">409</span>     * associated to it as well.<a name="line.409"></a>
+<span class="sourceLineNo">410</span>     */<a name="line.410"></a>
+<span class="sourceLineNo">411</span>    void flushSchema(<a name="line.411"></a>
+<span class="sourceLineNo">412</span>        String catalogUrl,<a name="line.412"></a>
+<span class="sourceLineNo">413</span>        DataSource dataSource);<a name="line.413"></a>
+<span class="sourceLineNo">414</span><a name="line.414"></a>
+<span class="sourceLineNo">415</span>    /**<a name="line.415"></a>
+<span class="sourceLineNo">416</span>     * Flushes the given Schema instance from the pool<a name="line.416"></a>
+<span class="sourceLineNo">417</span>     *<a name="line.417"></a>
+<span class="sourceLineNo">418</span>     * &lt;p&gt;Flushing the schema cache will flush all aggregations and segments<a name="line.418"></a>
+<span class="sourceLineNo">419</span>     * associated to it as well.<a name="line.419"></a>
+<span class="sourceLineNo">420</span>     *<a name="line.420"></a>
+<span class="sourceLineNo">421</span>     * @param schema Schema<a name="line.421"></a>
+<span class="sourceLineNo">422</span>     */<a name="line.422"></a>
+<span class="sourceLineNo">423</span>    void flushSchema(Schema schema);<a name="line.423"></a>
+<span class="sourceLineNo">424</span><a name="line.424"></a>
+<span class="sourceLineNo">425</span>    /** a region of cells in the cell cache */<a name="line.425"></a>
+<span class="sourceLineNo">426</span>    public interface CellRegion {<a name="line.426"></a>
+<span class="sourceLineNo">427</span>        /**<a name="line.427"></a>
+<span class="sourceLineNo">428</span>         * Returns the dimensionality of a region.<a name="line.428"></a>
+<span class="sourceLineNo">429</span>         * @return a list of {@link mondrian.olap.Dimension} objects.<a name="line.429"></a>
+<span class="sourceLineNo">430</span>         */<a name="line.430"></a>
+<span class="sourceLineNo">431</span>        List&lt;Dimension&gt; getDimensionality();<a name="line.431"></a>
+<span class="sourceLineNo">432</span>    }<a name="line.432"></a>
+<span class="sourceLineNo">433</span><a name="line.433"></a>
+<span class="sourceLineNo">434</span>    /**<a name="line.434"></a>
+<span class="sourceLineNo">435</span>     * A specification of a set of members in the member cache.<a name="line.435"></a>
+<span class="sourceLineNo">436</span>     *<a name="line.436"></a>
+<span class="sourceLineNo">437</span>     * &lt;p&gt;Member sets can be created using methods<a name="line.437"></a>
+<span class="sourceLineNo">438</span>     * {@link CacheControl#createMemberSet(Member, boolean)},<a name="line.438"></a>
+<span class="sourceLineNo">439</span>     * {@link CacheControl#createMemberSet(boolean, Member, boolean, Member, boolean)},<a name="line.439"></a>
+<span class="sourceLineNo">440</span>     * {@link CacheControl#createUnionSet(mondrian.olap.CacheControl.MemberSet[])}.<a name="line.440"></a>
+<span class="sourceLineNo">441</span>     */<a name="line.441"></a>
+<span class="sourceLineNo">442</span>    public interface MemberSet {<a name="line.442"></a>
+<span class="sourceLineNo">443</span>    }<a name="line.443"></a>
+<span class="sourceLineNo">444</span><a name="line.444"></a>
+<span class="sourceLineNo">445</span>    /**<a name="line.445"></a>
+<span class="sourceLineNo">446</span>     * An operation to be applied to the member cache. The operation does not<a name="line.446"></a>
+<span class="sourceLineNo">447</span>     * take effect until {@link CacheControl#execute} is called.<a name="line.447"></a>
+<span class="sourceLineNo">448</span>     */<a name="line.448"></a>
+<span class="sourceLineNo">449</span>    public interface MemberEditCommand {<a name="line.449"></a>
+<span class="sourceLineNo">450</span>    }<a name="line.450"></a>
+<span class="sourceLineNo">451</span><a name="line.451"></a>
+<span class="sourceLineNo">452</span>}<a name="line.452"></a>
+<span class="sourceLineNo">453</span><a name="line.453"></a>
+<span class="sourceLineNo">454</span>// End CacheControl.java<a name="line.454"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

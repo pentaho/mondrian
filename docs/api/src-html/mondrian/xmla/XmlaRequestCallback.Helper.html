@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2005-2007 Pentaho<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.xmla;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import org.w3c.dom.Element;<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>import java.util.Map;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import javax.servlet.ServletConfig;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import javax.servlet.ServletException;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import javax.servlet.http.HttpServletRequest;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import javax.servlet.http.HttpServletResponse;<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span><a name="line.20"></a>
+<span class="sourceLineNo">021</span>/**<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * Extract data from HTTP request, SOAP header for following XML/A request.&lt;p/&gt;<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * Fill context binding with whatever data you want, then use them in<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * {@link XmlaServlet#handleSoapHeader} and {@link XmlaServlet#handleSoapBody}.<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * @author Gang Chen<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>public interface XmlaRequestCallback {<a name="line.29"></a>
+<span class="sourceLineNo">030</span>    String AUTHORIZATION = "Authorization";<a name="line.30"></a>
+<span class="sourceLineNo">031</span>    String EXPECT = "Expect";<a name="line.31"></a>
+<span class="sourceLineNo">032</span>    String EXPECT_100_CONTINUE = "100-continue";<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>    public class Helper {<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        public static XmlaException authorizationException(Exception ex) {<a name="line.35"></a>
+<span class="sourceLineNo">036</span>            return new XmlaException(<a name="line.36"></a>
+<span class="sourceLineNo">037</span>                XmlaConstants.CLIENT_FAULT_FC,<a name="line.37"></a>
+<span class="sourceLineNo">038</span>                XmlaConstants.CHH_AUTHORIZATION_CODE,<a name="line.38"></a>
+<span class="sourceLineNo">039</span>                XmlaConstants.CHH_AUTHORIZATION_FAULT_FS,<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                ex);<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        }<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>        /*<a name="line.43"></a>
+<span class="sourceLineNo">044</span>    HTTP/1.1 100 Continue<a name="line.44"></a>
+<span class="sourceLineNo">045</span>    Server: Microsoft-IIS/5.0<a name="line.45"></a>
+<span class="sourceLineNo">046</span>    Date: Tue, 21 Feb 2006 21:07:57 GMT<a name="line.46"></a>
+<span class="sourceLineNo">047</span>    X-Powered-By: ASP.NET<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        */<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        public static void generatedExpectResponse(<a name="line.49"></a>
+<span class="sourceLineNo">050</span>            HttpServletRequest request,<a name="line.50"></a>
+<span class="sourceLineNo">051</span>            HttpServletResponse response,<a name="line.51"></a>
+<span class="sourceLineNo">052</span>            Map&lt;String, Object&gt; context) throws Exception<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        {<a name="line.53"></a>
+<span class="sourceLineNo">054</span>            response.reset();<a name="line.54"></a>
+<span class="sourceLineNo">055</span>            response.setStatus(HttpServletResponse.SC_CONTINUE);<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        }<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    }<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>    void init(ServletConfig servletConfig) throws ServletException;<a name="line.59"></a>
+<span class="sourceLineNo">060</span><a name="line.60"></a>
+<span class="sourceLineNo">061</span>    /**<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     * Process the request header items. Specifically if present the<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     * Authorization and Expect headers. If the Authorization header is<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     * present, then the callback can validate the user/password. If<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     * authentication fails, the callback should throw an XmlaException<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     * with the correct XmlaConstants values. The XmlaRequestCallback.Helper<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     * class contains the authorizationException method that can be used<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     * by a callback to generate the XmlaException with the correct values.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     * If the Expect header is set with "100-continue", then it is<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     * upto the callback to create the appropriate response and return false.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     * In this case, the XmlaServlet stops processing and returns the<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     * response to the client application. To facilitate the generation of<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     * the response, the XmlaRequestCallback.Helper has the method<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     * generatedExpectResponse that can be called by the callback.<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     * &lt;p&gt;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     * Note that it is upto the XMLA client to determine whether or not<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     * there is an Expect header entry (ADOMD.NET seems to like to do this).<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * @return true if XmlaServlet handling is to continue and false if<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     *         there was an Expect header "100-continue".<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     */<a name="line.81"></a>
+<span class="sourceLineNo">082</span>    boolean processHttpHeader(<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        HttpServletRequest request,<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        HttpServletResponse response,<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        Map&lt;String, Object&gt; context) throws Exception;<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>    /**<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     * This is called after the headers have been process but before the<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     * body (DISCOVER/EXECUTE) has been processed.<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     *<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     */<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    void preAction(<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        HttpServletRequest request,<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        Element[] requestSoapParts,<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        Map&lt;String, Object&gt; context) throws Exception;<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>    /**<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     * The Callback is requested to generate a sequence id string. This<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     * sequence id was requested by the XMLA client and will be used<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     * for all subsequent communications in the Soap Header block.<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     *<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     * Implementation can return &lt;code&gt;null&lt;/code&gt; if they do not want<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     * to generate a custom session ID, in which case, the default algorithm<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     * to generate session IDs will be used.<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     * @param context The context of this query.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     * @return An arbitrary session id to use, or &lt;code&gt;null&lt;/code&gt;.<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     */<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    String generateSessionId(Map&lt;String, Object&gt; context);<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>    /**<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     * This is called after all Mondrian processing (DISCOVER/EXECUTE) has<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     * occurred.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     */<a name="line.114"></a>
+<span class="sourceLineNo">115</span>    void postAction(<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        HttpServletRequest request,<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        HttpServletResponse response,<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        byte[][] responseSoapParts,<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        Map&lt;String, Object&gt; context) throws Exception;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>}<a name="line.120"></a>
+<span class="sourceLineNo">121</span><a name="line.121"></a>
+<span class="sourceLineNo">122</span>// End XmlaRequestCallback.java<a name="line.122"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

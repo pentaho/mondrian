@@ -1,0 +1,287 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2005-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2009 Pentaho and others<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.recorder;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>/**<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * Records warnings and errors during the processing of a task.<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * Contexts can be added and removed.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * This allows one to collect more than one warning/error, keep processing,<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * and then the code that initiated the processing can determine what to do<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * with the warnings/errors if they exist.<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * &lt;p&gt;<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * A typical usage might be:<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * &lt;pre&gt;&lt;code&gt;<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *    void process(MessageRecorder msgRecorder) {<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *        msgRecorder.pushContextName(getName());<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *        try {<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *              // prcess task<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *              ....<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *              // need to generate warning message<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *              String msg = ...<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *              msgRecorder.reportWarning(msg);<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *              ....<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *        } finally {<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *              msgRecorder.popContextName();<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *        }<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *    }<a name="line.34"></a>
+<span class="sourceLineNo">035</span> * &lt;code&gt;&lt;/pre&gt;<a name="line.35"></a>
+<span class="sourceLineNo">036</span> * &lt;p&gt;<a name="line.36"></a>
+<span class="sourceLineNo">037</span> * Implementations must provide the means for extracting the error/warning<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * messages.<a name="line.38"></a>
+<span class="sourceLineNo">039</span> * &lt;p&gt;<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * Code that is processing should not catch the MessageRecorder.RTException.<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * This Exception is thrown by the MessageRecorder when too many errors have<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * been seen. Throwing this Exception is the mechanism used to stop processing<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * and return to the initiating code. The initiating code should expect to<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * catch the MessageRecorder.RTException Exception.<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * &lt;pre&gt;&lt;code&gt;<a name="line.45"></a>
+<span class="sourceLineNo">046</span> *    void initiatingCode(MessageRecorder msgRecorder) {<a name="line.46"></a>
+<span class="sourceLineNo">047</span> *      // get MessageRecorder implementation<a name="line.47"></a>
+<span class="sourceLineNo">048</span> *      MessageRecorder msgRecorder = ....<a name="line.48"></a>
+<span class="sourceLineNo">049</span> *      try {<a name="line.49"></a>
+<span class="sourceLineNo">050</span> *          processingCode(msgRecorder);<a name="line.50"></a>
+<span class="sourceLineNo">051</span> *      } catch (MessageRecorder.RTException mrex) {<a name="line.51"></a>
+<span class="sourceLineNo">052</span> *          // empty<a name="line.52"></a>
+<span class="sourceLineNo">053</span> *      }<a name="line.53"></a>
+<span class="sourceLineNo">054</span> *      if (msgRecorder.hasErrors()) {<a name="line.54"></a>
+<span class="sourceLineNo">055</span> *          // handle errors<a name="line.55"></a>
+<span class="sourceLineNo">056</span> *      } else if (msgRecorder.hasWarnings()) {<a name="line.56"></a>
+<span class="sourceLineNo">057</span> *          // handle warnings<a name="line.57"></a>
+<span class="sourceLineNo">058</span> *      }<a name="line.58"></a>
+<span class="sourceLineNo">059</span> *    }<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * &lt;code&gt;&lt;/pre&gt;<a name="line.60"></a>
+<span class="sourceLineNo">061</span> * &lt;p&gt;<a name="line.61"></a>
+<span class="sourceLineNo">062</span> * The reporting methods all have variations that take an "info" Object.<a name="line.62"></a>
+<span class="sourceLineNo">063</span> * This can be used to pass something, beyond a text message, from the point<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * of warning/error to the initiating code.<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * &lt;p&gt;<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * Concerning logging, it is a rule that a message, if logged by the code<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * creating the MessageRecorder implementation, is logged at is reporting level,<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * errors are logged at the error log level, warnings at the warning level and<a name="line.68"></a>
+<span class="sourceLineNo">069</span> * info at the info level. This allows the client code to "know" what log level<a name="line.69"></a>
+<span class="sourceLineNo">070</span> * their messages might appear at.<a name="line.70"></a>
+<span class="sourceLineNo">071</span> *<a name="line.71"></a>
+<span class="sourceLineNo">072</span> * @author Richard M. Emberson<a name="line.72"></a>
+<span class="sourceLineNo">073</span> */<a name="line.73"></a>
+<span class="sourceLineNo">074</span>public interface MessageRecorder {<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>    /**<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     * Clear all context, warnings and errors from the MessageRecorder.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * After calling this method the MessageRecorder implemenation should<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * be in the same state as if it were just constructed.<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     */<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    void clear();<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>    /**<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     * Get the time when the MessageRecorder was created or the last time that<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     * the clear method was called.<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     * @return the start time<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     */<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    long getStartTimeMillis();<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>    /**<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     * How long the MessageRecorder has been running since it was created or the<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     * last time clear was called.<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     */<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    long getRunTimeMillis();<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>    /**<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     * Returns true if there are one or more informational messages.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     *<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     * @return true if there are one or more infos.<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     */<a name="line.101"></a>
+<span class="sourceLineNo">102</span>    boolean hasInformation();<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>    /**<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     * Returns true if there are one or more warning messages.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     * @return true if there are one or more warnings.<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     */<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    boolean hasWarnings();<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>    /**<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     * Returns true if there are one or more error messages.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     * @return true if there are one or more errors.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     */<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    boolean hasErrors();<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>    /**<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     * Get the current context string.<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     *<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     * @return the context string.<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     */<a name="line.122"></a>
+<span class="sourceLineNo">123</span>    String getContext();<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>    /**<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     * Add the name parameter to the current context.<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     *<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     * @param name<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     */<a name="line.129"></a>
+<span class="sourceLineNo">130</span>    void pushContextName(final String name);<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>    /**<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     * Remove the last context name added.<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     */<a name="line.134"></a>
+<span class="sourceLineNo">135</span>    void popContextName();<a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span>    /**<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     * This simply throws a RTException. A client calls this if 1) there is one<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     * or more error messages reported and 2) the client wishes to stop<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     * processing. Implementations of this method should only throw the<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     * RTException if there have been errors reported - if there are no errors,<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     * then this method does nothing.<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     *<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     * @throws RecorderException<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     */<a name="line.145"></a>
+<span class="sourceLineNo">146</span>    void throwRTException() throws RecorderException;<a name="line.146"></a>
+<span class="sourceLineNo">147</span><a name="line.147"></a>
+<span class="sourceLineNo">148</span>    /**<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     * Add an Exception.<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     *<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     * @param ex the Exception added.<a name="line.151"></a>
+<span class="sourceLineNo">152</span>     * @throws RecorderException if too many error messages have been added.<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     */<a name="line.153"></a>
+<span class="sourceLineNo">154</span>    void reportError(final Exception ex) throws RecorderException;<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>    /**<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     * Add an Exception and extra informaton.<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     *<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     * @param ex the Exception added.<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     * @param info extra information (not meant to be part of printed message)<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     * @throws RecorderException if too many error messages have been added.<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     */<a name="line.162"></a>
+<span class="sourceLineNo">163</span>    void reportError(final Exception ex, final Object info)<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        throws RecorderException;<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>    /**<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     * Add an error message.<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     *<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     * @param msg  the text of the error message.<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     * @throws RecorderException if too many error messages have been added.<a name="line.170"></a>
+<span class="sourceLineNo">171</span>     */<a name="line.171"></a>
+<span class="sourceLineNo">172</span>    void reportError(final String msg) throws RecorderException;<a name="line.172"></a>
+<span class="sourceLineNo">173</span><a name="line.173"></a>
+<span class="sourceLineNo">174</span>    /**<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     * Add an error message and extra information.<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     *<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     * @param msg  the text of the error message.<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     * @param info extra information (not meant to be part of printed message)<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     * @throws RecorderException if too many error messages have been added.<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     */<a name="line.180"></a>
+<span class="sourceLineNo">181</span>    void reportError(final String msg, final Object info)<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        throws RecorderException;<a name="line.182"></a>
+<span class="sourceLineNo">183</span><a name="line.183"></a>
+<span class="sourceLineNo">184</span>    /**<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     * Add a warning message.<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     *<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     * @param msg  the text of the warning message.<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     */<a name="line.188"></a>
+<span class="sourceLineNo">189</span>    void reportWarning(final String msg);<a name="line.189"></a>
+<span class="sourceLineNo">190</span><a name="line.190"></a>
+<span class="sourceLineNo">191</span>    /**<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     * Add a warning message and extra information.<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     *<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     * @param msg  the text of the warning message.<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     * @param info extra information (not meant to be part of printed message)<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     */<a name="line.196"></a>
+<span class="sourceLineNo">197</span>    void reportWarning(final String msg, final Object info);<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>    /**<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     * Add an informational message.<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     *<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     * @param msg  the text of the info message.<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     */<a name="line.203"></a>
+<span class="sourceLineNo">204</span>    void reportInfo(final String msg);<a name="line.204"></a>
+<span class="sourceLineNo">205</span><a name="line.205"></a>
+<span class="sourceLineNo">206</span>    /**<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     * Add an informational message  and extra information.<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     *<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     * @param msg  the text of the info message.<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     * @param info extra information (not meant to be part of printed message)<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     */<a name="line.211"></a>
+<span class="sourceLineNo">212</span>    void reportInfo(final String msg, final Object info);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>}<a name="line.213"></a>
+<span class="sourceLineNo">214</span><a name="line.214"></a>
+<span class="sourceLineNo">215</span>// End MessageRecorder.java<a name="line.215"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

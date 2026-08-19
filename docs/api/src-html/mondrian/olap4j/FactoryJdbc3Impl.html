@@ -1,0 +1,223 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2007-2011 Pentaho<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.olap4j;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import mondrian.rolap.RolapConnection;<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>import org.olap4j.OlapException;<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span>import java.sql.*;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import java.util.*;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>/**<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * Implementation of {@link mondrian.olap4j.Factory} for JDBC 3.0.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * @author jhyde<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * @since Jun 14, 2007<a name="line.23"></a>
+<span class="sourceLineNo">024</span> */<a name="line.24"></a>
+<span class="sourceLineNo">025</span>class FactoryJdbc3Impl implements Factory {<a name="line.25"></a>
+<span class="sourceLineNo">026</span>    private CatalogFinder catalogFinder;<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span>    public Connection newConnection(<a name="line.28"></a>
+<span class="sourceLineNo">029</span>        MondrianOlap4jDriver driver,<a name="line.29"></a>
+<span class="sourceLineNo">030</span>        String url,<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        Properties info)<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        throws SQLException<a name="line.32"></a>
+<span class="sourceLineNo">033</span>    {<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        return new MondrianOlap4jConnectionJdbc3(driver, url, info);<a name="line.34"></a>
+<span class="sourceLineNo">035</span>    }<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>    public EmptyResultSet newEmptyResultSet(<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        MondrianOlap4jConnection olap4jConnection)<a name="line.38"></a>
+<span class="sourceLineNo">039</span>    {<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        List&lt;String&gt; headerList = Collections.emptyList();<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        List&lt;List&lt;Object&gt;&gt; rowList = Collections.emptyList();<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        return new EmptyResultSetJdbc3(<a name="line.42"></a>
+<span class="sourceLineNo">043</span>            olap4jConnection, headerList, rowList);<a name="line.43"></a>
+<span class="sourceLineNo">044</span>    }<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>    public ResultSet newFixedResultSet(<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        MondrianOlap4jConnection olap4jConnection,<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        List&lt;String&gt; headerList,<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        List&lt;List&lt;Object&gt;&gt; rowList)<a name="line.49"></a>
+<span class="sourceLineNo">050</span>    {<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        return new EmptyResultSetJdbc3(<a name="line.51"></a>
+<span class="sourceLineNo">052</span>            olap4jConnection, headerList, rowList);<a name="line.52"></a>
+<span class="sourceLineNo">053</span>    }<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>    public MondrianOlap4jCellSet newCellSet(<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        MondrianOlap4jStatement olap4jStatement)<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    {<a name="line.57"></a>
+<span class="sourceLineNo">058</span>        return new MondrianOlap4jCellSetJdbc3(olap4jStatement);<a name="line.58"></a>
+<span class="sourceLineNo">059</span>    }<a name="line.59"></a>
+<span class="sourceLineNo">060</span><a name="line.60"></a>
+<span class="sourceLineNo">061</span>    public MondrianOlap4jStatement newStatement(<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        MondrianOlap4jConnection olap4jConnection)<a name="line.62"></a>
+<span class="sourceLineNo">063</span>    {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        return new MondrianOlap4jStatementJdbc3(olap4jConnection);<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    }<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>    public MondrianOlap4jPreparedStatement newPreparedStatement(<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        String mdx,<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        MondrianOlap4jConnection olap4jConnection)<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        throws OlapException<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        return new MondrianOlap4jPreparedStatementJdbc3(olap4jConnection, mdx);<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    }<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>    public MondrianOlap4jDatabaseMetaData newDatabaseMetaData(<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        MondrianOlap4jConnection olap4jConnection,<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        RolapConnection mondrianConnection)<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        return new MondrianOlap4jDatabaseMetaDataJdbc3(<a name="line.79"></a>
+<span class="sourceLineNo">080</span>            olap4jConnection, mondrianConnection);<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    }<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>    // Inner classes<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>    private static class MondrianOlap4jStatementJdbc3<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        extends MondrianOlap4jStatement<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        public MondrianOlap4jStatementJdbc3(<a name="line.88"></a>
+<span class="sourceLineNo">089</span>            MondrianOlap4jConnection olap4jConnection)<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>            super(olap4jConnection);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        }<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    }<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>    private static class MondrianOlap4jPreparedStatementJdbc3<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        extends MondrianOlap4jPreparedStatement<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        public MondrianOlap4jPreparedStatementJdbc3(<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            MondrianOlap4jConnection olap4jConnection,<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            String mdx)<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            throws OlapException<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            super(olap4jConnection, mdx);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        }<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    }<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>    private static class MondrianOlap4jCellSetJdbc3<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        extends MondrianOlap4jCellSet<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        public MondrianOlap4jCellSetJdbc3(<a name="line.110"></a>
+<span class="sourceLineNo">111</span>            MondrianOlap4jStatement olap4jStatement)<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>            super(olap4jStatement);<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        }<a name="line.114"></a>
+<span class="sourceLineNo">115</span>    }<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>    private static class EmptyResultSetJdbc3 extends EmptyResultSet {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        public EmptyResultSetJdbc3(<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            MondrianOlap4jConnection olap4jConnection,<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            List&lt;String&gt; headerList,<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            List&lt;List&lt;Object&gt;&gt; rowList)<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        {<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            super(olap4jConnection, headerList, rowList);<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        }<a name="line.124"></a>
+<span class="sourceLineNo">125</span>    }<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>    private class MondrianOlap4jConnectionJdbc3<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        extends MondrianOlap4jConnection<a name="line.128"></a>
+<span class="sourceLineNo">129</span>    {<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        public MondrianOlap4jConnectionJdbc3(<a name="line.130"></a>
+<span class="sourceLineNo">131</span>            MondrianOlap4jDriver driver,<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            String url,<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            Properties info) throws SQLException<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            super(FactoryJdbc3Impl.this, driver, url, info);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        }<a name="line.136"></a>
+<span class="sourceLineNo">137</span>    }<a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span>    private static class MondrianOlap4jDatabaseMetaDataJdbc3<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        extends MondrianOlap4jDatabaseMetaData<a name="line.140"></a>
+<span class="sourceLineNo">141</span>    {<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        public MondrianOlap4jDatabaseMetaDataJdbc3(<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            MondrianOlap4jConnection olap4jConnection,<a name="line.143"></a>
+<span class="sourceLineNo">144</span>            RolapConnection mondrianConnection)<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        {<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            super(olap4jConnection, mondrianConnection);<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        }<a name="line.147"></a>
+<span class="sourceLineNo">148</span>    }<a name="line.148"></a>
+<span class="sourceLineNo">149</span>}<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>// End FactoryJdbc3Impl.java<a name="line.151"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

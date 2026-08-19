@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2006-2011 Pentaho<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.olap.fun;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import mondrian.calc.*;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.calc.impl.ConstantCalc;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.calc.impl.GenericCalc;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.mdx.ResolvedFunCall;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import mondrian.olap.*;<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>import java.util.ArrayList;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import java.util.List;<a name="line.19"></a>
+<span class="sourceLineNo">020</span><a name="line.20"></a>
+<span class="sourceLineNo">021</span>/**<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * Definition of the tested &lt;code&gt;CASE&lt;/code&gt; MDX operator.<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * Syntax is:<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * &lt;blockquote&gt;&lt;pre&gt;&lt;code&gt;Case<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * When &amp;lt;Logical Expression&amp;gt; Then &amp;lt;Expression&amp;gt;<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * [...]<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * [Else &amp;lt;Expression&amp;gt;]<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * End&lt;/code&gt;&lt;/blockquote&gt;.<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * @see CaseMatchFunDef<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *<a name="line.32"></a>
+<span class="sourceLineNo">033</span> * @author jhyde<a name="line.33"></a>
+<span class="sourceLineNo">034</span> * @since Mar 23, 2006<a name="line.34"></a>
+<span class="sourceLineNo">035</span> */<a name="line.35"></a>
+<span class="sourceLineNo">036</span>class CaseTestFunDef extends FunDefBase {<a name="line.36"></a>
+<span class="sourceLineNo">037</span>    static final ResolverImpl Resolver = new ResolverImpl();<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>    public CaseTestFunDef(FunDef dummyFunDef) {<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        super(dummyFunDef);<a name="line.40"></a>
+<span class="sourceLineNo">041</span>    }<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        final Exp[] args = call.getArgs();<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        final BooleanCalc[] conditionCalcs =<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                new BooleanCalc[args.length / 2];<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        final Calc[] exprCalcs =<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                new Calc[args.length / 2];<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        final List&lt;Calc&gt; calcList = new ArrayList&lt;Calc&gt;();<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        for (int i = 0, j = 0; i &lt; exprCalcs.length; i++) {<a name="line.50"></a>
+<span class="sourceLineNo">051</span>            conditionCalcs[i] =<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                    compiler.compileBoolean(args[j++]);<a name="line.52"></a>
+<span class="sourceLineNo">053</span>            calcList.add(conditionCalcs[i]);<a name="line.53"></a>
+<span class="sourceLineNo">054</span>            exprCalcs[i] = compiler.compile(args[j++]);<a name="line.54"></a>
+<span class="sourceLineNo">055</span>            calcList.add(exprCalcs[i]);<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        }<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        final Calc defaultCalc =<a name="line.57"></a>
+<span class="sourceLineNo">058</span>            args.length % 2 == 1<a name="line.58"></a>
+<span class="sourceLineNo">059</span>            ? compiler.compileScalar(args[args.length - 1], true)<a name="line.59"></a>
+<span class="sourceLineNo">060</span>            : ConstantCalc.constantNull(call.getType());<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        calcList.add(defaultCalc);<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        final Calc[] calcs = calcList.toArray(new Calc[calcList.size()]);<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>        return new GenericCalc(call) {<a name="line.64"></a>
+<span class="sourceLineNo">065</span>            public Object evaluate(Evaluator evaluator) {<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                for (int i = 0; i &lt; conditionCalcs.length; i++) {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                    if (conditionCalcs[i].evaluateBoolean(evaluator)) {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                        return exprCalcs[i].evaluate(evaluator);<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                    }<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                }<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                return defaultCalc.evaluate(evaluator);<a name="line.71"></a>
+<span class="sourceLineNo">072</span>            }<a name="line.72"></a>
+<span class="sourceLineNo">073</span><a name="line.73"></a>
+<span class="sourceLineNo">074</span>            public Calc[] getCalcs() {<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                return calcs;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>            }<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        };<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    }<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>    private static class ResolverImpl extends ResolverBase {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        public ResolverImpl() {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>            super(<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                "_CaseTest",<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                "Case When &lt;Logical Expression&gt; Then &lt;Expression&gt; [...] [Else &lt;Expression&gt;] End",<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                "Evaluates various conditions, and returns the corresponding expression for the first which evaluates to true.",<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                Syntax.Case);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        }<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>        public FunDef resolve(<a name="line.89"></a>
+<span class="sourceLineNo">090</span>            Exp[] args,<a name="line.90"></a>
+<span class="sourceLineNo">091</span>            Validator validator,<a name="line.91"></a>
+<span class="sourceLineNo">092</span>            List&lt;Conversion&gt; conversions)<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>            if (args.length &lt; 1) {<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                return null;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>            }<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            int j = 0;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>            int clauseCount = args.length / 2;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            int mismatchingArgs = 0;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            int returnType = args[1].getCategory();<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            for (int i = 0; i &lt; clauseCount; i++) {<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                if (!validator.canConvert(<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        j, args[j++], Category.Logical, conversions))<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                    mismatchingArgs++;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                }<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                if (!validator.canConvert(<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                        j, args[j++], returnType, conversions))<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                    mismatchingArgs++;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                }<a name="line.111"></a>
+<span class="sourceLineNo">112</span>            }<a name="line.112"></a>
+<span class="sourceLineNo">113</span>            if (j &lt; args.length) {<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                if (!validator.canConvert(<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                        j, args[j++], returnType, conversions))<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                    mismatchingArgs++;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                }<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            }<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            Util.assertTrue(j == args.length);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            if (mismatchingArgs != 0) {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                return null;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            }<a name="line.123"></a>
+<span class="sourceLineNo">124</span>            FunDef dummy = createDummyFunDef(this, returnType, args);<a name="line.124"></a>
+<span class="sourceLineNo">125</span>            return new CaseTestFunDef(dummy);<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        }<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>        public boolean requiresExpression(int k) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            return true;<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        }<a name="line.130"></a>
+<span class="sourceLineNo">131</span>    }<a name="line.131"></a>
+<span class="sourceLineNo">132</span>}<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>// End CaseTestFunDef.java<a name="line.134"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

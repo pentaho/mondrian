@@ -1,0 +1,4531 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+
+<script type="text/javascript" src="../web-scripts/en/script.content.js"></script>
+<script type="text/javascript" language="javascript" src="../web-scripts/formvalid.js"></script>
+
+<link href="../css/base.css" rel="stylesheet" type="text/css" media="all">
+
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta name="Keywords" content="pentaho open source business intelligence BI reporting analysis etl dashboards data integration mining" />
+<meta name="description" content="Spend 90% less on your next Business Intelligence project with Pentaho Reporting, Analysis, Dashboards
+, Data Integration / ETL, and Data Mining." />
+<meta name="robots" content="index,follow" />
+    
+<title>Pentaho Mondrian Documentation</title>
+
+    <!--[if lte IE 7]>
+    	<style type="text/css">
+    		#menu
+    			{
+    				zoom: 1;
+    				position: relative;
+    			}
+		
+			div#ddtopmenubar {
+				position:relative;
+				float:right;
+				margin: 0;
+				padding-top:5px;
+			}
+    	</style>
+    <![endif]-->
+</head>
+<body style="margin:15px;">
+<div style="border-bottom:1px solid #cecece; height:80px;">
+<div style="float:left;"><img src="../images/pentaho_logo.jpeg" alt="Pentaho Home" border="0"></div><h1 style="font-size:2em; padding-top: 48px;"><span style="margin-bottom:250px;">Mondrian Documentation</span></h1></div>
+<table cellpadding="0" cellspacing="0" style="padding:10px 0px 0px 0px;">
+	<tr>
+    	<td style="padding-right:10px; vertical-align:top;">
+            <table>
+      <tr>
+      <td>
+           <div id="tabz" style="height: 10px;">
+        <table border="0" cellspacing="0" cellpadding="0" width="100%">          
+          <tr>
+            <td><img src="../images/panel_left_top.png" width="18" height="10"></td>
+            <td style="border-top: 1px solid #c9c9c9; background-color:#FFFFFF; width:100%;"><img src="../images/clr.gif" width="9" height="9"></td>
+            <td><img src="../images/panel_right_top.png" width="18" height="10"></td>
+          </tr>
+        </table>
+        </div>
+        <div>
+        <table border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td background="../images/panel_left.png"><img src="../images/clr.gif" width="18" height="150"></td>
+            <td style="width:100%; background-color:#FFFFFF; white-space:nowrap; vertical-align:top;">
+            
+<a href="../documentation/olap.html" >What is OLAP</a><br />
+<a href="../documentation/installation.html" >Installation</a><br />
+&nbsp;&nbsp;- <a href="../documentation/installation_es.html" >(Spanish)</a><br />
+&nbsp;&nbsp;- <a href="../documentation/installation_fr.html" >(French)</a><br />
+<a href="../documentation/mdx.html" >MDX</a><br />
+<a href="../documentation/architecture.html" >Architecture</a><br />
+<a href="../documentation/schema.html" >Writing a Schema</a><br />
+<a href="../documentation/configuration.html" >Configuration</a><br />
+<a href="../documentation/performance.html" >Performance</a><br />
+<a href="../documentation/aggregate_tables.html" >Aggregate Tables</a><br />
+<a href="../documentation/cache_control.html" >Cache Control</a><br />
+<a href="../documentation/workbench.html" >Workbench</a><br />
+<a href="../documentation/command_runner.html" >Command Runner</a><br />
+<a href="../documentation/faq.html" >FAQ</a><br />
+<a href="../documentation/roadmap.html" >Roadmap</a><br />
+<a href="../documentation/components.html" >Components</a><br />
+<a target="_blank" href="../api">API</a><br />
+<a href="../documentation/developers_guide.html" >Developer's Guide</a><br />
+<a href="../documentation/developer_notes.html" >Developer Notes</a><br />
+<a href="/help">Help</a>            </td>
+            <td background="../images/panel_right.png"><img src="../images/clr.gif" width="18" height="150"></td>
+          </tr>
+          <tr>
+            <td><img src="../images/panel_left_bottom.png" width="18" height="22"></td>
+            <td background="../images/panel_bottom.png"><img src="../images/clr.gif" width="22" height="22"></td>
+            <td><img src="../images/panel_right_bottom.png" width="18" height="22"></td>
+          </tr>
+        </table>
+        </div>
+      </td>
+      </tr>
+      </table></td>
+        <td class="contentRightMargin" valign="top" width="100%" style="padding-top:10px;">
+            <HTML>
+<HEAD>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style>
+
+A:link { color:#000066; }
+A:visited { color:#666666; }
+
+A.clsIncCpyRt,
+A.clsIncCpyRt:visited,
+P.clsIncCpyRt {
+  font-weight:normal; font-size:75%; font-family:verdana,arial,helvetica,sans-serif;
+  color:black;
+  text-decoration:none;
+}
+
+A.clsLeftMenu,
+A.clsLeftMenu:visited {
+  color:#000000;
+  text-decoration:none;
+  font-weight:bold; font-size:8pt;
+}
+
+A.clsBackTop,
+A.clsBackTop:visited {
+  margin-top:10; margin-bottom:0;
+  padding-bottom:0;
+  font-size:75%;
+  color:black;
+}
+
+A:hover,
+A.clsBackTop:hover,
+A.clsIncCpyRt:hover,
+A:active { color:blue; }
+
+A.clsGlossary {
+  font-size:10pt;
+  color:green;
+}
+
+BODY { font-size:80%; font-family:verdana,arial,helvetica,sans-serif; }
+
+BUTTON.clsShowme,
+BUTTON.clsShowme5 {
+  font-weight:bold; font-size:11; font-family:arial;
+  width:68; height:23;
+  position:relative; top:2;
+  background-color:#002F90;
+  color:#FFFFFF;
+}
+
+DIV.clsBeta {
+  font-weight:bold;
+  color:red;
+}
+
+DIV.clsDocBody { margin-left:10px; margin-right:10px; }
+
+DIV.clsDocBody HR { margin-top:0; }
+
+DIV.clsDesFooter { margin:10px 10px 0px 223px; }
+
+DIV.clsFPfig { font-size:80%; }
+
+DIV.clsHi {
+    padding-left:2em;
+    text-indent:-2em
+}
+
+DIV.clsShowme { margin-bottom:.5em; margin-top:.5em; }
+
+H1{
+  font-size:145%;
+  margin-top:1.25em; margin-bottom:0em;
+}
+
+H2 {
+  font-size:135%;
+  margin-top:1.25em; margin-bottom:.5em;
+}
+
+H3 {
+  font-size:128%;
+  margin-top:1em; margin-bottom:0em;
+}
+
+H4 {
+  font-size:120%;
+  margin-top:.8em; margin-bottom:0em;
+}
+
+H5 {
+  font-size:110%;
+  margin-top:.8em; margin-bottom:0em;
+}
+
+H6 {
+  font-size:70%;
+  margin-top:.6em; margin-bottom:0em;
+}
+
+HR.clsTransHR {
+    position:relative; top:20;
+    margin-bottom:15;
+}
+
+P.clsRef {
+  font-weight:bold;
+  margin-top:12pt; margin-bottom:0pt;
+}
+
+PRE {
+  background:#EEEEEE;
+  margin-top:1em;   margin-bottom:1em; margin-left:0px;
+  padding:5pt;
+}
+
+PRE.clsCode, CODE.clsText { font-family:'courier new',courier,serif; font-size:130%; }
+
+PRE.clsSyntax { font-family:verdana,arial,helvetica,sans-serif; font-size:120%; }
+
+SPAN.clsEntryText {
+  line-height:12pt;
+  font-size:8pt;
+}
+
+SPAN.clsHeading {
+  color:#00319C;
+  font-size:11pt; font-weight:bold;
+}
+
+SPAN.clsDefValue, TD.clsDefValue { font-weight:bold; font-family:'courier new' }
+
+SPAN.clsLiteral, TD.clsLiteral { font-family:'courier new'; }
+
+SPAN.clsRange, TD.clsRange { font-style:italic; }
+
+SPAN.clsShowme {
+  width:100%;
+  filter:dropshadow(color=#000000,OffX=2.5,OffY=2.5,Positive=1);
+  position:relative;
+  top:-8;
+}
+
+TABLE { font-size:100%; }
+
+TABLE.clsStd {
+    background-color:#444;
+    border:1px none;
+    cellspacing:0;
+    cellpadding:0
+}
+
+TABLE.clsStd TH,
+BLOCKQUOTE TH {
+    font-size:100%;
+    text-align:left; vertical-align:top;
+    background-color:#DDD;
+    padding:2px;
+}
+
+TABLE.clsStd TD,
+BLOCKQUOTE TD {
+    font-size:100%;
+    vertical-align:top;
+    background-color:#EEE;
+    padding:2px;
+}
+
+TABLE.clsParamVls,
+TABLE.clsParamVls TD { padding-left:2pt; padding-right:2pt; }
+
+#TOC { visibility:hidden; }
+
+UL UL, OL UL { list-style-type:square; }
+
+.clsHide { display:none; }
+
+.clsShow { }
+
+.clsShowDiv {
+  visibility:hidden;
+  position:absolute;
+  left:230px; top:140px;
+  height:0px; width:170px;
+  z-index:-1;
+}
+
+.#pBackTop { display:none; }
+
+#idTransDiv {
+    position:relative;
+    width:90%; top:20;
+  filter:revealTrans(duration=1.0, transition=23);
+}
+
+
+/*** INDEX-SPECIFIC ***/
+
+A.clsDisabled {
+  text-decoration:none;
+  color:black;
+  cursor:text;
+}
+
+A.clsEnabled { cursor:auto; }
+
+SPAN.clsAccess { text-decoration:underline; }
+
+TABLE.clsIndex {
+  font-size:100%;
+  padding-left:2pt; padding-right:2pt;
+    margin-top: 17pt;
+}
+
+TABLE.clsIndex TD {
+  margin:3pt;
+  background-color:#EEEEEE;
+}
+
+TR.clsEntry { vertical-align:top; }
+
+TABLE.clsIndex TD.clsLetters {
+  background-color:#CCCCCC;
+  text-align:center;
+}
+
+TD.clsMainHead {
+  background-color:#FFFFFF;
+  vertical-align:top;
+  font-size:145%; font-weight:bold;
+  margin-top:1.35em; margin-bottom:.5em;
+}
+
+UL.clsIndex { margin-left:20pt; margin-top:0pt; margin-bottom:5pt; }
+
+LI OL { padding-bottom: 1.5em }
+
+
+/*** GALLERY/TOOLS/SAMPLES ***/
+
+FORM.clsSamples { margin-bottom:0; margin-top:0; }
+
+H1.clsSampH1 {
+    font-size:145%;
+  margin-top:.25em; margin-bottom:.25em;
+}
+
+H1.clsSampHead {
+  margin-top:5px; margin-bottom:5px;
+  font-size:24px; font-weight:bold; font-family:verdana,arial,helvetica,sans-serif;
+}
+
+H2.clsSampTitle {
+  font-size:128%;
+  margin-top:.2em; margin-bottom:0em;
+}
+
+TD.clsDemo {
+  font-size:8pt;
+  color:#00319C;
+  text-decoration:underline;
+}
+
+.clsSampDnldMain { font-size:11px; font-family:verdana,arial,helvetica,sans-serif; }
+
+.clsShowDesc { cursor:hand; }
+
+A.clsTools {
+  color:#0B3586;
+  font-weight:bold;
+}
+
+H1.clsTools, H2.clsTools {
+  color:#0B3586;
+  margin-top:5px;
+}
+
+TD.clsToolsHome {
+  font-size:9pt;
+  line-height:15pt;
+}
+
+SPAN.clsToolsTitle {
+  color:#00319C;
+  font-size:11pt; font-weight:bold;
+  text-decoration:none;
+}
+
+
+/*** DESIGN ***/
+P.cat {
+    font-size:13pt;
+    color:#787800;
+    text-decoration:none;
+    margin-top:18px;
+}
+
+P.author {
+    font-size:9pt; font-style:italic;
+    line-height:13pt;
+    margin-top:10px;
+}
+
+P.date {
+    font-size:8pt;
+    line-height:12px;
+    margin-top:0px;
+    color:#3366FF;
+}
+
+P.graph1 {
+    line-height:13pt;
+    margin-top:-10px;
+}
+
+P.col {
+    line-height:13pt;
+    margin-top:10px; margin-left:5px;
+}
+
+P.cal1 {
+    text-decoration:none;
+    margin-top:-10px;
+}
+
+P.cal2 {margin-top:-10px; }
+P.photo { font-size:8pt; }
+
+
+/*** DOCTOP ***/
+
+#tblNavLinks A {
+    color:black;
+    text-decoration:none;
+    font-family:verdana,arial,helvetica,sans-serif;
+}
+#lnkShowText, #lnkSyncText, #lnkSearchText, #lnkIndexText { font-size:8pt; font-weight:bold; }
+#lnkPrevText, #lnkNextText, #lnkUpText { font-size:7.5pt; font-weight:normal; }
+
+
+DIV.clsBucketBranch {
+    margin-left:10px; margin-top:15px; margin-bottom:-10pt;
+    font-style:italic; font-size:85%;
+}
+
+DIV.clsBucketBranch A,
+DIV.clsBucketBranch A:link,
+DIV.clsBucketBranch A:active,
+DIV.clsBucketBranch A:visited { text-decoration:none; color:black; }
+DIV.clsBucketBranch A:hover { color:blue; }
+
+
+/*** SDK, IE4 ONLY ***/
+
+DIV.clsExpanded, A.clsExpanded { display:inline; color:black; }
+DIV.clsCollapsed, A.clsCollapsed { display:none; }
+SPAN.clsPropattr { font-weight:bold; }
+
+#pStyles,   #pCode, #pSyntax, #pEvents, #pStyles {display:none; text-decoration:underline; cursor:hand; }
+
+CODE { color:maroon; font-family:'courier new' }
+
+DFN { font-weight:bold; font-style:italic; }
+
+
+</style>
+</HEAD>
+<BODY>
+<h1>Mining Meta Model Instance <u>mondrian</u>
+</h1>
+<p>
+<b>DTD Name:</b><a href="mondrian.dtd">mondrian.dtd</a>
+<br>
+<b>Class Name:</b><a href="http://code/bb/main/mining/Broadbase/mining/xml/MondrianDef.java">MondrianDef</a>
+<br>
+<b>Root Element:</b><a href="#Schema">Schema</a>
+<br>
+<b>Version:</b>1.0<br>
+</p>
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc" colspan="2"><font color="white">
+<h2>Overview</h2>
+</font></td>
+</tr>
+</table>
+<blockquote>
+<Doc>
+This is the XML model for Mondrian schemas.
+<p></p>
+Revision is $Id$
+    </Doc>
+</blockquote>
+<h2>Imports</h2>
+<ul></ul>
+<h2>Element Summary</h2>
+<ul>
+<li>
+<a href="#AggColumnName">AggColumnName</a>
+</li>
+<li>
+<a href="#AggExclude">AggExclude</a>
+</li>
+<li>
+<a href="#AggFactCount">AggFactCount</a>
+</li>
+<li>
+<a href="#AggForeignKey">AggForeignKey</a>
+</li>
+<li>
+<a href="#AggIgnoreColumn">AggIgnoreColumn</a>
+</li>
+<li>
+<a href="#AggLevel">AggLevel</a>
+</li>
+<li>
+<a href="#AggMeasure">AggMeasure</a>
+</li>
+<li>
+<a href="#AggName">AggName</a>
+</li>
+<li>
+<a href="#AggPattern">AggPattern</a>
+</li>
+<li>
+<a href="#AggTable">AggTable</a>
+</li>
+<li>
+<a href="#Annotation">Annotation</a>
+</li>
+<li>
+<a href="#Annotations">Annotations</a>
+</li>
+<li>
+<a href="#CalculatedMember">CalculatedMember</a>
+</li>
+<li>
+<a href="#CalculatedMemberProperty">CalculatedMemberProperty</a>
+</li>
+<li>
+<a href="#CaptionExpression">CaptionExpression</a>
+</li>
+<li>
+<a href="#CellFormatter">CellFormatter</a>
+</li>
+<li>
+<a href="#Closure">Closure</a>
+</li>
+<li>
+<a href="#Column">Column</a>
+</li>
+<li>
+<a href="#ColumnDef">ColumnDef</a>
+</li>
+<li>
+<a href="#ColumnDefs">ColumnDefs</a>
+</li>
+<li>
+<a href="#Cube">Cube</a>
+</li>
+<li>
+<a href="#CubeDimension">CubeDimension</a>
+</li>
+<li>
+<a href="#CubeGrant">CubeGrant</a>
+</li>
+<li>
+<a href="#CubeUsage">CubeUsage</a>
+</li>
+<li>
+<a href="#CubeUsages">CubeUsages</a>
+</li>
+<li>
+<a href="#Dimension">Dimension</a>
+</li>
+<li>
+<a href="#DimensionGrant">DimensionGrant</a>
+</li>
+<li>
+<a href="#DimensionUsage">DimensionUsage</a>
+</li>
+<li>
+<a href="#ExpressionView">ExpressionView</a>
+</li>
+<li>
+<a href="#Formula">Formula</a>
+</li>
+<li>
+<a href="#Hierarchy">Hierarchy</a>
+</li>
+<li>
+<a href="#HierarchyGrant">HierarchyGrant</a>
+</li>
+<li>
+<a href="#Hint">Hint</a>
+</li>
+<li>
+<a href="#InlineTable">InlineTable</a>
+</li>
+<li>
+<a href="#Join">Join</a>
+</li>
+<li>
+<a href="#KeyExpression">KeyExpression</a>
+</li>
+<li>
+<a href="#Level">Level</a>
+</li>
+<li>
+<a href="#Measure">Measure</a>
+</li>
+<li>
+<a href="#MeasureExpression">MeasureExpression</a>
+</li>
+<li>
+<a href="#MemberFormatter">MemberFormatter</a>
+</li>
+<li>
+<a href="#MemberGrant">MemberGrant</a>
+</li>
+<li>
+<a href="#MemberReaderParameter">MemberReaderParameter</a>
+</li>
+<li>
+<a href="#NamedSet">NamedSet</a>
+</li>
+<li>
+<a href="#NameExpression">NameExpression</a>
+</li>
+<li>
+<a href="#OrdinalExpression">OrdinalExpression</a>
+</li>
+<li>
+<a href="#Parameter">Parameter</a>
+</li>
+<li>
+<a href="#ParentExpression">ParentExpression</a>
+</li>
+<li>
+<a href="#Property">Property</a>
+</li>
+<li>
+<a href="#PropertyFormatter">PropertyFormatter</a>
+</li>
+<li>
+<a href="#Relation">Relation</a>
+</li>
+<li>
+<a href="#RelationOrJoin">RelationOrJoin</a>
+</li>
+<li>
+<a href="#Role">Role</a>
+</li>
+<li>
+<a href="#RoleUsage">RoleUsage</a>
+</li>
+<li>
+<a href="#Row">Row</a>
+</li>
+<li>
+<a href="#Rows">Rows</a>
+</li>
+<li>
+<a href="#Schema">Schema</a>
+</li>
+<li>
+<a href="#SchemaGrant">SchemaGrant</a>
+</li>
+<li>
+<a href="#Script">Script</a>
+</li>
+<li>
+<a href="#SQL">SQL</a>
+</li>
+<li>
+<a href="#Table">Table</a>
+</li>
+<li>
+<a href="#Union">Union</a>
+</li>
+<li>
+<a href="#UserDefinedFunction">UserDefinedFunction</a>
+</li>
+<li>
+<a href="#Value">Value</a>
+</li>
+<li>
+<a href="#View">View</a>
+</li>
+<li>
+<a href="#VirtualCube">VirtualCube</a>
+</li>
+<li>
+<a href="#VirtualCubeDimension">VirtualCubeDimension</a>
+</li>
+<li>
+<a href="#VirtualCubeMeasure">VirtualCubeMeasure</a>
+</li>
+</ul>
+<h2>Classes</h2>
+<ul>
+<li>
+<a href="#Expression">Expression</a>
+</li>
+<li>
+<a href="#Grant">Grant</a>
+</li>
+</ul>
+<p></p>
+<a name="Schema">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Schema</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            
+<p>A schema is a collection of cubes and virtual cubes.
+            It can also contain shared dimensions (for use by those
+            cubes), named sets, roles, and declarations of
+            user-defined functions.</p>
+        
+</Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>Name of this schema</Doc>
+</td>
+</tr>
+<tr>
+<td>description</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Description of this schema.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>measuresCaption</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Label for the measures dimension.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>defaultRole</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>The name of the default role for connections to this schema</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Annotations">Annotations</a></td><td>annotations</td><td><i>Optional</i></td><td>
+<Doc>Contains values of user-defined properties.</Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#Parameter">Parameter</a></td><td>parameters</td><td><i>Array</i></td><td>
+<Doc>
+                This schema's parameter definitions.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#Dimension">Dimension</a></td><td>dimensions</td><td><i>Array</i></td><td>
+<Doc>
+                Shared dimensions in this schema.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#Cube">Cube</a></td><td>cubes</td><td><i>Array</i></td><td>
+<Doc>
+                Cubes in this schema.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#VirtualCube">VirtualCube</a></td><td>virtualCubes</td><td><i>Array</i></td><td>
+<Doc>
+                Virtual cubes in this schema.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#NamedSet">NamedSet</a></td><td>namedSets</td><td><i>Array</i></td><td>
+<Doc>
+                Named sets in this schema.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#Role">Role</a></td><td>roles</td><td><i>Array</i></td><td>
+<Doc>
+                Roles in this schema.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#UserDefinedFunction">UserDefinedFunction</a></td><td>userDefinedFunctions</td><td><i>Array</i></td><td>
+<Doc>
+                Declarations of user-defined functions in this schema.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="CubeDimension">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>CubeDimension</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            A CubeDimension is either a usage of a Dimension ('shared
+            dimension', in MSOLAP parlance), or a 'private dimension'.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td>caption</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                A string being displayed instead of the Dimension's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>visible</td><td><i>Boolean</i></td><td>true</td><td>
+<Doc>
+                Whether this dimension is visible in the user-interface.
+                Default true.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>description</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Description of this dimension.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>foreignKey</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the column in the fact table which joins
+                to the leaf level of this dimension. Required in a
+                private Dimension or a DimensionUsage, but not in a
+                public Dimension.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>highCardinality</td><td><i>Boolean</i></td><td>false</td><td>
+<Doc>
+                Flag to mark this dimension as a high cardinality one
+                and avoid caching.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Annotations">Annotations</a></td><td>annotations</td><td><i>Optional</i></td><td>
+<Doc>Contains values of user-defined properties.</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="Cube">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Cube</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Definition of a cube.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of this cube.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>caption</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                A string being displayed instead of the cube's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>visible</td><td><i>Boolean</i></td><td>true</td><td>
+<Doc>
+                Whether this cube is visible in the user-interface.
+                Default true.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>description</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Description of this cube.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>defaultMeasure</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the measure that would be taken as the default
+                measure of the cube.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>cache</td><td><i>Boolean</i></td><td>true</td><td>
+<Doc>
+                Should the Fact table data for this Cube be cached
+                by Mondrian or not. The default action is to cache
+                the data.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>enabled</td><td><i>Boolean</i></td><td>true</td><td>
+<Doc>
+                Whether element is enabled - if true, then the Cube is
+                realized otherwise it is ignored.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Annotations">Annotations</a></td><td>annotations</td><td><i>Optional</i></td><td>
+<Doc>Contains values of user-defined properties.</Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#Relation">Relation</a></td><td>fact</td><td><i>Required</i></td><td>
+<Doc>
+                The fact table is the source of all measures in this cube. If
+                this is a <code>Table</code> and the schema name is not
+                present, table name is left unqualified.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#CubeDimension">CubeDimension</a></td><td>dimensions</td><td><i>Array</i></td><td>
+<Doc></Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#Measure">Measure</a></td><td>measures</td><td><i>Array</i></td><td>
+<Doc></Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#CalculatedMember">CalculatedMember</a></td><td>calculatedMembers</td><td><i>Array</i></td><td>
+<Doc>
+                Calculated members in this cube.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#NamedSet">NamedSet</a></td><td>namedSets</td><td><i>Array</i></td><td>
+<Doc>
+                Named sets in this cube.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="VirtualCube">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>VirtualCube</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            A <code>VirtualCube</code> is a set of dimensions and
+            measures gleaned from other cubes.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>enabled</td><td><i>Boolean</i></td><td>true</td><td>
+<Doc>
+                Whether this element is enabled - if true, then the Virtual
+                Cube is realized otherwise it is ignored.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>name</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc></Doc>
+</td>
+</tr>
+<tr>
+<td>defaultMeasure</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>The name of the measure that would be taken as the default
+                measure of the cube.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>caption</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                A string being displayed instead of the cube's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>visible</td><td><i>Boolean</i></td><td>true</td><td>
+<Doc>
+                Whether this cube is visible in the user-interface.
+                Default true.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>description</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Description of this virtual cube.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Annotations">Annotations</a></td><td>annotations</td><td><i>Optional</i></td><td>
+<Doc>Contains values of user-defined properties.</Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#CubeUsages">CubeUsages</a></td><td>cubeUsage</td><td><i>Optional</i></td><td>
+<Doc></Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#VirtualCubeDimension">VirtualCubeDimension</a></td><td>dimensions</td><td><i>Array</i></td><td>
+<Doc></Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#VirtualCubeMeasure">VirtualCubeMeasure</a></td><td>measures</td><td><i>Array</i></td><td>
+<Doc></Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#CalculatedMember">CalculatedMember</a></td><td>calculatedMembers</td><td><i>Array</i></td><td>
+<Doc>
+                Calculated members that belong to this virtual cube.
+                (Calculated members inherited from other cubes should not be
+                in this list.)
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#NamedSet">NamedSet</a></td><td>namedSets</td><td><i>Array</i></td><td>
+<Doc>
+                Named sets in this cube.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="CubeUsages">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>CubeUsages</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            List of base cubes used by the virtual cube.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#CubeUsage">CubeUsage</a></td><td>cubeUsages</td><td><i>Array [1 ..
+        ]</i></td><td>
+<Doc></Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="CubeUsage">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>CubeUsage</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>cubeName</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the cube which the virtualCube uses.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>ignoreUnrelatedDimensions</td><td><i>Boolean</i></td><td>false</td><td>
+<Doc>
+                Unrelated dimensions to measures in this cube will be pushed to
+                top level member.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="VirtualCubeDimension">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>VirtualCubeDimension</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            A VirtualCubeDimension is a usage of a Dimension in a VirtualCube.
+        </Doc>
+</blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#CubeDimension">CubeDimension</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>cubeName</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the cube which the dimension belongs to, or
+                unspecified if the dimension is shared.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>name</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the dimension.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="VirtualCubeMeasure">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>VirtualCubeMeasure</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            A VirtualCubeMeasure is a usage of a Measure in a VirtualCube.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>cubeName</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the cube which the measure belongs to.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>name</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Unique name of the measure within its cube.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>visible</td><td><i>Boolean</i></td><td><i>none</i></td><td>
+<Doc>
+                Whether this member is visible in the user-interface.
+                Default true.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Annotations">Annotations</a></td><td>annotations</td><td><i>Optional</i></td><td>
+<Doc>Contains values of user-defined properties.</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="DimensionUsage">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>DimensionUsage</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            A <code>DimensionUsage</code> is usage of a shared
+            Dimension within the context of a cube.
+        </Doc>
+</blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#CubeDimension">CubeDimension</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>source</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>Name of the source dimension. Must be a dimension in
+            this schema. Case-sensitive.</Doc>
+</td>
+</tr>
+<tr>
+<td>level</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the level to join to. If not specified, joins to the
+                lowest level of the dimension.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>usagePrefix</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                If present, then this is prepended to the Dimension column
+                names during the building of collapse dimension aggregates
+                allowing 1) different dimension usages to be disambiguated
+                during aggregate table recognition and 2) multiple shared
+                dimensions that have common column names to be disambiguated.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="Dimension">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Dimension</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            A <code>Dimension</code> is a collection of hierarchies. There are
+            two kinds: a <dfn>public</dfn> dimension belongs to a
+            <code>Schema</code>, and be used by several cubes; a
+            <dfn>private</dfn> dimension belongs to a
+            <code>Cube</code>. The <code>foreignKey</code> field is only
+            applicable to private dimensions.
+        </Doc>
+</blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#CubeDimension">CubeDimension</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc></Doc>
+</td>
+</tr>
+<tr>
+<td>type</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The dimension's type may be one of "Standard" or "Time". A
+                <dfn>time</dfn>
+                dimension will allow the use of the MDX time functions (WTD,
+                YTD, QTD, <i>etc.</i>). Use a <dfn>standard</dfn> dimension
+                if the dimension is not a time-related dimension. The default
+                value is <code>"Standard"</code>.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>caption</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                A string being displayed instead of the dimensions's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>description</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Description of this dimension.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>usagePrefix</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                If present, then this is prepended to the Dimension column
+                names during the building of collapse dimension aggregates
+                allowing 1) different dimensions to be disambiguated
+                during aggregate table recognition.
+                This should only be set for private dimensions.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Hierarchy">Hierarchy</a></td><td>hierarchies</td><td><i>Array</i></td><td>
+<Doc></Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="Hierarchy">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Hierarchy</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Defines a hierarchy.
+
+            <p></p>You must specify at most one <code>&lt;Relation&gt;</code>
+            or <code>memberReaderClass</code>. If you specify none, the
+            hierarchy is assumed to come from the same fact table of the
+            current cube.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>name</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the hierarchy. If this is not specified, the hierarchy
+                has the same name as its dimension.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>visible</td><td><i>Boolean</i></td><td>true</td><td>
+<Doc>
+                Whether this hierarchy is visible in the user-interface.
+                Default true.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><b>hasAll</b></td><td><i>Boolean</i></td><td><i>none</i></td><td>
+<Doc>
+                Whether this hierarchy has an 'all' member.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>allMemberName</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the 'all' member. If this attribute is not specified,
+                the all member is named 'All <i>hierarchyName</i>', for
+                example, 'All Store'.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>allMemberCaption</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                A string being displayed instead as the all member's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>allLevelName</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the 'all' level. If this attribute is not specified,
+                the all member is named '(All)'.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>primaryKey</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the column which identifies members, and
+                which is referenced by rows in the fact table.
+                If not specified, the key of the lowest level is used.
+                See also <code>CubeDimension.foreignKey</code>.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>primaryKeyTable</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the table which contains <code>primaryKey</code>.
+                If the hierarchy has only one table, defaults to that;
+                it is required.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>defaultMember</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc></Doc>
+</td>
+</tr>
+<tr>
+<td>memberReaderClass</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the custom member reader class. Must implement
+                the <a href="../api/mondrian/rolap/MemberReader.html">mondrian.rolap.MemberReader</a> interface.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>caption</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                A string to be displayed in the user interface.
+                If not specified, the hierarchy's name is used.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>description</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Description of this hierarchy.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>uniqueKeyLevelName</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+		        Should be set to the level (if such a level exists) at which depth it is known
+		        that all members have entirely unique rows, allowing SQL GROUP BY clauses to
+                be completely eliminated from the query.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Annotations">Annotations</a></td><td>annotations</td><td><i>Optional</i></td><td>
+<Doc>Contains values of user-defined properties.</Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#RelationOrJoin">RelationOrJoin</a></td><td>relation</td><td><i>Optional</i></td><td>
+<Doc>
+                The {@link MondrianDef.Table table},
+                {@link MondrianDef.Join set of tables},
+                {@link MondrianDef.View SQL statement}, or
+                {@link MondrianDef.InlineTable inline table}
+                which populates this hierarchy.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#Level">Level</a></td><td>levels</td><td><i>Array</i></td><td>
+<Doc></Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#MemberReaderParameter">MemberReaderParameter</a></td><td>memberReaderParameters</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="Level">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Level</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>approxRowCount</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The estimated number of members in this level.
+                Setting this property improves the performance of
+                MDSCHEMA_LEVELS, MDSCHEMA_HIERARCHIES and
+                MDSCHEMA_DIMENSIONS XMLA requests
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc></Doc>
+</td>
+</tr>
+<tr>
+<td>visible</td><td><i>Boolean</i></td><td>true</td><td>
+<Doc>
+                Whether this level is visible in the user-interface.
+                Default true.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>table</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the table that the column comes from. If
+                this hierarchy is based upon just one table, defaults to
+                the name of that table; otherwise, it is required.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>column</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the column which holds the unique identifier of
+                this level.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>nameColumn</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the column which holds the user identifier of
+                this level.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>ordinalColumn</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the column which holds member
+                ordinals.  If this column is not specified, the
+                key column is used for ordering.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>parentColumn</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the column which references the parent member in
+                a parent-child hierarchy.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>nullParentValue</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Value which identifies null parents in a parent-child
+                hierarchy. Typical values are 'NULL' and '0'.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>type</td><td><i>String</i></td><td>String</td><td>
+<Doc>
+                Indicates the type of this level's key column:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+                When generating SQL statements, Mondrian
+                encloses values for String columns in quotation marks,
+                but leaves values for Integer and Numeric columns un-quoted.
+
+                <p></p>Date, Time, and Timestamp values are quoted according to the
+                SQL dialect. For a SQL-compliant dialect, the values appear
+                prefixed by their typename, for example, "DATE '2006-06-01'".
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>internalType</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Indicates the Java type that Mondrian uses to store this
+                level's key column. It also determines the JDBC method that
+                Mondrian will call to retrieve the column; for example, if the
+                Java type is 'int', Mondrian will call 'ResultSet.getInt(int)'.
+
+                <p></p>Usually this attribute is not needed, because Mondrian can
+                choose a sensible type based on the type of the database
+                column.
+
+                <p></p>Allowable values are: 'int', 'long', 'Object', 'String'.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>uniqueMembers</td><td><i>Boolean</i></td><td>false</td><td>
+<Doc>
+                Whether members are unique across all parents. For
+                example, zipcodes are unique across all states. The
+                first level's members are always unique.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>levelType</td><td><i>String</i></td><td>Regular</td><td>
+<Doc>
+                Whether this is a regular or a time-related level.
+                The value makes a difference to time-related functions
+                such as YTD (year-to-date).
+
+                <p>The "TimeHalfYear" value is deprecated and will be removed
+                 in mondrian-4.0; use "TimeHalfYears" instead.</p>
+            
+</Doc>
+</td>
+</tr>
+<tr>
+<td>hideMemberIf</td><td><i>String</i></td><td>Never</td><td>
+<Doc>
+                Condition which determines whether a member of this level
+                is hidden. If a hierarchy has one or more levels with hidden
+                members, then it is possible that not all leaf members are the
+                same distance from the root, and it is termed a <dfn>ragged
+                hierarchy</dfn>.
+
+                <p>Allowable values are:
+                <code>Never</code> (a member always appears; the default);
+                <code>IfBlankName</code> (a member doesn't appear if its name
+                is null, empty or all whitespace); and
+                <code>IfParentsName</code> (a member appears unless its name
+                matches the parent's.</p>
+            
+</Doc>
+</td>
+</tr>
+<tr>
+<td>formatter</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of a formatter class for the member labels being displayed.
+                The class must implement the mondrian.spi.MemberFormatter
+                interface.
+
+                <p>This attribute is deprecated. Please use a nested
+                MemberFormatter element.</p>
+            
+</Doc>
+</td>
+</tr>
+<tr>
+<td>caption</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                A string being displayed instead of the level's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>description</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Description of this level.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>captionColumn</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the column which holds the caption for
+                members.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Annotations">Annotations</a></td><td>annotations</td><td><i>Optional</i></td><td>
+<Doc>Contains values of user-defined properties.</Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#KeyExpression">KeyExpression</a></td><td>keyExp</td><td><i>Optional</i></td><td>
+<Doc>
+                The SQL expression used to populate this level's key.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#NameExpression">NameExpression</a></td><td>nameExp</td><td><i>Optional</i></td><td>
+<Doc>
+                The SQL expression used to populate this level's name. If not
+                specified, the level's key is used.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#CaptionExpression">CaptionExpression</a></td><td>captionExp</td><td><i>Optional</i></td><td>
+<Doc>
+                The SQL expression used to populate this level's caption. If not
+                specified, the level's name is used.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#OrdinalExpression">OrdinalExpression</a></td><td>ordinalExp</td><td><i>Optional</i></td><td>
+<Doc>
+                The SQL expression used to populate this level's ordinal.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#ParentExpression">ParentExpression</a></td><td>parentExp</td><td><i>Optional</i></td><td>
+<Doc>
+                The SQL expression used to join to the parent member in a
+                parent-child hierarchy.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#MemberFormatter">MemberFormatter</a></td><td>memberFormatter</td><td><i>Optional</i></td><td>
+<Doc>
+                Member formatter.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#Closure">Closure</a></td><td>closure</td><td><i>Optional</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td><a href="#Property">Property</a></td><td>properties</td><td><i>Array [0 ..
+        ]</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="Closure">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Closure</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Specifies the transitive closure of a parent-child hierarchy.
+            Optional, but recommended for better performance.
+            The closure is provided as a set of (parent/child) pairs:
+            since it is the transitive closure these are actually (ancestor/descendant) pairs.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>parentColumn</b></td><td><i>String</i></td><td><i>none</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td><b>childColumn</b></td><td><i>String</i></td><td><i>none</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Table">Table</a></td><td>table</td><td><i>Required</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="Property">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Property</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Member property.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>name</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc></Doc>
+</td>
+</tr>
+<tr>
+<td>column</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc></Doc>
+</td>
+</tr>
+<tr>
+<td>type</td><td><i>String</i></td><td>String</td><td>
+<Doc>
+                Data type of this property:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>formatter</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                
+<p>Name of a formatter class for the appropriate property value
+                being displayed.</p>
+
+                
+<p>The class must implement the mondrian.spi.PropertyFormatter
+                interface.</p>
+
+                
+<p>This attribute is deprecated. Please use a nested
+                PropertyFormatter element.</p>
+            
+</Doc>
+</td>
+</tr>
+<tr>
+<td>caption</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                A string being displayed instead of the name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>description</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Description of this member property.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>dependsOnLevelValue</td><td><i>Boolean</i></td><td><i>none</i></td><td>
+<Doc>
+		        Should be set to true if the value of the property is functionally dependent on
+		        the level value.  This permits the associated property column to be omitted from
+		        the GROUP BY clause (if the database permits columns in the SELECT that are not
+                in the GROUP BY).  This can be a significant performance enhancement on some
+                databases, such as MySQL.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#PropertyFormatter">PropertyFormatter</a></td><td>propertyFormatter</td><td><i>Optional</i></td><td>
+<Doc>
+                Property formatter.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="Measure">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Measure</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>Name of this measure.</Doc>
+</td>
+</tr>
+<tr>
+<td>column</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Column which is source of this measure's values.
+                If not specified, a measure expression must be specified.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>datatype</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The datatype of this measure:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+
+                <p></p>The default datatype of a measure is
+                'Integer' if the measure's aggregator is 'Count',
+                otherwise it is 'Numeric'.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>formatString</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Format string with which to format cells of this measure. For
+                more details, see the <a href="../api/mondrian/util/Format.html">mondrian.util.Format</a> class.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><b>aggregator</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Aggregation function. Allowed values are "sum", "count", "min",
+                "max", "avg", and "distinct-count". ("distinct count" is allowed
+                for backwards compatibility, but is deprecated because XML
+                enumerated attributes in a DTD cannot legally contain spaces.)
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>formatter</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                
+<p>Name of a formatter class for the appropriate cell being
+                displayed.</p>
+
+                
+<p>The class must implement the
+                mondrian.spi.CellFormatter interface.</p>
+
+                
+<p>This attribute is deprecated. Please use a nested
+                CellFormatter element.</p>
+            
+</Doc>
+</td>
+</tr>
+<tr>
+<td>caption</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                A string being displayed instead of the name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>description</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Description of this measure.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>visible</td><td><i>Boolean</i></td><td><i>none</i></td><td>
+<Doc>
+                Whether this member is visible in the user-interface.
+                Default true.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Annotations">Annotations</a></td><td>annotations</td><td><i>Optional</i></td><td>
+<Doc>Contains values of user-defined properties.</Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#MeasureExpression">MeasureExpression</a></td><td>measureExp</td><td><i>Optional</i></td><td>
+<Doc>
+                The SQL expression used to calculate a measure.
+                Must be specified if a source column is not specified.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#CellFormatter">CellFormatter</a></td><td>cellFormatter</td><td><i>Optional</i></td><td>
+<Doc>
+                Cell formatter.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#CalculatedMemberProperty">CalculatedMemberProperty</a></td><td>memberProperties</td><td><i>Array [0 ..
+        ]</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="CalculatedMember">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>CalculatedMember</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of this calculated member.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>formatString</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Format string with which to format cells of this member. For
+                more details, see {@link mondrian.util.Format}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>caption</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                A string being displayed instead of the name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>description</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Description of this calculated member.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>formula</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                MDX expression which gives the value of this member.
+                Equivalent to the Formula sub-element.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>dimension</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                
+<p>Name of the dimension that this member belongs to.</p>
+                
+<p>Deprecated: use {@code hierarchy} attribute instead.</p>
+            
+</Doc>
+</td>
+</tr>
+<tr>
+<td>hierarchy</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                
+<p>Name of the hierarchy that this member belongs to.</p>
+            
+</Doc>
+</td>
+</tr>
+<tr>
+<td>parent</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Fully-qualified name of the parent member.
+                If not specified, the member will be at the lowest level
+                (besides the 'all' level) in the hierarchy.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>visible</td><td><i>Boolean</i></td><td><i>none</i></td><td>
+<Doc>
+                Whether this member is visible in the user-interface.
+                Default true.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Annotations">Annotations</a></td><td>annotations</td><td><i>Optional</i></td><td>
+<Doc>Contains values of user-defined properties.</Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#Formula">Formula</a></td><td>formulaElement</td><td><i>Optional</i></td><td>
+<Doc>
+                MDX expression which gives the value of this member.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#CellFormatter">CellFormatter</a></td><td>cellFormatter</td><td><i>Optional</i></td><td>
+<Doc>
+                Cell formatter.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#CalculatedMemberProperty">CalculatedMemberProperty</a></td><td>memberProperties</td><td><i>Array [0 ..
+        ]</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="CalculatedMemberProperty">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>CalculatedMemberProperty</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Property of a calculated member defined against a cube.
+            It must have either an expression or a value.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of this member property.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>caption</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                A string being displayed instead of the name of this calculated
+                member property.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>description</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Description of this calculated member property.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>expression</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                MDX expression which defines the value of this property.
+                If the expression is a constant string, you could enclose it in
+                quotes, or just specify the 'value' attribute instead.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>value</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Value of this property.
+                If the value is not constant, specify the 'expression' attribute
+                instead.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="NamedSet">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>NamedSet</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            &lt;p&gt;Defines a named set which can be used in queries in the
+            same way as a set defined using a WITH SET clause.&lt;/p&gt;
+
+            &lt;p&gt;A named set can be defined against a particular cube,
+            or can be global to a schema. If it is defined against a
+            cube, it is only available to queries which use that cube.&lt;/p&gt;
+
+            &lt;p&gt;A named set defined against a cube is not inherited by
+            a virtual cubes defined against that cube. (But you can
+            define a named set against a virtual cube.)&lt;/p&gt;
+
+            &lt;p&gt;A named set defined against a schema is available in
+            all cubes and virtual cubes in that schema. However, it is
+            only valid if the cube contains dimensions with the names
+            required to make the formula valid.&lt;/p&gt;
+
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of this named set.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>caption</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Caption of this named set.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>description</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Description of this named set.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>formula</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                MDX expression which gives the value of this set.
+                Equivalent to the Formula sub-element.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Annotations">Annotations</a></td><td>annotations</td><td><i>Optional</i></td><td>
+<Doc>Contains values of user-defined properties.</Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#Formula">Formula</a></td><td>formulaElement</td><td><i>Optional</i></td><td>
+<Doc>
+                MDX expression which gives the value of this set.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="Formula">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Formula</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>Text</i>
+</blockquote>
+<p></p>
+<a name="MemberReaderParameter">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>MemberReaderParameter</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>Not used</Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>name</td><td><i>String</i></td><td><i>none</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td>value</td><td><i>String</i></td><td><i>none</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="RelationOrJoin">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>RelationOrJoin</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>A table or a join</Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="Relation">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Relation</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>A table, inline table or view</Doc>
+</blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#RelationOrJoin">RelationOrJoin</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="View">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>View</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            A collection of SQL statements, one per dialect.
+        </Doc>
+</blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#Relation">Relation</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>alias</b></td><td><i>String</i></td><td><i>none</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#SQL">SQL</a></td><td>selects</td><td><i>Array [1 ..
+        ]</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="SQL">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>SQL</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>dialect</b></td><td><i>String</i></td><td>generic</td><td>
+<Doc>
+                Dialect of SQL the view is intended for. Valid values include,
+                but are not limited to:
+                <ul>
+                
+<li>generic</li>
+                
+<li>access</li>
+                
+<li>db2</li>
+                
+<li>derby</li>
+                
+<li>firebird</li>
+                
+<li>hsqldb</li>
+                
+<li>mssql</li>
+                
+<li>mysql</li>
+                
+<li>oracle</li>
+                
+<li>postgres</li>
+                
+<li>sybase</li>
+                
+<li>teradata</li>
+                
+<li>ingres</li>
+                
+<li>infobright</li>
+                
+<li>luciddb</li>
+                
+<li>vertica</li>
+                
+<li>neoview</li>
+                
+</ul>
+            
+</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>Text</i>
+</blockquote>
+<p></p>
+<a name="Join">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Join</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#RelationOrJoin">RelationOrJoin</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>leftAlias</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Defaults to left's alias if left is a table, otherwise
+                required.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><b>leftKey</b></td><td><i>String</i></td><td><i>none</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td>rightAlias</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Defaults to right's alias if right is a table, otherwise
+                required.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><b>rightKey</b></td><td><i>String</i></td><td><i>none</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#RelationOrJoin">RelationOrJoin</a></td><td>left</td><td><i>Required</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td><a href="#RelationOrJoin">RelationOrJoin</a></td><td>right</td><td><i>Required</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="Table">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Table</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#Relation">Relation</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td>schema</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Optional qualifier for <code>table</code>.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>alias</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Alias to be used with this table when it is used to
+                form queries. If not specified, defaults to the table
+                name, but in any case, must be unique within the
+                schema. (You can use the same table in different
+                hierarchies, but it must have different aliases.)
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#SQL">SQL</a></td><td>filter</td><td><i>Optional</i></td><td>
+<Doc>
+          The SQL WHERE clause expression to be appended to any select statement
+        </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#AggExclude">AggExclude</a></td><td>aggExcludes</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td><a href="#AggTable">AggTable</a></td><td>aggTables</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td><a href="#Hint">Hint</a></td><td>tableHints</td><td><i>Array</i></td><td>
+<Doc>
+                Table optimization hints; may be ignored by dialect.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="Hint">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Hint</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Dialect-specific table optimization hints.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>type</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Type of hint, interpreted and applied on a per-dialect basis.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>Text</i>
+</blockquote>
+<p></p>
+<a name="InlineTable">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>InlineTable</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#Relation">Relation</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>alias</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Alias to be used with this table when it is used to
+                form queries. If not specified, defaults to the table
+                name, but in any case, must be unique within the
+                schema. (You can use the same table in different
+                hierarchies, but it must have different aliases.)
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#ColumnDefs">ColumnDefs</a></td><td>columnDefs</td><td><i>Required</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td><a href="#Rows">Rows</a></td><td>rows</td><td><i>Required</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="ColumnDefs">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>ColumnDefs</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>Holder for an array of ColumnDef elements</Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#ColumnDef">ColumnDef</a></td><td>array</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="ColumnDef">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>ColumnDef</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Column definition for an inline table.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the column.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><b>type</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Type of the column:
+                String, Numeric, Integer, Boolean, Date, Time or Timestamp.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="Rows">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Rows</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>Holder for an array of Row elements</Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Row">Row</a></td><td>array</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="Row">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Row</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Row definition for an inline table.
+            Must have one Column for each ColumnDef in the InlineTable.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Value">Value</a></td><td>values</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="Value">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Value</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Column value for an inline table.
+            The CDATA holds the value of the column.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>column</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the column.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>Text</i>
+</blockquote>
+<p></p>
+<a name="AggTable">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>AggTable</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            A definition of an aggregate table for a base fact table.
+            This aggregate table must be in the same schema as the
+            base fact table.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>ignorecase</td><td><i>Boolean</i></td><td>true</td><td>
+<Doc>
+                Whether or not the match should ignore case.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#AggFactCount">AggFactCount</a></td><td>factcount</td><td><i>Required</i></td><td>
+<Doc>
+                What does the fact_count column look like.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#AggIgnoreColumn">AggIgnoreColumn</a></td><td>ignoreColumns</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td><a href="#AggForeignKey">AggForeignKey</a></td><td>foreignKeys</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td><a href="#AggMeasure">AggMeasure</a></td><td>measures</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td><a href="#AggLevel">AggLevel</a></td><td>levels</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="AggName">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>AggName</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#AggTable">AggTable</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The Table name of a Specific aggregate table.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>approxRowCount</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The estimated number of rows in this aggregation
+                table. Setting this property improves the
+                performance of the aggregation optimizer and
+                prevents it from issuing a 'select count(*)'
+                query over the aggregation table.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="AggPattern">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>AggPattern</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#AggTable">AggTable</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>pattern</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                A Table pattern used to define a set of aggregate tables.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#AggExclude">AggExclude</a></td><td>excludes</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="AggExclude">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>AggExclude</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>pattern</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                A Table pattern not to be matched.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>name</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The Table name not to be matched.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>ignorecase</td><td><i>Boolean</i></td><td>true</td><td>
+<Doc>
+                Whether or not the match should ignore case.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="AggColumnName">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>AggColumnName</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>column</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the fact count column.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="AggFactCount">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>AggFactCount</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#AggColumnName">AggColumnName</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="AggIgnoreColumn">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>AggIgnoreColumn</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#AggColumnName">AggColumnName</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="AggForeignKey">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>AggForeignKey</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            The name of the column mapping from base fact table foreign key
+            to aggregate table foreign key.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>factColumn</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the base fact table foreign key.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><b>aggColumn</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the aggregate table foreign key.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="AggLevel">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>AggLevel</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>column</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the column mapping to the level name.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the Dimension Hierarchy level.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>collapsed</td><td><i>Boolean</i></td><td>true</td><td>
+<Doc>
+                Whether this is a collapsed level. The parents of that level
+                are also present in the aggregation table.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="AggMeasure">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>AggMeasure</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>column</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the column mapping to the measure name.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                The name of the Cube measure.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="Column">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Column</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#Expression">Expression</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>table</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Alias of the table which contains this column. Not required if
+                the query only has one table.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the column.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="ExpressionView">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>ExpressionView</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            A collection of SQL expressions, one per dialect.
+        </Doc>
+</blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#Expression">Expression</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#SQL">SQL</a></td><td>expressions</td><td><i>Array [1 ..
+        ]</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="KeyExpression">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>KeyExpression</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#ExpressionView">ExpressionView</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="ParentExpression">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>ParentExpression</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#ExpressionView">ExpressionView</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="OrdinalExpression">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>OrdinalExpression</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#ExpressionView">ExpressionView</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="NameExpression">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>NameExpression</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#ExpressionView">ExpressionView</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="CaptionExpression">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>CaptionExpression</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#ExpressionView">ExpressionView</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="MeasureExpression">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>MeasureExpression</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#ExpressionView">ExpressionView</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="Role">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Role</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            A role defines an access-control profile. It has a series of grants
+            (or denials) for schema elements.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Annotations">Annotations</a></td><td>annotations</td><td><i>Optional</i></td><td>
+<Doc>Contains values of user-defined properties.</Doc>
+</td>
+</tr>
+<tr>
+<td><a href="#SchemaGrant">SchemaGrant</a></td><td>schemaGrants</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td><a href="#Union">Union</a></td><td>union</td><td><i>Optional</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="SchemaGrant">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>SchemaGrant</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Grants (or denies) this role access to this schema.
+            <code>access</code> may be "all", "all_dimensions", "custom"
+            or "none".
+            If <code>access</code> is "all_dimensions", the role has access
+            to all dimensions but still needs explicit access to cubes.
+            If <code>access</code> is "custom", no access will be inherited by
+            cubes for which no explicit rule is set.
+            If <code>access</code> is "all_dimensions", an implicut access is
+            given to all dimensions of the schema's cubes, provided the cube's
+            access attribute is either "custom" or "all".
+            See <a href="../api/mondrian/olap/Role.html#grant(mondrian.olap.Schema, int)">mondrian.olap.Role#grant(mondrian.olap.Schema,int)</a>.
+        </Doc>
+</blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#Grant">Grant</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#CubeGrant">CubeGrant</a></td><td>cubeGrants</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="CubeGrant">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>CubeGrant</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Grants (or denies) this role access to a cube.
+            <code>access</code> may be "all", "custom", or "none".
+            If <code>access</code> is "custom", no access will be inherited
+            by the dimensions of this cube, unless the parent SchemaGrant is
+            set to "ALL_DIMENSIONS".
+            See <a href="../api/mondrian/olap/Role.html#grant(mondrian.olap.Cube, int)">mondrian.olap.Role#grant(mondrian.olap.Cube,int)</a>.
+        </Doc>
+</blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#Grant">Grant</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>cube</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>The unique name of the cube</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#DimensionGrant">DimensionGrant</a></td><td>dimensionGrants</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+<tr>
+<td><a href="#HierarchyGrant">HierarchyGrant</a></td><td>hierarchyGrants</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="DimensionGrant">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>DimensionGrant</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Grants (or denies) this role access to a dimension.
+            <code>access</code> may be "all", "custom" or "none".
+            Note that a role is implicitly given access to a dimension when it
+            is given "ALL" acess to a cube.
+            If <code>access</code> is "custom", no access will be inherited
+            by the hierarchies of this dimension.
+            If the parent schema <code>access</code> is "ALL_DIMENSIONS",
+            this timension will inherit <code>access</code> "ALL".
+            See also the "all_dimensions" option of the "SchemaGrant" element.
+            See <a href="../api/mondrian/olap/Role.html#grant(mondrian.olap.Dimension, int)">mondrian.olap.Role#grant(mondrian.olap.Dimension,int)</a>.
+        </Doc>
+</blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#Grant">Grant</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>dimension</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>The unique name of the dimension</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="HierarchyGrant">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>HierarchyGrant</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Grants (or denies) this role access to a hierarchy.
+            <code>access</code> may be "all", "custom" or "none".
+            If <code>access</code> is "custom", you may also specify the
+            attributes <code>topLevel</code>, <code>bottomLevel</code>, and
+            the member grants.
+            If <code>access</code> is "custom", the child levels of this
+            hierarchy will not inherit access rights from this hierarchy,
+            should there be no explicit rules defined for the said child level.
+            See <a href="../api/mondrian/olap/Role.html#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)">mondrian.olap.Role#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)</a>.
+        </Doc>
+</blockquote>
+<h3>Class</h3>
+<blockquote>
+<a href="#Grant">Grant</a>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>hierarchy</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>The unique name of the hierarchy</Doc>
+</td>
+</tr>
+<tr>
+<td>topLevel</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>Unique name of the highest level of the hierarchy from which
+            this role is allowed to see members. May only be specified if
+            the <code>HierarchyGrant.access</code> is "custom". If not
+            specified, role can see members up to the top level.</Doc>
+</td>
+</tr>
+<tr>
+<td>bottomLevel</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>Unique name of the lowest level of the hierarchy from which
+            this role is allowed to see members. May only be specified if
+            the <code>HierarchyGrant.access</code> is "custom". If not
+            specified, role can see members down to the leaf level.</Doc>
+</td>
+</tr>
+<tr>
+<td>rollupPolicy</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>Policy which determines how cell values are calculated if
+                not all of the children of the current cell are visible to
+                the current role. Allowable values are 'full' (the default),
+                'partial', and 'hidden'.</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#MemberGrant">MemberGrant</a></td><td>memberGrants</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="MemberGrant">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>MemberGrant</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Grants (or denies) this role access to a member.
+            The children of this member inherit that access.
+            You can implicitly see a member if you can see any of its children.
+            See <a href="../api/mondrian/olap/Role.html#grant(mondrian.olap.Member, int)">mondrian.olap.Role#grant(mondrian.olap.Member,int)</a>.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>member</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>The unique name of the member</Doc>
+</td>
+</tr>
+<tr>
+<td><b>access</b></td><td><i>String</i></td><td><i>none</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="Union">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Union</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Body of a Role definition which defines a Role to be the union
+            of several Roles. The RoleUsage elements must refer to Roles that
+            have been declared earlier in this schema file.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#RoleUsage">RoleUsage</a></td><td>roleUsages</td><td><i>Required</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="RoleUsage">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>RoleUsage</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Usage of a Role in a union Role.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>roleName</b></td><td><i>String</i></td><td><i>none</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="UserDefinedFunction">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>UserDefinedFunction</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            A <code>UserDefinedFunction</code> is a function which
+            extends the MDX language. It must be implemented by a Java
+            class which implements the interface
+            <a href="../api/mondrian/spi/UserDefinedFunction.html">mondrian.spi.UserDefinedFunction</a>.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>Name with which the user-defined function will be referenced in MDX expressions.</Doc>
+</td>
+</tr>
+<tr>
+<td>className</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the class which implemenets this user-defined function.
+                Must implement the <code>mondrian.spi.UserDefinedFunction</code>
+                interface.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Script">Script</a></td><td>script</td><td><i>Optional</i></td><td>
+<Doc>
+                Script to implement this user-defined function.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            
+</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="Parameter">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Parameter</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            A <code>Parameter</code> defines a schema parameter.
+            It can be referenced from an MDX statement using the <code>ParamRef</code>
+            function and, if not final, its value can be overridden.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of this parameter.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>description</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Description of this parameter.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td><b>type</b></td><td><i>String</i></td><td>String</td><td>
+<Doc>
+                Indicates the type of this parameter:
+                String, Numeric, Integer, Boolean, Date, Time, Timestamp, or Member.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>modifiable</td><td><i>Boolean</i></td><td>true</td><td>
+<Doc>
+                If false, statement cannot change the value of this parameter;
+                the parameter becomes effectively constant (provided that its default
+                value expression always returns the same value).
+                Default is true.
+            </Doc>
+</td>
+</tr>
+<tr>
+<td>defaultValue</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Expression for the default value of this parameter.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="Annotations">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Annotations</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>Holder for an array of Annotation elements</Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Annotation">Annotation</a></td><td>array</td><td><i>Array</i></td><td><i>none</i></td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="Annotation">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Annotation</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            User-defined property value.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>name</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the annotation.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>Text</i>
+</blockquote>
+<p></p>
+<a name="Script">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>Script</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Script fragment to implement an SPI such as user-defined function,
+            member formatter, cell formatter.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>language</td><td><i>String</i></td><td>JavaScript</td><td>
+<Doc>
+                The language of the script. Must be a supported scripting
+                language in the current JVM. See
+                {@link javax.script.ScriptEngineManager}.
+                Default value is 'JavaScript'.
+            </Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>Text</i>
+</blockquote>
+<p></p>
+<a name="CellFormatter">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>CellFormatter</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Plugin that formats the values of cells.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="../api/mondrian/spi/CellFormatter.html">mondrian.spi.CellFormatter</a>,
+            or by a script.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>className</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the class which implemenets this cell formatter.
+                Must implement the <code>mondrian.spi.CellFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            
+</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Script">Script</a></td><td>script</td><td><i>Optional</i></td><td>
+<Doc>
+                Script to implement this cell formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            
+</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="MemberFormatter">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>MemberFormatter</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Plugin that formats members.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="../api/mondrian/spi/MemberFormatter.html">mondrian.spi.MemberFormatter</a>,
+            or by a script.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>className</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the class which implemenets this member formatter.
+                Must implement the <code>mondrian.spi.MemberFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            
+</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Script">Script</a></td><td>script</td><td><i>Optional</i></td><td>
+<Doc>
+                Script to implement this member formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            
+</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="PropertyFormatter">
+<table width="100%" cellspacing="0" border="1">
+<tr>
+<td bgcolor="#3366cc"><font color="white">
+<h2>
+<i>Element</i>PropertyFormatter</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote>
+<Doc>
+            Plugin that formats properties.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="../api/mondrian/spi/PropertyFormatter.html">mondrian.spi.PropertyFormatter</a>,
+            or by a script.
+        </Doc>
+</blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td>className</td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>
+                Name of the class which implemenets this property formatter.
+                Must implement the <code>mondrian.spi.PropertyFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            
+</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Element</th><th>Java Name</th><th>Constraints</th><th>Description</th>
+</tr>
+<tr>
+<td><a href="#Script">Script</a></td><td>script</td><td><i>Optional</i></td><td>
+<Doc>
+                Script to implement this property formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            
+</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<p></p>
+<a name="Expression">
+<table width="100%" cellspacing="0" border="0">
+<tr>
+<td bgcolor="#3366cc"><font face="arial,sans-serif" size="-1" color="white">
+<h2>
+<i>Class</i>Expression</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<i>none</i>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+<p></p>
+<a name="Grant">
+<table width="100%" cellspacing="0" border="0">
+<tr>
+<td bgcolor="#3366cc"><font face="arial,sans-serif" size="-1" color="white">
+<h2>
+<i>Class</i>Grant</h2>
+</font></td>
+</tr>
+</table>
+</a>
+<blockquote></blockquote>
+<h3>Attributes</h3>
+<blockquote>
+<table border="1" class="clsStd">
+<tr>
+<th>Attribute</th><th>Type</th><th>Default</th><th>Description</th>
+</tr>
+<tr>
+<td><b>access</b></td><td><i>String</i></td><td><i>none</i></td><td>
+<Doc>Values correspond to <code>Access</code>.</Doc>
+</td>
+</tr>
+</table>
+</blockquote>
+<h3>Content</h3>
+<blockquote>
+<i>empty</i>
+</blockquote>
+</BODY>
+</HTML>
+         </td>
+      </tr>
+</table>
+</body>
+</html>

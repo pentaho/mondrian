@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2011-2013 Pentaho<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.util;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import mondrian.olap.Util;<a name="line.12"></a>
+<span class="sourceLineNo">013</span><a name="line.13"></a>
+<span class="sourceLineNo">014</span>import java.util.concurrent.ConcurrentHashMap;<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span>/**<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * A limited Map implementation which supports waiting for a value<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * to be available when calling get(). Intended for use with<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * producer/consumer queues, where a producer thread puts a value into<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * the collection with a separate thread waiting to get that value.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * Currently used by the Actor implementations in<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * &lt;code&gt;SegmentCacheManager&lt;/code&gt; and &lt;code&gt;MonitorImpl&lt;/code&gt;.<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * &lt;p&gt;&lt;b&gt;Thread safety&lt;/b&gt;. BlockingHashMap is thread safe.  The class<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * delegates all get and put operations to a ConcurrentHashMap. &lt;/p&gt;<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * @param &lt;K&gt; request (key) type<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * @param &lt;V&gt; response (value) type<a name="line.28"></a>
+<span class="sourceLineNo">029</span> */<a name="line.29"></a>
+<span class="sourceLineNo">030</span>public class BlockingHashMap&lt;K, V&gt; {<a name="line.30"></a>
+<span class="sourceLineNo">031</span>    private final ConcurrentHashMap&lt;K, SlotFuture&lt;V&gt;&gt; map;<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>    /**<a name="line.33"></a>
+<span class="sourceLineNo">034</span>     * Creates a BlockingHashMap with given capacity.<a name="line.34"></a>
+<span class="sourceLineNo">035</span>     *<a name="line.35"></a>
+<span class="sourceLineNo">036</span>     * @param capacity Capacity<a name="line.36"></a>
+<span class="sourceLineNo">037</span>     */<a name="line.37"></a>
+<span class="sourceLineNo">038</span>    public BlockingHashMap(int capacity) {<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        map = new ConcurrentHashMap&lt;K, SlotFuture&lt;V&gt;&gt;(capacity);<a name="line.39"></a>
+<span class="sourceLineNo">040</span>    }<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>    /**<a name="line.42"></a>
+<span class="sourceLineNo">043</span>     * Places a (request, response) pair onto the map.<a name="line.43"></a>
+<span class="sourceLineNo">044</span>     *<a name="line.44"></a>
+<span class="sourceLineNo">045</span>     * @param k key<a name="line.45"></a>
+<span class="sourceLineNo">046</span>     * @param v value<a name="line.46"></a>
+<span class="sourceLineNo">047</span>     */<a name="line.47"></a>
+<span class="sourceLineNo">048</span>    public void put(K k, V v) {<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        map.putIfAbsent(k, new SlotFuture&lt;V&gt;());<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        map.get(k).put(v);<a name="line.50"></a>
+<span class="sourceLineNo">051</span>    }<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>    /**<a name="line.53"></a>
+<span class="sourceLineNo">054</span>     * Retrieves the response from the map matching the given key,<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     * blocking until it is received.<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     *<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     * @param k key<a name="line.57"></a>
+<span class="sourceLineNo">058</span>     * @return value<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     * @throws InterruptedException if interrupted while waiting<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     */<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    public V get(K k) throws InterruptedException {<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        map.putIfAbsent(k, new SlotFuture&lt;V&gt;());<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        V v = Util.safeGet(<a name="line.63"></a>
+<span class="sourceLineNo">064</span>            map.get(k),<a name="line.64"></a>
+<span class="sourceLineNo">065</span>            "Waiting to retrieve a value from BlockingHashMap.");<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        map.remove(k);<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        return v;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    }<a name="line.68"></a>
+<span class="sourceLineNo">069</span>}<a name="line.69"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

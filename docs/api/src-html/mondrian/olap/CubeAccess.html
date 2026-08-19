@@ -1,0 +1,257 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 1999-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2012 Pentaho and others<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.olap;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.resource.MondrianResource;<a name="line.13"></a>
+<span class="sourceLineNo">014</span><a name="line.14"></a>
+<span class="sourceLineNo">015</span>import java.util.ArrayList;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import java.util.List;<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>/**<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * This class implements object of type GrantCube to apply permissions<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * on user's MDX query<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * @author lkrivopaltsev, 01 November, 1999<a name="line.22"></a>
+<span class="sourceLineNo">023</span> */<a name="line.23"></a>
+<span class="sourceLineNo">024</span>public class CubeAccess {<a name="line.24"></a>
+<span class="sourceLineNo">025</span><a name="line.25"></a>
+<span class="sourceLineNo">026</span>    private boolean hasRestrictions;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>    /** array of hierarchies with no access */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>    private Hierarchy[] noAccessHierarchies;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>    /** array of members which have limited access */<a name="line.29"></a>
+<span class="sourceLineNo">030</span>    private Member[]  limitedMembers;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>    private final List&lt;Hierarchy&gt; hierarchyList = new ArrayList&lt;Hierarchy&gt;();<a name="line.31"></a>
+<span class="sourceLineNo">032</span>    private final List&lt;Member&gt; memberList = new ArrayList&lt;Member&gt;();<a name="line.32"></a>
+<span class="sourceLineNo">033</span>    private final Cube mdxCube;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>    /**<a name="line.35"></a>
+<span class="sourceLineNo">036</span>     * Creates a CubeAccess object.<a name="line.36"></a>
+<span class="sourceLineNo">037</span>     *<a name="line.37"></a>
+<span class="sourceLineNo">038</span>     * &lt;p&gt;User's code should be responsible for<a name="line.38"></a>
+<span class="sourceLineNo">039</span>     * filling cubeAccess with restricted hierarchies and restricted<a name="line.39"></a>
+<span class="sourceLineNo">040</span>     * members by calling addSlicer(). Do NOT forget to call<a name="line.40"></a>
+<span class="sourceLineNo">041</span>     * {@link #normalizeCubeAccess()} after you done filling cubeAccess.<a name="line.41"></a>
+<span class="sourceLineNo">042</span>     */<a name="line.42"></a>
+<span class="sourceLineNo">043</span>    public CubeAccess(Cube mdxCube) {<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        this.mdxCube = mdxCube;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        noAccessHierarchies = null;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        limitedMembers = null;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        hasRestrictions = false;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>    }<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span>    public boolean hasRestrictions() {<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        return hasRestrictions;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>    }<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>    public Hierarchy[] getNoAccessHierarchies() {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        return noAccessHierarchies;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>    }<a name="line.56"></a>
+<span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span>    public Member[] getLimitedMembers() {<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        return limitedMembers;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>    }<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span>    public List&lt;Hierarchy&gt; getNoAccessHierarchyList() {<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        return hierarchyList;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    }<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>    public List&lt;Member&gt; getLimitedMemberList() {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        return memberList;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    }<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>    public boolean isHierarchyAllowed(Hierarchy mdxHierarchy) {<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        String hierName = mdxHierarchy.getUniqueName();<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        if (noAccessHierarchies == null || hierName == null) {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>            return true;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        }<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        for (Hierarchy noAccessHierarchy : noAccessHierarchies) {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>            if (hierName.equalsIgnoreCase(noAccessHierarchy.getUniqueName())) {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                return false;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>            }<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        }<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        return true;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    }<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>    public Member getLimitedMemberForHierarchy(Hierarchy mdxHierarchy) {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        String hierName = mdxHierarchy.getUniqueName();<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        if (limitedMembers == null || hierName == null) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>            return null;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        }<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        for (Member limitedMember : limitedMembers) {<a name="line.88"></a>
+<span class="sourceLineNo">089</span>            Hierarchy limitedHierarchy = limitedMember.getHierarchy();<a name="line.89"></a>
+<span class="sourceLineNo">090</span>            if (hierName.equalsIgnoreCase(limitedHierarchy.getUniqueName())) {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                return limitedMember;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>            }<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        }<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        return null;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    }<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>    /**<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     * Adds  restricted hierarchy or limited member based on bMember<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     */<a name="line.99"></a>
+<span class="sourceLineNo">100</span>    public void addGrantCubeSlicer(<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        String sHierarchy,<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        String sMember,<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        boolean bMember)<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        if (bMember) {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>            boolean fail = false;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>            List&lt;Id.Segment&gt; sMembers = Util.parseIdentifier(sMember);<a name="line.107"></a>
+<span class="sourceLineNo">108</span>            SchemaReader schemaReader = mdxCube.getSchemaReader(null);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>            Member member = schemaReader.getMemberByUniqueName(sMembers, fail);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>            if (member == null) {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                throw MondrianResource.instance().MdxCubeSlicerMemberError.ex(<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                    sMember, sHierarchy, mdxCube.getUniqueName());<a name="line.112"></a>
+<span class="sourceLineNo">113</span>            }<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            // there should be only slicer per hierarchy; ignore the rest<a name="line.114"></a>
+<span class="sourceLineNo">115</span>            if (getLimitedMemberForHierarchy(member.getHierarchy()) == null) {<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                memberList.add(member);<a name="line.116"></a>
+<span class="sourceLineNo">117</span>            }<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        } else {<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            boolean fail = false;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            Hierarchy hierarchy =<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                mdxCube.lookupHierarchy(<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                    new Id.NameSegment(sHierarchy),<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                    fail);<a name="line.123"></a>
+<span class="sourceLineNo">124</span>            if (hierarchy == null) {<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                throw MondrianResource.instance().MdxCubeSlicerHierarchyError<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                    .ex(sHierarchy, mdxCube.getUniqueName());<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            }<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            hierarchyList.add(hierarchy);<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        }<a name="line.129"></a>
+<span class="sourceLineNo">130</span>    }<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>    /**<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     * Initializes internal arrays of restricted hierarchies and limited<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     * members. It has to be called  after all 'addSlicer()' calls.<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     */<a name="line.135"></a>
+<span class="sourceLineNo">136</span>    public void normalizeCubeAccess() {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        if (memberList.size() &gt; 0) {<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            limitedMembers = memberList.toArray(new Member[memberList.size()]);<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            hasRestrictions = true;<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        }<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        if (hierarchyList.size() &gt; 0) {<a name="line.141"></a>
+<span class="sourceLineNo">142</span>            noAccessHierarchies =<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                hierarchyList.toArray(<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                    new Hierarchy[hierarchyList.size()]);<a name="line.144"></a>
+<span class="sourceLineNo">145</span>            hasRestrictions = true;<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        }<a name="line.146"></a>
+<span class="sourceLineNo">147</span>    }<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>    public boolean equals(Object object) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        if (!(object instanceof CubeAccess)) {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            return false;<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        }<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        CubeAccess cubeAccess = (CubeAccess) object;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        List&lt;Hierarchy&gt; hierarchyList = cubeAccess.getNoAccessHierarchyList();<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        List&lt;Member&gt; limitedMemberList = cubeAccess.getLimitedMemberList();<a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>        if ((this.hierarchyList.size() != hierarchyList.size())<a name="line.157"></a>
+<span class="sourceLineNo">158</span>            || (this.memberList.size() != limitedMemberList.size()))<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            return false;<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        }<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        for (Hierarchy o : hierarchyList) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            if (!this.hierarchyList.contains(o)) {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                return false;<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            }<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        }<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        for (Member member : limitedMemberList) {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            if (!this.memberList.contains(member)) {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                return false;<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            }<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        }<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        return true;<a name="line.172"></a>
+<span class="sourceLineNo">173</span>    }<a name="line.173"></a>
+<span class="sourceLineNo">174</span><a name="line.174"></a>
+<span class="sourceLineNo">175</span>    public int hashCode() {<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        int h = mdxCube.hashCode();<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        h = Util.hash(h, hierarchyList);<a name="line.177"></a>
+<span class="sourceLineNo">178</span>        h = Util.hash(h, memberList);<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        h = Util.hashArray(h, noAccessHierarchies);<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        h = Util.hashArray(h, limitedMembers);<a name="line.180"></a>
+<span class="sourceLineNo">181</span>        return h;<a name="line.181"></a>
+<span class="sourceLineNo">182</span>    }<a name="line.182"></a>
+<span class="sourceLineNo">183</span>}<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>// End CubeAccess.java<a name="line.185"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

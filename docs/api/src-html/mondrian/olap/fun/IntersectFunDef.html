@@ -1,0 +1,258 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2004-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2011 Pentaho and others<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.olap.fun;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.calc.*;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.calc.impl.AbstractListCalc;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.mdx.ResolvedFunCall;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import mondrian.olap.*;<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>import java.util.*;<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>/**<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * Definition of the &lt;code&gt;INTERSECT&lt;/code&gt; MDX function.<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * @author jhyde<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * @since Mar 23, 2006<a name="line.24"></a>
+<span class="sourceLineNo">025</span> */<a name="line.25"></a>
+<span class="sourceLineNo">026</span>class IntersectFunDef extends FunDefBase<a name="line.26"></a>
+<span class="sourceLineNo">027</span>{<a name="line.27"></a>
+<span class="sourceLineNo">028</span>    private static final String[] ReservedWords = new String[] {"ALL"};<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>    static final Resolver resolver =<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        new ReflectiveMultiResolver(<a name="line.31"></a>
+<span class="sourceLineNo">032</span>            "Intersect",<a name="line.32"></a>
+<span class="sourceLineNo">033</span>            "Intersect(&lt;Set1&gt;, &lt;Set2&gt;[, ALL])",<a name="line.33"></a>
+<span class="sourceLineNo">034</span>            "Returns the intersection of two input sets, optionally retaining duplicates.",<a name="line.34"></a>
+<span class="sourceLineNo">035</span>            new String[] {"fxxxy", "fxxx"},<a name="line.35"></a>
+<span class="sourceLineNo">036</span>            IntersectFunDef.class,<a name="line.36"></a>
+<span class="sourceLineNo">037</span>            ReservedWords);<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>    public IntersectFunDef(FunDef dummyFunDef)<a name="line.39"></a>
+<span class="sourceLineNo">040</span>    {<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        super(dummyFunDef);<a name="line.41"></a>
+<span class="sourceLineNo">042</span>    }<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        final String literalArg = getLiteralArg(call, 2, "", ReservedWords);<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        final boolean all = literalArg.equalsIgnoreCase("ALL");<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        final int arity = call.getType().getArity();<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>        final ListCalc listCalc1 = compiler.compileList(call.getArg(0));<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        final ListCalc listCalc2 = compiler.compileList(call.getArg(1));<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        return new AbstractListCalc(<a name="line.51"></a>
+<span class="sourceLineNo">052</span>            call, new Calc[] {listCalc1, listCalc2})<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        {<a name="line.53"></a>
+<span class="sourceLineNo">054</span>            public TupleList evaluateList(Evaluator evaluator) {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                TupleList leftList =<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                    listCalc1.evaluateList(evaluator);<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                if (leftList.isEmpty()) {<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                    return leftList;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                }<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                final TupleList rightList =<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                    listCalc2.evaluateList(evaluator);<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                if (rightList.isEmpty()) {<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                    return rightList;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                }<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>                // Set of members from the right side of the intersect.<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                // We use a RetrievableSet because distinct keys<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                // (regular members and visual totals members) compare<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                // identical using hashCode and equals, we want to retrieve<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                // the actual key, and java.util.Set only has containsKey.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                RetrievableSet&lt;List&lt;Member&gt;&gt; rightSet =<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                    new RetrievableHashSet&lt;List&lt;Member&gt;&gt;(<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                        rightList.size() * 3 / 2);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                for (List&lt;Member&gt; tuple : rightList) {<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                    rightSet.add(tuple);<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                }<a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span>                final TupleList result =<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                    TupleCollections.createList(<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                        arity, Math.min(leftList.size(), rightList.size()));<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                final Set&lt;List&lt;Member&gt;&gt; resultSet =<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                    all ? null : new HashSet&lt;List&lt;Member&gt;&gt;();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                for (List&lt;Member&gt; leftTuple : leftList) {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                    List&lt;Member&gt; rightKey = rightSet.getKey(leftTuple);<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                    if (rightKey == null) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                        continue;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                    }<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                    if (resultSet != null &amp;&amp; !resultSet.add(leftTuple)) {<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                        continue;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                    }<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                    result.add(<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        copyTupleWithVisualTotalsMembersOverriding(<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                            leftTuple, rightKey));<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                }<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                return result;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>            }<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>            /**<a name="line.98"></a>
+<span class="sourceLineNo">099</span>             * Constructs a tuple consisting of members from<a name="line.99"></a>
+<span class="sourceLineNo">100</span>             * {@code leftTuple}, but overridden by any corresponding<a name="line.100"></a>
+<span class="sourceLineNo">101</span>             * members from {@code rightKey} that happen to be visual totals<a name="line.101"></a>
+<span class="sourceLineNo">102</span>             * members.<a name="line.102"></a>
+<span class="sourceLineNo">103</span>             *<a name="line.103"></a>
+<span class="sourceLineNo">104</span>             * &lt;p&gt;Returns the original tuple if there are no visual totals<a name="line.104"></a>
+<span class="sourceLineNo">105</span>             * members on the RHS.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>             *<a name="line.106"></a>
+<span class="sourceLineNo">107</span>             * @param leftTuple Original tuple<a name="line.107"></a>
+<span class="sourceLineNo">108</span>             * @param rightKey Right tuple<a name="line.108"></a>
+<span class="sourceLineNo">109</span>             * @return Copy of original tuple, with any VisualTotalMembers<a name="line.109"></a>
+<span class="sourceLineNo">110</span>             *   from right tuple overriding<a name="line.110"></a>
+<span class="sourceLineNo">111</span>             */<a name="line.111"></a>
+<span class="sourceLineNo">112</span>            private List&lt;Member&gt; copyTupleWithVisualTotalsMembersOverriding(<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                List&lt;Member&gt; leftTuple, List&lt;Member&gt; rightKey)<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                List&lt;Member&gt; tuple = leftTuple;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                for (int i = 0; i &lt; rightKey.size(); i++) {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                    Member member = rightKey.get(i);<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                    if (!(tuple.get(i)<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                        instanceof VisualTotalsFunDef.VisualTotalMember)<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                        &amp;&amp; member instanceof<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                        VisualTotalsFunDef.VisualTotalMember)<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                    {<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                        if (tuple == leftTuple) {<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                            // clone on first VisualTotalMember -- to avoid<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                            // alloc/copy in the common case where there are<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                            // no VisualTotalMembers<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                            tuple = new ArrayList&lt;Member&gt;(leftTuple);<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                        }<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                        tuple.set(i, member);<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                    }<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                }<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                return tuple;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            }<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        };<a name="line.134"></a>
+<span class="sourceLineNo">135</span>    }<a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span>    /**<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     * Interface similar to the Set interface that allows key values to be<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     * returned.<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     *<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     * &lt;p&gt;Useful if multiple objects can compare equal (using<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     * {@link Object#equals(Object)} and {@link Object#hashCode()}, per the<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     * set contract) and you wish to distinguish them after they have been added<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     * to the set.<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     * @param &lt;E&gt; element type<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     */<a name="line.147"></a>
+<span class="sourceLineNo">148</span>    private interface RetrievableSet&lt;E&gt; {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        /**<a name="line.149"></a>
+<span class="sourceLineNo">150</span>         * Returns the key in this set that compares equal to a given object,<a name="line.150"></a>
+<span class="sourceLineNo">151</span>         * or null if there is no such key.<a name="line.151"></a>
+<span class="sourceLineNo">152</span>         *<a name="line.152"></a>
+<span class="sourceLineNo">153</span>         * @param e Key value<a name="line.153"></a>
+<span class="sourceLineNo">154</span>         * @return Key in the set equal to given key value<a name="line.154"></a>
+<span class="sourceLineNo">155</span>         */<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        E getKey(E e);<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>        /**<a name="line.158"></a>
+<span class="sourceLineNo">159</span>         * Analogous to {@link Set#add(Object)}.<a name="line.159"></a>
+<span class="sourceLineNo">160</span>         *<a name="line.160"></a>
+<span class="sourceLineNo">161</span>         * @param e element to be added to this set<a name="line.161"></a>
+<span class="sourceLineNo">162</span>         * @return &lt;tt&gt;true&lt;/tt&gt; if this set did not already contain the<a name="line.162"></a>
+<span class="sourceLineNo">163</span>         *         specified element<a name="line.163"></a>
+<span class="sourceLineNo">164</span>         */<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        boolean add(E e);<a name="line.165"></a>
+<span class="sourceLineNo">166</span>    }<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>    private static class RetrievableHashSet&lt;E&gt;<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        extends HashMap&lt;E, E&gt;<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        implements RetrievableSet&lt;E&gt;<a name="line.170"></a>
+<span class="sourceLineNo">171</span>    {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        public RetrievableHashSet(int initialCapacity) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            super(initialCapacity);<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        }<a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>        public E getKey(E e) {<a name="line.176"></a>
+<span class="sourceLineNo">177</span>            return super.get(e);<a name="line.177"></a>
+<span class="sourceLineNo">178</span>        }<a name="line.178"></a>
+<span class="sourceLineNo">179</span><a name="line.179"></a>
+<span class="sourceLineNo">180</span>        public boolean add(E e) {<a name="line.180"></a>
+<span class="sourceLineNo">181</span>            return super.put(e, e) == null;<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        }<a name="line.182"></a>
+<span class="sourceLineNo">183</span>    }<a name="line.183"></a>
+<span class="sourceLineNo">184</span>}<a name="line.184"></a>
+<span class="sourceLineNo">185</span><a name="line.185"></a>
+<span class="sourceLineNo">186</span>// End IntersectFunDef.java<a name="line.186"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

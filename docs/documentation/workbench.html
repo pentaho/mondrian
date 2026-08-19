@@ -1,0 +1,342 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+
+<script type="text/javascript" src="../web-scripts/en/script.content.js"></script>
+<script type="text/javascript" language="javascript" src="../web-scripts/formvalid.js"></script>
+
+<link href="../css/base.css" rel="stylesheet" type="text/css" media="all">
+
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta name="Keywords" content="pentaho open source business intelligence BI reporting analysis etl dashboards data integration mining" />
+<meta name="description" content="Spend 90% less on your next Business Intelligence project with Pentaho Reporting, Analysis, Dashboards
+, Data Integration / ETL, and Data Mining." />
+<meta name="robots" content="index,follow" />
+    
+<title>Pentaho Mondrian Documentation</title>
+
+    <!--[if lte IE 7]>
+    	<style type="text/css">
+    		#menu
+    			{
+    				zoom: 1;
+    				position: relative;
+    			}
+		
+			div#ddtopmenubar {
+				position:relative;
+				float:right;
+				margin: 0;
+				padding-top:5px;
+			}
+    	</style>
+    <![endif]-->
+</head>
+<body style="margin:15px;">
+<div style="border-bottom:1px solid #cecece; height:80px;">
+<div style="float:left;"><img src="../images/pentaho_logo.jpeg" alt="Pentaho Home" border="0"></div><h1 style="font-size:2em; padding-top: 48px;"><span style="margin-bottom:250px;">Mondrian Documentation</span></h1></div>
+<table cellpadding="0" cellspacing="0" style="padding:10px 0px 0px 0px;">
+	<tr>
+    	<td style="padding-right:10px; vertical-align:top;">
+            <table>
+      <tr>
+      <td>
+           <div id="tabz" style="height: 10px;">
+        <table border="0" cellspacing="0" cellpadding="0" width="100%">          
+          <tr>
+            <td><img src="../images/panel_left_top.png" width="18" height="10"></td>
+            <td style="border-top: 1px solid #c9c9c9; background-color:#FFFFFF; width:100%;"><img src="../images/clr.gif" width="9" height="9"></td>
+            <td><img src="../images/panel_right_top.png" width="18" height="10"></td>
+          </tr>
+        </table>
+        </div>
+        <div>
+        <table border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td background="../images/panel_left.png"><img src="../images/clr.gif" width="18" height="150"></td>
+            <td style="width:100%; background-color:#FFFFFF; white-space:nowrap; vertical-align:top;">
+            
+<a href="../documentation/olap.html" >What is OLAP</a><br />
+<a href="../documentation/installation.html" >Installation</a><br />
+&nbsp;&nbsp;- <a href="../documentation/installation_es.html" >(Spanish)</a><br />
+&nbsp;&nbsp;- <a href="../documentation/installation_fr.html" >(French)</a><br />
+<a href="../documentation/mdx.html" >MDX</a><br />
+<a href="../documentation/architecture.html" >Architecture</a><br />
+<a href="../documentation/schema.html" >Writing a Schema</a><br />
+<a href="../documentation/configuration.html" >Configuration</a><br />
+<a href="../documentation/performance.html" >Performance</a><br />
+<a href="../documentation/aggregate_tables.html" >Aggregate Tables</a><br />
+<a href="../documentation/cache_control.html" >Cache Control</a><br />
+<a href="../documentation/workbench.html" style="font-weight:bold; color:#EF8033;">Workbench</a><br />
+<a href="../documentation/command_runner.html" >Command Runner</a><br />
+<a href="../documentation/faq.html" >FAQ</a><br />
+<a href="../documentation/roadmap.html" >Roadmap</a><br />
+<a href="../documentation/components.html" >Components</a><br />
+<a target="_blank" href="../api">API</a><br />
+<a href="../documentation/developers_guide.html" >Developer's Guide</a><br />
+<a href="../documentation/developer_notes.html" >Developer Notes</a><br />
+<a href="/help">Help</a>            </td>
+            <td background="../images/panel_right.png"><img src="../images/clr.gif" width="18" height="150"></td>
+          </tr>
+          <tr>
+            <td><img src="../images/panel_left_bottom.png" width="18" height="22"></td>
+            <td background="../images/panel_bottom.png"><img src="../images/clr.gif" width="22" height="22"></td>
+            <td><img src="../images/panel_right_bottom.png" width="18" height="22"></td>
+          </tr>
+        </table>
+        </div>
+      </td>
+      </tr>
+      </table></td>
+        <td class="contentRightMargin" valign="top" width="100%" style="padding-top:10px;">
+            
+<!-- page title -->
+<div class="contentheading">Mondrian Schema Workbench</div>
+
+<!-- end page title -->
+
+<p>The Mondrian Schema Workbench is a designer interface that allows you to create and test Mondrian OLAP cube schemas visually.
+The Mondrian engine processes MDX requests with the ROLAP (Relational OLAP) schemas.
+These schema files are XML metadata models that are created in a specific structure used by the Mondrian engine.
+These XML models can be considered cube-like structures which utilize existing FACT and DIMENSION tables found in your RDBMS.
+It does not require that an actual physical cube is built or maintained; only that the metadata model is created.</p>
+        <p><b><i>Note</i></b>: For documentation on publishing Mondrian Schemas to Pentaho's BI Platform, see <a href="https://wiki.pentaho.com/display/PentahoDoc/Publishing+an+Analysis+Schema+Using+Schema+Workbench">Publishing an Analysis Schema Using the Schema Workbench</a>
+
+
+ <img src="images/workbench_schema_editor.png">
+
+<p>It provides the following functionality:</p>
+
+
+<ul>
+
+		<li>Schema editor integrated with the underlying data source for validation. (See above)</li>
+
+		<li>Test MDX queries against schema and database <a href="images/workbench_mdx_query_runner.png">Screenshot</a></li>
+
+		<li>Browse underlying databases structure <a href="images/workbench_jdbc_explorer.png">Screenshot</a></li>
+
+</ul>
+
+<p>A more detailed manual is <a href="schema_workbench.pdf">Schema Workbench Manual</a>
+<p></p>
+
+
+<h2>Using the Workbench</h2>
+
+<p></p>
+
+
+<table style="text-align: left; border-collapse: collapse;" border="1" cellpadding="10" cellspacing="0">
+
+  <tbody>
+
+
+    <tr>
+
+      <td style="vertical-align: top;">
+      <p>To build and create the workbench jar, at the command line, type:</p>
+      <pre>     ant workbench<br></pre>
+      <p>Example output:</p>
+Buildfile: build.xml<br>
+Overriding previous definition of reference to jdk<br>
+      <br>
+version:<br>
+      <br>
+prepare:<br>
+      <br>
+parser:<br>
+&nbsp; [javacup] Files are up to date.<br>
+      <br>
+generate.resources:<br>
+&nbsp;&nbsp; [resgen] C:\MONDRIAN_SourceForge\open\mondrian\src\main\mondrian\resource\MondrianResource.java is up to date<br>
+&nbsp;&nbsp; [resgen] C:\MONDRIAN_SourceForge\open\mondrian\classes\mondrian\resource\MondrianResource.properties is up to date<br>
+&nbsp;&nbsp; [resgen] C:\MONDRIAN_SourceForge\open\mondrian\src\main\mondrian\resource\MondrianResource_en_US.java is up to date<br>
+&nbsp;&nbsp; [resgen]
+C:\MONDRIAN_SourceForge\open\mondrian\classes\mondrian\resource\MondrianResource_en_US.properties
+is up to date<br>
+&nbsp;&nbsp; [resgen] C:\MONDRIAN_SourceForge\open\mondrian\src\main\mondrian\resource\MondrianResource_de_DE.java is up to date<br>
+&nbsp;&nbsp; [resgen]
+C:\MONDRIAN_SourceForge\open\mondrian\classes\mondrian\resource\MondrianResource_de_DE.properties
+is up to date<br>
+&nbsp;&nbsp; [resgen] C:\MONDRIAN_SourceForge\open\mondrian\src\main\mondrian\resource\MondrianResource_de.java is up to date<br>
+&nbsp;&nbsp; [resgen]
+C:\MONDRIAN_SourceForge\open\mondrian\classes\mondrian\resource\MondrianResource_de.properties
+is up to date<br>
+&nbsp;&nbsp; [resgen] C:\MONDRIAN_SourceForge\open\mondrian\src\main\mondrian\resource\MondrianResource_es_ES.java is up to date<br>
+&nbsp;&nbsp; [resgen]
+C:\MONDRIAN_SourceForge\open\mondrian\classes\mondrian\resource\MondrianResource_es_ES.properties
+is up to date<br>
+      <br>
+def:<br>
+      <br>
+compile.java:<br>
+      <br>
+compile:<br>
+      <br>
+info:<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] ==============================================================<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] | Mondrian configuration
+info&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+|<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] ==============================================================<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] project.location&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = C:\MONDRIAN_SourceForge\open\mondrian<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+jdk.home&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= C:\Program Files\Java\jdk1.5.0_05<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] catalina.home&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = C:\apache-tomcat-5.5.12<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] junit.home&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = C:\junit4.0<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] mondrian.foodmart.catalogURL = file:C:\MONDRIAN_SourceForge\open\mondrian/demo/FoodMart.xml<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] mondrian.foodmart.jdbcURL&nbsp;&nbsp;&nbsp; = jdbc:odbc:MondrianFoodMart<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo]
+mondrian.jdbcDrivers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+sun.jdbc.odbc.JdbcOdbcDriver<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [echo] ==============================================================<br>
+      <br>
+compile.tests:<br>
+      <br>
+jar:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [jar] Building jar: C:\MONDRIAN_SourceForge\open\mondrian\lib\mondrian.jar<br>
+      <br>
+workbench:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [jar] Building jar: C:\MONDRIAN_SourceForge\open\mondrian\lib\workbench.jar<br>
+      <br>
+BUILD SUCCESSFUL<br>
+Total time: 47 seconds<br>
+      <p>This will create <code>lib/workbench.jar</code>.&nbsp;Include drivers for your database on the classpath.</p>
+
+
+      <p>To start the workbench., at the command prompt, type</p>
+      <p>In Windows:</p>
+      <blockquote>
+        <pre>ant workbench-run<br></pre>
+        <p>Or the following</p>
+        <pre>java -jar lib/workbench.jar<br></pre>
+
+      </blockquote>
+
+
+      <p>In UNIX/Linux:</p>
+
+      <blockquote>
+        <pre>java -jar lib/workbench.jar </pre>
+
+      </blockquote>
+      </td>
+
+    </tr>
+
+
+    <tr>
+
+      <td style="vertical-align: top;">
+      <p>Set properties for
+      connection to your cube database via <code>Tools &gt; Preferences</code>.</p>
+
+
+      <blockquote>
+
+        <p><img src="images/workbench_preferences.png"></p>
+
+      </blockquote>
+
+
+      <p>These preferences and the last 4 schemas edited are kept in a "workbench.properties" file in the root of the classpath.</p>
+
+
+      <p>If you change the connection properties, you will need to close/save the existing schema editor(s) and restart to
+      see the effects.</p>
+      </td>
+
+    </tr>
+
+
+    <tr>
+
+      <td style="vertical-align: top;">
+
+      <p>Create a new schema or open an existing one.</p>
+
+
+      <p>If you open an existing schema, the Workbench validates that the tables
+      and columns underlying the cube definitions actually exist in the
+      database.</p>
+
+
+      <blockquote>
+          <img src="images/workbench_get_schema.png">
+      </blockquote>
+
+      </td>
+
+    </tr>
+
+
+    <tr>
+
+      <td style="vertical-align: top;">
+
+      <p>Create or edit elements in the schema. The Workbench validates your changes against the cube database tables and column names.</p>
+
+
+      <blockquote>
+          <img src="images/workbench_database_validation.png">
+      </blockquote>
+
+
+      <p>The Workbench validates edits against the Mondrian schema DTD.</p>
+
+
+      <blockquote>
+          <img src="images/workbench_database_error.png">
+      </blockquote>
+
+      </td>
+
+    </tr>
+
+
+    <tr>
+
+      <td style="vertical-align: top;">
+
+      <p>Save your schema and run some MDX queries to test.
+      Error messages and results are displayed.</p>
+
+
+      <blockquote>
+          <img src="images/workbench_mdx_query_runner.png">
+      </blockquote>
+
+      </td>
+
+    </tr>
+
+
+  </tbody>
+</table>
+
+
+<p>&nbsp;</p>
+
+
+<hr noshade="noshade" size="1">
+<p>
+    Author: Sherman Wood, JasperSoft; last modified April 2007.<br>
+
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/workbench.html?ac=22">log</a>)<br>
+    
+    Copyright (C) 2007-2007 JasperSoft<br>
+
+    Copyright (C) 2007-2009 Pentaho and others</p>
+
+
+<br>
+
+
+         </td>
+      </tr>
+</table>
+</body>
+</html>

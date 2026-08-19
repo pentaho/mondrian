@@ -1,0 +1,420 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2002-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2012 Pentaho and others<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>//<a name="line.10"></a>
+<span class="sourceLineNo">011</span>// jhyde, 21 March, 2002<a name="line.11"></a>
+<span class="sourceLineNo">012</span>*/<a name="line.12"></a>
+<span class="sourceLineNo">013</span>package mondrian.rolap.agg;<a name="line.13"></a>
+<span class="sourceLineNo">014</span><a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.olap.Util;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import mondrian.rolap.*;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import mondrian.spi.SegmentHeader;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>import org.apache.log4j.Logger;<a name="line.19"></a>
+<span class="sourceLineNo">020</span><a name="line.20"></a>
+<span class="sourceLineNo">021</span>import java.io.PrintWriter;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import java.util.*;<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>/**<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * A &lt;code&gt;Segment&lt;/code&gt; is a collection of cell values parameterized by<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * a measure, and a set of (column, value) pairs. An example of a segment is&lt;/p&gt;<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * &lt;blockquote&gt;<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *   &lt;p&gt;(Unit sales, Gender = 'F', State in {'CA','OR'}, Marital Status = &lt;i&gt;<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *   anything&lt;/i&gt;)&lt;/p&gt;<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * &lt;/blockquote&gt;<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *<a name="line.32"></a>
+<span class="sourceLineNo">033</span> * &lt;p&gt;All segments over the same set of columns belong to an Aggregation, in<a name="line.33"></a>
+<span class="sourceLineNo">034</span> * this case:&lt;/p&gt;<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *<a name="line.35"></a>
+<span class="sourceLineNo">036</span> * &lt;blockquote&gt;<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *   &lt;p&gt;('Sales' Star, Gender, State, Marital Status)&lt;/p&gt;<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * &lt;/blockquote&gt;<a name="line.38"></a>
+<span class="sourceLineNo">039</span> *<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * &lt;p&gt;Note that different measures (in the same Star) occupy the same<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * Aggregation.  Aggregations belong to the AggregationManager, a singleton.&lt;/p&gt;<a name="line.41"></a>
+<span class="sourceLineNo">042</span> *<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * &lt;p&gt;Segments are pinned during the evaluation of a single MDX query. The query<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * evaluates the expressions twice. The first pass, it finds which cell values<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * it needs, pins the segments containing the ones which are already present<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * (one pin-count for each cell value used), and builds a {@link CellRequest<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * cell request} for those which are not present. It executes the cell request<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * to bring the required cell values into the cache, again, pinned. Then it<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * evalutes the query a second time, knowing that all cell values are<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * available. Finally, it releases the pins.&lt;/p&gt;<a name="line.50"></a>
+<span class="sourceLineNo">051</span> *<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * &lt;p&gt;A Segment may have a list of {@link ExcludedRegion} objects. These are<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * caused by cache flushing. Usually a segment is a hypercube: it is defined by<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * a set of values on each of its axes. But after a cache flush request, a<a name="line.54"></a>
+<span class="sourceLineNo">055</span> * segment may have a rectangular 'hole', and therefore not be a hypercube<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * anymore.<a name="line.56"></a>
+<span class="sourceLineNo">057</span> *<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * &lt;p&gt;For example, the segment defined by {CA, OR, WA} * {F, M} is a<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * 2-dimensional hyper-rectangle with 6 cells. After flushing {CA, OR, TX} *<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * {F}, the result is 4 cells:<a name="line.60"></a>
+<span class="sourceLineNo">061</span> *<a name="line.61"></a>
+<span class="sourceLineNo">062</span> * &lt;pre&gt;<a name="line.62"></a>
+<span class="sourceLineNo">063</span> *     F     M<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * CA  out   in<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * OR  out   in<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * WA  in    in<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * &lt;/pre&gt;<a name="line.67"></a>
+<span class="sourceLineNo">068</span> *<a name="line.68"></a>
+<span class="sourceLineNo">069</span> * defined by the original segment minus the region ({CA, OR} * {F}).<a name="line.69"></a>
+<span class="sourceLineNo">070</span> *<a name="line.70"></a>
+<span class="sourceLineNo">071</span> * @author jhyde<a name="line.71"></a>
+<span class="sourceLineNo">072</span> * @since 21 March, 2002<a name="line.72"></a>
+<span class="sourceLineNo">073</span> */<a name="line.73"></a>
+<span class="sourceLineNo">074</span>public class Segment {<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    private static int nextId = 0; // generator for "id"<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>    final int id; // for debug<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    private String desc;<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>    /**<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * This is set in the load method and is used during<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     * the processing of a particular aggregate load.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     */<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    protected final RolapStar.Column[] columns;<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>    public final RolapStar.Measure measure;<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>    /**<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     * An array of axes, one for each constraining column, containing the values<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     * returned for that constraining column.<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     */<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    public final StarColumnPredicate[] predicates;<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>    protected final RolapStar star;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    protected final BitKey constrainedColumnsBitKey;<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>    /**<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     * List of regions to ignore when reading this segment. This list is<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     * populated when a region is flushed. The cells for these regions may be<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     * physically in the segment, because trimming segments can be expensive,<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     * but should still be ignored.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     */<a name="line.102"></a>
+<span class="sourceLineNo">103</span>    protected final List&lt;ExcludedRegion&gt; excludedRegions;<a name="line.103"></a>
+<span class="sourceLineNo">104</span><a name="line.104"></a>
+<span class="sourceLineNo">105</span>    private final int aggregationKeyHashCode;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>    protected final List&lt;StarPredicate&gt; compoundPredicateList;<a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span>    private final SegmentHeader segmentHeader;<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>    private static final Logger LOGGER = Logger.getLogger(Segment.class);<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>    /**<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     * Creates a &lt;code&gt;Segment&lt;/code&gt;; it's not loaded yet.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     * @param star Star that this Segment belongs to<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     * @param measure Measure whose values this Segment contains<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     * @param predicates List of predicates constraining each axis<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     * @param excludedRegions List of regions which are not in this segment.<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     */<a name="line.119"></a>
+<span class="sourceLineNo">120</span>    public Segment(<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        RolapStar star,<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        BitKey constrainedColumnsBitKey,<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        RolapStar.Column[] columns,<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        RolapStar.Measure measure,<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        StarColumnPredicate[] predicates,<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        List&lt;ExcludedRegion&gt; excludedRegions,<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        final List&lt;StarPredicate&gt; compoundPredicateList)<a name="line.127"></a>
+<span class="sourceLineNo">128</span>    {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        this.id = nextId++;<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        this.star = star;<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        this.constrainedColumnsBitKey = constrainedColumnsBitKey;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        this.columns = columns;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        this.measure = measure;<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        this.predicates = predicates;<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        this.excludedRegions = excludedRegions;<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        this.compoundPredicateList = compoundPredicateList;<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        final List&lt;BitKey&gt; compoundPredicateBitKeys =<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            compoundPredicateList == null<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                ? null<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                : new AbstractList&lt;BitKey&gt;() {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                    public BitKey get(int index) {<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                        return compoundPredicateList.get(index)<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                            .getConstrainedColumnBitKey();<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                    }<a name="line.144"></a>
+<span class="sourceLineNo">145</span><a name="line.145"></a>
+<span class="sourceLineNo">146</span>                    public int size() {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                        return compoundPredicateList.size();<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                    }<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                };<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        this.aggregationKeyHashCode =<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            AggregationKey.computeHashCode(<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                constrainedColumnsBitKey,<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                star,<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                compoundPredicateBitKeys);<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        this.segmentHeader = SegmentBuilder.toHeader(this);<a name="line.155"></a>
+<span class="sourceLineNo">156</span>    }<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>    /**<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     * Returns the constrained columns.<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     */<a name="line.160"></a>
+<span class="sourceLineNo">161</span>    public RolapStar.Column[] getColumns() {<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        return columns;<a name="line.162"></a>
+<span class="sourceLineNo">163</span>    }<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span>    /**<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     * Returns the star.<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     */<a name="line.167"></a>
+<span class="sourceLineNo">168</span>    public RolapStar getStar() {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        return star;<a name="line.169"></a>
+<span class="sourceLineNo">170</span>    }<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>    /**<a name="line.172"></a>
+<span class="sourceLineNo">173</span>     * Returns the list of compound predicates.<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     */<a name="line.174"></a>
+<span class="sourceLineNo">175</span>    public List&lt;StarPredicate&gt; getCompoundPredicateList() {<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        return compoundPredicateList;<a name="line.176"></a>
+<span class="sourceLineNo">177</span>    }<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>    /**<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     * Returns the BitKey for ALL columns (Measures and Levels) involved in the<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     * query.<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     */<a name="line.182"></a>
+<span class="sourceLineNo">183</span>    public BitKey getConstrainedColumnsBitKey() {<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        return constrainedColumnsBitKey;<a name="line.184"></a>
+<span class="sourceLineNo">185</span>    }<a name="line.185"></a>
+<span class="sourceLineNo">186</span><a name="line.186"></a>
+<span class="sourceLineNo">187</span>    private void describe(StringBuilder buf, boolean values) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>        final String sep = Util.nl + "    ";<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        buf.append(printSegmentHeaderInfo(sep));<a name="line.189"></a>
+<span class="sourceLineNo">190</span><a name="line.190"></a>
+<span class="sourceLineNo">191</span>        for (int i = 0; i &lt; columns.length; i++) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>            buf.append(sep);<a name="line.192"></a>
+<span class="sourceLineNo">193</span>            buf.append(columns[i].getExpression().getGenericExpression());<a name="line.193"></a>
+<span class="sourceLineNo">194</span>            describeAxes(buf, i, values);<a name="line.194"></a>
+<span class="sourceLineNo">195</span>        }<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        if (!excludedRegions.isEmpty()) {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>            buf.append(sep);<a name="line.197"></a>
+<span class="sourceLineNo">198</span>            buf.append("excluded={");<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            int k = 0;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            for (ExcludedRegion excludedRegion : excludedRegions) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                if (k++ &gt; 0) {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                    buf.append(", ");<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                }<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                excludedRegion.describe(buf);<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            buf.append('}');<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        }<a name="line.207"></a>
+<span class="sourceLineNo">208</span>        buf.append('}');<a name="line.208"></a>
+<span class="sourceLineNo">209</span>    }<a name="line.209"></a>
+<span class="sourceLineNo">210</span><a name="line.210"></a>
+<span class="sourceLineNo">211</span>    protected void describeAxes(StringBuilder buf, int i, boolean values) {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>        predicates[i].describe(buf);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>    }<a name="line.213"></a>
+<span class="sourceLineNo">214</span><a name="line.214"></a>
+<span class="sourceLineNo">215</span>    private String printSegmentHeaderInfo(String sep) {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        StringBuilder buf = new StringBuilder();<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        buf.append("Segment #");<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        buf.append(id);<a name="line.218"></a>
+<span class="sourceLineNo">219</span>        buf.append(" {");<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        buf.append(sep);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>        buf.append("measure=");<a name="line.221"></a>
+<span class="sourceLineNo">222</span>        buf.append(<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            measure.getExpression() == null<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                ? measure.getAggregator().getExpression("*")<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                : measure.getAggregator().getExpression(<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                    measure.getExpression().getGenericExpression()));<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        return buf.toString();<a name="line.227"></a>
+<span class="sourceLineNo">228</span>    }<a name="line.228"></a>
+<span class="sourceLineNo">229</span><a name="line.229"></a>
+<span class="sourceLineNo">230</span>    public String toString() {<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        if (this.desc == null) {<a name="line.231"></a>
+<span class="sourceLineNo">232</span>            StringBuilder buf = new StringBuilder(64);<a name="line.232"></a>
+<span class="sourceLineNo">233</span>            describe(buf, false);<a name="line.233"></a>
+<span class="sourceLineNo">234</span>            this.desc = buf.toString();<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        }<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        return this.desc;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>    }<a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span>    /**<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     * Returns whether a cell value is excluded from this segment.<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     */<a name="line.241"></a>
+<span class="sourceLineNo">242</span>    protected final boolean isExcluded(Object[] keys) {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>        // Performance critical: cannot use foreach<a name="line.243"></a>
+<span class="sourceLineNo">244</span>        final int n = excludedRegions.size();<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        //noinspection ForLoopReplaceableByForEach<a name="line.245"></a>
+<span class="sourceLineNo">246</span>        for (int i = 0; i &lt; n; i++) {<a name="line.246"></a>
+<span class="sourceLineNo">247</span>            ExcludedRegion excludedRegion = excludedRegions.get(i);<a name="line.247"></a>
+<span class="sourceLineNo">248</span>            if (excludedRegion.wouldContain(keys)) {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                return true;<a name="line.249"></a>
+<span class="sourceLineNo">250</span>            }<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        }<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        return false;<a name="line.252"></a>
+<span class="sourceLineNo">253</span>    }<a name="line.253"></a>
+<span class="sourceLineNo">254</span><a name="line.254"></a>
+<span class="sourceLineNo">255</span>    /**<a name="line.255"></a>
+<span class="sourceLineNo">256</span>     * Prints the state of this &lt;code&gt;Segment&lt;/code&gt;, including constraints<a name="line.256"></a>
+<span class="sourceLineNo">257</span>     * and values. Blocks the current thread until the segment is loaded.<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     *<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     * @param pw Writer<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     */<a name="line.260"></a>
+<span class="sourceLineNo">261</span>    public void print(PrintWriter pw) {<a name="line.261"></a>
+<span class="sourceLineNo">262</span>        final StringBuilder buf = new StringBuilder();<a name="line.262"></a>
+<span class="sourceLineNo">263</span>        describe(buf, true);<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        pw.print(buf.toString());<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        pw.println();<a name="line.265"></a>
+<span class="sourceLineNo">266</span>    }<a name="line.266"></a>
+<span class="sourceLineNo">267</span><a name="line.267"></a>
+<span class="sourceLineNo">268</span>    public List&lt;ExcludedRegion&gt; getExcludedRegions() {<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        return excludedRegions;<a name="line.269"></a>
+<span class="sourceLineNo">270</span>    }<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>    SegmentDataset createDataset(<a name="line.272"></a>
+<span class="sourceLineNo">273</span>        SegmentAxis[] axes,<a name="line.273"></a>
+<span class="sourceLineNo">274</span>        boolean sparse,<a name="line.274"></a>
+<span class="sourceLineNo">275</span>        SqlStatement.Type type,<a name="line.275"></a>
+<span class="sourceLineNo">276</span>        int size)<a name="line.276"></a>
+<span class="sourceLineNo">277</span>    {<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        if (sparse) {<a name="line.278"></a>
+<span class="sourceLineNo">279</span>            return new SparseSegmentDataset();<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        } else {<a name="line.280"></a>
+<span class="sourceLineNo">281</span>            switch (type) {<a name="line.281"></a>
+<span class="sourceLineNo">282</span>            case OBJECT:<a name="line.282"></a>
+<span class="sourceLineNo">283</span>            case LONG:<a name="line.283"></a>
+<span class="sourceLineNo">284</span>            case STRING:<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                return new DenseObjectSegmentDataset(axes, size);<a name="line.285"></a>
+<span class="sourceLineNo">286</span>            case INT:<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                return new DenseIntSegmentDataset(axes, size);<a name="line.287"></a>
+<span class="sourceLineNo">288</span>            case DOUBLE:<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                return new DenseDoubleSegmentDataset(axes, size);<a name="line.289"></a>
+<span class="sourceLineNo">290</span>            default:<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                throw Util.unexpected(type);<a name="line.291"></a>
+<span class="sourceLineNo">292</span>            }<a name="line.292"></a>
+<span class="sourceLineNo">293</span>        }<a name="line.293"></a>
+<span class="sourceLineNo">294</span>    }<a name="line.294"></a>
+<span class="sourceLineNo">295</span><a name="line.295"></a>
+<span class="sourceLineNo">296</span>    public boolean matches(<a name="line.296"></a>
+<span class="sourceLineNo">297</span>        AggregationKey aggregationKey,<a name="line.297"></a>
+<span class="sourceLineNo">298</span>        RolapStar.Measure measure)<a name="line.298"></a>
+<span class="sourceLineNo">299</span>    {<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        // Perform high-selectivity comparisons first.<a name="line.300"></a>
+<span class="sourceLineNo">301</span>        return aggregationKeyHashCode == aggregationKey.hashCode()<a name="line.301"></a>
+<span class="sourceLineNo">302</span>            &amp;&amp; this.measure == measure<a name="line.302"></a>
+<span class="sourceLineNo">303</span>            &amp;&amp; matchesInternal(aggregationKey);<a name="line.303"></a>
+<span class="sourceLineNo">304</span>    }<a name="line.304"></a>
+<span class="sourceLineNo">305</span><a name="line.305"></a>
+<span class="sourceLineNo">306</span>    private boolean matchesInternal(AggregationKey aggKey) {<a name="line.306"></a>
+<span class="sourceLineNo">307</span>        return<a name="line.307"></a>
+<span class="sourceLineNo">308</span>            constrainedColumnsBitKey.equals(<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                aggKey.getConstrainedColumnsBitKey())<a name="line.309"></a>
+<span class="sourceLineNo">310</span>            &amp;&amp; star.equals(aggKey.getStar())<a name="line.310"></a>
+<span class="sourceLineNo">311</span>            &amp;&amp; AggregationKey.equal(<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                compoundPredicateList,<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                aggKey.compoundPredicateList);<a name="line.313"></a>
+<span class="sourceLineNo">314</span>    }<a name="line.314"></a>
+<span class="sourceLineNo">315</span><a name="line.315"></a>
+<span class="sourceLineNo">316</span>    /**<a name="line.316"></a>
+<span class="sourceLineNo">317</span>     * Definition of a region of values which are not in a segment.<a name="line.317"></a>
+<span class="sourceLineNo">318</span>     */<a name="line.318"></a>
+<span class="sourceLineNo">319</span>    public static interface ExcludedRegion {<a name="line.319"></a>
+<span class="sourceLineNo">320</span>        /**<a name="line.320"></a>
+<span class="sourceLineNo">321</span>         * Tells whether this exclusion region would contain<a name="line.321"></a>
+<span class="sourceLineNo">322</span>         * the cell corresponding to the keys.<a name="line.322"></a>
+<span class="sourceLineNo">323</span>         */<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        public boolean wouldContain(Object[] keys);<a name="line.324"></a>
+<span class="sourceLineNo">325</span><a name="line.325"></a>
+<span class="sourceLineNo">326</span>        /**<a name="line.326"></a>
+<span class="sourceLineNo">327</span>         * Returns the arity of this region.<a name="line.327"></a>
+<span class="sourceLineNo">328</span>         */<a name="line.328"></a>
+<span class="sourceLineNo">329</span>        public int getArity();<a name="line.329"></a>
+<span class="sourceLineNo">330</span><a name="line.330"></a>
+<span class="sourceLineNo">331</span>        /**<a name="line.331"></a>
+<span class="sourceLineNo">332</span>         * Describes this exclusion region in a human readable way.<a name="line.332"></a>
+<span class="sourceLineNo">333</span>         */<a name="line.333"></a>
+<span class="sourceLineNo">334</span>        public void describe(StringBuilder buf);<a name="line.334"></a>
+<span class="sourceLineNo">335</span><a name="line.335"></a>
+<span class="sourceLineNo">336</span>        /**<a name="line.336"></a>
+<span class="sourceLineNo">337</span>         * Returns an approximation of the number of cells exceluded<a name="line.337"></a>
+<span class="sourceLineNo">338</span>         * in this region.<a name="line.338"></a>
+<span class="sourceLineNo">339</span>         */<a name="line.339"></a>
+<span class="sourceLineNo">340</span>        public int getCellCount();<a name="line.340"></a>
+<span class="sourceLineNo">341</span>    }<a name="line.341"></a>
+<span class="sourceLineNo">342</span><a name="line.342"></a>
+<span class="sourceLineNo">343</span>    public SegmentHeader getHeader() {<a name="line.343"></a>
+<span class="sourceLineNo">344</span>        return this.segmentHeader;<a name="line.344"></a>
+<span class="sourceLineNo">345</span>    }<a name="line.345"></a>
+<span class="sourceLineNo">346</span>}<a name="line.346"></a>
+<span class="sourceLineNo">347</span><a name="line.347"></a>
+<span class="sourceLineNo">348</span>// End Segment.java<a name="line.348"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

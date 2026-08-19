@@ -1,0 +1,684 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2001-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2013 Pentaho and others<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.rolap;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.olap.*;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.rolap.agg.*;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.spi.MemberFormatter;<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>/**<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * RolapCubeLevel wraps a RolapLevel for a specific Cube.<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * @author Will Gorman, 19 October 2007<a name="line.20"></a>
+<span class="sourceLineNo">021</span> */<a name="line.21"></a>
+<span class="sourceLineNo">022</span>public class RolapCubeLevel extends RolapLevel {<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>    private final RolapLevel rolapLevel;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>    private RolapStar.Column starKeyColumn = null;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>    /**<a name="line.26"></a>
+<span class="sourceLineNo">027</span>     * For a parent-child hierarchy with a closure provided by the schema,<a name="line.27"></a>
+<span class="sourceLineNo">028</span>     * the equivalent level in the closed hierarchy; otherwise null.<a name="line.28"></a>
+<span class="sourceLineNo">029</span>     */<a name="line.29"></a>
+<span class="sourceLineNo">030</span>    private RolapCubeLevel closedPeerCubeLevel;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>    protected LevelReader levelReader;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>    private final RolapCubeHierarchy cubeHierarchy;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>    private final RolapCubeDimension cubeDimension;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>    private final RolapCube cube;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>    private final RolapCubeLevel parentCubeLevel;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>    private RolapCubeLevel childCubeLevel;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>    public RolapCubeLevel(RolapLevel level, RolapCubeHierarchy cubeHierarchy) {<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        super(<a name="line.39"></a>
+<span class="sourceLineNo">040</span>            cubeHierarchy,<a name="line.40"></a>
+<span class="sourceLineNo">041</span>            level.getName(),<a name="line.41"></a>
+<span class="sourceLineNo">042</span>            level.getCaption(),<a name="line.42"></a>
+<span class="sourceLineNo">043</span>            level.isVisible(),<a name="line.43"></a>
+<span class="sourceLineNo">044</span>            level.getDescription(),<a name="line.44"></a>
+<span class="sourceLineNo">045</span>            level.getDepth(),<a name="line.45"></a>
+<span class="sourceLineNo">046</span>            level.getKeyExp(),<a name="line.46"></a>
+<span class="sourceLineNo">047</span>            level.getNameExp(),<a name="line.47"></a>
+<span class="sourceLineNo">048</span>            level.getCaptionExp(),<a name="line.48"></a>
+<span class="sourceLineNo">049</span>            level.getOrdinalExp(),<a name="line.49"></a>
+<span class="sourceLineNo">050</span>            level.getParentExp(),<a name="line.50"></a>
+<span class="sourceLineNo">051</span>            level.getNullParentValue(),<a name="line.51"></a>
+<span class="sourceLineNo">052</span>            null,<a name="line.52"></a>
+<span class="sourceLineNo">053</span>            level.getProperties(),<a name="line.53"></a>
+<span class="sourceLineNo">054</span>            level.getFlags(),<a name="line.54"></a>
+<span class="sourceLineNo">055</span>            level.getDatatype(),<a name="line.55"></a>
+<span class="sourceLineNo">056</span>            level.getInternalType(),<a name="line.56"></a>
+<span class="sourceLineNo">057</span>            level.getHideMemberCondition(),<a name="line.57"></a>
+<span class="sourceLineNo">058</span>            level.getLevelType(),<a name="line.58"></a>
+<span class="sourceLineNo">059</span>            "" + level.getApproxRowCount(),<a name="line.59"></a>
+<span class="sourceLineNo">060</span>            level.getAnnotationMap());<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span>        this.rolapLevel = level;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        this.cubeHierarchy = cubeHierarchy;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        this.cubeDimension = (RolapCubeDimension) cubeHierarchy.getDimension();<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        cube = cubeDimension.getCube();<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        parentCubeLevel = (RolapCubeLevel) super.getParentLevel();<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        if (parentCubeLevel != null) {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>            parentCubeLevel.childCubeLevel = this;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        }<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        MondrianDef.RelationOrJoin hierarchyRel = cubeHierarchy.getRelation();<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        keyExp = convertExpression(level.getKeyExp(), hierarchyRel);<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        nameExp = convertExpression(level.getNameExp(), hierarchyRel);<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        captionExp = convertExpression(level.getCaptionExp(), hierarchyRel);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        ordinalExp = convertExpression(level.getOrdinalExp(), hierarchyRel);<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        parentExp = convertExpression(level.getParentExp(), hierarchyRel);<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        properties = convertProperties(level.getProperties(), hierarchyRel);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    }<a name="line.77"></a>
+<span class="sourceLineNo">078</span><a name="line.78"></a>
+<span class="sourceLineNo">079</span>    void init(MondrianDef.CubeDimension xmlDimension) {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        if (isAll()) {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>            this.levelReader = new AllLevelReaderImpl();<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        } else if (getLevelType() == LevelType.Null) {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>            this.levelReader = new NullLevelReader();<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        } else if (rolapLevel.xmlClosure != null) {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>            RolapDimension dimension =<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                (RolapDimension)<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                    rolapLevel.getClosedPeer().getHierarchy().getDimension();<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>            RolapCubeDimension cubeDimension =<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                new RolapCubeDimension(<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                    getCube(), dimension, xmlDimension,<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                    getDimension().getName() + "$Closure",<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                    -1,<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                    getCube().hierarchyList,<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                    getDimension().isHighCardinality());<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>            // RME HACK<a name="line.97"></a>
+<span class="sourceLineNo">098</span>            //  WG: Note that the reason for registering this usage is so that<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            //  when registerDimension is called, the hierarchy is registered<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            //  successfully to the star.  This type of hack will go away once<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            //  HierarchyUsage is phased out<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            if (! getCube().isVirtual()) {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                getCube().createUsage(<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                    (RolapCubeHierarchy) cubeDimension.getHierarchies()[0],<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                    xmlDimension);<a name="line.105"></a>
+<span class="sourceLineNo">106</span>            }<a name="line.106"></a>
+<span class="sourceLineNo">107</span>            cubeDimension.init(xmlDimension);<a name="line.107"></a>
+<span class="sourceLineNo">108</span>            getCube().registerDimension(cubeDimension);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>            closedPeerCubeLevel = (RolapCubeLevel)<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                cubeDimension.getHierarchies()[0].getLevels()[1];<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>            if (!getCube().isVirtual()) {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                getCube().closureColumnBitKey.set(<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                    closedPeerCubeLevel.starKeyColumn.getBitPosition());<a name="line.114"></a>
+<span class="sourceLineNo">115</span>            }<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>            this.levelReader = new ParentChildLevelReaderImpl(this);<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        } else {<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            this.levelReader = new RegularLevelReader(this);<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        }<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    }<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>    private RolapProperty[] convertProperties(<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        RolapProperty[] properties,<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        MondrianDef.RelationOrJoin rel)<a name="line.125"></a>
+<span class="sourceLineNo">126</span>    {<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        if (properties == null) {<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            return null;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        }<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>        RolapProperty[] convertedProperties =<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            new RolapProperty[properties.length];<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        for (int i = 0; i &lt; properties.length; i++) {<a name="line.133"></a>
+<span class="sourceLineNo">134</span>            RolapProperty old = properties[i];<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            convertedProperties[i] =<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                new RolapProperty(<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                    old.getName(),<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                    old.getType(),<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                    convertExpression(old.getExp(), rel),<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                    old.getFormatter(),<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                    old.getCaption(),<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                    old.dependsOnLevelValue(),<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                    old.isInternal(),<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                    old.getDescription());<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        }<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        return convertedProperties;<a name="line.146"></a>
+<span class="sourceLineNo">147</span>    }<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>    /**<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     * Converts an expression to new aliases if necessary.<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     *<a name="line.151"></a>
+<span class="sourceLineNo">152</span>     * @param exp the expression to convert<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     * @param rel the parent relation<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     * @return returns the converted expression<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     */<a name="line.155"></a>
+<span class="sourceLineNo">156</span>    private MondrianDef.Expression convertExpression(<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        MondrianDef.Expression exp,<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        MondrianDef.RelationOrJoin rel)<a name="line.158"></a>
+<span class="sourceLineNo">159</span>    {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        if (getHierarchy().isUsingCubeFact()) {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            // no conversion necessary<a name="line.161"></a>
+<span class="sourceLineNo">162</span>            return exp;<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        } else if (exp == null || rel == null) {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            return null;<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        } else if (exp instanceof MondrianDef.Column) {<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            MondrianDef.Column col = (MondrianDef.Column)exp;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            if (rel instanceof MondrianDef.Table) {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                return new MondrianDef.Column(<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                    ((MondrianDef.Table) rel).getAlias(),<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                    col.getColumnName());<a name="line.170"></a>
+<span class="sourceLineNo">171</span>            } else if (rel instanceof MondrianDef.Join<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                || rel instanceof MondrianDef.Relation)<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            {<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                // need to determine correct name of alias for this level.<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                // this may be defined in level<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                // col.table<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                String alias = getHierarchy().lookupAlias(col.getTableAlias());<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                return new MondrianDef.Column(alias, col.getColumnName());<a name="line.178"></a>
+<span class="sourceLineNo">179</span>            }<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        } else if (exp instanceof MondrianDef.ExpressionView) {<a name="line.180"></a>
+<span class="sourceLineNo">181</span>            // this is a limitation, in the future, we may need<a name="line.181"></a>
+<span class="sourceLineNo">182</span>            // to replace the table name in the sql provided<a name="line.182"></a>
+<span class="sourceLineNo">183</span>            // with the new aliased name<a name="line.183"></a>
+<span class="sourceLineNo">184</span>            return exp;<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        }<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        throw new RuntimeException(<a name="line.186"></a>
+<span class="sourceLineNo">187</span>            "conversion of Class " + exp.getClass()<a name="line.187"></a>
+<span class="sourceLineNo">188</span>            + " unsupported at this time");<a name="line.188"></a>
+<span class="sourceLineNo">189</span>    }<a name="line.189"></a>
+<span class="sourceLineNo">190</span><a name="line.190"></a>
+<span class="sourceLineNo">191</span>    public void setStarKeyColumn(RolapStar.Column column) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        starKeyColumn = column;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>    }<a name="line.193"></a>
+<span class="sourceLineNo">194</span><a name="line.194"></a>
+<span class="sourceLineNo">195</span>    /**<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     * This is the RolapStar.Column that is related to this RolapCubeLevel<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     *<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     * @return the RolapStar.Column related to this RolapCubeLevel<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     */<a name="line.199"></a>
+<span class="sourceLineNo">200</span>    public RolapStar.Column getStarKeyColumn() {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        return starKeyColumn;<a name="line.201"></a>
+<span class="sourceLineNo">202</span>    }<a name="line.202"></a>
+<span class="sourceLineNo">203</span><a name="line.203"></a>
+<span class="sourceLineNo">204</span>    LevelReader getLevelReader() {<a name="line.204"></a>
+<span class="sourceLineNo">205</span>        return levelReader;<a name="line.205"></a>
+<span class="sourceLineNo">206</span>    }<a name="line.206"></a>
+<span class="sourceLineNo">207</span><a name="line.207"></a>
+<span class="sourceLineNo">208</span>    /**<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     * this method returns the RolapStar.Column if non-virtual,<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     * if virtual, find the base cube level and return it's<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     * column<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     *<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     * @param baseCube the base cube for the specificed virtual level<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     * @return the RolapStar.Column related to this RolapCubeLevel<a name="line.214"></a>
+<span class="sourceLineNo">215</span>     */<a name="line.215"></a>
+<span class="sourceLineNo">216</span>    public RolapStar.Column getBaseStarKeyColumn(RolapCube baseCube) {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        RolapStar.Column column = null;<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        if (getCube().isVirtual() &amp;&amp; baseCube != null) {<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            RolapCubeLevel lvl = baseCube.findBaseCubeLevel(this);<a name="line.219"></a>
+<span class="sourceLineNo">220</span>            if (lvl != null) {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                column = lvl.getStarKeyColumn();<a name="line.221"></a>
+<span class="sourceLineNo">222</span>            }<a name="line.222"></a>
+<span class="sourceLineNo">223</span>        } else {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            column = getStarKeyColumn();<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        return column;<a name="line.226"></a>
+<span class="sourceLineNo">227</span>    }<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>    /**<a name="line.229"></a>
+<span class="sourceLineNo">230</span>     * Returns the (non virtual) cube this level belongs to.<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     *<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     * @return cube<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     */<a name="line.233"></a>
+<span class="sourceLineNo">234</span>    public final RolapCube getCube() {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        return cube;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>    }<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span>    // override with stricter return type<a name="line.238"></a>
+<span class="sourceLineNo">239</span>    public final RolapCubeDimension getDimension() {<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        return cubeDimension;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>    }<a name="line.241"></a>
+<span class="sourceLineNo">242</span><a name="line.242"></a>
+<span class="sourceLineNo">243</span>    // override with stricter return type<a name="line.243"></a>
+<span class="sourceLineNo">244</span>    public final RolapCubeHierarchy getHierarchy() {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        return cubeHierarchy;<a name="line.245"></a>
+<span class="sourceLineNo">246</span>    }<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>    // override with stricter return type<a name="line.248"></a>
+<span class="sourceLineNo">249</span>    public final RolapCubeLevel getChildLevel() {<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        return childCubeLevel;<a name="line.250"></a>
+<span class="sourceLineNo">251</span>    }<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>    // override with stricter return type<a name="line.253"></a>
+<span class="sourceLineNo">254</span>    public final RolapCubeLevel getParentLevel() {<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        return parentCubeLevel;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>    }<a name="line.256"></a>
+<span class="sourceLineNo">257</span><a name="line.257"></a>
+<span class="sourceLineNo">258</span>    public String getCaption() {<a name="line.258"></a>
+<span class="sourceLineNo">259</span>        return rolapLevel.getCaption();<a name="line.259"></a>
+<span class="sourceLineNo">260</span>    }<a name="line.260"></a>
+<span class="sourceLineNo">261</span><a name="line.261"></a>
+<span class="sourceLineNo">262</span>    public void setCaption(String caption) {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>        // Cannot set the caption on the underlying level; other cube levels<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        // might be using it.<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        throw new UnsupportedOperationException();<a name="line.265"></a>
+<span class="sourceLineNo">266</span>    }<a name="line.266"></a>
+<span class="sourceLineNo">267</span><a name="line.267"></a>
+<span class="sourceLineNo">268</span>    /**<a name="line.268"></a>
+<span class="sourceLineNo">269</span>     * Returns the underlying level.<a name="line.269"></a>
+<span class="sourceLineNo">270</span>     *<a name="line.270"></a>
+<span class="sourceLineNo">271</span>     * @return Underlying level<a name="line.271"></a>
+<span class="sourceLineNo">272</span>     */<a name="line.272"></a>
+<span class="sourceLineNo">273</span>    public RolapLevel getRolapLevel() {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>        return rolapLevel;<a name="line.274"></a>
+<span class="sourceLineNo">275</span>    }<a name="line.275"></a>
+<span class="sourceLineNo">276</span><a name="line.276"></a>
+<span class="sourceLineNo">277</span>    public boolean equals(RolapCubeLevel level) {<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        if (this == level) {<a name="line.278"></a>
+<span class="sourceLineNo">279</span>            return true;<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        }<a name="line.280"></a>
+<span class="sourceLineNo">281</span>        // verify the levels are part of the same hierarchy<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        return super.equals(level)<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                &amp;&amp; getCube().equals(level.getCube());<a name="line.283"></a>
+<span class="sourceLineNo">284</span>    }<a name="line.284"></a>
+<span class="sourceLineNo">285</span><a name="line.285"></a>
+<span class="sourceLineNo">286</span>    boolean hasClosedPeer() {<a name="line.286"></a>
+<span class="sourceLineNo">287</span>        return closedPeerCubeLevel != null;<a name="line.287"></a>
+<span class="sourceLineNo">288</span>    }<a name="line.288"></a>
+<span class="sourceLineNo">289</span><a name="line.289"></a>
+<span class="sourceLineNo">290</span>    public RolapCubeLevel getClosedPeer() {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>        return closedPeerCubeLevel;<a name="line.291"></a>
+<span class="sourceLineNo">292</span>    }<a name="line.292"></a>
+<span class="sourceLineNo">293</span><a name="line.293"></a>
+<span class="sourceLineNo">294</span>    public MemberFormatter getMemberFormatter() {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>        return rolapLevel.getMemberFormatter();<a name="line.295"></a>
+<span class="sourceLineNo">296</span>    }<a name="line.296"></a>
+<span class="sourceLineNo">297</span><a name="line.297"></a>
+<span class="sourceLineNo">298</span><a name="line.298"></a>
+<span class="sourceLineNo">299</span><a name="line.299"></a>
+<span class="sourceLineNo">300</span>    /**<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     * Encapsulation of the difference between levels in terms of how<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     * constraints are generated. There are implementations for 'all' levels,<a name="line.302"></a>
+<span class="sourceLineNo">303</span>     * the 'null' level, parent-child levels and regular levels.<a name="line.303"></a>
+<span class="sourceLineNo">304</span>     */<a name="line.304"></a>
+<span class="sourceLineNo">305</span>    interface LevelReader {<a name="line.305"></a>
+<span class="sourceLineNo">306</span><a name="line.306"></a>
+<span class="sourceLineNo">307</span>        /**<a name="line.307"></a>
+<span class="sourceLineNo">308</span>         * Adds constraints to a cell request for a member of this level.<a name="line.308"></a>
+<span class="sourceLineNo">309</span>         *<a name="line.309"></a>
+<span class="sourceLineNo">310</span>         * @param member Member to be constrained<a name="line.310"></a>
+<span class="sourceLineNo">311</span>         * @param baseCube base cube if virtual level<a name="line.311"></a>
+<span class="sourceLineNo">312</span>         * @param request Request to be constrained<a name="line.312"></a>
+<span class="sourceLineNo">313</span>         *<a name="line.313"></a>
+<span class="sourceLineNo">314</span>         * @return true if request is unsatisfiable (e.g. if the member is the<a name="line.314"></a>
+<span class="sourceLineNo">315</span>         * null member)<a name="line.315"></a>
+<span class="sourceLineNo">316</span>         */<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        boolean constrainRequest(<a name="line.317"></a>
+<span class="sourceLineNo">318</span>            RolapCubeMember member,<a name="line.318"></a>
+<span class="sourceLineNo">319</span>            RolapCube baseCube,<a name="line.319"></a>
+<span class="sourceLineNo">320</span>            CellRequest request);<a name="line.320"></a>
+<span class="sourceLineNo">321</span><a name="line.321"></a>
+<span class="sourceLineNo">322</span>        /**<a name="line.322"></a>
+<span class="sourceLineNo">323</span>         * Adds constraints to a cache region for a member of this level.<a name="line.323"></a>
+<span class="sourceLineNo">324</span>         *<a name="line.324"></a>
+<span class="sourceLineNo">325</span>         * @param predicate Predicate<a name="line.325"></a>
+<span class="sourceLineNo">326</span>         * @param baseCube base cube if virtual level<a name="line.326"></a>
+<span class="sourceLineNo">327</span>         * @param cacheRegion Cache region to be constrained<a name="line.327"></a>
+<span class="sourceLineNo">328</span>         */<a name="line.328"></a>
+<span class="sourceLineNo">329</span>        void constrainRegion(<a name="line.329"></a>
+<span class="sourceLineNo">330</span>            StarColumnPredicate predicate,<a name="line.330"></a>
+<span class="sourceLineNo">331</span>            RolapCube baseCube,<a name="line.331"></a>
+<span class="sourceLineNo">332</span>            RolapCacheRegion cacheRegion);<a name="line.332"></a>
+<span class="sourceLineNo">333</span>    }<a name="line.333"></a>
+<span class="sourceLineNo">334</span><a name="line.334"></a>
+<span class="sourceLineNo">335</span>    /**<a name="line.335"></a>
+<span class="sourceLineNo">336</span>     * Level reader for a regular level.<a name="line.336"></a>
+<span class="sourceLineNo">337</span>     */<a name="line.337"></a>
+<span class="sourceLineNo">338</span>    static final class RegularLevelReader implements LevelReader {<a name="line.338"></a>
+<span class="sourceLineNo">339</span>        private RolapCubeLevel cubeLevel;<a name="line.339"></a>
+<span class="sourceLineNo">340</span><a name="line.340"></a>
+<span class="sourceLineNo">341</span>        RegularLevelReader(<a name="line.341"></a>
+<span class="sourceLineNo">342</span>            RolapCubeLevel cubeLevel)<a name="line.342"></a>
+<span class="sourceLineNo">343</span>        {<a name="line.343"></a>
+<span class="sourceLineNo">344</span>            this.cubeLevel = cubeLevel;<a name="line.344"></a>
+<span class="sourceLineNo">345</span>        }<a name="line.345"></a>
+<span class="sourceLineNo">346</span><a name="line.346"></a>
+<span class="sourceLineNo">347</span>        public boolean constrainRequest(<a name="line.347"></a>
+<span class="sourceLineNo">348</span>            RolapCubeMember member,<a name="line.348"></a>
+<span class="sourceLineNo">349</span>            RolapCube baseCube,<a name="line.349"></a>
+<span class="sourceLineNo">350</span>            CellRequest request)<a name="line.350"></a>
+<span class="sourceLineNo">351</span>        {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>            assert member.getLevel() == cubeLevel;<a name="line.352"></a>
+<span class="sourceLineNo">353</span>            Object memberKey = member.member.getKey();<a name="line.353"></a>
+<span class="sourceLineNo">354</span>            if (memberKey == null) {<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                if (member == member.getHierarchy().getNullMember()) {<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                    // cannot form a request if one of the members is null<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                    return true;<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                } else {<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                    throw Util.newInternal("why is key null?");<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                }<a name="line.360"></a>
+<span class="sourceLineNo">361</span>            }<a name="line.361"></a>
+<span class="sourceLineNo">362</span><a name="line.362"></a>
+<span class="sourceLineNo">363</span>            RolapStar.Column column = cubeLevel.getBaseStarKeyColumn(baseCube);<a name="line.363"></a>
+<span class="sourceLineNo">364</span><a name="line.364"></a>
+<span class="sourceLineNo">365</span>            if (column == null) {<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                // This hierarchy is not one which qualifies the starMeasure<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                // (this happens in virtual cubes). The starMeasure only has<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                // a value for the 'all' member of the hierarchy (or for the<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                // default member if the hierarchy has no 'all' member)<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                return member != cubeLevel.hierarchy.getDefaultMember()<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                    || cubeLevel.hierarchy.hasAll();<a name="line.371"></a>
+<span class="sourceLineNo">372</span>            }<a name="line.372"></a>
+<span class="sourceLineNo">373</span><a name="line.373"></a>
+<span class="sourceLineNo">374</span>            boolean isMemberCalculated = member.member.isCalculated();<a name="line.374"></a>
+<span class="sourceLineNo">375</span><a name="line.375"></a>
+<span class="sourceLineNo">376</span>            final StarColumnPredicate predicate;<a name="line.376"></a>
+<span class="sourceLineNo">377</span>            if (isMemberCalculated &amp;&amp; !member.isParentChildLeaf()) {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                predicate = null;<a name="line.378"></a>
+<span class="sourceLineNo">379</span>            } else {<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                predicate = new ValueColumnPredicate(column, memberKey);<a name="line.380"></a>
+<span class="sourceLineNo">381</span>            }<a name="line.381"></a>
+<span class="sourceLineNo">382</span><a name="line.382"></a>
+<span class="sourceLineNo">383</span>            // use the member as constraint; this will give us some<a name="line.383"></a>
+<span class="sourceLineNo">384</span>            //  optimization potential<a name="line.384"></a>
+<span class="sourceLineNo">385</span>            request.addConstrainedColumn(column, predicate);<a name="line.385"></a>
+<span class="sourceLineNo">386</span><a name="line.386"></a>
+<span class="sourceLineNo">387</span>            if (request.extendedContext<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                &amp;&amp; cubeLevel.getNameExp() != null)<a name="line.388"></a>
+<span class="sourceLineNo">389</span>            {<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                final RolapStar.Column nameColumn = column.getNameColumn();<a name="line.390"></a>
+<span class="sourceLineNo">391</span><a name="line.391"></a>
+<span class="sourceLineNo">392</span>                assert nameColumn != null;<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                request.addConstrainedColumn(nameColumn, null);<a name="line.393"></a>
+<span class="sourceLineNo">394</span>            }<a name="line.394"></a>
+<span class="sourceLineNo">395</span><a name="line.395"></a>
+<span class="sourceLineNo">396</span>            if (isMemberCalculated) {<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                return false;<a name="line.397"></a>
+<span class="sourceLineNo">398</span>            }<a name="line.398"></a>
+<span class="sourceLineNo">399</span><a name="line.399"></a>
+<span class="sourceLineNo">400</span>            // If member is unique without reference to its parent,<a name="line.400"></a>
+<span class="sourceLineNo">401</span>            // no further constraint is required.<a name="line.401"></a>
+<span class="sourceLineNo">402</span>            if (cubeLevel.isUnique()) {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                return false;<a name="line.403"></a>
+<span class="sourceLineNo">404</span>            }<a name="line.404"></a>
+<span class="sourceLineNo">405</span><a name="line.405"></a>
+<span class="sourceLineNo">406</span>            // Constrain the parent member, if any.<a name="line.406"></a>
+<span class="sourceLineNo">407</span>            RolapCubeMember parent = member.getParentMember();<a name="line.407"></a>
+<span class="sourceLineNo">408</span>            while (true) {<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                if (parent == null) {<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                    return false;<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                }<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                RolapCubeLevel level = parent.getLevel();<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                final LevelReader levelReader = level.levelReader;<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                if (levelReader == this) {<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                    // We are looking at a parent in a parent-child hierarchy,<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                    // for example, we have moved from Fred to Fred's boss,<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                    // Wilma. We don't want to include Wilma's key in the<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                    // request.<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                    parent = parent.getParentMember();<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                    continue;<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                }<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                return levelReader.constrainRequest(<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                    parent, baseCube, request);<a name="line.423"></a>
+<span class="sourceLineNo">424</span>            }<a name="line.424"></a>
+<span class="sourceLineNo">425</span>        }<a name="line.425"></a>
+<span class="sourceLineNo">426</span><a name="line.426"></a>
+<span class="sourceLineNo">427</span>        public void constrainRegion(<a name="line.427"></a>
+<span class="sourceLineNo">428</span>            StarColumnPredicate predicate,<a name="line.428"></a>
+<span class="sourceLineNo">429</span>            RolapCube baseCube,<a name="line.429"></a>
+<span class="sourceLineNo">430</span>            RolapCacheRegion cacheRegion)<a name="line.430"></a>
+<span class="sourceLineNo">431</span>        {<a name="line.431"></a>
+<span class="sourceLineNo">432</span>            RolapStar.Column column = cubeLevel.getBaseStarKeyColumn(baseCube);<a name="line.432"></a>
+<span class="sourceLineNo">433</span><a name="line.433"></a>
+<span class="sourceLineNo">434</span>            if (column == null) {<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                // This hierarchy is not one which qualifies the starMeasure<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                // (this happens in virtual cubes). The starMeasure only has<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                // a value for the 'all' member of the hierarchy (or for the<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                // default member if the hierarchy has no 'all' member)<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                return;<a name="line.439"></a>
+<span class="sourceLineNo">440</span>            }<a name="line.440"></a>
+<span class="sourceLineNo">441</span><a name="line.441"></a>
+<span class="sourceLineNo">442</span>            if (predicate instanceof MemberColumnPredicate) {<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                MemberColumnPredicate memberColumnPredicate =<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                    (MemberColumnPredicate) predicate;<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                RolapMember member = memberColumnPredicate.getMember();<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                assert member.getLevel() == cubeLevel;<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                assert !member.isCalculated();<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                assert memberColumnPredicate.getMember().getKey() != null;<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                assert memberColumnPredicate.getMember().getKey()<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                    != RolapUtil.sqlNullValue;<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                assert !member.isNull();<a name="line.451"></a>
+<span class="sourceLineNo">452</span><a name="line.452"></a>
+<span class="sourceLineNo">453</span>                // use the member as constraint, this will give us some<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                //  optimization potential<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                cacheRegion.addPredicate(column, predicate);<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                return;<a name="line.456"></a>
+<span class="sourceLineNo">457</span>            } else if (predicate instanceof RangeColumnPredicate) {<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                RangeColumnPredicate rangeColumnPredicate =<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                    (RangeColumnPredicate) predicate;<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                final ValueColumnPredicate lowerBound =<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                    rangeColumnPredicate.getLowerBound();<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                RolapMember lowerMember;<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                if (lowerBound == null) {<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                    lowerMember = null;<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                } else if (lowerBound instanceof MemberColumnPredicate) {<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                    MemberColumnPredicate memberColumnPredicate =<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                        (MemberColumnPredicate) lowerBound;<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                    lowerMember = memberColumnPredicate.getMember();<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                } else {<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                    throw new UnsupportedOperationException();<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                }<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                final ValueColumnPredicate upperBound =<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                    rangeColumnPredicate.getUpperBound();<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                RolapMember upperMember;<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                if (upperBound == null) {<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                    upperMember = null;<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                } else if (upperBound instanceof MemberColumnPredicate) {<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                    MemberColumnPredicate memberColumnPredicate =<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                        (MemberColumnPredicate) upperBound;<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                    upperMember = memberColumnPredicate.getMember();<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                } else {<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                    throw new UnsupportedOperationException();<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                }<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                MemberTuplePredicate predicate2 =<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                    new MemberTuplePredicate(<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                        baseCube,<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                        lowerMember,<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                        !rangeColumnPredicate.getLowerInclusive(),<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                        upperMember,<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                        !rangeColumnPredicate.getUpperInclusive());<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                // use the member as constraint, this will give us some<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                //  optimization potential<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                cacheRegion.addPredicate(predicate2);<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                return;<a name="line.494"></a>
+<span class="sourceLineNo">495</span>            }<a name="line.495"></a>
+<span class="sourceLineNo">496</span><a name="line.496"></a>
+<span class="sourceLineNo">497</span>            // Unknown type of constraint.<a name="line.497"></a>
+<span class="sourceLineNo">498</span>            throw new UnsupportedOperationException();<a name="line.498"></a>
+<span class="sourceLineNo">499</span>        }<a name="line.499"></a>
+<span class="sourceLineNo">500</span>    }<a name="line.500"></a>
+<span class="sourceLineNo">501</span><a name="line.501"></a>
+<span class="sourceLineNo">502</span>    /**<a name="line.502"></a>
+<span class="sourceLineNo">503</span>     * Level reader for a parent-child level which has a closed peer level.<a name="line.503"></a>
+<span class="sourceLineNo">504</span>     */<a name="line.504"></a>
+<span class="sourceLineNo">505</span>    // final for performance<a name="line.505"></a>
+<span class="sourceLineNo">506</span>    static final class ParentChildLevelReaderImpl implements LevelReader {<a name="line.506"></a>
+<span class="sourceLineNo">507</span>        private final RegularLevelReader regularLevelReader;<a name="line.507"></a>
+<span class="sourceLineNo">508</span>        private final RolapCubeLevel closedPeerCubeLevel;<a name="line.508"></a>
+<span class="sourceLineNo">509</span>        private final RolapLevel closedPeerLevel;<a name="line.509"></a>
+<span class="sourceLineNo">510</span>        private final RolapMember wrappedAllMember;<a name="line.510"></a>
+<span class="sourceLineNo">511</span>        private final RolapCubeMember allMember;<a name="line.511"></a>
+<span class="sourceLineNo">512</span><a name="line.512"></a>
+<span class="sourceLineNo">513</span>        ParentChildLevelReaderImpl(RolapCubeLevel cubeLevel)<a name="line.513"></a>
+<span class="sourceLineNo">514</span>        {<a name="line.514"></a>
+<span class="sourceLineNo">515</span>            this.regularLevelReader = new RegularLevelReader(cubeLevel);<a name="line.515"></a>
+<span class="sourceLineNo">516</span><a name="line.516"></a>
+<span class="sourceLineNo">517</span>            // inline a bunch of fields for performance<a name="line.517"></a>
+<span class="sourceLineNo">518</span>            this.closedPeerCubeLevel = cubeLevel.closedPeerCubeLevel;<a name="line.518"></a>
+<span class="sourceLineNo">519</span>            this.closedPeerLevel = cubeLevel.rolapLevel.getClosedPeer();<a name="line.519"></a>
+<span class="sourceLineNo">520</span>            this.wrappedAllMember = (RolapMember)<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                closedPeerLevel.getHierarchy().getDefaultMember();<a name="line.521"></a>
+<span class="sourceLineNo">522</span>            this.allMember =<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                closedPeerCubeLevel.getHierarchy().getDefaultMember();<a name="line.523"></a>
+<span class="sourceLineNo">524</span>            assert allMember.isAll();<a name="line.524"></a>
+<span class="sourceLineNo">525</span>        }<a name="line.525"></a>
+<span class="sourceLineNo">526</span><a name="line.526"></a>
+<span class="sourceLineNo">527</span>        public boolean constrainRequest(<a name="line.527"></a>
+<span class="sourceLineNo">528</span>            RolapCubeMember member,<a name="line.528"></a>
+<span class="sourceLineNo">529</span>            RolapCube baseCube,<a name="line.529"></a>
+<span class="sourceLineNo">530</span>            CellRequest request)<a name="line.530"></a>
+<span class="sourceLineNo">531</span>        {<a name="line.531"></a>
+<span class="sourceLineNo">532</span>            // Replace a parent/child level by its closed equivalent, when<a name="line.532"></a>
+<span class="sourceLineNo">533</span>            // available; this is always valid, and improves performance by<a name="line.533"></a>
+<span class="sourceLineNo">534</span>            // enabling the database to compute aggregates.<a name="line.534"></a>
+<span class="sourceLineNo">535</span>            if (member.getDataMember() == null) {<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                // Member has no data member because it IS the data<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                // member of a parent-child hierarchy member. Leave<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                // it be. We don't want to aggregate.<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                return regularLevelReader.constrainRequest(<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                    member, baseCube, request);<a name="line.540"></a>
+<span class="sourceLineNo">541</span>            } else if (request.drillThrough) {<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                return regularLevelReader.constrainRequest(<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                    member.getDataMember(), baseCube, request);<a name="line.543"></a>
+<span class="sourceLineNo">544</span>            } else {<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                // isn't creating a member on the fly a bad idea?<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                RolapMember wrappedMember =<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                    new RolapMemberBase(<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                        wrappedAllMember, closedPeerLevel, member.getKey());<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                member =<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                    new RolapCubeMember(<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                        allMember,<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                        wrappedMember, closedPeerCubeLevel);<a name="line.552"></a>
+<span class="sourceLineNo">553</span><a name="line.553"></a>
+<span class="sourceLineNo">554</span>                return closedPeerCubeLevel.getLevelReader().constrainRequest(<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                    member, baseCube, request);<a name="line.555"></a>
+<span class="sourceLineNo">556</span>            }<a name="line.556"></a>
+<span class="sourceLineNo">557</span>        }<a name="line.557"></a>
+<span class="sourceLineNo">558</span><a name="line.558"></a>
+<span class="sourceLineNo">559</span>        public void constrainRegion(<a name="line.559"></a>
+<span class="sourceLineNo">560</span>            StarColumnPredicate predicate,<a name="line.560"></a>
+<span class="sourceLineNo">561</span>            RolapCube baseCube,<a name="line.561"></a>
+<span class="sourceLineNo">562</span>            RolapCacheRegion cacheRegion)<a name="line.562"></a>
+<span class="sourceLineNo">563</span>        {<a name="line.563"></a>
+<span class="sourceLineNo">564</span>            throw new UnsupportedOperationException();<a name="line.564"></a>
+<span class="sourceLineNo">565</span>        }<a name="line.565"></a>
+<span class="sourceLineNo">566</span>    }<a name="line.566"></a>
+<span class="sourceLineNo">567</span><a name="line.567"></a>
+<span class="sourceLineNo">568</span>    /**<a name="line.568"></a>
+<span class="sourceLineNo">569</span>     * Level reader for the level which contains the 'all' member.<a name="line.569"></a>
+<span class="sourceLineNo">570</span>     */<a name="line.570"></a>
+<span class="sourceLineNo">571</span>    static final class AllLevelReaderImpl implements LevelReader {<a name="line.571"></a>
+<span class="sourceLineNo">572</span>        public boolean constrainRequest(<a name="line.572"></a>
+<span class="sourceLineNo">573</span>            RolapCubeMember member,<a name="line.573"></a>
+<span class="sourceLineNo">574</span>            RolapCube baseCube,<a name="line.574"></a>
+<span class="sourceLineNo">575</span>            CellRequest request)<a name="line.575"></a>
+<span class="sourceLineNo">576</span>        {<a name="line.576"></a>
+<span class="sourceLineNo">577</span>            // We don't need to apply any constraints.<a name="line.577"></a>
+<span class="sourceLineNo">578</span>            return false;<a name="line.578"></a>
+<span class="sourceLineNo">579</span>        }<a name="line.579"></a>
+<span class="sourceLineNo">580</span><a name="line.580"></a>
+<span class="sourceLineNo">581</span>        public void constrainRegion(<a name="line.581"></a>
+<span class="sourceLineNo">582</span>            StarColumnPredicate predicate,<a name="line.582"></a>
+<span class="sourceLineNo">583</span>            RolapCube baseCube,<a name="line.583"></a>
+<span class="sourceLineNo">584</span>            RolapCacheRegion cacheRegion)<a name="line.584"></a>
+<span class="sourceLineNo">585</span>        {<a name="line.585"></a>
+<span class="sourceLineNo">586</span>            // We don't need to apply any constraints.<a name="line.586"></a>
+<span class="sourceLineNo">587</span>        }<a name="line.587"></a>
+<span class="sourceLineNo">588</span>    }<a name="line.588"></a>
+<span class="sourceLineNo">589</span><a name="line.589"></a>
+<span class="sourceLineNo">590</span>    /**<a name="line.590"></a>
+<span class="sourceLineNo">591</span>     * Level reader for the level which contains the null member.<a name="line.591"></a>
+<span class="sourceLineNo">592</span>     */<a name="line.592"></a>
+<span class="sourceLineNo">593</span>    static final class NullLevelReader implements LevelReader {<a name="line.593"></a>
+<span class="sourceLineNo">594</span>        public boolean constrainRequest(<a name="line.594"></a>
+<span class="sourceLineNo">595</span>            RolapCubeMember member,<a name="line.595"></a>
+<span class="sourceLineNo">596</span>            RolapCube baseCube,<a name="line.596"></a>
+<span class="sourceLineNo">597</span>            CellRequest request)<a name="line.597"></a>
+<span class="sourceLineNo">598</span>        {<a name="line.598"></a>
+<span class="sourceLineNo">599</span>            return true;<a name="line.599"></a>
+<span class="sourceLineNo">600</span>        }<a name="line.600"></a>
+<span class="sourceLineNo">601</span><a name="line.601"></a>
+<span class="sourceLineNo">602</span>        public void constrainRegion(<a name="line.602"></a>
+<span class="sourceLineNo">603</span>            StarColumnPredicate predicate,<a name="line.603"></a>
+<span class="sourceLineNo">604</span>            RolapCube baseCube,<a name="line.604"></a>
+<span class="sourceLineNo">605</span>            RolapCacheRegion cacheRegion)<a name="line.605"></a>
+<span class="sourceLineNo">606</span>        {<a name="line.606"></a>
+<span class="sourceLineNo">607</span>        }<a name="line.607"></a>
+<span class="sourceLineNo">608</span>    }<a name="line.608"></a>
+<span class="sourceLineNo">609</span><a name="line.609"></a>
+<span class="sourceLineNo">610</span>}<a name="line.610"></a>
+<span class="sourceLineNo">611</span><a name="line.611"></a>
+<span class="sourceLineNo">612</span>// End RolapCubeLevel.java<a name="line.612"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

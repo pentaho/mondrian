@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2012-2013 Pentaho<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.olap.fun;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import mondrian.calc.*;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.calc.impl.AbstractListCalc;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.mdx.ResolvedFunCall;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.olap.*;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import mondrian.olap.type.LevelType;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import mondrian.olap.type.Type;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>import java.util.ArrayList;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import java.util.List;<a name="line.20"></a>
+<span class="sourceLineNo">021</span><a name="line.21"></a>
+<span class="sourceLineNo">022</span><a name="line.22"></a>
+<span class="sourceLineNo">023</span>/**<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * Definition of the &lt;code&gt;Ancestors&lt;/code&gt; MDX function.<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * @author lboudreau<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * @since Nov 27 2012<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>class AncestorsFunDef extends FunDefBase {<a name="line.29"></a>
+<span class="sourceLineNo">030</span>    static final ReflectiveMultiResolver Resolver =<a name="line.30"></a>
+<span class="sourceLineNo">031</span>        new ReflectiveMultiResolver(<a name="line.31"></a>
+<span class="sourceLineNo">032</span>            "Ancestors",<a name="line.32"></a>
+<span class="sourceLineNo">033</span>            "Ancestors(&lt;Member&gt;, {&lt;Level&gt;|&lt;Numeric Expression&gt;})",<a name="line.33"></a>
+<span class="sourceLineNo">034</span>            "Returns the set of all ancestors of a specified member at a specified level or at a specified distance from the member",<a name="line.34"></a>
+<span class="sourceLineNo">035</span>            new String[] {"fxml", "fxmn"},<a name="line.35"></a>
+<span class="sourceLineNo">036</span>            AncestorsFunDef.class);<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>    public AncestorsFunDef(FunDef dummyFunDef) {<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        super(dummyFunDef);<a name="line.39"></a>
+<span class="sourceLineNo">040</span>    }<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>    public int getReturnCategory() {<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        return Category.Set;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>    }<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        final MemberCalc memberCalc =<a name="line.47"></a>
+<span class="sourceLineNo">048</span>            compiler.compileMember(call.getArg(0));<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        final Type type1 = call.getArg(1).getType();<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        if (type1 instanceof LevelType) {<a name="line.50"></a>
+<span class="sourceLineNo">051</span>            final LevelCalc levelCalc =<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                compiler.compileLevel(call.getArg(1));<a name="line.52"></a>
+<span class="sourceLineNo">053</span>            return new AbstractListCalc(<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                call, new Calc[] {memberCalc, levelCalc})<a name="line.54"></a>
+<span class="sourceLineNo">055</span>            {<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                public TupleList evaluateList(Evaluator evaluator) {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                    Level level = levelCalc.evaluateLevel(evaluator);<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                    Member member = memberCalc.evaluateMember(evaluator);<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                    int distance =<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                        member.getDepth() - level.getDepth();<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                    List&lt;Member&gt; ancestors = new ArrayList&lt;Member&gt;();<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                    for (int curDist = 1; curDist &lt;= distance; curDist++) {<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                        ancestors.add(<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                            ancestor(evaluator, member, curDist, null));<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                    }<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                    return TupleCollections.asTupleList(ancestors);<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                }<a name="line.67"></a>
+<span class="sourceLineNo">068</span>            };<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        } else {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>            final IntegerCalc distanceCalc =<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                compiler.compileInteger(call.getArg(1));<a name="line.71"></a>
+<span class="sourceLineNo">072</span>            return new AbstractListCalc(<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                call, new Calc[] {memberCalc, distanceCalc})<a name="line.73"></a>
+<span class="sourceLineNo">074</span>            {<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                public TupleList evaluateList(Evaluator evaluator) {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                    Member member = memberCalc.evaluateMember(evaluator);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                    int distance = distanceCalc.evaluateInteger(evaluator);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                    List&lt;Member&gt; ancestors = new ArrayList&lt;Member&gt;();<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                    for (int curDist = 1; curDist &lt;= distance; curDist++) {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                        ancestors.add(<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                            ancestor(evaluator, member, curDist, null));<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                    }<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                    return TupleCollections.asTupleList(ancestors);<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                }<a name="line.84"></a>
+<span class="sourceLineNo">085</span>            };<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        }<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    }<a name="line.87"></a>
+<span class="sourceLineNo">088</span>}<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>// End AncestorsFunDef.java<a name="line.90"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2002-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2009 Pentaho and others<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.olap.fun;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.olap.*;<a name="line.13"></a>
+<span class="sourceLineNo">014</span><a name="line.14"></a>
+<span class="sourceLineNo">015</span>import java.util.List;<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>/**<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * A &lt;code&gt;Resolver&lt;/code&gt; converts a function name, invocation type, and set<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * of arguments into a {@link FunDef}.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * @author jhyde<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * @since 3 March, 2002<a name="line.22"></a>
+<span class="sourceLineNo">023</span> */<a name="line.23"></a>
+<span class="sourceLineNo">024</span>public interface Resolver {<a name="line.24"></a>
+<span class="sourceLineNo">025</span>    /**<a name="line.25"></a>
+<span class="sourceLineNo">026</span>     * Returns the name of the function or operator.<a name="line.26"></a>
+<span class="sourceLineNo">027</span>     */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>    String getName();<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>    /**<a name="line.30"></a>
+<span class="sourceLineNo">031</span>     * Returns the description of the function or operator.<a name="line.31"></a>
+<span class="sourceLineNo">032</span>     */<a name="line.32"></a>
+<span class="sourceLineNo">033</span>    String getDescription();<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>    /**<a name="line.35"></a>
+<span class="sourceLineNo">036</span>     * Returns the syntax with which the function or operator was invoked.<a name="line.36"></a>
+<span class="sourceLineNo">037</span>     */<a name="line.37"></a>
+<span class="sourceLineNo">038</span>    Syntax getSyntax();<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>    /**<a name="line.40"></a>
+<span class="sourceLineNo">041</span>     * Given a particular set of arguments the function is applied to, returns<a name="line.41"></a>
+<span class="sourceLineNo">042</span>     * the correct overloaded form of the function.<a name="line.42"></a>
+<span class="sourceLineNo">043</span>     *<a name="line.43"></a>
+<span class="sourceLineNo">044</span>     * &lt;p&gt;The method adds an item to &lt;code&gt;conversions&lt;/code&gt; every<a name="line.44"></a>
+<span class="sourceLineNo">045</span>     * time it performs an implicit type-conversion. If there are several<a name="line.45"></a>
+<span class="sourceLineNo">046</span>     * candidate functions with the same signature, the validator will choose<a name="line.46"></a>
+<span class="sourceLineNo">047</span>     * the one which used the fewest implicit conversions.&lt;/p&gt;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>     *<a name="line.48"></a>
+<span class="sourceLineNo">049</span>     * @param args Expressions which this function call is applied to.<a name="line.49"></a>
+<span class="sourceLineNo">050</span>     * @param validator Validator<a name="line.50"></a>
+<span class="sourceLineNo">051</span>     * @param conversions List of implicit conversions performed (out)<a name="line.51"></a>
+<span class="sourceLineNo">052</span>     *<a name="line.52"></a>
+<span class="sourceLineNo">053</span>     * @return The function definition which matches these arguments, or null<a name="line.53"></a>
+<span class="sourceLineNo">054</span>     *   if no function definition that this resolver knows about matches.<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     */<a name="line.55"></a>
+<span class="sourceLineNo">056</span>    FunDef resolve(<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        Exp[] args,<a name="line.57"></a>
+<span class="sourceLineNo">058</span>        Validator validator,<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        List&lt;Conversion&gt; conversions);<a name="line.59"></a>
+<span class="sourceLineNo">060</span><a name="line.60"></a>
+<span class="sourceLineNo">061</span>    /**<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     * Returns whether a particular argument must be a scalar expression.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     * Returns &lt;code&gt;false&lt;/code&gt; if any of the variants of this resolver<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     * allows a set as its &lt;code&gt;k&lt;/code&gt;th argument; true otherwise.<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     */<a name="line.65"></a>
+<span class="sourceLineNo">066</span>    boolean requiresExpression(int k);<a name="line.66"></a>
+<span class="sourceLineNo">067</span><a name="line.67"></a>
+<span class="sourceLineNo">068</span>    /**<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     * Returns an array of symbolic constants which can appear as arguments<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     * to this function.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     * &lt;p&gt;For example, the &lt;code&gt;DrilldownMember&lt;/code&gt; may take the symbol<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     * &lt;code&gt;RECURSIVE&lt;/code&gt; as an argument. Most functions do not define<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     * any symbolic constants.<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     * @return An array of the names of the symbolic constants<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     */<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    String[] getReservedWords();<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>    /**<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * Returns a string describing the syntax of this function, for example<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     * &lt;pre&gt;&lt;code&gt;StrToSet(&lt;String Expression&gt;)&lt;/code&gt;&lt;/pre&gt;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     */<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    String getSignature();<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>    /**<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     * Returns a representative example of the function which this Resolver<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     * can produce, for purposes of describing the function set. May return<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     * null if there is no representative function, or if the Resolver has<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     * a way to describe itself in more detail.<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     */<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    FunDef getFunDef();<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>    /**<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     * Description of an implicit conversion that occurred while resolving an<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     * operator call.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     */<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    public interface Conversion {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        /**<a name="line.99"></a>
+<span class="sourceLineNo">100</span>         * Returns the cost of the conversion. If there are several matching<a name="line.100"></a>
+<span class="sourceLineNo">101</span>         * overloads, the one with the lowest overall cost will be preferred.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>         *<a name="line.102"></a>
+<span class="sourceLineNo">103</span>         * @return Cost of conversion<a name="line.103"></a>
+<span class="sourceLineNo">104</span>         */<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        int getCost();<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>        /**<a name="line.107"></a>
+<span class="sourceLineNo">108</span>         * Checks the viability of implicit conversions. Converting from a<a name="line.108"></a>
+<span class="sourceLineNo">109</span>         * dimension to a hierarchy is valid if is only one hierarchy.<a name="line.109"></a>
+<span class="sourceLineNo">110</span>         */<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        void checkValid();<a name="line.111"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
+<span class="sourceLineNo">113</span>        /**<a name="line.113"></a>
+<span class="sourceLineNo">114</span>         * Applies this conversion to its argument, modifying the argument list<a name="line.114"></a>
+<span class="sourceLineNo">115</span>         * in place.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>         *<a name="line.116"></a>
+<span class="sourceLineNo">117</span>         * @param validator Validator<a name="line.117"></a>
+<span class="sourceLineNo">118</span>         * @param args Argument list<a name="line.118"></a>
+<span class="sourceLineNo">119</span>         */<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        void apply(Validator validator, List&lt;Exp&gt; args);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    }<a name="line.121"></a>
+<span class="sourceLineNo">122</span>}<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>// End Resolver.java<a name="line.124"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

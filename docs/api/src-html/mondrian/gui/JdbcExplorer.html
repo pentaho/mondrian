@@ -1,0 +1,355 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2002-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2009 Pentaho and others<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.gui;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.gui.JdbcMetaData.DbColumn;<a name="line.13"></a>
+<span class="sourceLineNo">014</span><a name="line.14"></a>
+<span class="sourceLineNo">015</span>import org.apache.log4j.Logger;<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>import java.util.Enumeration;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import java.util.List;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import javax.swing.event.TreeExpansionEvent;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import javax.swing.event.TreeWillExpandListener;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import javax.swing.tree.*;<a name="line.21"></a>
+<span class="sourceLineNo">022</span><a name="line.22"></a>
+<span class="sourceLineNo">023</span>/**<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * @author sean<a name="line.24"></a>
+<span class="sourceLineNo">025</span> */<a name="line.25"></a>
+<span class="sourceLineNo">026</span>public class JdbcExplorer<a name="line.26"></a>
+<span class="sourceLineNo">027</span>    extends javax.swing.JPanel<a name="line.27"></a>
+<span class="sourceLineNo">028</span>    implements TreeWillExpandListener<a name="line.28"></a>
+<span class="sourceLineNo">029</span>{<a name="line.29"></a>
+<span class="sourceLineNo">030</span>    private static final Logger LOGGER = Logger.getLogger(JdbcExplorer.class);<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>    JdbcMetaData jdbcMetaData;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>    JdbcTreeModel model;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>    Workbench workbench;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>    DefaultMutableTreeNode root;<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>    DefaultTreeModel treeModel;<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>    public JdbcExplorer(JdbcMetaData jdbcMetaData, Workbench wb) {<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        workbench = wb;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        initComponents();<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        setMetaData(jdbcMetaData);<a name="line.44"></a>
+<span class="sourceLineNo">045</span>    }<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span>    public void setMetaData(JdbcMetaData jdbcMetaData) {<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        try {<a name="line.48"></a>
+<span class="sourceLineNo">049</span>            this.jdbcMetaData = jdbcMetaData;<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>            Node rootNode = new Node(null, NodeType.ROOT, null);<a name="line.51"></a>
+<span class="sourceLineNo">052</span>            root = new DefaultMutableTreeNode(rootNode);<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>            for (String schemaName : jdbcMetaData.getAllSchemas()) {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                Node cat = new Node(schemaName, NodeType.CATALOG, null);<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>                DefaultMutableTreeNode catTreeNode =<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                    new DefaultMutableTreeNode(cat);<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                cat.treeNode = catTreeNode;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                root.add(catTreeNode);<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span>                List&lt;String&gt; tables = jdbcMetaData.getAllTables(schemaName);<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                for (String tableName : tables) {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                    Node table = new Node(tableName, NodeType.TABLE, null);<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                    DefaultMutableTreeNode tableTreeNode =<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                        new DefaultMutableTreeNode(table);<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                    table.treeNode = tableTreeNode;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                    catTreeNode.add(tableTreeNode);<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                }<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>                cat.gotChildren = true;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>            }<a name="line.72"></a>
+<span class="sourceLineNo">073</span>            rootNode.gotChildren = true;<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>            treeModel = new DefaultTreeModel(root, true);<a name="line.75"></a>
+<span class="sourceLineNo">076</span>            tree.setModel(treeModel);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>            tree.addTreeWillExpandListener(this);<a name="line.77"></a>
+<span class="sourceLineNo">078</span><a name="line.78"></a>
+<span class="sourceLineNo">079</span>            updater = new JTreeUpdater(tree);<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        } catch (Exception ex) {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>            LOGGER.error(ex);<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        }<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    }<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>    public void resetMetaData(JdbcMetaData jdbcMetaData) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        setMetaData(jdbcMetaData);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    }<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>    public JTreeUpdater getTreeUpdater() {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        return updater;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    }<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>    public void treeWillExpand(TreeExpansionEvent event)<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        throws ExpandVetoException<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        // The children are lazy loaded<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        LOGGER.debug(<a name="line.97"></a>
+<span class="sourceLineNo">098</span>            "path = " + event.getPath() + ", last object is a "<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            + event.getPath().getLastPathComponent().getClass().getName());<a name="line.99"></a>
+<span class="sourceLineNo">100</span><a name="line.100"></a>
+<span class="sourceLineNo">101</span>        DefaultMutableTreeNode theTreeNode =<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            (DefaultMutableTreeNode) event.getPath().getLastPathComponent();<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        Node theNode = (Node) theTreeNode.getUserObject();<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        theNode.setChildren();<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>        logNode(theTreeNode, "will Expand");<a name="line.106"></a>
+<span class="sourceLineNo">107</span>    }<a name="line.107"></a>
+<span class="sourceLineNo">108</span><a name="line.108"></a>
+<span class="sourceLineNo">109</span>    private void logNode(DefaultMutableTreeNode theTreeNode, String message) {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        if (!LOGGER.isDebugEnabled()) {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>            return;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        }<a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span>        DefaultMutableTreeNode parentNode =<a name="line.114"></a>
+<span class="sourceLineNo">115</span>            (DefaultMutableTreeNode) theTreeNode.getParent();<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>        Node theNode = (Node) theTreeNode.getUserObject();<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        Node theParentNode =<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            parentNode == null<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                ? null<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                : (Node) parentNode.getUserObject();<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>        @SuppressWarnings({"unchecked"})<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        Enumeration&lt;DefaultMutableTreeNode&gt; children = theTreeNode.children();<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>        LOGGER.debug(<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            message + ": " + theNode + ", " + theNode.type<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            + ", parent " + theParentNode<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            + (theParentNode == null<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                ? ""<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                : ", " + theParentNode.type));<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        while (children.hasMoreElements()) {<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            DefaultMutableTreeNode treeNode = children.nextElement();<a name="line.133"></a>
+<span class="sourceLineNo">134</span>            Node child = (Node) treeNode.getUserObject();<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            LOGGER.debug("\t" + child.toString() + ", " + child.type);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        }<a name="line.136"></a>
+<span class="sourceLineNo">137</span>    }<a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span>    public void treeWillCollapse(TreeExpansionEvent arg0)<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        throws ExpandVetoException<a name="line.140"></a>
+<span class="sourceLineNo">141</span>    {<a name="line.141"></a>
+<span class="sourceLineNo">142</span>    }<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>    enum NodeType {<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        CATALOG,<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        TABLE,<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        COLUMN,<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        ROOT<a name="line.148"></a>
+<span class="sourceLineNo">149</span>    }<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>    class Node {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        final String name;<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        final NodeType type;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        boolean gotChildren = false;<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        DefaultMutableTreeNode treeNode;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        final JdbcMetaData.DbColumn columnInfo;<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>        public Node(<a name="line.158"></a>
+<span class="sourceLineNo">159</span>            String name,<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            NodeType type,<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            DefaultMutableTreeNode treeNode)<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            this(name, type, treeNode, null);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        }<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>        public Node(<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            String name,<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            NodeType type,<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            DefaultMutableTreeNode treeNode,<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            JdbcMetaData.DbColumn columnInfo)<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>            this.name = name;<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            this.type = type;<a name="line.173"></a>
+<span class="sourceLineNo">174</span>            this.treeNode = treeNode;<a name="line.174"></a>
+<span class="sourceLineNo">175</span>            this.columnInfo = columnInfo;<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        }<a name="line.176"></a>
+<span class="sourceLineNo">177</span><a name="line.177"></a>
+<span class="sourceLineNo">178</span>        public String toString() {<a name="line.178"></a>
+<span class="sourceLineNo">179</span>            if (type == NodeType.ROOT) {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                return workbench.getResourceConverter().getFormattedString(<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                    "jdbcExplorer.root.name",<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                    "All Schemas");<a name="line.182"></a>
+<span class="sourceLineNo">183</span>            }<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>            StringBuilder sb = new StringBuilder();<a name="line.185"></a>
+<span class="sourceLineNo">186</span>            if (name == null || name.trim().length() == 0) {<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                switch (type) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                case CATALOG:<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                    sb.append(<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                        workbench.getResourceConverter().getFormattedString(<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                            "jdbcExplorer.default.name.catalog",<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                            "Default Schema"));<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                    break;<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                case TABLE:<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                    sb.append(<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                        workbench.getResourceConverter().getFormattedString(<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                            "jdbcExplorer.default.name.table", "Table"));<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                    break;<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                case COLUMN:<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                    sb.append(<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                        workbench.getResourceConverter().getFormattedString(<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                            "jdbcExplorer.default.name.column",<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                            "Column"));<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                    break;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            } else {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                sb.append(name);<a name="line.207"></a>
+<span class="sourceLineNo">208</span>            }<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+<span class="sourceLineNo">210</span>            if (type != NodeType.COLUMN) {<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                return sb.toString();<a name="line.211"></a>
+<span class="sourceLineNo">212</span>            }<a name="line.212"></a>
+<span class="sourceLineNo">213</span><a name="line.213"></a>
+<span class="sourceLineNo">214</span>            // now for columns<a name="line.214"></a>
+<span class="sourceLineNo">215</span><a name="line.215"></a>
+<span class="sourceLineNo">216</span>            sb.append(" - ").append(columnInfo.displayType());<a name="line.216"></a>
+<span class="sourceLineNo">217</span><a name="line.217"></a>
+<span class="sourceLineNo">218</span>            return sb.toString();<a name="line.218"></a>
+<span class="sourceLineNo">219</span>        }<a name="line.219"></a>
+<span class="sourceLineNo">220</span><a name="line.220"></a>
+<span class="sourceLineNo">221</span>        public void setChildren() {<a name="line.221"></a>
+<span class="sourceLineNo">222</span>            if (!gotChildren) {<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                if (type == NodeType.TABLE) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                    DefaultMutableTreeNode theParentTreeNode =<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                        (DefaultMutableTreeNode) treeNode.getParent();<a name="line.225"></a>
+<span class="sourceLineNo">226</span><a name="line.226"></a>
+<span class="sourceLineNo">227</span>                    Node theParentNode =<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                        (Node) theParentTreeNode.getUserObject();<a name="line.228"></a>
+<span class="sourceLineNo">229</span><a name="line.229"></a>
+<span class="sourceLineNo">230</span>                    // This is a table, parent is a schema<a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span>                    List&lt;DbColumn&gt; columns =<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                        jdbcMetaData.getAllDbColumns(<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                            theParentNode.name, name);<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                    for (DbColumn column : columns) {<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                        Node columnNode = new Node(<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                            column.name, NodeType.COLUMN, treeNode, column);<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                        MutableTreeNode columnTreeNode =<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                            new DefaultMutableTreeNode(columnNode, false);<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                        treeNode.add(columnTreeNode);<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                    }<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                }<a name="line.242"></a>
+<span class="sourceLineNo">243</span>            }<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            gotChildren = true;<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        }<a name="line.245"></a>
+<span class="sourceLineNo">246</span>    }<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>    /**<a name="line.248"></a>
+<span class="sourceLineNo">249</span>     * This method is called from within the constructor to<a name="line.249"></a>
+<span class="sourceLineNo">250</span>     * initialize the form.<a name="line.250"></a>
+<span class="sourceLineNo">251</span>     * WARNING: Do NOT modify this code. The content of this method is<a name="line.251"></a>
+<span class="sourceLineNo">252</span>     * always regenerated by the Form Editor.<a name="line.252"></a>
+<span class="sourceLineNo">253</span>     */<a name="line.253"></a>
+<span class="sourceLineNo">254</span>    private void initComponents() {//GEN-BEGIN:initComponents<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        jSplitPane1 = new javax.swing.JSplitPane();<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        jScrollPane1 = new javax.swing.JScrollPane();<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        tree = new javax.swing.JTree();<a name="line.257"></a>
+<span class="sourceLineNo">258</span>        jScrollPane2 = new javax.swing.JScrollPane();<a name="line.258"></a>
+<span class="sourceLineNo">259</span><a name="line.259"></a>
+<span class="sourceLineNo">260</span>        setLayout(new java.awt.BorderLayout());<a name="line.260"></a>
+<span class="sourceLineNo">261</span><a name="line.261"></a>
+<span class="sourceLineNo">262</span>        jSplitPane1.setDividerLocation(200);<a name="line.262"></a>
+<span class="sourceLineNo">263</span>        jScrollPane1.setViewportView(tree);<a name="line.263"></a>
+<span class="sourceLineNo">264</span><a name="line.264"></a>
+<span class="sourceLineNo">265</span>        jSplitPane1.setLeftComponent(jScrollPane1);<a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span>        jSplitPane1.setRightComponent(jScrollPane2);<a name="line.267"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
+<span class="sourceLineNo">269</span>        add(jSplitPane1, java.awt.BorderLayout.CENTER);<a name="line.269"></a>
+<span class="sourceLineNo">270</span>    } //GEN-END:initComponents<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span><a name="line.272"></a>
+<span class="sourceLineNo">273</span>    // Variables declaration - do not modify//GEN-BEGIN:variables<a name="line.273"></a>
+<span class="sourceLineNo">274</span>    private javax.swing.JScrollPane jScrollPane2;<a name="line.274"></a>
+<span class="sourceLineNo">275</span>    private javax.swing.JScrollPane jScrollPane1;<a name="line.275"></a>
+<span class="sourceLineNo">276</span>    private javax.swing.JTree tree;<a name="line.276"></a>
+<span class="sourceLineNo">277</span>    private javax.swing.JSplitPane jSplitPane1;<a name="line.277"></a>
+<span class="sourceLineNo">278</span>    // End of variables declaration//GEN-END:variables<a name="line.278"></a>
+<span class="sourceLineNo">279</span><a name="line.279"></a>
+<span class="sourceLineNo">280</span>    private JTreeUpdater updater;<a name="line.280"></a>
+<span class="sourceLineNo">281</span>}<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>// End JdbcExplorer.java<a name="line.283"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

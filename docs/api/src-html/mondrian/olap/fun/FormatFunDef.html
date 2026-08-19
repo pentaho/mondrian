@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2006-2011 Pentaho<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.olap.fun;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import mondrian.calc.*;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.calc.impl.AbstractStringCalc;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.mdx.ResolvedFunCall;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.olap.*;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import mondrian.util.Format;<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>import java.util.Locale;<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>/**<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * Definition of the &lt;code&gt;Format&lt;/code&gt; MDX function.<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * @author jhyde<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * @since Mar 23, 2006<a name="line.24"></a>
+<span class="sourceLineNo">025</span> */<a name="line.25"></a>
+<span class="sourceLineNo">026</span>class FormatFunDef extends FunDefBase {<a name="line.26"></a>
+<span class="sourceLineNo">027</span>    static final ReflectiveMultiResolver Resolver =<a name="line.27"></a>
+<span class="sourceLineNo">028</span>        new ReflectiveMultiResolver(<a name="line.28"></a>
+<span class="sourceLineNo">029</span>            "Format",<a name="line.29"></a>
+<span class="sourceLineNo">030</span>            "Format(&lt;Expression&gt;, &lt;String Expression&gt;)",<a name="line.30"></a>
+<span class="sourceLineNo">031</span>            "Formats a number or date to a string.",<a name="line.31"></a>
+<span class="sourceLineNo">032</span>            new String[] { "fSmS", "fSnS", "fSDS" },<a name="line.32"></a>
+<span class="sourceLineNo">033</span>            FormatFunDef.class);<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>    public FormatFunDef(FunDef dummyFunDef) {<a name="line.35"></a>
+<span class="sourceLineNo">036</span>        super(dummyFunDef);<a name="line.36"></a>
+<span class="sourceLineNo">037</span>    }<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>    public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        final Exp[] args = call.getArgs();<a name="line.40"></a>
+<span class="sourceLineNo">041</span>        final Calc calc = compiler.compileScalar(call.getArg(0), true);<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        final Locale locale = compiler.getEvaluator().getConnectionLocale();<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        if (args[1] instanceof Literal) {<a name="line.43"></a>
+<span class="sourceLineNo">044</span>            // Constant string expression: optimize by<a name="line.44"></a>
+<span class="sourceLineNo">045</span>            // compiling format string.<a name="line.45"></a>
+<span class="sourceLineNo">046</span>            String formatString = (String) ((Literal) args[1]).getValue();<a name="line.46"></a>
+<span class="sourceLineNo">047</span>            final Format format = new Format(formatString, locale);<a name="line.47"></a>
+<span class="sourceLineNo">048</span>            return new AbstractStringCalc(call, new Calc[] {calc}) {<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                public String evaluateString(Evaluator evaluator) {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                    final Object o = calc.evaluate(evaluator);<a name="line.50"></a>
+<span class="sourceLineNo">051</span>                    return format.format(o);<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                }<a name="line.52"></a>
+<span class="sourceLineNo">053</span>            };<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        } else {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>            // Variable string expression<a name="line.55"></a>
+<span class="sourceLineNo">056</span>            final StringCalc stringCalc =<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                    compiler.compileString(call.getArg(1));<a name="line.57"></a>
+<span class="sourceLineNo">058</span>            return new AbstractStringCalc(call, new Calc[] {calc, stringCalc}) {<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                public String evaluateString(Evaluator evaluator) {<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                    final Object o = calc.evaluate(evaluator);<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                    final String formatString =<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                            stringCalc.evaluateString(evaluator);<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                    final Format format =<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                            new Format(formatString, locale);<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                    return format.format(o);<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                }<a name="line.66"></a>
+<span class="sourceLineNo">067</span>            };<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        }<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    }<a name="line.69"></a>
+<span class="sourceLineNo">070</span>}<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>// End FormatFunDef.java<a name="line.72"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,1940 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+
+<script type="text/javascript" src="../web-scripts/en/script.content.js"></script>
+<script type="text/javascript" language="javascript" src="../web-scripts/formvalid.js"></script>
+
+<link href="../css/base.css" rel="stylesheet" type="text/css" media="all">
+
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta name="Keywords" content="pentaho open source business intelligence BI reporting analysis etl dashboards data integration mining" />
+<meta name="description" content="Spend 90% less on your next Business Intelligence project with Pentaho Reporting, Analysis, Dashboards
+, Data Integration / ETL, and Data Mining." />
+<meta name="robots" content="index,follow" />
+    
+<title>Pentaho Mondrian Documentation</title>
+
+    <!--[if lte IE 7]>
+    	<style type="text/css">
+    		#menu
+    			{
+    				zoom: 1;
+    				position: relative;
+    			}
+		
+			div#ddtopmenubar {
+				position:relative;
+				float:right;
+				margin: 0;
+				padding-top:5px;
+			}
+    	</style>
+    <![endif]-->
+</head>
+<body style="margin:15px;">
+<div style="border-bottom:1px solid #cecece; height:80px;">
+<div style="float:left;"><img src="../images/pentaho_logo.jpeg" alt="Pentaho Home" border="0"></div><h1 style="font-size:2em; padding-top: 48px;"><span style="margin-bottom:250px;">Mondrian Documentation</span></h1></div>
+<table cellpadding="0" cellspacing="0" style="padding:10px 0px 0px 0px;">
+	<tr>
+    	<td style="padding-right:10px; vertical-align:top;">
+            <table>
+      <tr>
+      <td>
+           <div id="tabz" style="height: 10px;">
+        <table border="0" cellspacing="0" cellpadding="0" width="100%">          
+          <tr>
+            <td><img src="../images/panel_left_top.png" width="18" height="10"></td>
+            <td style="border-top: 1px solid #c9c9c9; background-color:#FFFFFF; width:100%;"><img src="../images/clr.gif" width="9" height="9"></td>
+            <td><img src="../images/panel_right_top.png" width="18" height="10"></td>
+          </tr>
+        </table>
+        </div>
+        <div>
+        <table border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td background="../images/panel_left.png"><img src="../images/clr.gif" width="18" height="150"></td>
+            <td style="width:100%; background-color:#FFFFFF; white-space:nowrap; vertical-align:top;">
+            
+<a href="../documentation/olap.html" >What is OLAP</a><br />
+<a href="../documentation/installation.html" >Installation</a><br />
+&nbsp;&nbsp;- <a href="../documentation/installation_es.html" >(Spanish)</a><br />
+&nbsp;&nbsp;- <a href="../documentation/installation_fr.html" >(French)</a><br />
+<a href="../documentation/mdx.html" >MDX</a><br />
+<a href="../documentation/architecture.html" >Architecture</a><br />
+<a href="../documentation/schema.html" >Writing a Schema</a><br />
+<a href="../documentation/configuration.html" style="font-weight:bold; color:#EF8033;">Configuration</a><br />
+<a href="../documentation/performance.html" >Performance</a><br />
+<a href="../documentation/aggregate_tables.html" >Aggregate Tables</a><br />
+<a href="../documentation/cache_control.html" >Cache Control</a><br />
+<a href="../documentation/workbench.html" >Workbench</a><br />
+<a href="../documentation/command_runner.html" >Command Runner</a><br />
+<a href="../documentation/faq.html" >FAQ</a><br />
+<a href="../documentation/roadmap.html" >Roadmap</a><br />
+<a href="../documentation/components.html" >Components</a><br />
+<a target="_blank" href="../api">API</a><br />
+<a href="../documentation/developers_guide.html" >Developer's Guide</a><br />
+<a href="../documentation/developer_notes.html" >Developer Notes</a><br />
+<a href="/help">Help</a>            </td>
+            <td background="../images/panel_right.png"><img src="../images/clr.gif" width="18" height="150"></td>
+          </tr>
+          <tr>
+            <td><img src="../images/panel_left_bottom.png" width="18" height="22"></td>
+            <td background="../images/panel_bottom.png"><img src="../images/clr.gif" width="22" height="22"></td>
+            <td><img src="../images/panel_right_bottom.png" width="18" height="22"></td>
+          </tr>
+        </table>
+        </div>
+      </td>
+      </tr>
+      </table></td>
+        <td class="contentRightMargin" valign="top" width="100%" style="padding-top:10px;">
+            
+<!-- page title -->
+<div class="contentheading">Configuration Guide</div>
+<!-- end page title -->
+
+<!--
+########################
+##  Contents       #####
+######################## -->
+<h3>Contents</h3>
+
+<ol>
+	<li><a href="#Properties">Properties</a></li>
+		<ol>
+			<li><a href="#Property_list">Property list</a></li>
+    	</ol>
+    <li><a href="#Connect_strings">Connect strings</a></li>
+		<ol>
+			<li><a href="#Connect_string_syntax">Syntax</a></li>
+    		<li><a href="#Connect_string_properties">Connect string properties</a></li>
+    	</ol>
+    <li><a href="#Cache_management">Cache management</a><ol>
+			<li><a href="#Schema_cache">Schema cache</a></li>
+    	</ol>
+    <li><a href="#Memory_management">Memory management</a><ol>
+			<li><a href="#Out_of_memory">Out of memory</a></li>
+    	</ol>
+    </li>
+    <li><a href="#Logging">Logging</a><ol>
+			<li><a href="#Test_Logging">Configuring log4j within Mondrian's test environment</a></li>
+			<li><a href="#Statement_Logging">MDX and SQL Statement Logging</a></li>			
+    	</ol>
+    </li>
+</ol>
+<!--
+########################
+##  1. Properties  #####
+######################## -->
+<h3>1. Properties<a name="Properties">&nbsp;</a></h3>
+
+<p>Mondrian has a properties file to allow you to configure how it executes. The
+<code>mondrian.properties</code> file is loaded when the executing Mondrian JAR detects it
+needs properties, but can also be done explicitly in your code. It looks in
+several places, in the following order:</p>
+<ol>
+  <li>In the directory where you started your JVM (Current working directory for
+  JVM process, java.exe on Win32, java on UNIX/Linux).</li>
+  <li>If there isn't mondrian.properties under current working directory of JVM
+  process, Class MondrianProperties's classloader will try to locate
+  mondrian.properties in all of its classpaths. So you may put <code>mondrian.properties</code>
+  under <code>/WEB-INF/classes</code> when you pack Mondrian into a Java web application.
+  The demonstration web applications have this configuration.</li>
+</ol>
+
+<p>These properties are stored as system properties, so they can be set during
+JVM startup via <code>-D&lt;property&gt;=&lt;value&gt;</code>.</p>
+<!--
+###########################
+##  1.1 Property list #####
+########################### -->
+<h3>1.1 Property list<a name="Property_list">&nbsp;</a></h3>
+
+<p>The following properties in <code>mondrian.properties</code> effect the
+operations of Mondrian.</p>
+
+<p>Not all of the properties in this table are of interest to the end-user. For
+example, those in the 'Testing' are only applicable if are running Mondrian's
+suite of regression tests.</p>
+
+<table>
+    <tr>
+    <td><strong>Property</strong></td>
+    <td><strong>Type</strong></td>
+    <td><strong>Default value</strong></td>
+    <td><strong>Description</strong></td>
+    </tr>
+    <tr>
+      <td colspan='4'><b><br>Aggregate tables</b></td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#AggregateRuleTag'>mondrian&shy;.&shy;rolap&shy;.&shy;aggregates&shy;.&shy;rule&shy;.&shy;tag</a></code></td>
+<td>string</td>
+<td>default</td>
+<td>
+<p>String property that is the AggRule element's tag value&shy;.&shy;</p>
+
+<p>Normally&shy;,&shy; this property is not set by a user&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#AggregateRules'>mondrian&shy;.&shy;rolap&shy;.&shy;aggregates&shy;.&shy;rules</a></code></td>
+<td>string</td>
+<td>&shy;/&shy;DefaultRules&shy;.&shy;xml</td>
+<td>
+<p>String property containing the name of the file which defines the
+rules for recognizing an aggregate table&shy;.&shy; Can be either a resource in
+the Mondrian jar or a URL&shy;.&shy;</p>
+
+<p>The default value is "/DefaultRules&shy;.&shy;xml"&shy;,&shy; which is in the
+mondrian&shy;.&shy;rolap&shy;.&shy;aggmatcher package in Mondrian&shy;.&shy;jar&shy;.&shy;</p>
+
+<p>Normally&shy;,&shy; this property is not set by a user&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#ChooseAggregateByVolume'>mondrian&shy;.&shy;rolap&shy;.&shy;aggregates&shy;.&shy;ChooseByVolume</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+<p>Boolean property that controls whether aggregate tables
+are ordered by their volume or row count&shy;.&shy;</p>
+
+<p>If true&shy;,&shy; Mondrian uses the aggregate table with the smallest volume
+(number of rows multiplied by number of columns)&shy;;&shy; if false&shy;,&shy; Mondrian
+uses the aggregate table with the fewest rows&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#GenerateAggregateSql'>mondrian&shy;.&shy;rolap&shy;.&shy;aggregates&shy;.&shy;generateSql</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+<p>Boolean property that controls whether to print the SQL code
+generated for aggregate tables&shy;.&shy;</p>
+
+<p>If set&shy;,&shy; then as each aggregate request is processed&shy;,&shy; both the lost
+and collapsed dimension create and insert sql code is printed&shy;.&shy;
+This is for use in the CmdRunner allowing one to create aggregate table
+generation sql&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#JdbcFactoryClass'>mondrian&shy;.&shy;rolap&shy;.&shy;aggregates&shy;.&shy;jdbcFactoryClass</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+<p>Property that defines the JdbcSchema factory class which
+determines the list of tables and columns of a specific datasource&shy;.&shy;</p>
+
+@see mondrian&shy;.&shy;rolap&shy;.&shy;aggmatcher&shy;.&shy;JdbcSchema
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#OptimizePredicates'>mondrian&shy;.&shy;rolap&shy;.&shy;aggregates&shy;.&shy;optimizePredicates</a></code></td>
+<td>boolean</td>
+<td>true</td>
+<td>
+<p>Boolean property that determines whether Mondrian optimizes predicates&shy;.&shy;</p>
+
+<p>If true&shy;,&shy; Mondrian may retrieve a little more data than specified in
+MDX query and cache it for future use&shy;.&shy;  For example&shy;,&shy; if you ask for
+data on 48 states of the United States for 3 quarters of 2011&shy;,&shy;
+Mondrian will round out to all 50 states and all 4 quarters&shy;.&shy;  If
+false&shy;,&shy; Mondrian still optimizes queries that involve all members of a
+dimension&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#ReadAggregates'>mondrian&shy;.&shy;rolap&shy;.&shy;aggregates&shy;.&shy;Read</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+<p>Boolean property that determines whether Mondrian should read
+aggregate tables&shy;.&shy;</p>
+
+<p>If set to true&shy;,&shy; then Mondrian scans the database for aggregate tables&shy;.&shy;
+Unless mondrian&shy;.&shy;rolap&shy;.&shy;aggregates&shy;.&shy;Use is set to true&shy;,&shy; the aggregates
+found will not be used&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#UseAggregates'>mondrian&shy;.&shy;rolap&shy;.&shy;aggregates&shy;.&shy;Use</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+<p>Boolean property that controls whether Mondrian uses aggregate
+tables&shy;.&shy;</p>
+
+<p>If true&shy;,&shy; then Mondrian uses aggregate tables&shy;.&shy; This property is
+queried prior to each aggregate query so that changing the value of this
+property dynamically (not just at startup) is meaningful&shy;.&shy;</p>
+
+<p>Aggregates can be read from the database using the
+{@link #ReadAggregates} property but will not be used unless this
+property is set to true&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+      <td colspan='4'><b><br>Caching</b></td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#DisableCaching'>mondrian&shy;.&shy;rolap&shy;.&shy;star&shy;.&shy;disableCaching</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+Boolean property that controls whether a RolapStar's
+aggregate data cache is cleared after each query&shy;.&shy;
+If true&shy;,&shy; no RolapStar will cache aggregate data from one
+query to the next (the cache is cleared after each query)&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#DisableLocalSegmentCache'>mondrian&shy;.&shy;rolap&shy;.&shy;star&shy;.&shy;disableLocalSegmentCache</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+Boolean property that controls whether the data from segments
+is cached locally&shy;.&shy; To create custom caches&shy;,&shy; look for the
+SegmentCache SPI&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#EnableExpCache'>mondrian&shy;.&shy;expCache&shy;.&shy;enable</a></code></td>
+<td>boolean</td>
+<td>true</td>
+<td>
+Boolean property that controls whether to use a cache for frequently
+evaluated expressions&shy;.&shy; With the cache disabled&shy;,&shy; an expression like
+<code>Rank([Product]&shy;.&shy;CurrentMember&shy;,&shy;
+Order([Product]&shy;.&shy;MEMBERS&shy;,&shy; [Measures]&shy;.&shy;[Unit Sales]))</code> would perform
+many redundant sorts&shy;.&shy; The default is true&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#EnableRolapCubeMemberCache'>mondrian&shy;.&shy;rolap&shy;.&shy;EnableRolapCubeMemberCache</a></code></td>
+<td>boolean</td>
+<td>true</td>
+<td>
+<p>Property that determines whether to cache RolapCubeMember objects&shy;,&shy;
+each of which associates a member of a shared hierarchy with a
+particular cube in which it is being used&shy;.&shy;</p>
+
+<p>The default is {@code true}&shy;,&shy; that is&shy;,&shy; use a cache&shy;.&shy; If you wish to use
+the member cache control aspects of {@link mondrian&shy;.&shy;olap&shy;.&shy;CacheControl}&shy;,&shy;
+you must set this property to {@code false}&shy;.&shy;</p>
+
+<p>RolapCubeMember has recently become more lightweight to
+construct&shy;,&shy; and we may obsolete this cache and this
+property&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+      <td colspan='4'><b><br>Factories</b></td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#DataSourceResolverClass'>mondrian&shy;.&shy;spi&shy;.&shy;dataSourceResolverClass</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+<p>Property that defines
+the name of the plugin class that resolves data source names to
+{@link javax&shy;.&shy;sql&shy;.&shy;DataSource} objects&shy;.&shy; The class must implement the
+{@link mondrian&shy;.&shy;spi&shy;.&shy;DataSourceResolver} interface&shy;.&shy; If not specified&shy;,&shy;
+the default implementation uses JNDI to perform resolution&shy;.&shy;</p>
+
+<p>Example:</p>
+<blockquote><code>mondrian&shy;.&shy;spi&shy;.&shy;dataSourceResolverClass&shy;=&shy;mondrian&shy;.&shy;spi&shy;.&shy;impl&shy;.&shy;JndiDataSourceResolver</code></blockquote>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#ExpCompilerClass'>mondrian&shy;.&shy;calc&shy;.&shy;ExpCompiler&shy;.&shy;class</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+<p>Property that defines
+the name of the class used to compile scalar expressions&shy;.&shy;</p>
+
+<p>If the value is
+non-null&shy;,&shy; it is used by the <code>ExpCompiler&shy;.&shy;Factory</code>
+to create the implementation&shy;.&shy;</p>
+
+<p>To test that for all test MDX queries that all functions can
+handle requests for ITERABLE&shy;,&shy; LIST and MUTABLE_LIST evaluation
+results&shy;,&shy; use the following:</p>
+
+<blockquote><code>mondrian&shy;.&shy;calc&shy;.&shy;ExpCompiler&shy;.&shy;class&shy;=&shy;mondrian&shy;.&shy;olap&shy;.&shy;fun&shy;.&shy;ResultStyleCompiler</code></blockquote>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#MemoryMonitorClass'>mondrian&shy;.&shy;util&shy;.&shy;MemoryMonitor&shy;.&shy;class</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+<p>Property that defines
+the name of the class used as a memory monitor&shy;.&shy;</p>
+
+<p>If the value is
+non-null&shy;,&shy; it is used by the <code>MemoryMonitorFactory</code>
+to create the implementation&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#PropertyValueMapFactoryClass'>mondrian&shy;.&shy;rolap&shy;.&shy;RolapMember&shy;.&shy;PropertyValueMapFactory&shy;.&shy;class</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+<p>Property that defines the name of the factory class used
+to create maps of member properties to their respective values&shy;.&shy;</p>
+
+<p>If the value is
+non-null&shy;,&shy; it is used by the <code>PropertyValueFactory</code>
+to create the implementation&shy;.&shy;  If unset&shy;,&shy;
+{@link mondrian&shy;.&shy;rolap&shy;.&shy;RolapMemberBase&shy;.&shy;DefaultPropertyValueMapFactory}
+will be used&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#SqlMemberSourceValuePoolFactoryClass'>mondrian&shy;.&shy;rolap&shy;.&shy;SqlMemberSource&shy;.&shy;ValuePoolFactory&shy;.&shy;class</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+<p>Property that defines the name of the class used in SqlMemberSource
+to pool common values&shy;.&shy;</p>
+
+<p>If the value is non-null&shy;,&shy; it is used by the
+<code>SqlMemberSource&shy;.&shy;ValueMapFactory</code>
+to create the implementation&shy;.&shy;  If it is not set&shy;,&shy; then
+{@link mondrian&shy;.&shy;rolap&shy;.&shy;SqlMemberSource&shy;.&shy;NullValuePoolFactory}
+will be used&shy;,&shy; meaning common values will not be pooled&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+      <td colspan='4'><b><br>Miscellaneous</b></td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#CaseSensitive'>mondrian&shy;.&shy;olap&shy;.&shy;case&shy;.&shy;sensitive</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+Boolean property that controls whether the MDX parser resolves uses
+case-sensitive matching when looking up identifiers&shy;.&shy; The default is
+false&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#CellBatchSize'>mondrian&shy;.&shy;rolap&shy;.&shy;cellBatchSize</a></code></td>
+<td>int</td>
+<td>-1</td>
+<td>
+Integer property that&shy;,&shy; if set to a value greater than zero&shy;,&shy; sets a hard limit on the
+number of cells that are batched together when building segments&shy;.&shy;
+</td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#CompareSiblingsByOrderKey'>mondrian&shy;.&shy;rolap&shy;.&shy;compareSiblingsByOrderKey</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+Boolean property that controls whether sibling members are
+compared according to order key value fetched from their ordinal
+expression&shy;.&shy;  The default is false (only database ORDER BY is used)&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#CrossJoinOptimizerSize'>mondrian&shy;.&shy;olap&shy;.&shy;fun&shy;.&shy;crossjoin&shy;.&shy;optimizer&shy;.&shy;size</a></code></td>
+<td>int</td>
+<td>0</td>
+<td>
+<p>Property that defines
+when to apply the crossjoin optimization algorithm&shy;.&shy;</p>
+
+<p>If a crossjoin input list's size is larger than this property's
+value and the axis has the "NON EMPTY" qualifier&shy;,&shy; then
+the crossjoin non-empty optimizer is applied&shy;.&shy;
+Setting this value to '0' means that for all crossjoin
+input lists in non-empty axes will have the optimizer applied&shy;.&shy;
+On the other hand&shy;,&shy; if the value is set larger than any possible
+list&shy;,&shy; say <code>Integer&shy;.&shy;MAX_VALUE</code>&shy;,&shy; then the optimizer
+will never be applied&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#EnableCacheHitCounters'>mondrian&shy;.&shy;rolap&shy;.&shy;agg&shy;.&shy;enableCacheHitCounters</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+<p>Property that controls whether aggregation cache hit / miss
+counters will be enabled&shy;.&shy;</p>
+
+<p>Note that this will affect performance due to existence of sync
+blocks&shy;.&shy;</p>
+
+@deprecated This property is no longer used&shy;,&shy; and will be removed in
+mondrian-4&shy;.&shy;0&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#EnableDrillThrough'>mondrian&shy;.&shy;drillthrough&shy;.&shy;enable</a></code></td>
+<td>boolean</td>
+<td>true</td>
+<td>
+If disabled&shy;,&shy; Mondrian will throw an exception if someone attempts to
+perform a drillthrough of any kind&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#EnableInMemoryRollup'>mondrian&shy;.&shy;rolap&shy;.&shy;EnableInMemoryRollup</a></code></td>
+<td>boolean</td>
+<td>true</td>
+<td>
+Property which turns on or off the in-memory rollup
+of segment data&shy;.&shy; Defaults to <code>true</code>&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#EnableNonEmptyOnAllAxis'>mondrian&shy;.&shy;rolap&shy;.&shy;nonempty</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+Boolean property that controls whether each query axis implicit has the
+NON EMPTY option set&shy;.&shy; The default is false&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#EnableTriggers'>mondrian&shy;.&shy;olap&shy;.&shy;triggers&shy;.&shy;enable</a></code></td>
+<td>boolean</td>
+<td>true</td>
+<td>
+<p>Boolean property that controls whether to notify the Mondrian system
+when a {@link MondrianProperties property value} changes&shy;.&shy;</p>
+
+<p>This allows objects dependent on Mondrian properties to react (that
+is&shy;,&shy; reload)&shy;,&shy; when a given property changes via&shy;,&shy; say&shy;,&shy;
+<code>MondrianProperties&shy;.&shy;instance()&shy;.&shy;populate(null)</code> or
+<code>MondrianProperties&shy;.&shy;instance()&shy;.&shy;QueryLimit&shy;.&shy;set(50)</code>&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#HighCardChunkSize'>mondrian&shy;.&shy;result&shy;.&shy;highCardChunkSize</a></code></td>
+<td>int</td>
+<td>1</td>
+<td>
+Property that establishes the amount of chunks for querying cells
+involving high-cardinality dimensions&shy;.&shy;
+Should prime with {@link #ResultLimit mondrian&shy;.&shy;result&shy;.&shy;limit}&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#IgnoreInvalidMembers'>mondrian&shy;.&shy;rolap&shy;.&shy;ignoreInvalidMembers</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+<p>Property that defines whether non-existent member errors should be
+ignored during schema load&shy;.&shy; If so&shy;,&shy; the non-existent member is treated
+as a null member&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#IgnoreInvalidMembersDuringQuery'>mondrian&shy;.&shy;rolap&shy;.&shy;ignoreInvalidMembersDuringQuery</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+<p>Property that defines whether non-existent member errors should be
+ignored during query validation&shy;.&shy; If so&shy;,&shy; the non-existent member is
+treated as a null member&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#IgnoreMeasureForNonJoiningDimension'>mondrian&shy;.&shy;olap&shy;.&shy;agg&shy;.&shy;IgnoreMeasureForNonJoiningDimension</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+<p>Property that defines whether to ignore measure when non joining
+dimension is in the tuple during aggregation&shy;.&shy;</p>
+
+<p>If there are unrelated dimensions to a measure in context during
+aggregation&shy;,&shy; the measure is ignored in the evaluation context&shy;.&shy; This
+behaviour kicks in only if the CubeUsage for this measure has
+IgnoreUnrelatedDimensions attribute set to false&shy;.&shy;</p>
+
+<p>For example&shy;,&shy; Gender doesn't join with [Warehouse Sales] measure&shy;.&shy;</p>
+
+<p>With mondrian&shy;.&shy;olap&shy;.&shy;agg&shy;.&shy;IgnoreMeasureForNonJoiningDimension&shy;=&shy;true
+Warehouse Sales gets eliminated and is ignored in the aggregate
+value&shy;.&shy;</p>
+
+<blockquote><code>                                    [Store Sales] + [Warehouse Sales]
+SUM({Product&shy;.&shy;members * Gender&shy;.&shy;members})    7&shy;,&shy;913&shy;,&shy;333&shy;.&shy;82</code></blockquote>
+
+<p>With mondrian&shy;.&shy;olap&shy;.&shy;agg&shy;.&shy;IgnoreMeasureForNonJoiningDimension&shy;=&shy;false
+Warehouse Sales with Gender All level member contributes to the aggregate
+value&shy;.&shy;</p>
+
+<blockquote><code>                                     [Store Sales] + [Warehouse Sales]
+SUM({Product&shy;.&shy;members * Gender&shy;.&shy;members})    9&shy;,&shy;290&shy;,&shy;730&shy;.&shy;03</code></blockquote>
+
+<p>On a report where Gender M&shy;,&shy; F and All members exist a user will see a
+large aggregated value compared to the aggregated value that can be
+arrived at by summing up values against Gender M and F&shy;.&shy; This can be
+confusing to the user&shy;.&shy; This feature can be used to eliminate such a
+situation&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#IterationLimit'>mondrian&shy;.&shy;rolap&shy;.&shy;iterationLimit</a></code></td>
+<td>int</td>
+<td>0</td>
+<td>
+<p>Integer property indicating the maximum number of iterations
+allowed when iterating over members to compute aggregates&shy;.&shy;  A value of
+0 (the default) indicates no limit&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#JdbcDrivers'>mondrian&shy;.&shy;jdbcDrivers</a></code></td>
+<td>string</td>
+<td>sun&shy;.&shy;jdbc&shy;.&shy;odbc&shy;.&shy;JdbcOdbcDriver&shy;,&shy;org&shy;.&shy;hsqldb&shy;.&shy;jdbcDriver&shy;,&shy;oracle&shy;.&shy;jdbc&shy;.&shy;OracleDriver&shy;,&shy;com&shy;.&shy;mysql&shy;.&shy;jdbc&shy;.&shy;Driver</td>
+<td>
+Property containing a list of JDBC drivers to load automatically&shy;.&shy;
+Must be a comma-separated list of class names&shy;,&shy; and the classes must be
+on the class path&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#LocalePropFile'>mondrian&shy;.&shy;rolap&shy;.&shy;localePropFile</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+<p>String property that holds the
+name of the class whose resource bundle is to be used to for this
+schema&shy;.&shy; For example&shy;,&shy; if the class is {@code com&shy;.&shy;acme&shy;.&shy;MyResource}&shy;,&shy;
+mondrian will look for a resource bundle called
+{@code com/acme/MyResource_<i>locale</i>&shy;.&shy;properties} on the class path&shy;.&shy;
+(This property has a confusing name because in a previous release it
+actually held a file name&shy;.&shy;)</p>
+
+<p>Used for the {@link mondrian&shy;.&shy;i18n&shy;.&shy;LocalizingDynamicSchemaProcessor}&shy;;&shy;
+see <a>Internationalization</a>
+for more details&shy;.&shy;</p>
+
+<p>Default value is null&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#Log4jConfiguration'>log4j&shy;.&shy;configuration</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+<p>Set mondrian logging information if not provided by containing application&shy;.&shy;</p>
+
+<p>Examples:</p>
+
+<blockquote><code>
+log4j&shy;.&shy;configuration&shy;=&shy;file://full/path/log4j&shy;.&shy;xml<br></br>
+log4j&shy;.&shy;configuration&shy;=&shy;file:log4j&shy;.&shy;properties</code></blockquote>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#MaxEvalDepth'>mondrian&shy;.&shy;rolap&shy;.&shy;evaluate&shy;.&shy;MaxEvalDepth</a></code></td>
+<td>int</td>
+<td>10</td>
+<td>
+<p>Boolean property that defines the maximum number of passes
+allowable while evaluating an MDX expression&shy;.&shy;</p>
+
+<p>If evaluation exceeds this depth (for example&shy;,&shy; while evaluating a
+very complex calculated member)&shy;,&shy; Mondrian will throw an error&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#NativizeMaxResults'>mondrian&shy;.&shy;native&shy;.&shy;NativizeMaxResults</a></code></td>
+<td>int</td>
+<td>150&shy;,&shy;000</td>
+<td>
+<p>Property that controls the maximum number of results contained in a
+NativizeSet result set&shy;.&shy;</p>
+
+<p>If the number of tuples contained in the result set exceeds this
+value Mondrian throws a LimitExceededDuringCrossjoin error&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#NativizeMinThreshold'>mondrian&shy;.&shy;native&shy;.&shy;NativizeMinThreshold</a></code></td>
+<td>int</td>
+<td>100&shy;,&shy;000</td>
+<td>
+<p>Property that controls minimum expected cardinality required in
+order for NativizeSet to natively evaluate a query&shy;.&shy;</p>
+
+<p>If the expected cardinality falls below this level the query is
+executed non-natively&shy;.&shy;</p>
+
+<p>It is possible for the actual cardinality to fall below this
+threshold even though the expected cardinality falls above this
+threshold&shy;.&shy;  In this case the query will be natively evaluated&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#NeedDimensionPrefix'>mondrian&shy;.&shy;olap&shy;.&shy;elements&shy;.&shy;NeedDimensionPrefix</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+<p>Property determines if elements of dimension (levels&shy;,&shy; hierarchies&shy;,&shy;
+members) need to be prefixed with dimension name in MDX query&shy;.&shy;</p>
+
+<p>For example when the property is true&shy;,&shy; the following queries
+will error out&shy;.&shy; The same queries will work when this property
+is set to false&shy;.&shy;</p>
+
+<blockquote><code>select {[M]} on 0 from sales<br></br>
+select {[USA]} on 0 from sales<br></br>
+select {[USA]&shy;.&shy;[CA]&shy;.&shy;[Santa Monica]}  on 0 from sales</code></blockquote>
+
+<p>When the property is set to true&shy;,&shy; any query where elements are
+prefixed with dimension name as below will work</p>
+
+<blockquote><code>select {[Gender]&shy;.&shy;[F]} on 0 from sales<br></br>
+select {[Customers]&shy;.&shy;[Santa Monica]} on 0 from sales</code></blockquote>
+
+<p>Please note that this property does not govern the behaviour
+wherein</p>
+
+<blockquote><code>[Gender]&shy;.&shy;[M]</code></blockquote>
+
+<p>is resolved into a fully qualified</p>
+
+<blockquote><code>[Gender]&shy;.&shy;[M]</code></blockquote>
+
+<p> In a scenario where the schema is very large and dimensions have
+large number of members a MDX query that has a invalid member in it will
+cause mondrian to to go through all the dimensions&shy;,&shy; levels&shy;,&shy; hierarchies&shy;,&shy;
+members and properties trying to resolve the element name&shy;.&shy; This behavior
+consumes considerable time and resources on the server&shy;.&shy; Setting this
+property to true will make it fail fast in a scenario where it is
+desirable&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#NullDenominatorProducesNull'>mondrian&shy;.&shy;olap&shy;.&shy;NullDenominatorProducesNull</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+<p>Property that defines
+the behavior of division if the denominator evaluates to zero&shy;.&shy;</p>
+
+<p>If false (the default)&shy;,&shy; if a division has a non-null numerator and
+a null denominator&shy;,&shy; it evaluates to "Infinity"&shy;,&shy; which conforms to SSAS
+behavior&shy;.&shy;</p>
+
+<p>If true&shy;,&shy; the result is null if the denominator is null&shy;.&shy; Setting to
+true enables the old semantics of evaluating this to null&shy;;&shy; this does
+not conform to SSAS&shy;,&shy; but is useful in some applications&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#NullMemberRepresentation'>mondrian&shy;.&shy;olap&shy;.&shy;NullMemberRepresentation</a></code></td>
+<td>string</td>
+<td>#null</td>
+<td>
+<p>Property that determines how a null member value is represented in the
+result output&shy;.&shy;</p>
+<p>AS 2000 shows this as empty value</p>
+<p>AS 2005 shows this as "(null)" value</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#QueryLimit'>mondrian&shy;.&shy;query&shy;.&shy;limit</a></code></td>
+<td>int</td>
+<td>40</td>
+<td>
+<p>Maximum number of simultaneous queries the system will allow&shy;.&shy;</p>
+
+<p>Oracle fails if you try to run more than the 'processes' parameter in
+init&shy;.&shy;ora&shy;,&shy; typically 150&shy;.&shy; The throughput of Oracle and other databases
+will probably reduce long before you get to their limit&shy;.&shy;</p>
+</td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#QueryTimeout'>mondrian&shy;.&shy;rolap&shy;.&shy;queryTimeout</a></code></td>
+<td>int</td>
+<td>0</td>
+<td>
+<p>Property that defines the timeout value (in seconds) for queries&shy;.&shy; A
+value of 0 (the default) indicates no timeout&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#ResultLimit'>mondrian&shy;.&shy;result&shy;.&shy;limit</a></code></td>
+<td>int</td>
+<td>0</td>
+<td>
+Integer property that&shy;,&shy; if set to a value greater than zero&shy;,&shy; limits the
+maximum size of a result set&shy;.&shy;
+</td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#RolapConnectionShepherdNbThreads'>mondrian&shy;.&shy;rolap&shy;.&shy;maxQueryThreads</a></code></td>
+<td>int</td>
+<td>10</td>
+<td>
+<p>Maximum number of MDX query threads per Mondrian server instance&shy;.&shy;
+Defaults to 10&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#RolapConnectionShepherdThreadPollingInterval'>mondrian&shy;.&shy;rolap&shy;.&shy;shepherdThreadPollingInterval</a></code></td>
+<td>string</td>
+<td>1000ms</td>
+<td>
+<p>Property that defines the interval value between
+polling operations performed by the RolapConnection shepherd thread&shy;.&shy;
+This controls query timeouts and cancellation&shy;,&shy; so a small value
+(a few milliseconds) is best&shy;.&shy; Setting this to a value higher than
+mondrian&shy;.&shy;rolap&shy;.&shy;queryTimeout will result the timeout not being enforced
+as expected&shy;.&shy;</p>
+
+<p>Default value is "1000ms"&shy;.&shy; Default time unit is "ms"&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#SegmentCache'>mondrian&shy;.&shy;rolap&shy;.&shy;SegmentCache</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+Property which defines which SegmentCache implementation to use&shy;.&shy;
+Specify the value as a fully qualified class name&shy;,&shy; such as
+<code>org&shy;.&shy;example&shy;.&shy;SegmentCacheImpl</code> where SegmentCacheImpl
+is an implementation of {@link mondrian&shy;.&shy;spi&shy;.&shy;SegmentCache}&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#SegmentCacheManagerNumberCacheThreads'>mondrian&shy;.&shy;rolap&shy;.&shy;maxCacheThreads</a></code></td>
+<td>int</td>
+<td>100</td>
+<td>
+<p>Maximum number of threads per Mondrian server instance that
+are used to run perform operations on the external caches&shy;.&shy;
+Defaults to 100&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#SegmentCacheManagerNumberSqlThreads'>mondrian&shy;.&shy;rolap&shy;.&shy;maxSqlThreads</a></code></td>
+<td>int</td>
+<td>100</td>
+<td>
+<p>Maximum number of threads per Mondrian server instance that
+are used to run SQL queries when populating segments&shy;.&shy;
+Defaults to 100&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#SolveOrderMode'>mondrian&shy;.&shy;rolap&shy;.&shy;SolveOrderMode</a></code></td>
+<td>string</td>
+<td>ABSOLUTE</td>
+<td>
+Property that controls the behavior of
+{@link Property#SOLVE_ORDER solve order} of calculated members and sets&shy;.&shy;
+
+<p>Valid values are "absolute" and "scoped" (the default)&shy;.&shy; See
+{@link mondrian&shy;.&shy;olap&shy;.&shy;SolveOrderMode} for details&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#SparseSegmentCountThreshold'>mondrian&shy;.&shy;rolap&shy;.&shy;SparseSegmentValueThreshold</a></code></td>
+<td>int</td>
+<td>1&shy;,&shy;000</td>
+<td>
+<p>Property that&shy;,&shy; with {@link #SparseSegmentDensityThreshold}&shy;,&shy; determines
+whether to choose a sparse or dense representation when storing
+collections of cell values in memory&shy;.&shy;</p>
+
+<p>When storing collections of cell values&shy;,&shy; Mondrian has to choose
+between a sparse and a dense representation&shy;,&shy; based upon the
+<code>possible</code> and <code>actual</code> number of values&shy;.&shy;
+The <code>density</code> is <code>actual / possible</code>&shy;.&shy;</p>
+
+<p>We use a sparse representation if
+<code>(possible -
+{@link #SparseSegmentCountThreshold countThreshold}) *
+{@link #SparseSegmentDensityThreshold densityThreshold} &gt&shy;;&shy;
+actual</code></p>
+
+<p>For example&shy;,&shy; at the default values
+({@link #SparseSegmentCountThreshold countThreshold} &shy;=&shy; 1000&shy;,&shy;
+{@link #SparseSegmentDensityThreshold} &shy;=&shy; 0&shy;.&shy;5)&shy;,&shy;
+we use a dense representation for</p>
+
+<ul>
+<li>(1000 possible&shy;,&shy; 0 actual)&shy;,&shy; or</li>
+<li>(2000 possible&shy;,&shy; 500 actual)&shy;,&shy; or</li>
+<li>(3000 possible&shy;,&shy; 1000 actual)&shy;.&shy;</li>
+</ul>
+
+<p>Any fewer actual values&shy;,&shy; or any more
+possible values&shy;,&shy; and Mondrian will use a sparse representation&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#SparseSegmentDensityThreshold'>mondrian&shy;.&shy;rolap&shy;.&shy;SparseSegmentDensityThreshold</a></code></td>
+<td>double</td>
+<td>0&shy;.&shy;5</td>
+<td>
+Property that&shy;,&shy; with {@link #SparseSegmentCountThreshold}&shy;,&shy;
+determines whether to choose a sparse or dense representation when
+storing collections of cell values in memory&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#SsasCompatibleNaming'>mondrian&shy;.&shy;olap&shy;.&shy;SsasCompatibleNaming</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+<p>Property that defines
+whether to enable new naming behavior&shy;.&shy;</p>
+
+<p>If true&shy;,&shy; hierarchies are named [Dimension]&shy;.&shy;[Hierarchy]&shy;;&shy; if false&shy;,&shy;
+[Dimension&shy;.&shy;Hierarchy]&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#StatisticsProviders'>mondrian&shy;.&shy;statistics&shy;.&shy;providers</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+<p>Comma-separated list of classes to be used to get statistics about the
+number of rows in a table&shy;,&shy; or the number of distinct values in a column&shy;.&shy;</p>
+
+<p>If there is a value for mondrian&shy;.&shy;statistics&shy;.&shy;providers&shy;.&shy;DATABASE&shy;,&shy; where
+DAtABASE is the current database name (e&shy;.&shy;g&shy;.&shy; MYSQL or ORACLE)&shy;,&shy; then that
+property overrides&shy;.&shy;</p>
+
+<p>Example:</p>
+
+<blockquote><code>
+mondrian&shy;.&shy;statistics&shy;.&shy;providers&shy;=&shy;mondrian&shy;.&shy;spi&shy;.&shy;impl&shy;.&shy;JdbcStatisticsProvider<br></br>
+mondrian&shy;.&shy;statistics&shy;.&shy;providers&shy;.&shy;MYSQL&shy;=&shy;mondrian&shy;.&shy;spi&shy;.&shy;impl&shy;.&shy;JdbcStatisticsProvider&shy;,&shy;mondrian&shy;.&shy;spi&shy;.&shy;impl&shy;.&shy;JdbcStatisticsProvider</code></blockquote>
+
+<p>This would use JDBC's statistics (via the
+java&shy;.&shy;sql&shy;.&shy;DatabaseMetaData&shy;.&shy;getIndexInfo method) for most
+databases&shy;,&shy; but for connections to a MySQL database&shy;,&shy; would use
+external statistics first&shy;,&shy; and fall back to JDBC statistics
+only if external statistics were not available&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#TestHighCardinalityDimensionList'>mondrian&shy;.&shy;test&shy;.&shy;highCardDimensions</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+Property containing a list of dimensions in the Sales cube that should
+be treated as high-cardinality dimensions by the testing infrastructure&shy;.&shy;
+This allows us to run the full suite of tests with high-cardinality
+functionality enabled&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#WebappConnectString'>mondrian&shy;.&shy;webapp&shy;.&shy;connectString</a></code></td>
+<td>string</td>
+<td>Provider&shy;=&shy;mondrian&shy;;&shy;Jdbc&shy;=&shy;jdbc:odbc:MondrianFoodMart&shy;;&shy;Catalog&shy;=&shy;&shy;/&shy;WEB-INF&shy;/&shy;queries&shy;/&shy;FoodMart&shy;.&shy;xml&shy;;&shy;JdbcDrivers&shy;=&shy;sun&shy;.&shy;jdbc&shy;.&shy;odbc&shy;.&shy;JdbcOdbcDriver</td>
+<td>
+<p>Connect string for the webapp&shy;.&shy; (Used by the webapp only&shy;.&shy;)</p>
+
+<p>To achieve access control&shy;,&shy; append say <code>&shy;;&shy;Role&shy;=&shy;'California
+manager'</code> to the connect string&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#WebappDeploy'>mondrian&shy;.&shy;webapp&shy;.&shy;deploy</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+<p>Where mondrian&shy;.&shy;war will be deployed to&shy;.&shy; (Used by mondrian's build&shy;.&shy;xml ant file only&shy;.&shy;)</p>
+
+<p>Example: <code>mondrian&shy;.&shy;webapp&shy;.&shy;deploy&shy;=&shy;C:/jboss-4&shy;.&shy;0&shy;.&shy;2/server/default/deploy</code></p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#XmlaSchemaRefreshInterval'>mondrian&shy;.&shy;xmla&shy;.&shy;SchemaRefreshInterval</a></code></td>
+<td>string</td>
+<td>3000ms</td>
+<td>
+<p>Interval at which to refresh the
+list of XML/A catalogs&shy;.&shy; (Usually known as the
+datasources&shy;.&shy;xml file&shy;.&shy;)</p>
+
+<p>It is not an active process&shy;;&shy; no threads will be created&shy;.&shy; It only
+serves as a rate limiter&shy;.&shy; The refresh process is triggered by requests
+to the doPost() servlet method&shy;.&shy;</p>
+
+<p>Values may have time unit suffixes such as 's' (second) or 'ms'
+(milliseconds)&shy;.&shy; Default value is 3000 milliseconds (3 seconds)&shy;.&shy;
+Default time unit is milliseconds&shy;.&shy;</p>
+
+<p>See also
+{@link mondrian&shy;.&shy;xmla&shy;.&shy;impl&shy;.&shy;DynamicDatasourceXmlaServlet}&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+      <td colspan='4'><b><br>Monitoring</b></td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#ExecutionHistorySize'>mondrian&shy;.&shy;server&shy;.&shy;monitor&shy;.&shy;executionHistorySize</a></code></td>
+<td>int</td>
+<td>1&shy;,&shy;000</td>
+<td>
+<p>Property that defines how many previous execution instances the
+<code>Monitor</code> keeps in its history so that it can send the events
+which happen after the fact&shy;.&shy; Setting this property too high will make the
+JVM run out of memory&shy;.&shy; Setting it too low might prevent some events from
+reaching the listeners of the monitor&shy;.&shy;</p>
+<p>This property is for internal use only and should not be changed
+unless required&shy;.&shy; Defaults to 1&shy;,&shy;000&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#MemoryMonitor'>mondrian&shy;.&shy;util&shy;.&shy;memoryMonitor&shy;.&shy;enable</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+<p>Property that defines whether the <code>MemoryMonitor</code> should
+be enabled&shy;.&shy; By default it is disabled&shy;;&shy; memory monitor is not available
+before Java version 1&shy;.&shy;5&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#MemoryMonitorThreshold'>mondrian&shy;.&shy;util&shy;.&shy;memoryMonitor&shy;.&shy;percentage&shy;.&shy;threshold</a></code></td>
+<td>int</td>
+<td>90</td>
+<td>
+<p>Property that defines the default <code>MemoryMonitor</code>
+percentage threshold&shy;.&shy; If enabled&shy;,&shy; when Java's memory monitor detects
+that post-garbage collection is above this value&shy;,&shy; notifications are
+generated&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+      <td colspan='4'><b><br>SQL generation</b></td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported'>mondrian&shy;.&shy;native&shy;.&shy;unsupported&shy;.&shy;alert</a></code></td>
+<td>string</td>
+<td>OFF</td>
+<td>
+<p>Alerting action to take in case native evaluation of a function is
+enabled but not supported for that function's usage in a particular
+query&shy;.&shy;  (No alert is ever raised in cases where native evaluation would
+definitely have been wasted effort&shy;.&shy;)</p>
+
+<p>Recognized actions:</p>
+
+<ul>
+<li><code>OFF</code>:  do nothing (default action&shy;,&shy; also used if
+unrecognized action is specified)</li>
+<li><code>WARN</code>:  log a warning to RolapUtil logger</li>
+<li><code>ERROR</code>:  throw an instance of
+{@link NativeEvaluationUnsupportedException}</li>
+</ul>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#EnableGroupingSets'>mondrian&shy;.&shy;rolap&shy;.&shy;groupingsets&shy;.&shy;enable</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+<p>Property that defines
+whether to generate SQL queries using the <code>GROUPING SETS</code>
+construct for rollup&shy;.&shy; By default it is not enabled&shy;.&shy;</p>
+
+<p>Ignored on databases which do not support the
+<code>GROUPING SETS</code> construct (see
+{@link mondrian&shy;.&shy;spi&shy;.&shy;Dialect#supportsGroupingSets})&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#EnableNativeCrossJoin'>mondrian&shy;.&shy;native&shy;.&shy;crossjoin&shy;.&shy;enable</a></code></td>
+<td>boolean</td>
+<td>true</td>
+<td>
+If enabled some NON EMPTY CrossJoin will be computed in SQL&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#EnableNativeFilter'>mondrian&shy;.&shy;native&shy;.&shy;filter&shy;.&shy;enable</a></code></td>
+<td>boolean</td>
+<td>true</td>
+<td>
+If enabled some Filter() will be computed in SQL&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#EnableNativeNonEmpty'>mondrian&shy;.&shy;native&shy;.&shy;nonempty&shy;.&shy;enable</a></code></td>
+<td>boolean</td>
+<td>true</td>
+<td>
+<p>If enabled some NON EMPTY set operations like member&shy;.&shy;children&shy;,&shy;
+level&shy;.&shy;members and member descendants will be computed in SQL&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#EnableNativeTopCount'>mondrian&shy;.&shy;native&shy;.&shy;topcount&shy;.&shy;enable</a></code></td>
+<td>boolean</td>
+<td>true</td>
+<td>
+If enabled some TopCount will be computed in SQL&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#ExpandNonNative'>mondrian&shy;.&shy;native&shy;.&shy;ExpandNonNative</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+If this property is true&shy;,&shy; when looking for native evaluation of an
+expression&shy;,&shy; Mondrian will expand non-native sub-expressions into
+lists of members&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#FilterChildlessSnowflakeMembers'>mondrian&shy;.&shy;rolap&shy;.&shy;FilterChildlessSnowflakeMembers</a></code></td>
+<td>boolean</td>
+<td>true</td>
+<td>
+<p>Property that defines
+whether to generate joins to filter out members in a snowflake
+dimension that do not have any children&shy;.&shy;</p>
+
+<p>If true (the default)&shy;,&shy; some queries to query members of high
+levels snowflake dimensions will be more expensive&shy;.&shy; If false&shy;,&shy; and if
+there are rows in an outer snowflake table that are not referenced by
+a row in an inner snowflake table&shy;,&shy; then some queries will return members
+that have no children&shy;.&shy;</p>
+
+<p>Our recommendation&shy;,&shy; for best performance&shy;,&shy; is to remove rows outer
+snowflake tables are not referenced by any row in an inner snowflake
+table&shy;,&shy; during your ETL process&shy;,&shy; and to set this property to
+{@code false}&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#GenerateFormattedSql'>mondrian&shy;.&shy;rolap&shy;.&shy;generate&shy;.&shy;formatted&shy;.&shy;sql</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+<p>Boolean property that controls pretty-print mode&shy;.&shy;</p>
+
+<p>If true&shy;,&shy; the all SqlQuery SQL strings will be generated in
+pretty-print mode&shy;,&shy; formatted for ease of reading&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#MaxConstraints'>mondrian&shy;.&shy;rolap&shy;.&shy;maxConstraints</a></code></td>
+<td>int</td>
+<td>1&shy;,&shy;000</td>
+<td>
+<p>Max number of constraints in a single 'IN' SQL clause&shy;.&shy;</p>
+
+<p>This value may be variant among database products and their runtime
+settings&shy;.&shy; Oracle&shy;,&shy; for example&shy;,&shy; gives the error "ORA-01795: maximum
+number of expressions in a list is 1000"&shy;.&shy;</p>
+
+<p>Recommended values:</p>
+<ul>
+<li>Oracle: 1&shy;,&shy;000</li>
+<li>DB2: 2&shy;,&shy;500</li>
+<li>Other: 10&shy;,&shy;000</li>
+</ul>
+        </td>
+    </tr>
+    <tr>
+      <td colspan='4'><b><br>Testing</b></td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#CatalogURL'>mondrian&shy;.&shy;catalogURL</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+Property that contains the URL of the catalog to be used by
+{@link mondrian&shy;.&shy;tui&shy;.&shy;CmdRunner} and XML&shy;/&shy;A Test&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#FoodmartJdbcURL'>mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL</a></code></td>
+<td>string</td>
+<td>jdbc:odbc:MondrianFoodMart</td>
+<td>
+<p>Property containing the JDBC URL of the FoodMart database&shy;.&shy;
+The default value is to connect to an ODBC data source called
+"MondrianFoodMart"&shy;.&shy;</p>
+
+<p>To run the test suite&shy;,&shy; first load the FoodMart data set into the
+database of your choice&shy;.&shy; Then set the driver&shy;.&shy;classpath&shy;,&shy;
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL and mondrian&shy;.&shy;jdbcDrivers properties&shy;,&shy; by
+un-commenting and modifying one of the sections below&shy;.&shy;
+Put the JDBC driver jar into mondrian/testlib&shy;.&shy;</p>
+
+<p>Here are example property settings for various databases&shy;.&shy;</p>
+
+<h3>Derby: needs user and password</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:derby:demo/derby/foodmart<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcUser&shy;=&shy;sa<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcPassword&shy;=&shy;sa<br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;org&shy;.&shy;apache&shy;.&shy;derby&shy;.&shy;jdbc&shy;.&shy;EmbeddedDriver<br></br>
+driver&shy;.&shy;classpath&shy;=&shy;testlib/derby&shy;.&shy;jar</code></blockquote>
+
+<h3>FireBirdSQL</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:firebirdsql:localhost/3050:/mondrian/foodmart&shy;.&shy;gdb<br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;org&shy;.&shy;firebirdsql&shy;.&shy;jdbc&shy;.&shy;FBDriver<br></br>
+driver&shy;.&shy;classpath&shy;=&shy;/jdbc/fb/firebirdsql-full&shy;.&shy;jar</code></blockquote>
+
+<h3>Greenplum (similar to Postgres)</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:postgresql://localhost/foodmart?user&shy;=&shy;gpadmin&amp&shy;;&shy;password&shy;=&shy;xxxx<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcUser&shy;=&shy;foodmart<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcPassword&shy;=&shy;foodmart<br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;org&shy;.&shy;postgresql&shy;.&shy;Driver<br></br>
+driver&shy;.&shy;classpath&shy;=&shy;lib/postgresql-8&shy;.&shy;2-504&shy;.&shy;jdbc3&shy;.&shy;jar</code></blockquote>
+
+<h3>LucidDB (see <a>instructions</a>)</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:luciddb:http://localhost<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcUser&shy;=&shy;foodmart<br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;org&shy;.&shy;luciddb&shy;.&shy;jdbc&shy;.&shy;LucidDbClientDriver<br></br>
+driver&shy;.&shy;classpath&shy;=&shy;/path/to/luciddb/plugin/LucidDbClient&shy;.&shy;jar</code></blockquote>
+
+<h3>Oracle (needs user and password)</h3>
+<blockquote><code>
+oracle&shy;.&shy;home&shy;=&shy;G:/oracle/product/10&shy;.&shy;1&shy;.&shy;0/Db_1<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;.&shy;oracle&shy;=&shy;jdbc:oracle:thin:@//<i>host</i>:<i>port</i>/<i>service_name</i><br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:oracle:thin:foodmart/foodmart@//stilton:1521/orcl<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:oracle:oci8:foodmart/foodmart@orcl<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcUser&shy;=&shy;FOODMART<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcPassword&shy;=&shy;oracle<br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;oracle&shy;.&shy;jdbc&shy;.&shy;OracleDriver<br></br>
+driver&shy;.&shy;classpath&shy;=&shy;/home/jhyde/open/mondrian/lib/ojdbc14&shy;.&shy;jar</code></blockquote>
+
+<h3>ODBC (Microsoft Access)</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:odbc:MondrianFoodMart<br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;sun&shy;.&shy;jdbc&shy;.&shy;odbc&shy;.&shy;JdbcOdbcDriver<br></br>
+driver&shy;.&shy;classpath&shy;=&shy;</code></blockquote>
+
+<h3> Hypersonic</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:hsqldb:demo/hsql/FoodMart<br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;org&shy;.&shy;hsqldb&shy;.&shy;jdbcDriver<br></br>
+driver&shy;.&shy;classpath&shy;=&shy;xx</code></blockquote>
+
+<h3> MySQL: can have user and password set in JDBC URL</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:mysql://localhost/foodmart?user&shy;=&shy;foodmart&amp&shy;;&shy;password&shy;=&shy;foodmart<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:mysql://localhost/foodmart<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcUser&shy;=&shy;foodmart<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcPassword&shy;=&shy;foodmart<br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;com&shy;.&shy;mysql&shy;.&shy;jdbc&shy;.&shy;Driver<br></br>
+driver&shy;.&shy;classpath&shy;=&shy;D:/mysql-connector-3&shy;.&shy;1&shy;.&shy;12</code></blockquote>
+
+<h3>Infobright</h3>
+<p>As MySQL&shy;.&shy; (Infobright uses a MySQL driver&shy;,&shy; version 5&shy;.&shy;1 and later&shy;.&shy;)</p>
+
+<h3>Ingres</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:ingres://192&shy;.&shy;168&shy;.&shy;200&shy;.&shy;129:II7/MondrianFoodMart&shy;;&shy;LOOP&shy;=&shy;on&shy;;&shy;AUTO&shy;=&shy;multi&shy;;&shy;UID&shy;=&shy;ingres&shy;;&shy;PWD&shy;=&shy;sergni<br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;com&shy;.&shy;ingres&shy;.&shy;jdbc&shy;.&shy;IngresDriver<br></br>
+driver&shy;.&shy;classpath&shy;=&shy;c:/ingres2006/ingres/lib/iijdbc&shy;.&shy;jar</code></blockquote>
+
+<h3>Postgres: needs user and password</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:postgresql://localhost/FM3<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcUser&shy;=&shy;postgres<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcPassword&shy;=&shy;pgAdmin<br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;org&shy;.&shy;postgresql&shy;.&shy;Driver</code></blockquote>
+
+<h3>Neoview</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:hpt4jdbc://localhost:18650/:schema&shy;=&shy;PENTAHO&shy;;&shy;serverDataSource&shy;=&shy;PENTAHO_DataSource<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcUser&shy;=&shy;<i>user</i><br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcPassword&shy;=&shy;<i>password</i><br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;com&shy;.&shy;hp&shy;.&shy;t4jdbc&shy;.&shy;HPT4Driver<br></br>
+driver&shy;.&shy;classpath&shy;=&shy;/some/path/hpt4jdbc&shy;.&shy;jar</code></blockquote>
+
+<h3>Netezza: mimics Postgres</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:netezza://127&shy;.&shy;0&shy;.&shy;1&shy;.&shy;10/foodmart<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcUser&shy;=&shy;<i>user</i><br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcPassword&shy;=&shy;<i>password</i><br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;org&shy;.&shy;netezza&shy;.&shy;Driver<br></br>
+driver&shy;.&shy;classpath&shy;=&shy;/some/path/nzjdbc&shy;.&shy;jar</code></blockquote>
+
+<h3>Sybase</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:jtds:sybase://xxx&shy;.&shy;xxx&shy;.&shy;xxx&shy;.&shy;xxx:<i>port</i>/<i>dbName</i><br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcUser&shy;=&shy;<i>user</i><br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcPassword&shy;=&shy;<i>password</i><br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;net&shy;.&shy;sourceforge&shy;.&shy;jtds&shy;.&shy;jdbc&shy;.&shy;Driver<br></br>
+driver&shy;.&shy;classpath&shy;=&shy;/some/path/jtds-1&shy;.&shy;2&shy;.&shy;jar</code></blockquote>
+
+<h3>Teradata</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:teradata://DatabaseServerName/DATABASE&shy;=&shy;FoodMart<br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcUser&shy;=&shy;<i>user</i><br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcPassword&shy;=&shy;<i>password</i><br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;com&shy;.&shy;ncr&shy;.&shy;teradata&shy;.&shy;TeraDriver<br></br>
+driver&shy;.&shy;classpath&shy;=&shy;/some/path/terajdbc/classes/terajdbc4&shy;.&shy;jar</code></blockquote>
+
+<h3>Vertica</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:vertica://xxx&shy;.&shy;xxx&shy;.&shy;xxx&shy;.&shy;xxx:<i>port</i>/<i>dbName</i><br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcUser&shy;=&shy;<i>user</i><br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcPassword&shy;=&shy;<i>password</i><br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;com&shy;.&shy;vertica&shy;.&shy;Driver<br></br>
+driver&shy;.&shy;classpath&shy;=&shy;/some/path/vertica&shy;.&shy;jar</code></blockquote>
+
+<h3>Vectorwise</h3>
+<blockquote><code>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcURL&shy;=&shy;jdbc:ingres://xxx&shy;.&shy;xxx&shy;.&shy;xxx&shy;.&shy;xxx<i>port</i>/<i>dbName</i><br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcUser&shy;=&shy;<i>user</i><br></br>
+mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcPassword&shy;=&shy;<i>password</i><br></br>
+mondrian&shy;.&shy;jdbcDrivers&shy;=&shy;com&shy;.&shy;ingres&shy;.&shy;jdbc&shy;.&shy;IngresDriver <br></br>
+driver&shy;.&shy;classpath&shy;=&shy;/some/path/iijdbc&shy;.&shy;jar</code></blockquote>
+
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#Iterations'>mondrian&shy;.&shy;test&shy;.&shy;Iterations</a></code></td>
+<td>int</td>
+<td>1</td>
+<td>
+Not documented&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#QueryFileDirectory'>mondrian&shy;.&shy;test&shy;.&shy;QueryFileDirectory</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+Property defining
+where the test XML files are&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#QueryFilePattern'>mondrian&shy;.&shy;test&shy;.&shy;QueryFilePattern</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+Property that defines
+a pattern for which test XML files to run&shy;.&shy;  Pattern has to
+match a file name of the form:
+<code>query<i>whatever</i>&shy;.&shy;xml</code> in the directory&shy;.&shy;
+
+<p>Example:</p>
+
+<blockquote><code>
+mondrian&shy;.&shy;test&shy;.&shy;QueryFilePattern&shy;=&shy;queryTest_fec[A-Za-z0-9_]*&shy;.&shy;xml
+</code></blockquote>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#TestClass'>mondrian&shy;.&shy;test&shy;.&shy;Class</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+<p>String property that determines which test class to run&shy;.&shy;</p>
+
+<p>This is the name of the class&shy;.&shy; It must either implement
+{@code junit&shy;.&shy;framework&shy;.&shy;Test} or have a method
+{@code public [static] junit&shy;.&shy;framework&shy;.&shy;Test suite()}&shy;.&shy;</p>
+
+<p>Example:</p>
+
+<blockquote><code>mondrian&shy;.&shy;test&shy;.&shy;Class&shy;=&shy;mondrian&shy;.&shy;test&shy;.&shy;FoodMartTestCase</code></blockquote>
+
+@see #TestName
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#TestConnectString'>mondrian&shy;.&shy;test&shy;.&shy;connectString</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+<p>Property containing the connect string which regression tests should
+use to connect to the database&shy;.&shy;</p>
+
+<p>Format is specified in {@link Util#parseConnectString(String)}&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#TestExpDependencies'>mondrian&shy;.&shy;test&shy;.&shy;ExpDependencies</a></code></td>
+<td>int</td>
+<td>0</td>
+<td>
+<p>Integer property that controls whether to test operators'
+dependencies&shy;,&shy; and how much time to spend doing it&shy;.&shy;</p>
+
+<p>If this property is positive&shy;,&shy; Mondrian's test framework allocates an
+expression evaluator which evaluates each expression several times&shy;,&shy; and
+makes sure that the results of the expression are independent of
+dimensions which the expression claims to be independent of&shy;.&shy;</p>
+
+<p>The default is 0&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#TestJdbcPassword'>mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcPassword</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+Property containing the JDBC password of a test database&shy;.&shy;
+The default value is null&shy;,&shy; to cope with DBMSs that don't need this&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#TestJdbcUser'>mondrian&shy;.&shy;foodmart&shy;.&shy;jdbcUser</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+Property containing the JDBC user of a test database&shy;.&shy;
+The default value is null&shy;,&shy; to cope with DBMSs that don't need this&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#TestName'>mondrian&shy;.&shy;test&shy;.&shy;Name</a></code></td>
+<td>string</td>
+<td>-</td>
+<td>
+<p>String property that determines which tests are run&shy;.&shy;</p>
+
+<p>This is a regular expression as defined by
+{@link java&shy;.&shy;util&shy;.&shy;regex&shy;.&shy;Pattern}&shy;.&shy;
+If this property is specified&shy;,&shy; only tests whose names match the pattern
+in its entirety will be run&shy;.&shy;</p>
+
+@see #TestClass
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#TestSeed'>mondrian&shy;.&shy;test&shy;.&shy;random&shy;.&shy;seed</a></code></td>
+<td>int</td>
+<td>1&shy;,&shy;234</td>
+<td>
+<p>Seed for random number generator used by some of the tests&shy;.&shy;</p>
+
+<p>Any value besides 0 or -1 gives deterministic behavior&shy;.&shy;
+The default value is 1234: most users should use this&shy;.&shy;
+Setting the seed to a different value can increase coverage&shy;,&shy; and
+therefore may uncover new bugs&shy;.&shy;</p>
+
+<p>If you set the value to 0&shy;,&shy; the system will generate its own
+pseudo-random seed&shy;.&shy;</p>
+
+<p>If you set the value to -1&shy;,&shy; Mondrian uses the next seed from an
+internal random-number generator&shy;.&shy; This is a little more deterministic
+than setting the value to 0&shy;.&shy;</p>
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#TimeLimit'>mondrian&shy;.&shy;test&shy;.&shy;TimeLimit</a></code></td>
+<td>int</td>
+<td>0</td>
+<td>
+Property that returns the time limit for the test run in seconds&shy;.&shy;
+If the test is running after that time&shy;,&shy; it is terminated&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#VUsers'>mondrian&shy;.&shy;test&shy;.&shy;VUsers</a></code></td>
+<td>int</td>
+<td>1</td>
+<td>
+Not documented&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#Warmup'>mondrian&shy;.&shy;test&shy;.&shy;Warmup</a></code></td>
+<td>boolean</td>
+<td>false</td>
+<td>
+Property that indicates whether this is a "warmup test"&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#WarnIfNoPatternForDialect'>mondrian&shy;.&shy;test&shy;.&shy;WarnIfNoPatternForDialect</a></code></td>
+<td>string</td>
+<td>NONE</td>
+<td>
+<p>Property that controls whether warning messages should be printed if a SQL
+comparison test does not contain expected SQL statements for the specified
+dialect&shy;.&shy; The tests are skipped if no expected SQL statements are
+found for the current dialect&shy;.&shy;</p>
+
+<p>Possible values are the following:</p>
+
+<ul>
+<li>"NONE": no warning (default)</li>
+<li>"ANY": any dialect</li>
+<li>"ACCESS"</li>
+<li>"DERBY"</li>
+<li>"LUCIDDB"</li>
+<li>"MYSQL"</li>
+<li>&shy;.&shy;&shy;.&shy;&shy;.&shy; and any Dialect enum in SqlPattern&shy;.&shy;Dialect</li>
+</ul>
+
+<p>Specific tests can overwrite the default setting&shy;.&shy; The priority is:<ul>
+<li>Settings besides "ANY" in mondrian&shy;.&shy;properties file</li>
+<li>&lt&shy;;&shy; Any setting in the test</li>
+<li>&lt&shy;;&shy; "ANY"</li>
+</ul>
+</p>
+        </td>
+    </tr>
+    <tr>
+      <td colspan='4'><b><br>XML/A</b></td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#EnableTotalCount'>mondrian&shy;.&shy;xmla&shy;.&shy;drillthroughTotalCount&shy;.&shy;enable</a></code></td>
+<td>boolean</td>
+<td>true</td>
+<td>
+If enabled&shy;,&shy; first row in the result of an XML&shy;/&shy;A drill-through request
+will be filled with the total count of rows in underlying database&shy;.&shy;
+        </td>
+    </tr>
+    <tr>
+<td><code><a href='api/mondrian/olap/MondrianProperties.html#MaxRows'>mondrian&shy;.&shy;xmla&shy;.&shy;drillthroughMaxRows</a></code></td>
+<td>int</td>
+<td>1&shy;,&shy;000</td>
+<td>
+Property that defines
+limit on the number of rows returned by XML&shy;/&shy;A drill through request&shy;.&shy;
+        </td>
+    </tr>
+<table>
+
+<h3>Limit properties<a name="Limit_properties">&nbsp;</a></h3>
+
+<p>Properties <code>mondrian.result.limit</code>, <code>mondrian.rolap.iterationLimit</code>
+and <code>mondrian.rolap.queryTimeout</code> enforce runtime limits on the
+time or space required to execute a query. If any of these limits are exceeded,
+mondrian throws an exception which extends
+<a href="../api/mondrian/olap/ResultLimitExceededException.html">
+mondrian.olap.ResultLimitExceededException</a>.</p>
+
+<h2>Connect strings<a name="Connect_strings">&nbsp;</a></h2>
+
+<h3>Connect string syntax<a name="Connect_string_syntax">&nbsp;</a></h3>
+
+<p>Mondrian connect strings are a connection of property/value pairs, of the
+form 'property=value;property=value;...'.</p>
+
+<p>Values can be enclosed in single-quotes, which allows them to contain spaces
+and punctuation. See the the
+<a target="_blank" href="http://msdn.microsoft.com/library/en-us/oledb/htm/oledbconnectionstringsyntax.asp">
+OLE DB connect string syntax specification</a>.</p>
+
+<p>The supported properties are described below.</p>
+
+<h3>Connect string properties<a name="Connect_string_properties">&nbsp;</a></h3>
+
+<table class="grayTable" width="500">
+    <tr>
+        <th>Name</th>
+        <th>Required?</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td>Provider</td>
+        <td>Yes</td>
+        <td><p>Must have the value &quot;Mondrian&quot;.</p></td>
+    </tr>
+    <tr>
+        <td>Jdbc</td>
+        <td rowspan="2">Exactly one</td>
+        <td><p>The URL of the JDBC database where the data is stored. You must
+        specify either <code>DataSource</code> or <code>Jdbc</code>.</p></td>
+    </tr>
+    <tr>
+        <td>DataSource</td>
+        <td><p>The name of a data source loaded via JNDI. The name must be a valid JNDI name, and the object referenced must implement the
+        <a href="http://java.sun.com/j2se/1.5.0/docs/api/javax/sql/DataSource.html">javax.sql.DataSource</a> interface.
+        You must specify either
+        <code>DataSource</code> or <code>Jdbc</code>.</p></td>
+    </tr>
+    <tr>
+        <td>JdbcDrivers</td>
+        <td>Yes</td>
+        <td><p>Comma-separated list of JDBC driver classes, for example,</p>
+
+        <blockquote>
+            <code>JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver,oracle.jdbc.OracleDriver</code>
+        </blockquote>
+        </td>
+    </tr>
+    <tr>
+        <td>JdbcUser</td>
+        <td>No</td>
+        <td><p>The name of the user to log on to the JDBC database. (If your JDBC
+        driver allows you to specify the user name in the JDBC URL, you don't
+        need to set this property.)</p></td>
+    </tr>
+    <tr>
+        <td>JdbcPassword</td>
+        <td>No</td>
+        <td><p>The name of the password to log on to the JDBC database. (If your
+        JDBC driver allows you to specify the password in the JDBC URL, you
+        don't need to set this property.)</p></td>
+    </tr>
+    <tr>
+        <td>Catalog</td>
+        <td rowspan="2">Exactly one</td>
+        <td><p>The URL of the catalog, an XML file which describes the schema: cubes, hierarchies, and so forth.
+        For example,</p>
+
+        <blockquote><code>
+            Catalog=file:demo/FoodMart.xml</code></blockquote>
+
+        <p>Catalogs are described in <a href="schema.html">the Schema Guide</a>.
+        See also <code>CatalogContent</code>.</p></td>
+    </tr>
+    <tr>
+        <td>CatalogContent</td>
+        <td><p>An XML string representing the schema: cubes, hierarchies, and so forth.
+        For example,</p>
+
+        <blockquote><code>
+            CatalogContent=&lt;Schema name=&quot;MySchema&quot;&gt;&lt;Cube name=&quot;Cube1&quot;&gt; ...
+            &lt;/Schema&gt;</code></blockquote>
+
+        <p>Catalogs are described in <a href="schema.html">the Schema Guide</a>.
+        See also <code>Catalog</code>.</p></td>
+    </tr>
+    <tr>
+        <td>CatalogName</td>
+        <td>No</td>
+        <td><p>Not used. If, in future, Mondrian supports multiple catalogs, this property
+        will specify which catalog to use. See also <code>Catalog</code>.</p></td>
+    </tr>
+    <tr>
+        <td>PoolNeeded</td>
+        <td>No</td>
+        <td><p>Tells Mondrian whether to add a layer of connection pooling.</p>
+
+        <p>If the value &quot;true&quot; is specified, or no value is specified, Mondrian
+        assumes that:</p>
+
+        <ul>
+            <li>connections created via the <code>Jdbc</code> property are not pooled,
+            and therefore need to be pooled;</li>
+            <li>connections created via the <code>DataSource</code> are already pooled.</li>
+        </ul>
+
+        <p>If the value &quot;false&quot; is specified, Mondrian does not apply
+        connection-pooling to any connection.</p></td>
+    </tr>
+    <tr>
+        <td>Role</td>
+        <td>No</td>
+        <td><p>The name of the <a href="schema.html#Access_control">role</a> to adopt
+        for access-control purposes. If not specified, the connection uses a role
+        which has access to every object in the schema.</p>
+		<p>This property can contain multiple role names separated by commas. If 
+		so, queries in the connection execute with the sum of the privileges of 
+		all of the rules; the effect is the same as running under a
+		<a href="schema.html#Union_roles">union role</a>, defined using the
+		<code>&lt;Union&gt;</code> element in the schema file.</p>
+		<p>If a role name contains a comma, escape the comma using an extra 
+		comma. For example, a connection created with</p>
+		<blockquote>
+			<p><code>Role='Pacific region manager,Europe,, Middle East and 
+			Africa manager'</code></p>
+		</blockquote>
+		<p>will execute with the combined privileges of the roles &quot;Pacific 
+		region manager&quot;, and &quot;Europe, Middle East and Africa manager&quot;.</p></td>
+    </tr>
+    <tr>
+        <td>jdbc.*</td>
+        <td>No</td>
+        <td><p>Any property whose name begins with &quot;jdbc.&quot; will be added to the JDBC
+        connection properties, after removing this prefix. This allows you to specify connection
+        properties without a URL.</p>
+
+        <p>For example, given the properties</p>
+
+        <blockquote>
+            <p><code>jdbc.Timeout=50; jdbc.CacheSize=1m</code></p>
+
+        </blockquote>
+        <p>Mondrian will create a JDBC connection using the properties
+        {Timeout=&quot;50&quot;, CacheSize=&quot;1m&quot;}.</td>
+    </tr>
+    <tr>
+        <td>UseContentChecksum</td>
+        <td>No</td>
+        <td><p>Allows mondrian to work with dynamically changing schema. If this property
+            is set to <code>true</code> and schema content has changed (previous
+            checksum doesn't equal with current), schema would be reloaded.
+            The default is <code>false</code>.</p>
+            <p>Could be
+            used in combination with <code>DynamicSchemaProcessor</code> property.</p></td>
+    </tr>
+    <tr>
+        <td>UseSchemaPool</td>
+        <td>No</td>
+        <td><p>Controls whether a new connection use a schema from the schema 
+        cache. If <code>true</code>, the default, a connection shares a schema 
+        definition (and hence also a cache of aggregate data retrieved by 
+        previous queries) with other connections which have a textually 
+        identical schema definition.</p>
+        <p>If <code>false</code>, the connection has a private schema definition 
+        and cache.</p></td>
+    </tr>
+    <tr>
+        <td>DynamicSchemaProcessor</td>
+        <td>No</td>
+        <td><p>The name of a class which is called at runtime in order to modify
+        the schema content. The class must implement the
+        <a href="../api/mondrian/spi/DynamicSchemaProcessor.html">
+            mondrian.spi.DynamicSchemaProcessor</a> interface. For example,</p>
+
+        <blockquote>
+            <code>DynamicSchemaProcessor =
+            mondrian.i18n.LocalizingDynamicSchemaProcessor</code>
+        </blockquote>
+
+        <p>uses the builtin schema processor class
+        <a href="../api/mondrian/i18n/LocalizingDynamicSchemaProcessor.html">
+        mondrian.i18n.LocalizingDynamicSchemaProcessor</a> to replace variables
+        in the schema file, according to resource files and the current locale
+        (see the <code>Locale</code> property).</p></td>
+    </tr>
+    <tr>
+        <td>Locale</td>
+        <td>No</td>
+        <td><p>The requested Locale for the current session. The locale determines
+        the formatting of numbers and date/time values, and Mondrian's error
+        messages.</p>
+
+        <p>Example values are &quot;en&quot; (English), &quot;en_US&quot;
+        (United States English), &quot;hu&quot; (Hungarian). If Locale is not specified, then the name of system's default will be used, as per
+        <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/util/Locale.html#getDefault()">
+        java.util.Locale#getDefault()</a>.</td>
+    </tr>
+    <tr>
+        <td>JdbcConnectionUuid</td>
+        <td>No</td>
+        <td><p>A unique identifier for the connection. If this is set, Mondrian will look at this property and no other to determine whether two 
+data sources should be considered the same. You must ensure that connections will only share a JdbcConnectionUuid if they point to the same database.</p></td>
+    </tr>
+</table>
+<p>Connect string properties are also documented in the
+<a href="../api/mondrian/rolap/RolapConnectionProperties.html">
+RolapConnectionProperties</a> class.</p>
+
+<h2>Cache management<a name="Cache_management"></a></h2>
+
+<h3>Schema cache<a name="Schema_cache"></a></h3>
+
+<p>To flush all schema definitions, use
+the <a href="../api/mondrian/olap/CacheControl.html#flushSchemaCache()">mondrian.olap.CacheControl.flushSchemaCache()</a>
+method:</p>
+
+<blockquote>
+    <p><code>import mondrian.olap.*;<br>
+    <br>
+    Connection connection;<br>
+    CacheControl cacheControl = connection.getCacheControl(null);<br>
+    cacheControl.flushSchemaCache();</code></p>
+
+</blockquote>
+<p>The cache is only used when creating new connections; existing connections
+retain their schemas.</p>
+<p>
+There are four connect string properties that control the use of the 
+Schema cache:
+<code>UseSchemaPool</code>,
+<code>UseContentChecksum</code>,
+<code>CatalogContent</code> and
+<code>DynamicSchemaProcessor</code>.
+</p>
+
+<p>The <code>UseSchemaPool</code> property controls whether or not the cache is used
+regardless of the values of any of the other properties. If UseSchemaPool
+is "false", then the cache is not used; each request for a new schema
+object creates a new one (entailing the re-parsing of the schema definition
+and re-scanning of the database for meta data and aggregate tables - 
+very slow, and, in addition, there is no reuse of the in-memory aggregate
+cache).</p>
+
+<p>Next, if <code>UseContentChecksum</code> is "true", then a check sum (MD5) is created
+from the schema definition content (not URL) and it is this check sum
+that is used as the key to lookup previously cached versions of the 
+schema definition. If two schema definitions produce different check
+sums, then one can safely assume that they are different schemas (of course,
+it is possible that only a comment or some whitespace in the schema 
+definition changed in which case the two schemas would actually be the 
+same, but because their check sums are different, different schema 
+objects are used). If UseContentChecksum is "false", then no check sum
+is created and used as the lookup key, rather, a combination of 
+the connection attributes 
+"catalogUrl", 
+"connectionKey", 
+"jdbcUser", 
+"dataSourceStr"
+or 
+"catalogUrl", 
+"dataSource" 
+are used to create the key.</p>
+
+<p>If the <code>CatalogContent</code> is specified, then it is used as the schema
+definition content. If, in fact, it is specified, then the value of
+DynamicSchemaProcessor, if any, is ignored.</p>
+
+<p>Finally, the <code>DynamicSchemaProcessor</code> connection string property is the
+class name of a class that implements the DynamicSchemaProcessor
+interface. If set, an instance of the class is created for each
+schema request and its "processSchema" method is called which
+returns the schema definition content.</p>
+
+<h2>Memory management<a name="Memory_management"></a></h2>
+
+<h3>Out Of Memory<a name="Out_of_memory"></a></h3>
+
+<p>Java <code>OutOfMemoryError</code> errors have always been an issue with
+applications. When the JVM throws an <code>Error</code> as
+opposed to an <code>Exception</code> it is telling the application
+that its world has ended and it has no recourse but to die.
+Prior to Java5 there was not much one could do other
+than buy 64-bit machines with lots of RAM and hope for the best.
+For a multi-user, Mondrian environment with potentially very large
+data-sets and clients that
+can generate queries requesting arbitrarily large amounts of that
+data, this can be an issue. This is especially the case when
+Mondrian is being hosted on some corporate web-server; applications
+that kill web-servers are not looked upon favorably by IT.
+<p>
+With Java5 (and Java6, etc.) there is alternative. An application
+cay take advantage of
+a new feature in Java5 allowing the application to be notified when
+memory starts running low. This allows the application to take
+preemptive action prior to an <code>OutOfMemoryError</code> being
+generated by the Java runtime.
+<p>
+Mondrian takes advantage of this new feature. Rather than
+passing an <code>OutOfMemoryError</code> to its client, it
+will now stop processing the present query, free up data structures
+associated with the present query and return a
+<code>MemoryLimitExceededException</code> to the client.
+The <code>MemoryLimitExceededException</code> is one of Mondrian's
+<code>ResultLimitExceededException</code> which are used to communicate
+with clients that a limit has been exceeded, in this case, memory
+usage.
+<p>
+By default, for Mondrian running under Java5, this feature is
+enabled and the "safety limit" is set at 90 percent, when
+memory usage gets to with 90 percent of the maximum possible, the
+the processing of the current query is stopped and a
+<code>MemoryLimitExceededException</code> is return to the client.
+See the Memory monitoring properties above on this page
+for additional information.
+<p>
+Lastly, the gorilla in the closet. Java5 in its wisdom only allows
+for one memory threshold notification level to be registered with the JVM.
+What this means is if within the same JVM, some code registers
+one level, say, at 80% (here I use percentages for ease of presentation
+rather than number of
+bytes which is what the Java5 API actually supports)
+and some other code later on registers a level of
+90%, then it is the 90% that the JVM knows about - it knows nothing
+of the previously registered 80%. What this means is that the code
+expecting to be notified when the memory level crosses 80%, won't be notified!<p>
+For many applications that don't share their JVM with
+other applications, this is not a problem, but for Mondrian is it
+potentially an issue. Mondrian can be running in a Webserver and
+Webservers can have more than one independent applications.
+Each such application can register a different memory threshold
+notification level.
+In general, application-containing applications such as
+web-servers or application-servers are a problem with the current
+Java5 memory threshold notification approach.
+At the current time, I do not know a way around this problem.
+
+
+<h2>Logging<a name="Logging"></a></h2>
+<p>
+	Mondrian uses log4j for all information and debug logging.  When running
+within an application server, Mondrian's log4j configuration is determined by
+the server's or web application's log4j configuration. Please see 
+<a href="http://logging.apache.org/log4j/1.2/manual.html">log4j's documentation</a>
+for a additional details.
+</p>
+
+<h3>Configuring log4j within Mondrian's test environment<a name="Test_Logging"></a></h3>
+<p>
+	When running outside an application server, log4j determines the location
+of the log4j.xml file via the log4j.configuration java system property.   log4j
+treats this string as a URL, so to have it detect the log4j file on the file 
+system, you must use the syntax "file:DIR/log4j.xml". Relative paths are 
+acceptible, so if you have your log4j.xml file in the root directory of 
+mondrian, "file:log4j.xml" will load the correct file.  You may specify the 
+log4j.configuration property in mondrian.properties, because Mondrian's ant 
+build file explicitly sets the property as a JVM system property when running 
+JUnit tests.
+</p>
+
+<h3>MDX and SQL Statement Logging<a name="Statement_Logging"></a></h3>
+<p>
+	The default log4j.xml file is configured so that a separate log file is
+created for both MDX and SQL statement logging.  In the code, the MDX and SQL
+strings are logged at the debug level, so to disable them you can set the log 
+level to INFO or any other level above debug.  Statement logging occurs within
+the log4j categories "mondrian.mdx" and "mondrian.sql".  These categories log 
+the statements and how long they took to execute.  The SQL log also records the
+number of results returned in the result set.
+</p>
+
+<p>For example, to trace both MDX and SQL statements, create a file
+<code>log4j.properties</code> in the directory where you started mondrian
+with the following contents:</p>
+
+<blockquote>
+    <pre># Set root logger level to DEBUG and its only appender to MONDRIAN.
+log4j.rootLogger=WARN, MONDRIAN
+
+# MONDRIAN is set to be a ConsoleAppender.
+log4j.appender.MONDRIAN=org.apache.log4j.ConsoleAppender
+
+# MONDRIAN uses PatternLayout.
+log4j.appender.MONDRIAN.layout=org.apache.log4j.PatternLayout
+log4j.appender.MONDRIAN.layout.ConversionPattern=%-4r [%t] %-5p %c %x - %m%n
+
+# Trace MDX and SQL statements
+log4j.category.mondrian.mdx=DEBUG, MONDRIAN
+log4j.category.mondrian.sql=DEBUG, MONDRIAN</pre>
+</blockquote>
+
+<p>Then mondrian with the argument
+<code>-Dlog4j.configuration=file:log4j.properties</code> on the Java command
+line.</p>
+
+<p>Consider setting the property
+<code><a href="../api/mondrian/olap/MondrianProperties.html#GenerateFormattedSql">
+mondrian.rolap.generate.formatted.sql</a>=true</code> in
+<code>mondrian.properties</code> to make the format more
+readable.</p>
+
+<hr noshade size="1"/>
+<p>
+    Author: Julian Hyde; last modified April, 2011.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/configuration.html?ac=22">log</a>)<br/>
+    Copyright (C) 2006-2011 Pentaho
+</p>
+
+<br />
+
+         </td>
+      </tr>
+</table>
+</body>
+</html>

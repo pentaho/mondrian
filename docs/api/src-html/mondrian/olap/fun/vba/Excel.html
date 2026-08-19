@@ -1,0 +1,1182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2008-2009 Pentaho<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.olap.fun.vba;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import mondrian.olap.InvalidArgumentException;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.olap.fun.JavaFunDef;<a name="line.13"></a>
+<span class="sourceLineNo">014</span><a name="line.14"></a>
+<span class="sourceLineNo">015</span>import static mondrian.olap.fun.JavaFunDef.Description;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import static mondrian.olap.fun.JavaFunDef.FunctionName;<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>/**<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * Implementations of functions in the Excel worksheet library.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * &lt;p&gt;Functions are loaded into the function table by reflection.<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * @author jhyde<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * @since Dec 31, 2007<a name="line.24"></a>
+<span class="sourceLineNo">025</span> */<a name="line.25"></a>
+<span class="sourceLineNo">026</span>public abstract class Excel {<a name="line.26"></a>
+<span class="sourceLineNo">027</span>    // There follows a list of all functions defined in Excel. Functions are<a name="line.27"></a>
+<span class="sourceLineNo">028</span>    // marked 'todo:' if they still need to be implemented; 'skip:' if they<a name="line.28"></a>
+<span class="sourceLineNo">029</span>    // are implemented elsewhere, such as in Vba or there there is an explicit<a name="line.29"></a>
+<span class="sourceLineNo">030</span>    // implementation of FunDef for them. A FunDef typically allows a more<a name="line.30"></a>
+<span class="sourceLineNo">031</span>    // efficient implementation.<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>    //   AccrInt Returns the accrued interest for a security that pays periodic<a name="line.33"></a>
+<span class="sourceLineNo">034</span>    //   interest.<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>    //  AccrIntM Returns the accrued interest for a security that pays interest<a name="line.36"></a>
+<span class="sourceLineNo">037</span>    //  at maturity.<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>    @FunctionName("Acos")<a name="line.39"></a>
+<span class="sourceLineNo">040</span>    @JavaFunDef.Signature("Acos(number)")<a name="line.40"></a>
+<span class="sourceLineNo">041</span>    @Description(<a name="line.41"></a>
+<span class="sourceLineNo">042</span>        "Returns the arccosine, or inverse cosine, of a number. The arccosine "<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        + "is the angle whose cosine is Arg1. The returned angle is given in "<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        + "radians in the range 0 (zero) to pi.")<a name="line.44"></a>
+<span class="sourceLineNo">045</span>    public static double acos(double number) {<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        return Math.acos(number);<a name="line.46"></a>
+<span class="sourceLineNo">047</span>    }<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>    @FunctionName("Acosh")<a name="line.49"></a>
+<span class="sourceLineNo">050</span>    @JavaFunDef.Signature("Acosh(number)")<a name="line.50"></a>
+<span class="sourceLineNo">051</span>    @Description(<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        "Returns the inverse hyperbolic cosine of a number. Number must be "<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        + "greater than or equal to 1. The inverse hyperbolic cosine is the "<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        + "value whose hyperbolic cosine is Arg1, so Acosh(Cosh(number)) "<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        + "equals Arg1.")<a name="line.55"></a>
+<span class="sourceLineNo">056</span>    public static double acosh(double x) {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        return Math.log(x + Math.sqrt((x * x) - 1.0));<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    }<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>    // Todo: AmorDegrc Returns the depreciation for each accounting<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    // period. This function is provided for the French accounting<a name="line.61"></a>
+<span class="sourceLineNo">062</span>    // system.<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>    // Todo: AmorLinc Returns the depreciation for each accounting<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    // period. This function is provided for the French accounting<a name="line.65"></a>
+<span class="sourceLineNo">066</span>    // system.<a name="line.66"></a>
+<span class="sourceLineNo">067</span><a name="line.67"></a>
+<span class="sourceLineNo">068</span>    // Skip: And Returns TRUE if all its arguments are TRUE; returns<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    // FALSE if one or more argument is FALSE.<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>    // Todo: Asc For Double-byte character set (DBCS) languages,<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    // changes full-width (double-byte) characters to half-width<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    // (single-byte) characters.<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>    @FunctionName("Asin")<a name="line.75"></a>
+<span class="sourceLineNo">076</span>    @JavaFunDef.Signature("Asin(number)")<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    @Description(<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        "Returns the arcsine, or inverse sine, of a number. The arcsine is the "<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        + "angle whose sine is Arg1. The returned angle is given in radians in "<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        + "the range -pi/2 to pi/2.")<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    public static double asin(double number) {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        return Math.asin(number);<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    }<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>    @FunctionName("Asinh")<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    @JavaFunDef.Signature("Asinh(number)")<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    @Description(<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        "Returns the inverse hyperbolic sine of a number. The inverse "<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        + "hyperbolic sine is the value whose hyperbolic sine is Arg1, "<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        + "so Asinh(Sinh(number)) equals Arg1.")<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    public static double asinh(double x) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        return Math.log(x + Math.sqrt(1.0 + (x * x)));<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    }<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>    @FunctionName("Atan2")<a name="line.95"></a>
+<span class="sourceLineNo">096</span>    @JavaFunDef.Signature("Atan2(x, y)")<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    @Description(<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        "Returns the arctangent, or inverse tangent, of the specified x- and "<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        + "y-coordinates. The arctangent is the angle from the x-axis to a "<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        + "line containing the origin (0, 0) and a point with coordinates "<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        + "(x_num, y_num). The angle is given in radians between -pi and pi, "<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        + "excluding -pi.")<a name="line.102"></a>
+<span class="sourceLineNo">103</span>    public static double atan2(double y, double x) {<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        return Math.atan2(y, x);<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    }<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>    @FunctionName("Atanh")<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    @JavaFunDef.Signature("Atanh(number)")<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    @Description(<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        "Returns the inverse hyperbolic tangent of a number. Number "<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        + "must be between -1 and 1 (excluding -1 and 1).")<a name="line.111"></a>
+<span class="sourceLineNo">112</span>    public static double atanh(double x) {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        return .5 * Math.log((1.0 + x) / (1.0 - x));<a name="line.113"></a>
+<span class="sourceLineNo">114</span>    }<a name="line.114"></a>
+<span class="sourceLineNo">115</span><a name="line.115"></a>
+<span class="sourceLineNo">116</span>    // Todo: AveDev Returns the average of the absolute deviations of data<a name="line.116"></a>
+<span class="sourceLineNo">117</span>    // points from their mean. AveDev is a measure of the variability in a data<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    // set.<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>    // Todo: Average Returns the average (arithmetic mean) of the arguments.<a name="line.120"></a>
+<span class="sourceLineNo">121</span><a name="line.121"></a>
+<span class="sourceLineNo">122</span>    // Todo: AverageIf Returns the average (arithmetic mean) of all the cells in<a name="line.122"></a>
+<span class="sourceLineNo">123</span>    // a range that meet a given criteria.<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>    // Todo: AverageIfs Returns the average (arithmetic mean) of all cells that<a name="line.125"></a>
+<span class="sourceLineNo">126</span>    // meet multiple criteria.<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>    // Todo: BahtText Converts a number to Thai text and adds a suffix of<a name="line.128"></a>
+<span class="sourceLineNo">129</span>    // "Baht."<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>    // Todo: BesselI Returns the modified Bessel function, which is equivalent<a name="line.131"></a>
+<span class="sourceLineNo">132</span>    // to the Bessel function evaluated for purely imaginary arguments.<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>    // Todo: BesselJ   Returns the Bessel function.<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>    // Todo: BesselK Returns the modified Bessel function, which is equivalent<a name="line.136"></a>
+<span class="sourceLineNo">137</span>    // to the Bessel functions evaluated for purely imaginary arguments.<a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span>    // Todo: BesselY Returns the Bessel function, which is also called the Weber<a name="line.139"></a>
+<span class="sourceLineNo">140</span>    // function or the Neumann function.<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>    // Todo: BetaDist   Returns the beta cumulative distribution function.<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>    // Todo: BetaInv Returns the inverse of the cumulative distribution function<a name="line.144"></a>
+<span class="sourceLineNo">145</span>    // for a specified beta distribution. That is, if probability =<a name="line.145"></a>
+<span class="sourceLineNo">146</span>    // BetaDist(x,...), then BetaInv(probability,...) = x.<a name="line.146"></a>
+<span class="sourceLineNo">147</span><a name="line.147"></a>
+<span class="sourceLineNo">148</span>    // Todo: Bin2Dec   Converts a binary number to decimal.<a name="line.148"></a>
+<span class="sourceLineNo">149</span><a name="line.149"></a>
+<span class="sourceLineNo">150</span>    // Todo: Bin2Hex   Converts a binary number to hexadecimal.<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>    // Todo: Bin2Oct   Converts a binary number to octal.<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>    // Todo: BinomDist Returns the individual term binomial distribution<a name="line.154"></a>
+<span class="sourceLineNo">155</span>    // probability.<a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>    // Todo: Ceiling Returns number rounded up, away from zero, to the nearest<a name="line.157"></a>
+<span class="sourceLineNo">158</span>    // multiple of significance.<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span>    // Todo: ChiDist Returns the one-tailed probability of the chi-squared<a name="line.160"></a>
+<span class="sourceLineNo">161</span>    // distribution.<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span>    // Todo: ChiInv Returns the inverse of the one-tailed probability of the<a name="line.163"></a>
+<span class="sourceLineNo">164</span>    // chi-squared distribution.<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>    // Todo: ChiTest   Returns the test for independence.<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>    // Todo: Choose Uses Arg1 as the index to return a value from the list of<a name="line.168"></a>
+<span class="sourceLineNo">169</span>    // value arguments.<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>    // Todo: Clean   Removes all nonprintable characters from text.<a name="line.171"></a>
+<span class="sourceLineNo">172</span><a name="line.172"></a>
+<span class="sourceLineNo">173</span>    // Todo: Combin Returns the number of combinations for a given number of<a name="line.173"></a>
+<span class="sourceLineNo">174</span>    // items. Use Combin to determine the total possible number of groups for a<a name="line.174"></a>
+<span class="sourceLineNo">175</span>    // given number of items.<a name="line.175"></a>
+<span class="sourceLineNo">176</span><a name="line.176"></a>
+<span class="sourceLineNo">177</span>    // Todo: Complex Converts real and imaginary coefficients into a complex<a name="line.177"></a>
+<span class="sourceLineNo">178</span>    // number of the form x + yi or x + yj.<a name="line.178"></a>
+<span class="sourceLineNo">179</span><a name="line.179"></a>
+<span class="sourceLineNo">180</span>    // Todo: Confidence Returns a value that you can use to construct a<a name="line.180"></a>
+<span class="sourceLineNo">181</span>    // confidence interval for a population mean.<a name="line.181"></a>
+<span class="sourceLineNo">182</span><a name="line.182"></a>
+<span class="sourceLineNo">183</span>    // Todo: Convert Converts a number from one measurement system to<a name="line.183"></a>
+<span class="sourceLineNo">184</span>    // another. For example, Convert can translate a table of distances in miles<a name="line.184"></a>
+<span class="sourceLineNo">185</span>    // to a table of distances in kilometers.<a name="line.185"></a>
+<span class="sourceLineNo">186</span><a name="line.186"></a>
+<span class="sourceLineNo">187</span>    // Todo: Correl Returns the correlation coefficient of the Arg1 and Arg2<a name="line.187"></a>
+<span class="sourceLineNo">188</span>    // cell ranges.<a name="line.188"></a>
+<span class="sourceLineNo">189</span><a name="line.189"></a>
+<span class="sourceLineNo">190</span>    @FunctionName("Cosh")<a name="line.190"></a>
+<span class="sourceLineNo">191</span>    @Description("Returns the hyperbolic cosine of a number.")<a name="line.191"></a>
+<span class="sourceLineNo">192</span>    public static double cosh(double number) {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        return Math.cosh(number);<a name="line.193"></a>
+<span class="sourceLineNo">194</span>    }<a name="line.194"></a>
+<span class="sourceLineNo">195</span><a name="line.195"></a>
+<span class="sourceLineNo">196</span>    // Todo: Count Counts the number of cells that contain numbers and counts<a name="line.196"></a>
+<span class="sourceLineNo">197</span>    // numbers within the list of arguments.<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>    // Todo: CountA Counts the number of cells that are not empty and the values<a name="line.199"></a>
+<span class="sourceLineNo">200</span>    // within the list of arguments.<a name="line.200"></a>
+<span class="sourceLineNo">201</span><a name="line.201"></a>
+<span class="sourceLineNo">202</span>    // Todo: CountBlank Counts empty cells in a specified range of cells.<a name="line.202"></a>
+<span class="sourceLineNo">203</span><a name="line.203"></a>
+<span class="sourceLineNo">204</span>    // Todo: CountIf Counts the number of cells within a range that meet the<a name="line.204"></a>
+<span class="sourceLineNo">205</span>    // given criteria.<a name="line.205"></a>
+<span class="sourceLineNo">206</span><a name="line.206"></a>
+<span class="sourceLineNo">207</span>    // Todo: CountIfs Counts the number of cells within a range that meet<a name="line.207"></a>
+<span class="sourceLineNo">208</span>    // multiple criteria.<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+<span class="sourceLineNo">210</span>    // Todo: CoupDayBs Returns the number of days from the beginning of the<a name="line.210"></a>
+<span class="sourceLineNo">211</span>    // coupon period to the settlement date.<a name="line.211"></a>
+<span class="sourceLineNo">212</span><a name="line.212"></a>
+<span class="sourceLineNo">213</span>    // Todo: CoupDays Returns the number of days in the coupon period that<a name="line.213"></a>
+<span class="sourceLineNo">214</span>    // contains the settlement date.<a name="line.214"></a>
+<span class="sourceLineNo">215</span><a name="line.215"></a>
+<span class="sourceLineNo">216</span>    // Todo: CoupDaysNc Returns the number of days from the settlement date to<a name="line.216"></a>
+<span class="sourceLineNo">217</span>    // the next coupon date.<a name="line.217"></a>
+<span class="sourceLineNo">218</span><a name="line.218"></a>
+<span class="sourceLineNo">219</span>    // Todo: CoupNcd Returns a number that represents the next coupon date after<a name="line.219"></a>
+<span class="sourceLineNo">220</span>    // the settlement date.<a name="line.220"></a>
+<span class="sourceLineNo">221</span><a name="line.221"></a>
+<span class="sourceLineNo">222</span>    // Todo: CoupNum Returns the number of coupons payable between the<a name="line.222"></a>
+<span class="sourceLineNo">223</span>    // settlement date and maturity date, rounded up to the nearest whole<a name="line.223"></a>
+<span class="sourceLineNo">224</span>    // coupon.<a name="line.224"></a>
+<span class="sourceLineNo">225</span><a name="line.225"></a>
+<span class="sourceLineNo">226</span>    // Todo: CoupPcd The description for this item will appear in the final<a name="line.226"></a>
+<span class="sourceLineNo">227</span>    // release of Office 2007.<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>    // Todo: Covar Returns covariance, the average of the products of deviations<a name="line.229"></a>
+<span class="sourceLineNo">230</span>    // for each data point pair.<a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span>    // Todo: CritBinom Returns the smallest value for which the cumulative<a name="line.232"></a>
+<span class="sourceLineNo">233</span>    // binomial distribution is greater than or equal to a criterion value.<a name="line.233"></a>
+<span class="sourceLineNo">234</span><a name="line.234"></a>
+<span class="sourceLineNo">235</span>    // Todo: CumIPmt Returns the cumulative interest paid on a loan between<a name="line.235"></a>
+<span class="sourceLineNo">236</span>    // start_period and end_period.<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span>    // Todo: CumPrinc Returns the cumulative principal paid on a loan between<a name="line.238"></a>
+<span class="sourceLineNo">239</span>    // start_period and end_period.<a name="line.239"></a>
+<span class="sourceLineNo">240</span><a name="line.240"></a>
+<span class="sourceLineNo">241</span>    // Todo: DAverage Averages the values in a column of a list or database that<a name="line.241"></a>
+<span class="sourceLineNo">242</span>    // match conditions you specify.<a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>    // Todo: Days360 Returns the number of days between two dates based on a<a name="line.244"></a>
+<span class="sourceLineNo">245</span>    // 360-day year (twelve 30-day months), which is used in some accounting<a name="line.245"></a>
+<span class="sourceLineNo">246</span>    // calculations.<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>    // Todo: Db Returns the depreciation of an asset for a specified period<a name="line.248"></a>
+<span class="sourceLineNo">249</span>    // using the fixed-declining balance method.<a name="line.249"></a>
+<span class="sourceLineNo">250</span><a name="line.250"></a>
+<span class="sourceLineNo">251</span>    // Todo: Dbcs The description for this item will appear in the final release<a name="line.251"></a>
+<span class="sourceLineNo">252</span>    // of Office 2007.<a name="line.252"></a>
+<span class="sourceLineNo">253</span><a name="line.253"></a>
+<span class="sourceLineNo">254</span>    // Todo: DCount Counts the cells that contain numbers in a column of a list<a name="line.254"></a>
+<span class="sourceLineNo">255</span>    // or database that match conditions that you specify.<a name="line.255"></a>
+<span class="sourceLineNo">256</span><a name="line.256"></a>
+<span class="sourceLineNo">257</span>    // Todo: DCountA Counts the nonblank cells in a column of a list or database<a name="line.257"></a>
+<span class="sourceLineNo">258</span>    // that match conditions that you specify.<a name="line.258"></a>
+<span class="sourceLineNo">259</span><a name="line.259"></a>
+<span class="sourceLineNo">260</span>    // Todo: Ddb Returns the depreciation of an asset for a specified period<a name="line.260"></a>
+<span class="sourceLineNo">261</span>    // using the double-declining balance method or some other method you<a name="line.261"></a>
+<span class="sourceLineNo">262</span>    // specify.<a name="line.262"></a>
+<span class="sourceLineNo">263</span><a name="line.263"></a>
+<span class="sourceLineNo">264</span>    // Todo: Dec2Bin Converts a decimal number to binary.<a name="line.264"></a>
+<span class="sourceLineNo">265</span><a name="line.265"></a>
+<span class="sourceLineNo">266</span>    // Todo: Dec2Hex Converts a decimal number to hexadecimal.<a name="line.266"></a>
+<span class="sourceLineNo">267</span><a name="line.267"></a>
+<span class="sourceLineNo">268</span>    // Todo: Dec2Oct Converts a decimal number to octal.<a name="line.268"></a>
+<span class="sourceLineNo">269</span><a name="line.269"></a>
+<span class="sourceLineNo">270</span>    // Todo: Degrees Converts radians into degrees.<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span><a name="line.272"></a>
+<span class="sourceLineNo">273</span>    @FunctionName("Degrees")<a name="line.273"></a>
+<span class="sourceLineNo">274</span>    @Description("Converts radians to degrees.")<a name="line.274"></a>
+<span class="sourceLineNo">275</span>    public static double degrees(double number) {<a name="line.275"></a>
+<span class="sourceLineNo">276</span>        // 180 degrees = Pi radians<a name="line.276"></a>
+<span class="sourceLineNo">277</span>        return number * 180.0 / Math.PI;<a name="line.277"></a>
+<span class="sourceLineNo">278</span>    }<a name="line.278"></a>
+<span class="sourceLineNo">279</span><a name="line.279"></a>
+<span class="sourceLineNo">280</span>    // Todo: Delta Tests whether two values are equal. Returns 1 if number1 =<a name="line.280"></a>
+<span class="sourceLineNo">281</span>    // number2; returns 0 otherwise.<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>    // Todo: DevSq Returns the sum of squares of deviations of data points from<a name="line.283"></a>
+<span class="sourceLineNo">284</span>    // their sample mean.<a name="line.284"></a>
+<span class="sourceLineNo">285</span><a name="line.285"></a>
+<span class="sourceLineNo">286</span>    // Todo: DGet Extracts a single value from a column of a list or database<a name="line.286"></a>
+<span class="sourceLineNo">287</span>    // that matches conditions that you specify.<a name="line.287"></a>
+<span class="sourceLineNo">288</span><a name="line.288"></a>
+<span class="sourceLineNo">289</span>    // Todo: Disc Returns the discount rate for a security.<a name="line.289"></a>
+<span class="sourceLineNo">290</span><a name="line.290"></a>
+<span class="sourceLineNo">291</span>    // Todo: DMax Returns the largest number in a column of a list or database<a name="line.291"></a>
+<span class="sourceLineNo">292</span>    // that matches conditions you that specify.<a name="line.292"></a>
+<span class="sourceLineNo">293</span><a name="line.293"></a>
+<span class="sourceLineNo">294</span>    // Todo: DMin Returns the smallest number in a column of a list or database<a name="line.294"></a>
+<span class="sourceLineNo">295</span>    // that matches conditions that you specify.<a name="line.295"></a>
+<span class="sourceLineNo">296</span><a name="line.296"></a>
+<span class="sourceLineNo">297</span>    // Todo: Dollar The function described in this Help topic converts a number<a name="line.297"></a>
+<span class="sourceLineNo">298</span>    // to text format and applies a currency symbol. The name of the function<a name="line.298"></a>
+<span class="sourceLineNo">299</span>    // (and the symbol that it applies) depends upon your language settings.<a name="line.299"></a>
+<span class="sourceLineNo">300</span><a name="line.300"></a>
+<span class="sourceLineNo">301</span>    // Todo: DollarDe Converts a dollar price expressed as a fraction into a<a name="line.301"></a>
+<span class="sourceLineNo">302</span>    // dollar price expressed as a decimal number. Use DOLLARDE to convert<a name="line.302"></a>
+<span class="sourceLineNo">303</span>    // fractional dollar numbers, such as securities prices, to decimal numbers.<a name="line.303"></a>
+<span class="sourceLineNo">304</span><a name="line.304"></a>
+<span class="sourceLineNo">305</span>    // Todo: DollarFr Converts a dollar price expressed as a decimal number into<a name="line.305"></a>
+<span class="sourceLineNo">306</span>    // a dollar price expressed as a fraction. Use DOLLARFR to convert decimal<a name="line.306"></a>
+<span class="sourceLineNo">307</span>    // numbers to fractional dollar numbers, such as securities prices.<a name="line.307"></a>
+<span class="sourceLineNo">308</span><a name="line.308"></a>
+<span class="sourceLineNo">309</span>    // Todo: DProduct Multiplies the values in a column of a list or database<a name="line.309"></a>
+<span class="sourceLineNo">310</span>    // that match conditions that you specify.<a name="line.310"></a>
+<span class="sourceLineNo">311</span><a name="line.311"></a>
+<span class="sourceLineNo">312</span>    // Todo: DStDev Estimates the standard deviation of a population based on a<a name="line.312"></a>
+<span class="sourceLineNo">313</span>    // sample by using the numbers in a column of a list or database that match<a name="line.313"></a>
+<span class="sourceLineNo">314</span>    // conditions that you specify.<a name="line.314"></a>
+<span class="sourceLineNo">315</span><a name="line.315"></a>
+<span class="sourceLineNo">316</span>    // Todo: DStDevP Calculates the standard deviation of a population based on<a name="line.316"></a>
+<span class="sourceLineNo">317</span>    // the entire population by using the numbers in a column of a list or<a name="line.317"></a>
+<span class="sourceLineNo">318</span>    // database that match conditions that you specify.<a name="line.318"></a>
+<span class="sourceLineNo">319</span><a name="line.319"></a>
+<span class="sourceLineNo">320</span>    // Todo: DSum Adds the numbers in a column of a list or database that match<a name="line.320"></a>
+<span class="sourceLineNo">321</span>    // conditions that you specify.<a name="line.321"></a>
+<span class="sourceLineNo">322</span><a name="line.322"></a>
+<span class="sourceLineNo">323</span>    // Todo: Duration Returns the Macauley duration for an assumed par value of<a name="line.323"></a>
+<span class="sourceLineNo">324</span>    // $100. Duration is defined as the weighted average of the present value of<a name="line.324"></a>
+<span class="sourceLineNo">325</span>    // the cash flows and is used as a measure of a bond price's response to<a name="line.325"></a>
+<span class="sourceLineNo">326</span>    // changes in yield.<a name="line.326"></a>
+<span class="sourceLineNo">327</span><a name="line.327"></a>
+<span class="sourceLineNo">328</span>    // Todo: DVar Estimates the variance of a population based on a sample by<a name="line.328"></a>
+<span class="sourceLineNo">329</span>    // using the numbers in a column of a list or database that match conditions<a name="line.329"></a>
+<span class="sourceLineNo">330</span>    // that you specify.<a name="line.330"></a>
+<span class="sourceLineNo">331</span><a name="line.331"></a>
+<span class="sourceLineNo">332</span>    // Todo: DVarP Calculates the variance of a population based on the entire<a name="line.332"></a>
+<span class="sourceLineNo">333</span>    // population by using the numbers in a column of a list or database that<a name="line.333"></a>
+<span class="sourceLineNo">334</span>    // match conditions that you specify.<a name="line.334"></a>
+<span class="sourceLineNo">335</span><a name="line.335"></a>
+<span class="sourceLineNo">336</span>    // Todo: EDate Returns the serial number that represents the date that is<a name="line.336"></a>
+<span class="sourceLineNo">337</span>    // the indicated number of months before or after a specified date (the<a name="line.337"></a>
+<span class="sourceLineNo">338</span>    // start_date). Use EDATE to calculate maturity dates or due dates that fall<a name="line.338"></a>
+<span class="sourceLineNo">339</span>    // on the same day of the month as the date of issue.<a name="line.339"></a>
+<span class="sourceLineNo">340</span><a name="line.340"></a>
+<span class="sourceLineNo">341</span>    // Todo: Effect Returns the effective annual interest rate, given the<a name="line.341"></a>
+<span class="sourceLineNo">342</span>    // nominal annual interest rate and the number of compounding periods per<a name="line.342"></a>
+<span class="sourceLineNo">343</span>    // year.<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>    // Todo: EoMonth Returns the serial number for the last day of the month<a name="line.345"></a>
+<span class="sourceLineNo">346</span>    // that is the indicated number of months before or after start_date. Use<a name="line.346"></a>
+<span class="sourceLineNo">347</span>    // EOMONTH to calculate maturity dates or due dates that fall on the last<a name="line.347"></a>
+<span class="sourceLineNo">348</span>    // day of the month.<a name="line.348"></a>
+<span class="sourceLineNo">349</span><a name="line.349"></a>
+<span class="sourceLineNo">350</span>    // Todo: Erf Returns the error function integrated between lower_limit and<a name="line.350"></a>
+<span class="sourceLineNo">351</span>    // upper_limit.<a name="line.351"></a>
+<span class="sourceLineNo">352</span><a name="line.352"></a>
+<span class="sourceLineNo">353</span>    // Todo: ErfC The description for this item will appear in the final release<a name="line.353"></a>
+<span class="sourceLineNo">354</span>    // of Office 2007.<a name="line.354"></a>
+<span class="sourceLineNo">355</span><a name="line.355"></a>
+<span class="sourceLineNo">356</span>    // Todo: Even Returns number rounded up to the nearest even integer. You can<a name="line.356"></a>
+<span class="sourceLineNo">357</span>    // use this function for processing items that come in twos. For example, a<a name="line.357"></a>
+<span class="sourceLineNo">358</span>    // packing crate accepts rows of one or two items. The crate is full when<a name="line.358"></a>
+<span class="sourceLineNo">359</span>    // the number of items, rounded up to the nearest two, matches the crate's<a name="line.359"></a>
+<span class="sourceLineNo">360</span>    // capacity.<a name="line.360"></a>
+<span class="sourceLineNo">361</span><a name="line.361"></a>
+<span class="sourceLineNo">362</span>    // Todo: ExponDist Returns the exponential distribution. Use EXPONDIST to<a name="line.362"></a>
+<span class="sourceLineNo">363</span>    // model the time between events, such as how long an automated bank teller<a name="line.363"></a>
+<span class="sourceLineNo">364</span>    // takes to deliver cash. For example, you can use EXPONDIST to determine<a name="line.364"></a>
+<span class="sourceLineNo">365</span>    // the probability that the process takes at most 1 minute.<a name="line.365"></a>
+<span class="sourceLineNo">366</span><a name="line.366"></a>
+<span class="sourceLineNo">367</span>    // Todo: Fact Returns the factorial of a number. The factorial of a number<a name="line.367"></a>
+<span class="sourceLineNo">368</span>    // is equal to 1*2*3*...* number.<a name="line.368"></a>
+<span class="sourceLineNo">369</span><a name="line.369"></a>
+<span class="sourceLineNo">370</span>    // Todo: FactDouble Returns the double factorial of a number.<a name="line.370"></a>
+<span class="sourceLineNo">371</span><a name="line.371"></a>
+<span class="sourceLineNo">372</span>    // Todo: FDist Returns the F probability distribution. You can use this<a name="line.372"></a>
+<span class="sourceLineNo">373</span>    // function to determine whether two data sets have different degrees of<a name="line.373"></a>
+<span class="sourceLineNo">374</span>    // diversity. For example, you can examine the test scores of men and women<a name="line.374"></a>
+<span class="sourceLineNo">375</span>    // entering high school and determine if the variability in the females is<a name="line.375"></a>
+<span class="sourceLineNo">376</span>    // different from that found in the males.<a name="line.376"></a>
+<span class="sourceLineNo">377</span><a name="line.377"></a>
+<span class="sourceLineNo">378</span>    // Todo: Find Finds specific information in a worksheet.<a name="line.378"></a>
+<span class="sourceLineNo">379</span><a name="line.379"></a>
+<span class="sourceLineNo">380</span>    // Todo: FindB FIND and FINDB locate one text string within a second text<a name="line.380"></a>
+<span class="sourceLineNo">381</span>    // string, and return the number of the starting position of the first text<a name="line.381"></a>
+<span class="sourceLineNo">382</span>    // string from the first character of the second text string.<a name="line.382"></a>
+<span class="sourceLineNo">383</span><a name="line.383"></a>
+<span class="sourceLineNo">384</span>    // Todo: FInv Returns the inverse of the F probability distribution. If p =<a name="line.384"></a>
+<span class="sourceLineNo">385</span>    // FDIST(x,...), then FINV(p,...) = x.<a name="line.385"></a>
+<span class="sourceLineNo">386</span><a name="line.386"></a>
+<span class="sourceLineNo">387</span>    // Todo: Fisher Returns the Fisher transformation at x. This transformation<a name="line.387"></a>
+<span class="sourceLineNo">388</span>    // produces a function that is normally distributed rather than skewed. Use<a name="line.388"></a>
+<span class="sourceLineNo">389</span>    // this function to perform hypothesis testing on the correlation<a name="line.389"></a>
+<span class="sourceLineNo">390</span>    // coefficient.<a name="line.390"></a>
+<span class="sourceLineNo">391</span><a name="line.391"></a>
+<span class="sourceLineNo">392</span>    // Todo: FisherInv Returns the inverse of the Fisher transformation. Use<a name="line.392"></a>
+<span class="sourceLineNo">393</span>    // this transformation when analyzing correlations between ranges or arrays<a name="line.393"></a>
+<span class="sourceLineNo">394</span>    // of data. If y = FISHER(x), then FISHERINV(y) = x.<a name="line.394"></a>
+<span class="sourceLineNo">395</span><a name="line.395"></a>
+<span class="sourceLineNo">396</span>    // Todo: Fixed Rounds a number to the specified number of decimals, formats<a name="line.396"></a>
+<span class="sourceLineNo">397</span>    // the number in decimal format using a period and commas, and returns the<a name="line.397"></a>
+<span class="sourceLineNo">398</span>    // result as text.<a name="line.398"></a>
+<span class="sourceLineNo">399</span><a name="line.399"></a>
+<span class="sourceLineNo">400</span>    // Todo: Floor Rounds number down, toward zero, to the nearest multiple of<a name="line.400"></a>
+<span class="sourceLineNo">401</span>    // significance.<a name="line.401"></a>
+<span class="sourceLineNo">402</span><a name="line.402"></a>
+<span class="sourceLineNo">403</span>    // Todo: Forecast Calculates, or predicts, a future value by using existing<a name="line.403"></a>
+<span class="sourceLineNo">404</span>    // values. The predicted value is a y-value for a given x-value. The known<a name="line.404"></a>
+<span class="sourceLineNo">405</span>    // values are existing x-values and y-values, and the new value is predicted<a name="line.405"></a>
+<span class="sourceLineNo">406</span>    // by using linear regression. You can use this function to predict future<a name="line.406"></a>
+<span class="sourceLineNo">407</span>    // sales, inventory requirements, or consumer trends.<a name="line.407"></a>
+<span class="sourceLineNo">408</span><a name="line.408"></a>
+<span class="sourceLineNo">409</span>    // Todo: Frequency Calculates how often values occur within a range of<a name="line.409"></a>
+<span class="sourceLineNo">410</span>    // values, and then returns a vertical array of numbers. For example, use<a name="line.410"></a>
+<span class="sourceLineNo">411</span>    // FREQUENCY to count the number of test scores that fall within ranges of<a name="line.411"></a>
+<span class="sourceLineNo">412</span>    // scores. Because FREQUENCY returns an array, it must be entered as an<a name="line.412"></a>
+<span class="sourceLineNo">413</span>    // array formula.<a name="line.413"></a>
+<span class="sourceLineNo">414</span><a name="line.414"></a>
+<span class="sourceLineNo">415</span>    // Todo: FTest Returns the result of an F-test. An F-test returns the<a name="line.415"></a>
+<span class="sourceLineNo">416</span>    // two-tailed probability that the variances in array1 and array2 are not<a name="line.416"></a>
+<span class="sourceLineNo">417</span>    // significantly different. Use this function to determine whether two<a name="line.417"></a>
+<span class="sourceLineNo">418</span>    // samples have different variances. For example, given test scores from<a name="line.418"></a>
+<span class="sourceLineNo">419</span>    // public and private schools, you can test whether these schools have<a name="line.419"></a>
+<span class="sourceLineNo">420</span>    // different levels of test score diversity.<a name="line.420"></a>
+<span class="sourceLineNo">421</span><a name="line.421"></a>
+<span class="sourceLineNo">422</span>    // Todo: Fv Returns the future value of an investment based on periodic,<a name="line.422"></a>
+<span class="sourceLineNo">423</span>    // constant payments and a constant interest rate.<a name="line.423"></a>
+<span class="sourceLineNo">424</span><a name="line.424"></a>
+<span class="sourceLineNo">425</span>    // Todo: FVSchedule Returns the future value of an initial principal after<a name="line.425"></a>
+<span class="sourceLineNo">426</span>    // applying a series of compound interest rates. Use FVSCHEDULE to calculate<a name="line.426"></a>
+<span class="sourceLineNo">427</span>    // the future value of an investment with a variable or adjustable rate.<a name="line.427"></a>
+<span class="sourceLineNo">428</span><a name="line.428"></a>
+<span class="sourceLineNo">429</span>    // Todo: GammaDist Returns the gamma distribution. You can use this function<a name="line.429"></a>
+<span class="sourceLineNo">430</span>    // to study variables that may have a skewed distribution. The gamma<a name="line.430"></a>
+<span class="sourceLineNo">431</span>    // distribution is commonly used in queuing analysis.<a name="line.431"></a>
+<span class="sourceLineNo">432</span><a name="line.432"></a>
+<span class="sourceLineNo">433</span>    // Todo: GammaInv Returns the inverse of the gamma cumulative<a name="line.433"></a>
+<span class="sourceLineNo">434</span>    // distribution. If p = GAMMADIST(x,...), then GAMMAINV(p,...) = x.<a name="line.434"></a>
+<span class="sourceLineNo">435</span><a name="line.435"></a>
+<span class="sourceLineNo">436</span>    // Todo: GammaLn Returns the natural logarithm of the gamma function, ?(x).<a name="line.436"></a>
+<span class="sourceLineNo">437</span><a name="line.437"></a>
+<span class="sourceLineNo">438</span>    // Todo: Gcd Returns the greatest common divisor of two or more<a name="line.438"></a>
+<span class="sourceLineNo">439</span>    // integers. The greatest common divisor is the largest integer that divides<a name="line.439"></a>
+<span class="sourceLineNo">440</span>    // both number1 and number2 without a remainder.<a name="line.440"></a>
+<span class="sourceLineNo">441</span><a name="line.441"></a>
+<span class="sourceLineNo">442</span>    // Todo: GeoMean Returns the geometric mean of an array or range of positive<a name="line.442"></a>
+<span class="sourceLineNo">443</span>    // data. For example, you can use GEOMEAN to calculate average growth rate<a name="line.443"></a>
+<span class="sourceLineNo">444</span>    // given compound interest with variable rates.<a name="line.444"></a>
+<span class="sourceLineNo">445</span><a name="line.445"></a>
+<span class="sourceLineNo">446</span>    // Todo: GeStep Returns 1 if number ? step; returns 0 (zero) otherwise. Use<a name="line.446"></a>
+<span class="sourceLineNo">447</span>    // this function to filter a set of values. For example, by summing several<a name="line.447"></a>
+<span class="sourceLineNo">448</span>    // GESTEP functions you calculate the count of values that exceed a<a name="line.448"></a>
+<span class="sourceLineNo">449</span>    // threshold.<a name="line.449"></a>
+<span class="sourceLineNo">450</span><a name="line.450"></a>
+<span class="sourceLineNo">451</span>    // Todo: Growth Calculates predicted exponential growth by using existing<a name="line.451"></a>
+<span class="sourceLineNo">452</span>    // data. GROWTH returns the y-values for a series of new x-values that you<a name="line.452"></a>
+<span class="sourceLineNo">453</span>    // specify by using existing x-values and y-values. You can also use the<a name="line.453"></a>
+<span class="sourceLineNo">454</span>    // GROWTH worksheet function to fit an exponential curve to existing<a name="line.454"></a>
+<span class="sourceLineNo">455</span>    // x-values and y-values.<a name="line.455"></a>
+<span class="sourceLineNo">456</span><a name="line.456"></a>
+<span class="sourceLineNo">457</span>    // Todo: HarMean Returns the harmonic mean of a data set. The harmonic mean<a name="line.457"></a>
+<span class="sourceLineNo">458</span>    // is the reciprocal of the arithmetic mean of reciprocals.<a name="line.458"></a>
+<span class="sourceLineNo">459</span><a name="line.459"></a>
+<span class="sourceLineNo">460</span>    // Todo: Hex2Bin Converts a hexadecimal number to binary.<a name="line.460"></a>
+<span class="sourceLineNo">461</span><a name="line.461"></a>
+<span class="sourceLineNo">462</span>    // Todo: Hex2Dec Converts a hexadecimal number to decimal.<a name="line.462"></a>
+<span class="sourceLineNo">463</span><a name="line.463"></a>
+<span class="sourceLineNo">464</span>    // Todo: Hex2Oct Converts a hexadecimal number to octal.<a name="line.464"></a>
+<span class="sourceLineNo">465</span><a name="line.465"></a>
+<span class="sourceLineNo">466</span>    // Todo: HLookup Searches for a value in the top row of a table or an array<a name="line.466"></a>
+<span class="sourceLineNo">467</span>    // of values, and then returns a value in the same column from a row you<a name="line.467"></a>
+<span class="sourceLineNo">468</span>    // specify in the table or array. Use HLOOKUP when your comparison values<a name="line.468"></a>
+<span class="sourceLineNo">469</span>    // are located in a row across the top of a table of data, and you want to<a name="line.469"></a>
+<span class="sourceLineNo">470</span>    // look down a specified number of rows. Use VLOOKUP when your comparison<a name="line.470"></a>
+<span class="sourceLineNo">471</span>    // values are located in a column to the left of the data you want to find.<a name="line.471"></a>
+<span class="sourceLineNo">472</span><a name="line.472"></a>
+<span class="sourceLineNo">473</span>    // Todo: HypGeomDist Returns the hypergeometric distribution. HYPGEOMDIST<a name="line.473"></a>
+<span class="sourceLineNo">474</span>    // returns the probability of a given number of sample successes, given the<a name="line.474"></a>
+<span class="sourceLineNo">475</span>    // sample size, population successes, and population size. Use HYPGEOMDIST<a name="line.475"></a>
+<span class="sourceLineNo">476</span>    // for problems with a finite population, where each observation is either a<a name="line.476"></a>
+<span class="sourceLineNo">477</span>    // success or a failure, and where each subset of a given size is chosen<a name="line.477"></a>
+<span class="sourceLineNo">478</span>    // with equal likelihood.<a name="line.478"></a>
+<span class="sourceLineNo">479</span><a name="line.479"></a>
+<span class="sourceLineNo">480</span>    // Todo: IfError Returns a value you specify if a formula evaluates to an<a name="line.480"></a>
+<span class="sourceLineNo">481</span>    // error; otherwise, returns the result of the formula. Use the IFERROR<a name="line.481"></a>
+<span class="sourceLineNo">482</span>    // function to trap and handle errors in a formula.<a name="line.482"></a>
+<span class="sourceLineNo">483</span><a name="line.483"></a>
+<span class="sourceLineNo">484</span>    // Todo: ImAbs Returns the absolute value (modulus) of a complex number in x<a name="line.484"></a>
+<span class="sourceLineNo">485</span>    // + yi or x + yj text format.<a name="line.485"></a>
+<span class="sourceLineNo">486</span><a name="line.486"></a>
+<span class="sourceLineNo">487</span>    // Todo: Imaginary Returns the imaginary coefficient of a complex number in<a name="line.487"></a>
+<span class="sourceLineNo">488</span>    // x + yi or x + yj text format.<a name="line.488"></a>
+<span class="sourceLineNo">489</span><a name="line.489"></a>
+<span class="sourceLineNo">490</span>    // Todo: ImArgument Returns the argument (theta), an angle expressed in<a name="line.490"></a>
+<span class="sourceLineNo">491</span>    // radians, such that:<a name="line.491"></a>
+<span class="sourceLineNo">492</span><a name="line.492"></a>
+<span class="sourceLineNo">493</span>    // Todo: ImConjugate Returns the complex conjugate of a complex number in x<a name="line.493"></a>
+<span class="sourceLineNo">494</span>    // + yi or x + yj text format.<a name="line.494"></a>
+<span class="sourceLineNo">495</span><a name="line.495"></a>
+<span class="sourceLineNo">496</span>    // Todo: ImCos Returns the cosine of a complex number in x + yi or x + yj<a name="line.496"></a>
+<span class="sourceLineNo">497</span>    // text format.<a name="line.497"></a>
+<span class="sourceLineNo">498</span><a name="line.498"></a>
+<span class="sourceLineNo">499</span>    // Todo: ImDiv Returns the quotient of two complex numbers in x + yi or x +<a name="line.499"></a>
+<span class="sourceLineNo">500</span>    // yj text format.<a name="line.500"></a>
+<span class="sourceLineNo">501</span><a name="line.501"></a>
+<span class="sourceLineNo">502</span>    // Todo: ImExp Returns the exponential of a complex number in x + yi or x +<a name="line.502"></a>
+<span class="sourceLineNo">503</span>    // yj text format.<a name="line.503"></a>
+<span class="sourceLineNo">504</span><a name="line.504"></a>
+<span class="sourceLineNo">505</span>    // Todo: ImLn Returns the natural logarithm of a complex number in x + yi or<a name="line.505"></a>
+<span class="sourceLineNo">506</span>    // x + yj text format.<a name="line.506"></a>
+<span class="sourceLineNo">507</span><a name="line.507"></a>
+<span class="sourceLineNo">508</span>    // Todo: ImLog10 Returns the common logarithm (base 10) of a complex number<a name="line.508"></a>
+<span class="sourceLineNo">509</span>    // in x + yi or x + yj text format.<a name="line.509"></a>
+<span class="sourceLineNo">510</span><a name="line.510"></a>
+<span class="sourceLineNo">511</span>    // Todo: ImLog2 Returns the base-2 logarithm of a complex number in x + yi<a name="line.511"></a>
+<span class="sourceLineNo">512</span>    // or x + yj text format.<a name="line.512"></a>
+<span class="sourceLineNo">513</span><a name="line.513"></a>
+<span class="sourceLineNo">514</span>    // Todo: ImPower Returns a complex number in x + yi or x + yj text format<a name="line.514"></a>
+<span class="sourceLineNo">515</span>    // raised to a power.<a name="line.515"></a>
+<span class="sourceLineNo">516</span><a name="line.516"></a>
+<span class="sourceLineNo">517</span>    // Todo: ImProduct Returns the product of 2 to 29 complex numbers in x + yi<a name="line.517"></a>
+<span class="sourceLineNo">518</span>    // or x + yj text format.<a name="line.518"></a>
+<span class="sourceLineNo">519</span><a name="line.519"></a>
+<span class="sourceLineNo">520</span>    // Todo: ImReal Returns the real coefficient of a complex number in x + yi<a name="line.520"></a>
+<span class="sourceLineNo">521</span>    // or x + yj text format.<a name="line.521"></a>
+<span class="sourceLineNo">522</span><a name="line.522"></a>
+<span class="sourceLineNo">523</span>    // Todo: ImSin Returns the sine of a complex number in x + yi or x + yj text<a name="line.523"></a>
+<span class="sourceLineNo">524</span>    // format.<a name="line.524"></a>
+<span class="sourceLineNo">525</span><a name="line.525"></a>
+<span class="sourceLineNo">526</span>    // Todo: ImSqrt Returns the square root of a complex number in x + yi or x +<a name="line.526"></a>
+<span class="sourceLineNo">527</span>    // yj text format.<a name="line.527"></a>
+<span class="sourceLineNo">528</span><a name="line.528"></a>
+<span class="sourceLineNo">529</span>    // Todo: ImSub Returns the difference of two complex numbers in x + yi or x<a name="line.529"></a>
+<span class="sourceLineNo">530</span>    // + yj text format.<a name="line.530"></a>
+<span class="sourceLineNo">531</span><a name="line.531"></a>
+<span class="sourceLineNo">532</span>    // Todo: ImSum Returns the sum of two or more complex numbers in x + yi or x<a name="line.532"></a>
+<span class="sourceLineNo">533</span>    // + yj text format.<a name="line.533"></a>
+<span class="sourceLineNo">534</span><a name="line.534"></a>
+<span class="sourceLineNo">535</span>    // Todo: Index Returns a value or the reference to a value from within a<a name="line.535"></a>
+<span class="sourceLineNo">536</span>    // table or range. There are two forms of the INDEX function: the array form<a name="line.536"></a>
+<span class="sourceLineNo">537</span>    // and the reference form.<a name="line.537"></a>
+<span class="sourceLineNo">538</span><a name="line.538"></a>
+<span class="sourceLineNo">539</span>    // Todo: Intercept Calculates the point at which a line will intersect the<a name="line.539"></a>
+<span class="sourceLineNo">540</span>    // y-axis by using existing x-values and y-values. The intercept point is<a name="line.540"></a>
+<span class="sourceLineNo">541</span>    // based on a best-fit regression line plotted through the known x-values<a name="line.541"></a>
+<span class="sourceLineNo">542</span>    // and known y-values. Use the INTERCEPT function when you want to determine<a name="line.542"></a>
+<span class="sourceLineNo">543</span>    // the value of the dependent variable when the independent variable is 0<a name="line.543"></a>
+<span class="sourceLineNo">544</span>    // (zero). For example, you can use the INTERCEPT function to predict a<a name="line.544"></a>
+<span class="sourceLineNo">545</span>    // metal's electrical resistance at 0C when your data points were taken at<a name="line.545"></a>
+<span class="sourceLineNo">546</span>    // room temperature and higher.<a name="line.546"></a>
+<span class="sourceLineNo">547</span><a name="line.547"></a>
+<span class="sourceLineNo">548</span>    // Todo: IntRate Returns the interest rate for a fully invested security.<a name="line.548"></a>
+<span class="sourceLineNo">549</span><a name="line.549"></a>
+<span class="sourceLineNo">550</span>    // Todo: Ipmt Returns the interest payment for a given period for an<a name="line.550"></a>
+<span class="sourceLineNo">551</span>    // investment based on periodic, constant payments and a constant interest<a name="line.551"></a>
+<span class="sourceLineNo">552</span>    // rate.<a name="line.552"></a>
+<span class="sourceLineNo">553</span><a name="line.553"></a>
+<span class="sourceLineNo">554</span>    // Todo: Irr Returns the internal rate of return for a series of cash flows<a name="line.554"></a>
+<span class="sourceLineNo">555</span>    // represented by the numbers in values. These cash flows do not have to be<a name="line.555"></a>
+<span class="sourceLineNo">556</span>    // even, as they would be for an annuity. However, the cash flows must occur<a name="line.556"></a>
+<span class="sourceLineNo">557</span>    // at regular intervals, such as monthly or annually. The internal rate of<a name="line.557"></a>
+<span class="sourceLineNo">558</span>    // return is the interest rate received for an investment consisting of<a name="line.558"></a>
+<span class="sourceLineNo">559</span>    // payments (negative values) and income (positive values) that occur at<a name="line.559"></a>
+<span class="sourceLineNo">560</span>    // regular periods.<a name="line.560"></a>
+<span class="sourceLineNo">561</span><a name="line.561"></a>
+<span class="sourceLineNo">562</span>    // Todo: IsErr Checks the type of value and returns TRUE or FALSE depending<a name="line.562"></a>
+<span class="sourceLineNo">563</span>    // if the value refers to any error value except #N/A.<a name="line.563"></a>
+<span class="sourceLineNo">564</span><a name="line.564"></a>
+<span class="sourceLineNo">565</span>    // Todo: IsError Checks the type of value and returns TRUE or FALSE<a name="line.565"></a>
+<span class="sourceLineNo">566</span>    // depending if the value refers to any error value (#N/A, #VALUE!, #REF!,<a name="line.566"></a>
+<span class="sourceLineNo">567</span>    // #DIV/0!, #NUM!, #NAME?, or #NULL!).<a name="line.567"></a>
+<span class="sourceLineNo">568</span><a name="line.568"></a>
+<span class="sourceLineNo">569</span>    // Todo: IsEven Checks the type of value and returns TRUE or FALSE depending<a name="line.569"></a>
+<span class="sourceLineNo">570</span>    // if the value is even.<a name="line.570"></a>
+<span class="sourceLineNo">571</span><a name="line.571"></a>
+<span class="sourceLineNo">572</span>    // Todo: IsLogical Checks the type of value and returns TRUE or FALSE<a name="line.572"></a>
+<span class="sourceLineNo">573</span>    // depending if the value refers to a logical value.<a name="line.573"></a>
+<span class="sourceLineNo">574</span><a name="line.574"></a>
+<span class="sourceLineNo">575</span>    // Todo: IsNA Checks the type of value and returns TRUE or FALSE depending<a name="line.575"></a>
+<span class="sourceLineNo">576</span>    // if the value refers to the #N/A (value not available) error value.<a name="line.576"></a>
+<span class="sourceLineNo">577</span><a name="line.577"></a>
+<span class="sourceLineNo">578</span>    // Todo: IsNonText Checks the type of value and returns TRUE or FALSE<a name="line.578"></a>
+<span class="sourceLineNo">579</span>    // depending if the value refers to any item that is not text. (Note that<a name="line.579"></a>
+<span class="sourceLineNo">580</span>    // this function returns TRUE if value refers to a blank cell.)<a name="line.580"></a>
+<span class="sourceLineNo">581</span><a name="line.581"></a>
+<span class="sourceLineNo">582</span>    // Todo: IsNumber Checks the type of value and returns TRUE or FALSE<a name="line.582"></a>
+<span class="sourceLineNo">583</span>    // depending if the value refers to a number.<a name="line.583"></a>
+<span class="sourceLineNo">584</span><a name="line.584"></a>
+<span class="sourceLineNo">585</span>    // Todo: IsOdd Checks the type of value and returns TRUE or FALSE depending<a name="line.585"></a>
+<span class="sourceLineNo">586</span>    // if the value is odd.<a name="line.586"></a>
+<span class="sourceLineNo">587</span><a name="line.587"></a>
+<span class="sourceLineNo">588</span>    // Todo: Ispmt Calculates the interest paid during a specific period of an<a name="line.588"></a>
+<span class="sourceLineNo">589</span>    // investment. This function is provided for compatibility with Lotus 1-2-3.<a name="line.589"></a>
+<span class="sourceLineNo">590</span><a name="line.590"></a>
+<span class="sourceLineNo">591</span>    // Todo: IsText Checks the type of value and returns TRUE or FALSE depending<a name="line.591"></a>
+<span class="sourceLineNo">592</span>    // if the value refers to text.<a name="line.592"></a>
+<span class="sourceLineNo">593</span><a name="line.593"></a>
+<span class="sourceLineNo">594</span>    // Todo: Kurt Returns the kurtosis of a data set. Kurtosis characterizes the<a name="line.594"></a>
+<span class="sourceLineNo">595</span>    // relative peakedness or flatness of a distribution compared with the<a name="line.595"></a>
+<span class="sourceLineNo">596</span>    // normal distribution. Positive kurtosis indicates a relatively peaked<a name="line.596"></a>
+<span class="sourceLineNo">597</span>    // distribution. Negative kurtosis indicates a relatively flat distribution.<a name="line.597"></a>
+<span class="sourceLineNo">598</span><a name="line.598"></a>
+<span class="sourceLineNo">599</span>    // Todo: Large Returns the k-th largest value in a data set. You can use<a name="line.599"></a>
+<span class="sourceLineNo">600</span>    // this function to select a value based on its relative standing. For<a name="line.600"></a>
+<span class="sourceLineNo">601</span>    // example, you can use LARGE to return the highest, runner-up, or<a name="line.601"></a>
+<span class="sourceLineNo">602</span>    // third-place score.<a name="line.602"></a>
+<span class="sourceLineNo">603</span><a name="line.603"></a>
+<span class="sourceLineNo">604</span>    // Todo: Lcm Returns the least common multiple of integers. The least common<a name="line.604"></a>
+<span class="sourceLineNo">605</span>    // multiple is the smallest positive integer that is a multiple of all<a name="line.605"></a>
+<span class="sourceLineNo">606</span>    // integer arguments number1, number2, and so on. Use LCM to add fractions<a name="line.606"></a>
+<span class="sourceLineNo">607</span>    // with different denominators.<a name="line.607"></a>
+<span class="sourceLineNo">608</span><a name="line.608"></a>
+<span class="sourceLineNo">609</span>    // Todo: LinEst Calculates the statistics for a line by using the "least<a name="line.609"></a>
+<span class="sourceLineNo">610</span>    // squares" method to calculate a straight line that best fits your data,<a name="line.610"></a>
+<span class="sourceLineNo">611</span>    // and returns an array that describes the line. Because this function<a name="line.611"></a>
+<span class="sourceLineNo">612</span>    // returns an array of values, it must be entered as an array formula.<a name="line.612"></a>
+<span class="sourceLineNo">613</span><a name="line.613"></a>
+<span class="sourceLineNo">614</span>    // Todo: Ln Returns the natural logarithm of a number. Natural logarithms<a name="line.614"></a>
+<span class="sourceLineNo">615</span>    // are based on the constant e (2.71828182845904).<a name="line.615"></a>
+<span class="sourceLineNo">616</span><a name="line.616"></a>
+<span class="sourceLineNo">617</span><a name="line.617"></a>
+<span class="sourceLineNo">618</span>    // See Vba<a name="line.618"></a>
+<span class="sourceLineNo">619</span>    // Skip: Log   Returns the logarithm of a number to the base you specify.<a name="line.619"></a>
+<span class="sourceLineNo">620</span><a name="line.620"></a>
+<span class="sourceLineNo">621</span>    @FunctionName("Log10")<a name="line.621"></a>
+<span class="sourceLineNo">622</span>    @Description("Returns the base-10 logarithm of a number.")<a name="line.622"></a>
+<span class="sourceLineNo">623</span>    public static double log10(double number) {<a name="line.623"></a>
+<span class="sourceLineNo">624</span>        return Math.log10(number);<a name="line.624"></a>
+<span class="sourceLineNo">625</span>    }<a name="line.625"></a>
+<span class="sourceLineNo">626</span><a name="line.626"></a>
+<span class="sourceLineNo">627</span>    // Todo: LogEst In regression analysis, calculates an exponential curve that<a name="line.627"></a>
+<span class="sourceLineNo">628</span>    // fits your data and returns an array of values that describes the<a name="line.628"></a>
+<span class="sourceLineNo">629</span>    // curve. Because this function returns an array of values, it must be<a name="line.629"></a>
+<span class="sourceLineNo">630</span>    // entered as an array formula.<a name="line.630"></a>
+<span class="sourceLineNo">631</span><a name="line.631"></a>
+<span class="sourceLineNo">632</span>    // Todo: LogInv Use the lognormal distribution to analyze logarithmically<a name="line.632"></a>
+<span class="sourceLineNo">633</span>    // transformed data.<a name="line.633"></a>
+<span class="sourceLineNo">634</span><a name="line.634"></a>
+<span class="sourceLineNo">635</span>    // Todo: LogNormDist Returns the cumulative lognormal distribution of x,<a name="line.635"></a>
+<span class="sourceLineNo">636</span>    // where ln(x) is normally distributed with parameters mean and<a name="line.636"></a>
+<span class="sourceLineNo">637</span>    // standard_dev. Use this function to analyze data that has been<a name="line.637"></a>
+<span class="sourceLineNo">638</span>    // logarithmically transformed.<a name="line.638"></a>
+<span class="sourceLineNo">639</span><a name="line.639"></a>
+<span class="sourceLineNo">640</span>    // Todo: Lookup Returns a value either from a one-row or one-column range or<a name="line.640"></a>
+<span class="sourceLineNo">641</span>    // from an array. The LOOKUP function has two syntax forms: the vector form<a name="line.641"></a>
+<span class="sourceLineNo">642</span>    // and the array form.<a name="line.642"></a>
+<span class="sourceLineNo">643</span><a name="line.643"></a>
+<span class="sourceLineNo">644</span>    // Todo: Match Returns the relative position of an item in an array that<a name="line.644"></a>
+<span class="sourceLineNo">645</span>    // matches a specified value in a specified order. Use MATCH instead of one<a name="line.645"></a>
+<span class="sourceLineNo">646</span>    // of the LOOKUP functions when you need the position of an item in a range<a name="line.646"></a>
+<span class="sourceLineNo">647</span>    // instead of the item itself.<a name="line.647"></a>
+<span class="sourceLineNo">648</span><a name="line.648"></a>
+<span class="sourceLineNo">649</span>    // Skip: Max Returns the largest value in a set of values.  Todo: MDeterm<a name="line.649"></a>
+<span class="sourceLineNo">650</span>    // Returns the matrix determinant of an array.<a name="line.650"></a>
+<span class="sourceLineNo">651</span><a name="line.651"></a>
+<span class="sourceLineNo">652</span>    /**<a name="line.652"></a>
+<span class="sourceLineNo">653</span>     * The MOD function. Not technically in the Excel package, but this seemed<a name="line.653"></a>
+<span class="sourceLineNo">654</span>     * like a good place to put it, since Excel has a MOD function.<a name="line.654"></a>
+<span class="sourceLineNo">655</span>     *<a name="line.655"></a>
+<span class="sourceLineNo">656</span>     * @param first First<a name="line.656"></a>
+<span class="sourceLineNo">657</span>     * @param second Second<a name="line.657"></a>
+<span class="sourceLineNo">658</span>     * @return First modulo second<a name="line.658"></a>
+<span class="sourceLineNo">659</span>     */<a name="line.659"></a>
+<span class="sourceLineNo">660</span>    @FunctionName("Mod")<a name="line.660"></a>
+<span class="sourceLineNo">661</span>    @JavaFunDef.Signature("Mod(n, d)")<a name="line.661"></a>
+<span class="sourceLineNo">662</span>    @Description("Returns the remainder of dividing n by d.")<a name="line.662"></a>
+<span class="sourceLineNo">663</span>    public static double mod(<a name="line.663"></a>
+<span class="sourceLineNo">664</span>        Object first,<a name="line.664"></a>
+<span class="sourceLineNo">665</span>        Object second)<a name="line.665"></a>
+<span class="sourceLineNo">666</span>    {<a name="line.666"></a>
+<span class="sourceLineNo">667</span>        double iFirst;<a name="line.667"></a>
+<span class="sourceLineNo">668</span>        if (!(first instanceof Number)) {<a name="line.668"></a>
+<span class="sourceLineNo">669</span>            throw new InvalidArgumentException(<a name="line.669"></a>
+<span class="sourceLineNo">670</span>                "Invalid parameter. "<a name="line.670"></a>
+<span class="sourceLineNo">671</span>                + "first parameter " + first<a name="line.671"></a>
+<span class="sourceLineNo">672</span>                + " of Mod function must be of type number");<a name="line.672"></a>
+<span class="sourceLineNo">673</span>        } else {<a name="line.673"></a>
+<span class="sourceLineNo">674</span>            iFirst = ((Number) first).doubleValue();<a name="line.674"></a>
+<span class="sourceLineNo">675</span>        }<a name="line.675"></a>
+<span class="sourceLineNo">676</span>        double iSecond;<a name="line.676"></a>
+<span class="sourceLineNo">677</span>        if (!(second instanceof Number)) {<a name="line.677"></a>
+<span class="sourceLineNo">678</span>            throw new InvalidArgumentException(<a name="line.678"></a>
+<span class="sourceLineNo">679</span>                "Invalid parameter. "<a name="line.679"></a>
+<span class="sourceLineNo">680</span>                + "second parameter " + second<a name="line.680"></a>
+<span class="sourceLineNo">681</span>                + " of Mod function must be of type number");<a name="line.681"></a>
+<span class="sourceLineNo">682</span>        } else {<a name="line.682"></a>
+<span class="sourceLineNo">683</span>            iSecond = ((Number) second).doubleValue();<a name="line.683"></a>
+<span class="sourceLineNo">684</span>        }<a name="line.684"></a>
+<span class="sourceLineNo">685</span>        // Use formula "mod(n, d) = n - d * int(n / d)".<a name="line.685"></a>
+<span class="sourceLineNo">686</span>        if (iSecond == 0) {<a name="line.686"></a>
+<span class="sourceLineNo">687</span>            throw new ArithmeticException("/ by zero");<a name="line.687"></a>
+<span class="sourceLineNo">688</span>        }<a name="line.688"></a>
+<span class="sourceLineNo">689</span>        return iFirst - iSecond * Vba.intNative(iFirst / iSecond);<a name="line.689"></a>
+<span class="sourceLineNo">690</span>    }<a name="line.690"></a>
+<span class="sourceLineNo">691</span><a name="line.691"></a>
+<span class="sourceLineNo">692</span>    // Todo: MDuration Returns the modified Macauley duration for a security<a name="line.692"></a>
+<span class="sourceLineNo">693</span>    // with an assumed par value of $100.<a name="line.693"></a>
+<span class="sourceLineNo">694</span><a name="line.694"></a>
+<span class="sourceLineNo">695</span>    // Skip: Median Returns the median of the given numbers. The median is the<a name="line.695"></a>
+<span class="sourceLineNo">696</span>    // number in the middle of a set of numbers.  Skip: Min Returns the smallest<a name="line.696"></a>
+<span class="sourceLineNo">697</span>    // number in a set of values.  Todo: MInverse Returns the inverse matrix for<a name="line.697"></a>
+<span class="sourceLineNo">698</span>    // the matrix stored in an array.<a name="line.698"></a>
+<span class="sourceLineNo">699</span><a name="line.699"></a>
+<span class="sourceLineNo">700</span>    // Todo: MIrr Returns the modified internal rate of return for a series of<a name="line.700"></a>
+<span class="sourceLineNo">701</span>    // periodic cash flows. MIRR considers both the cost of the investment and<a name="line.701"></a>
+<span class="sourceLineNo">702</span>    // the interest received on reinvestment of cash.<a name="line.702"></a>
+<span class="sourceLineNo">703</span><a name="line.703"></a>
+<span class="sourceLineNo">704</span>    // Todo: MMult Returns the matrix product of two arrays. The result is an<a name="line.704"></a>
+<span class="sourceLineNo">705</span>    // array with the same number of rows as array1 and the same number of<a name="line.705"></a>
+<span class="sourceLineNo">706</span>    // columns as array2.<a name="line.706"></a>
+<span class="sourceLineNo">707</span><a name="line.707"></a>
+<span class="sourceLineNo">708</span>    // Todo: Mode Returns the most frequently occurring, or repetitive, value in<a name="line.708"></a>
+<span class="sourceLineNo">709</span>    // an array or range of data.<a name="line.709"></a>
+<span class="sourceLineNo">710</span><a name="line.710"></a>
+<span class="sourceLineNo">711</span>    // Todo: MRound Returns a number rounded to the desired multiple.<a name="line.711"></a>
+<span class="sourceLineNo">712</span><a name="line.712"></a>
+<span class="sourceLineNo">713</span>    // Todo: MultiNomial Returns the ratio of the factorial of a sum of values<a name="line.713"></a>
+<span class="sourceLineNo">714</span>    // to the product of factorials.<a name="line.714"></a>
+<span class="sourceLineNo">715</span><a name="line.715"></a>
+<span class="sourceLineNo">716</span>    // Todo: NegBinomDist Returns the negative binomial<a name="line.716"></a>
+<span class="sourceLineNo">717</span>    // distribution. NEGBINOMDIST returns the probability that there will be<a name="line.717"></a>
+<span class="sourceLineNo">718</span>    // number_f failures before the number_s-th success, when the constant<a name="line.718"></a>
+<span class="sourceLineNo">719</span>    // probability of a success is probability_s. This function is similar to<a name="line.719"></a>
+<span class="sourceLineNo">720</span>    // the binomial distribution, except that the number of successes is fixed,<a name="line.720"></a>
+<span class="sourceLineNo">721</span>    // and the number of trials is variable. Like the binomial, trials are<a name="line.721"></a>
+<span class="sourceLineNo">722</span>    // assumed to be independent.<a name="line.722"></a>
+<span class="sourceLineNo">723</span><a name="line.723"></a>
+<span class="sourceLineNo">724</span>    // Todo: NetworkDays Returns the number of whole working days between<a name="line.724"></a>
+<span class="sourceLineNo">725</span>    // start_date and end_date. Working days exclude weekends and any dates<a name="line.725"></a>
+<span class="sourceLineNo">726</span>    // identified in holidays. Use NETWORKDAYS to calculate employee benefits<a name="line.726"></a>
+<span class="sourceLineNo">727</span>    // that accrue based on the number of days worked during a specific term.<a name="line.727"></a>
+<span class="sourceLineNo">728</span><a name="line.728"></a>
+<span class="sourceLineNo">729</span>    // Todo: Nominal Returns the nominal annual interest rate, given the<a name="line.729"></a>
+<span class="sourceLineNo">730</span>    // effective rate and the number of compounding periods per year.<a name="line.730"></a>
+<span class="sourceLineNo">731</span><a name="line.731"></a>
+<span class="sourceLineNo">732</span>    // Todo: NormDist Returns the normal distribution for the specified mean and<a name="line.732"></a>
+<span class="sourceLineNo">733</span>    // standard deviation. This function has a very wide range of applications<a name="line.733"></a>
+<span class="sourceLineNo">734</span>    // in statistics, including hypothesis testing.<a name="line.734"></a>
+<span class="sourceLineNo">735</span><a name="line.735"></a>
+<span class="sourceLineNo">736</span>    // Todo: NormInv Returns the inverse of the normal cumulative distribution<a name="line.736"></a>
+<span class="sourceLineNo">737</span>    // for the specified mean and standard deviation.<a name="line.737"></a>
+<span class="sourceLineNo">738</span><a name="line.738"></a>
+<span class="sourceLineNo">739</span>    // Todo: NormSDist Returns the standard normal cumulative distribution<a name="line.739"></a>
+<span class="sourceLineNo">740</span>    // function. The distribution has a mean of 0 (zero) and a standard<a name="line.740"></a>
+<span class="sourceLineNo">741</span>    // deviation of one. Use this function in place of a table of standard<a name="line.741"></a>
+<span class="sourceLineNo">742</span>    // normal curve areas.<a name="line.742"></a>
+<span class="sourceLineNo">743</span><a name="line.743"></a>
+<span class="sourceLineNo">744</span>    // Todo: NormSInv Returns the inverse of the standard normal cumulative<a name="line.744"></a>
+<span class="sourceLineNo">745</span>    // distribution. The distribution has a mean of zero and a standard<a name="line.745"></a>
+<span class="sourceLineNo">746</span>    // deviation of one.<a name="line.746"></a>
+<span class="sourceLineNo">747</span><a name="line.747"></a>
+<span class="sourceLineNo">748</span>    // Todo: NPer Returns the number of periods for an investment based on<a name="line.748"></a>
+<span class="sourceLineNo">749</span>    // periodic, constant payments and a constant interest rate.<a name="line.749"></a>
+<span class="sourceLineNo">750</span><a name="line.750"></a>
+<span class="sourceLineNo">751</span>    // Todo: Npv Calculates the net present value of an investment by using a<a name="line.751"></a>
+<span class="sourceLineNo">752</span>    // discount rate and a series of future payments (negative values) and<a name="line.752"></a>
+<span class="sourceLineNo">753</span>    // income (positive values).<a name="line.753"></a>
+<span class="sourceLineNo">754</span><a name="line.754"></a>
+<span class="sourceLineNo">755</span>    // Todo: Oct2Bin Converts an octal number to binary.<a name="line.755"></a>
+<span class="sourceLineNo">756</span><a name="line.756"></a>
+<span class="sourceLineNo">757</span>    // Todo: Oct2Dec Converts an octal number to decimal.<a name="line.757"></a>
+<span class="sourceLineNo">758</span><a name="line.758"></a>
+<span class="sourceLineNo">759</span>    // Todo: Oct2Hex Converts an octal number to hexadecimal.<a name="line.759"></a>
+<span class="sourceLineNo">760</span><a name="line.760"></a>
+<span class="sourceLineNo">761</span>    // Todo: Odd Returns number rounded up to the nearest odd integer.<a name="line.761"></a>
+<span class="sourceLineNo">762</span><a name="line.762"></a>
+<span class="sourceLineNo">763</span>    // Todo: OddFPrice Returns the price per $100 face value of a security<a name="line.763"></a>
+<span class="sourceLineNo">764</span>    // having an odd (short or long) first period.<a name="line.764"></a>
+<span class="sourceLineNo">765</span><a name="line.765"></a>
+<span class="sourceLineNo">766</span>    // Todo: OddFYield Returns the yield of a security that has an odd (short or<a name="line.766"></a>
+<span class="sourceLineNo">767</span>    // long) first period.<a name="line.767"></a>
+<span class="sourceLineNo">768</span><a name="line.768"></a>
+<span class="sourceLineNo">769</span>    // Todo: OddLPrice Returns the price per $100 face value of a security<a name="line.769"></a>
+<span class="sourceLineNo">770</span>    // having an odd (short or long) last coupon period.<a name="line.770"></a>
+<span class="sourceLineNo">771</span><a name="line.771"></a>
+<span class="sourceLineNo">772</span>    // Todo: OddLYield Returns the yield of a security that has an odd (short or<a name="line.772"></a>
+<span class="sourceLineNo">773</span>    // long) last period.<a name="line.773"></a>
+<span class="sourceLineNo">774</span><a name="line.774"></a>
+<span class="sourceLineNo">775</span>    // Skip: Or Returns TRUE if any argument is TRUE; returns FALSE if all<a name="line.775"></a>
+<span class="sourceLineNo">776</span>    // arguments are FALSE.  Todo: Pearson Returns the Pearson product moment<a name="line.776"></a>
+<span class="sourceLineNo">777</span>    // correlation coefficient, r, a dimensionless index that ranges from -1.0<a name="line.777"></a>
+<span class="sourceLineNo">778</span>    // to 1.0 inclusive and reflects the extent of a linear relationship between<a name="line.778"></a>
+<span class="sourceLineNo">779</span>    // two data sets.<a name="line.779"></a>
+<span class="sourceLineNo">780</span><a name="line.780"></a>
+<span class="sourceLineNo">781</span><a name="line.781"></a>
+<span class="sourceLineNo">782</span>    // We have a more efficient implementation of percentile<a name="line.782"></a>
+<span class="sourceLineNo">783</span><a name="line.783"></a>
+<span class="sourceLineNo">784</span>    // Skip: Percentile Returns the k-th percentile of values in a range. You<a name="line.784"></a>
+<span class="sourceLineNo">785</span>    // can use this function to establish a threshold of acceptance. For<a name="line.785"></a>
+<span class="sourceLineNo">786</span>    // example, you can decide to examine candidates who score above the 90th<a name="line.786"></a>
+<span class="sourceLineNo">787</span>    // percentile.<a name="line.787"></a>
+<span class="sourceLineNo">788</span><a name="line.788"></a>
+<span class="sourceLineNo">789</span>    // Todo: PercentRank Returns the rank of a value in a data set as a<a name="line.789"></a>
+<span class="sourceLineNo">790</span>    // percentage of the data set. This function can be used to evaluate the<a name="line.790"></a>
+<span class="sourceLineNo">791</span>    // relative standing of a value within a data set. For example, you can use<a name="line.791"></a>
+<span class="sourceLineNo">792</span>    // PERCENTRANK to evaluate the standing of an aptitude test score among all<a name="line.792"></a>
+<span class="sourceLineNo">793</span>    // scores for the test.<a name="line.793"></a>
+<span class="sourceLineNo">794</span><a name="line.794"></a>
+<span class="sourceLineNo">795</span>    // Todo: Permut Returns the number of permutations for a given number of<a name="line.795"></a>
+<span class="sourceLineNo">796</span>    // objects that can be selected from number objects. A permutation is any<a name="line.796"></a>
+<span class="sourceLineNo">797</span>    // set or subset of objects or events where internal order is<a name="line.797"></a>
+<span class="sourceLineNo">798</span>    // significant. Permutations are different from combinations, for which the<a name="line.798"></a>
+<span class="sourceLineNo">799</span>    // internal order is not significant. Use this function for lottery-style<a name="line.799"></a>
+<span class="sourceLineNo">800</span>    // probability calculations.<a name="line.800"></a>
+<span class="sourceLineNo">801</span><a name="line.801"></a>
+<span class="sourceLineNo">802</span>    // Todo: Phonetic Extracts the phonetic (furigana) characters from a text<a name="line.802"></a>
+<span class="sourceLineNo">803</span>    // string.<a name="line.803"></a>
+<span class="sourceLineNo">804</span><a name="line.804"></a>
+<span class="sourceLineNo">805</span><a name="line.805"></a>
+<span class="sourceLineNo">806</span>    @FunctionName("Pi")<a name="line.806"></a>
+<span class="sourceLineNo">807</span>    @Description(<a name="line.807"></a>
+<span class="sourceLineNo">808</span>        "Returns the number 3.14159265358979, the mathematical constant pi, "<a name="line.808"></a>
+<span class="sourceLineNo">809</span>        + "accurate to 15 digits.")<a name="line.809"></a>
+<span class="sourceLineNo">810</span>    public static double pi() {<a name="line.810"></a>
+<span class="sourceLineNo">811</span>        return Math.PI;<a name="line.811"></a>
+<span class="sourceLineNo">812</span>    }<a name="line.812"></a>
+<span class="sourceLineNo">813</span><a name="line.813"></a>
+<span class="sourceLineNo">814</span>    // Todo: Pmt Calculates the payment for a loan based on constant payments<a name="line.814"></a>
+<span class="sourceLineNo">815</span>    // and a constant interest rate.<a name="line.815"></a>
+<span class="sourceLineNo">816</span><a name="line.816"></a>
+<span class="sourceLineNo">817</span>    // Todo: Poisson Returns the Poisson distribution. A common application of<a name="line.817"></a>
+<span class="sourceLineNo">818</span>    // the Poisson distribution is predicting the number of events over a<a name="line.818"></a>
+<span class="sourceLineNo">819</span>    // specific time, such as the number of cars arriving at a toll plaza in 1<a name="line.819"></a>
+<span class="sourceLineNo">820</span>    // minute.<a name="line.820"></a>
+<span class="sourceLineNo">821</span><a name="line.821"></a>
+<span class="sourceLineNo">822</span><a name="line.822"></a>
+<span class="sourceLineNo">823</span>    @FunctionName("Power")<a name="line.823"></a>
+<span class="sourceLineNo">824</span>    @Description("Returns the result of a number raised to a power.")<a name="line.824"></a>
+<span class="sourceLineNo">825</span>    public static double power(double x, double y) {<a name="line.825"></a>
+<span class="sourceLineNo">826</span>        return Math.pow(x, y);<a name="line.826"></a>
+<span class="sourceLineNo">827</span>    }<a name="line.827"></a>
+<span class="sourceLineNo">828</span><a name="line.828"></a>
+<span class="sourceLineNo">829</span>    // Todo: Ppmt Returns the payment on the principal for a given period for an<a name="line.829"></a>
+<span class="sourceLineNo">830</span>    // investment based on periodic, constant payments and a constant interest<a name="line.830"></a>
+<span class="sourceLineNo">831</span>    // rate.<a name="line.831"></a>
+<span class="sourceLineNo">832</span><a name="line.832"></a>
+<span class="sourceLineNo">833</span>    // Todo: Price Returns the price per $100 face value of a security that pays<a name="line.833"></a>
+<span class="sourceLineNo">834</span>    // periodic interest.<a name="line.834"></a>
+<span class="sourceLineNo">835</span><a name="line.835"></a>
+<span class="sourceLineNo">836</span>    // Todo: PriceDisc Returns the price per $100 face value of a discounted<a name="line.836"></a>
+<span class="sourceLineNo">837</span>    // security.<a name="line.837"></a>
+<span class="sourceLineNo">838</span><a name="line.838"></a>
+<span class="sourceLineNo">839</span>    // Todo: PriceMat Returns the price per $100 face value of a security that<a name="line.839"></a>
+<span class="sourceLineNo">840</span>    // pays interest at maturity.<a name="line.840"></a>
+<span class="sourceLineNo">841</span><a name="line.841"></a>
+<span class="sourceLineNo">842</span>    // Todo: Prob Returns the probability that values in a range are between two<a name="line.842"></a>
+<span class="sourceLineNo">843</span>    // limits. If upper_limit is not supplied, returns the probability that<a name="line.843"></a>
+<span class="sourceLineNo">844</span>    // values in x_range are equal to lower_limit.<a name="line.844"></a>
+<span class="sourceLineNo">845</span><a name="line.845"></a>
+<span class="sourceLineNo">846</span>    // Todo: Product Multiplies all the numbers given as arguments and returns<a name="line.846"></a>
+<span class="sourceLineNo">847</span>    // the product.<a name="line.847"></a>
+<span class="sourceLineNo">848</span><a name="line.848"></a>
+<span class="sourceLineNo">849</span>    // Todo: Proper Capitalizes the first letter in a text string and any other<a name="line.849"></a>
+<span class="sourceLineNo">850</span>    // letters in text that follow any character other than a letter. Converts<a name="line.850"></a>
+<span class="sourceLineNo">851</span>    // all other letters to lowercase letters.<a name="line.851"></a>
+<span class="sourceLineNo">852</span><a name="line.852"></a>
+<span class="sourceLineNo">853</span>    // Todo: Pv Returns the present value of an investment. The present value is<a name="line.853"></a>
+<span class="sourceLineNo">854</span>    // the total amount that a series of future payments is worth now. For<a name="line.854"></a>
+<span class="sourceLineNo">855</span>    // example, when you borrow money, the loan amount is the present value to<a name="line.855"></a>
+<span class="sourceLineNo">856</span>    // the lender.<a name="line.856"></a>
+<span class="sourceLineNo">857</span><a name="line.857"></a>
+<span class="sourceLineNo">858</span>    // Todo: Quartile Returns the quartile of a data set. Quartiles often are<a name="line.858"></a>
+<span class="sourceLineNo">859</span>    // used in sales and survey data to divide populations into groups. For<a name="line.859"></a>
+<span class="sourceLineNo">860</span>    // example, you can use QUARTILE to find the top 25 percent of incomes in a<a name="line.860"></a>
+<span class="sourceLineNo">861</span>    // population.<a name="line.861"></a>
+<span class="sourceLineNo">862</span><a name="line.862"></a>
+<span class="sourceLineNo">863</span>    // Todo: Quotient Returns the integer portion of a division. Use this<a name="line.863"></a>
+<span class="sourceLineNo">864</span>    // function when you want to discard the remainder of a division.<a name="line.864"></a>
+<span class="sourceLineNo">865</span><a name="line.865"></a>
+<span class="sourceLineNo">866</span><a name="line.866"></a>
+<span class="sourceLineNo">867</span>    @FunctionName("Radians")<a name="line.867"></a>
+<span class="sourceLineNo">868</span>    @Description("Converts degrees to radians.")<a name="line.868"></a>
+<span class="sourceLineNo">869</span>    public static double radians(double number) {<a name="line.869"></a>
+<span class="sourceLineNo">870</span>        // 180 degrees = Pi radians<a name="line.870"></a>
+<span class="sourceLineNo">871</span>        return number / 180.0 * Math.PI;<a name="line.871"></a>
+<span class="sourceLineNo">872</span>    }<a name="line.872"></a>
+<span class="sourceLineNo">873</span><a name="line.873"></a>
+<span class="sourceLineNo">874</span>    // Todo: RandBetween Returns a random integer number between the numbers you<a name="line.874"></a>
+<span class="sourceLineNo">875</span>    // specify. A new random integer number is returned every time the worksheet<a name="line.875"></a>
+<span class="sourceLineNo">876</span>    // is calculated.<a name="line.876"></a>
+<span class="sourceLineNo">877</span><a name="line.877"></a>
+<span class="sourceLineNo">878</span>    // Skip: Rank Returns the rank of a number in a list of numbers. The rank of<a name="line.878"></a>
+<span class="sourceLineNo">879</span>    // a number is its size relative to other values in a list. (If you were to<a name="line.879"></a>
+<span class="sourceLineNo">880</span>    // sort the list, the rank of the number would be its position.)  Todo: Rate<a name="line.880"></a>
+<span class="sourceLineNo">881</span>    // Returns the interest rate per period of an annuity. RATE is calculated by<a name="line.881"></a>
+<span class="sourceLineNo">882</span>    // iteration and can have zero or more solutions. If the successive results<a name="line.882"></a>
+<span class="sourceLineNo">883</span>    // of RATE do not converge to within 0.0000001 after 20 iterations, RATE<a name="line.883"></a>
+<span class="sourceLineNo">884</span>    // returns the #NUM! error value.<a name="line.884"></a>
+<span class="sourceLineNo">885</span><a name="line.885"></a>
+<span class="sourceLineNo">886</span>    // Todo: Received Returns the amount received at maturity for a fully<a name="line.886"></a>
+<span class="sourceLineNo">887</span>    // invested security.<a name="line.887"></a>
+<span class="sourceLineNo">888</span><a name="line.888"></a>
+<span class="sourceLineNo">889</span>    // Todo: Replace Replaces part of a text string, based on the number of<a name="line.889"></a>
+<span class="sourceLineNo">890</span>    // characters you specify, with a different text string.<a name="line.890"></a>
+<span class="sourceLineNo">891</span><a name="line.891"></a>
+<span class="sourceLineNo">892</span>    // Todo: ReplaceB REPLACEB replaces part of a text string, based on the<a name="line.892"></a>
+<span class="sourceLineNo">893</span>    // number of bytes you specify, with a different text string.<a name="line.893"></a>
+<span class="sourceLineNo">894</span><a name="line.894"></a>
+<span class="sourceLineNo">895</span>    // Todo: Rept Repeats text a given number of times. Use REPT to fill a cell<a name="line.895"></a>
+<span class="sourceLineNo">896</span>    // with a number of instances of a text string.<a name="line.896"></a>
+<span class="sourceLineNo">897</span><a name="line.897"></a>
+<span class="sourceLineNo">898</span>    // Todo: Roman Converts an arabic numeral to roman, as text.<a name="line.898"></a>
+<span class="sourceLineNo">899</span><a name="line.899"></a>
+<span class="sourceLineNo">900</span>    // Todo: Round Rounds a number to a specified number of digits.<a name="line.900"></a>
+<span class="sourceLineNo">901</span><a name="line.901"></a>
+<span class="sourceLineNo">902</span>    // Todo: RoundDown Rounds a number down, toward zero.<a name="line.902"></a>
+<span class="sourceLineNo">903</span><a name="line.903"></a>
+<span class="sourceLineNo">904</span>    // Todo: RoundUp Rounds a number up, away from 0 (zero).<a name="line.904"></a>
+<span class="sourceLineNo">905</span><a name="line.905"></a>
+<span class="sourceLineNo">906</span>    // Todo: RSq Returns the square of the Pearson product moment correlation<a name="line.906"></a>
+<span class="sourceLineNo">907</span>    // coefficient through data points in known_y's and known_x's. For more<a name="line.907"></a>
+<span class="sourceLineNo">908</span>    // information, see PEARSON. The r-squared value can be interpreted as the<a name="line.908"></a>
+<span class="sourceLineNo">909</span>    // proportion of the variance in y attributable to the variance in x.<a name="line.909"></a>
+<span class="sourceLineNo">910</span><a name="line.910"></a>
+<span class="sourceLineNo">911</span>    // Todo: RTD This method connects to a source to receive real-time data.<a name="line.911"></a>
+<span class="sourceLineNo">912</span><a name="line.912"></a>
+<span class="sourceLineNo">913</span>    // Todo: Search SEARCH and SEARCHB locate one text string within a second<a name="line.913"></a>
+<span class="sourceLineNo">914</span>    // text string, and return the number of the starting position of the first<a name="line.914"></a>
+<span class="sourceLineNo">915</span>    // text string from the first character of the second text string.<a name="line.915"></a>
+<span class="sourceLineNo">916</span><a name="line.916"></a>
+<span class="sourceLineNo">917</span>    // Todo: SearchB SEARCH and SEARCHB locate one text string within a second<a name="line.917"></a>
+<span class="sourceLineNo">918</span>    // text string, and return the number of the starting position of the first<a name="line.918"></a>
+<span class="sourceLineNo">919</span>    // text string from the first character of the second text string.<a name="line.919"></a>
+<span class="sourceLineNo">920</span><a name="line.920"></a>
+<span class="sourceLineNo">921</span>    // Todo: SeriesSum Returns the sum of a power series based on the formula:<a name="line.921"></a>
+<span class="sourceLineNo">922</span><a name="line.922"></a>
+<span class="sourceLineNo">923</span>    // Todo: Sinh Returns the hyperbolic sine of a number.<a name="line.923"></a>
+<span class="sourceLineNo">924</span><a name="line.924"></a>
+<span class="sourceLineNo">925</span><a name="line.925"></a>
+<span class="sourceLineNo">926</span>    @FunctionName("Sinh")<a name="line.926"></a>
+<span class="sourceLineNo">927</span>    @Description("Returns the hyperbolic sine of a number.")<a name="line.927"></a>
+<span class="sourceLineNo">928</span>    public static double sinh(double number) {<a name="line.928"></a>
+<span class="sourceLineNo">929</span>        return Math.sinh(number);<a name="line.929"></a>
+<span class="sourceLineNo">930</span>    }<a name="line.930"></a>
+<span class="sourceLineNo">931</span><a name="line.931"></a>
+<span class="sourceLineNo">932</span>    // Todo: Skew Returns the skewness of a distribution. Skewness characterizes<a name="line.932"></a>
+<span class="sourceLineNo">933</span>    // the degree of asymmetry of a distribution around its mean. Positive<a name="line.933"></a>
+<span class="sourceLineNo">934</span>    // skewness indicates a distribution with an asymmetric tail extending<a name="line.934"></a>
+<span class="sourceLineNo">935</span>    // toward more positive values. Negative skewness indicates a distribution<a name="line.935"></a>
+<span class="sourceLineNo">936</span>    // with an asymmetric tail extending toward more negative values.<a name="line.936"></a>
+<span class="sourceLineNo">937</span><a name="line.937"></a>
+<span class="sourceLineNo">938</span>    // Todo: Sln Returns the straight-line depreciation of an asset for one<a name="line.938"></a>
+<span class="sourceLineNo">939</span>    // period.<a name="line.939"></a>
+<span class="sourceLineNo">940</span><a name="line.940"></a>
+<span class="sourceLineNo">941</span>    // Todo: Slope Returns the slope of the linear regression line through data<a name="line.941"></a>
+<span class="sourceLineNo">942</span>    // points in known_y's and known_x's. The slope is the vertical distance<a name="line.942"></a>
+<span class="sourceLineNo">943</span>    // divided by the horizontal distance between any two points on the line,<a name="line.943"></a>
+<span class="sourceLineNo">944</span>    // which is the rate of change along the regression line.<a name="line.944"></a>
+<span class="sourceLineNo">945</span><a name="line.945"></a>
+<span class="sourceLineNo">946</span>    // Todo: Small Returns the k-th smallest value in a data set. Use this<a name="line.946"></a>
+<span class="sourceLineNo">947</span>    // function to return values with a particular relative standing in a data<a name="line.947"></a>
+<span class="sourceLineNo">948</span>    // set.<a name="line.948"></a>
+<span class="sourceLineNo">949</span><a name="line.949"></a>
+<span class="sourceLineNo">950</span><a name="line.950"></a>
+<span class="sourceLineNo">951</span>    @FunctionName("SqrtPi")<a name="line.951"></a>
+<span class="sourceLineNo">952</span>    @Description("Returns the square root of (number * pi).")<a name="line.952"></a>
+<span class="sourceLineNo">953</span>    public static double sqrtPi(double number) {<a name="line.953"></a>
+<span class="sourceLineNo">954</span>        return Math.sqrt(number * Math.PI);<a name="line.954"></a>
+<span class="sourceLineNo">955</span>    }<a name="line.955"></a>
+<span class="sourceLineNo">956</span><a name="line.956"></a>
+<span class="sourceLineNo">957</span>    // Todo: Standardize Returns a normalized value from a distribution<a name="line.957"></a>
+<span class="sourceLineNo">958</span>    // characterized by mean and standard_dev.<a name="line.958"></a>
+<span class="sourceLineNo">959</span><a name="line.959"></a>
+<span class="sourceLineNo">960</span>    // Todo: StDev Estimates standard deviation based on a sample. The standard<a name="line.960"></a>
+<span class="sourceLineNo">961</span>    // deviation is a measure of how widely values are dispersed from the<a name="line.961"></a>
+<span class="sourceLineNo">962</span>    // average value (the mean).<a name="line.962"></a>
+<span class="sourceLineNo">963</span><a name="line.963"></a>
+<span class="sourceLineNo">964</span>    // Todo: StDevP Calculates standard deviation based on the entire population<a name="line.964"></a>
+<span class="sourceLineNo">965</span>    // given as arguments. The standard deviation is a measure of how widely<a name="line.965"></a>
+<span class="sourceLineNo">966</span>    // values are dispersed from the average value (the mean).<a name="line.966"></a>
+<span class="sourceLineNo">967</span><a name="line.967"></a>
+<span class="sourceLineNo">968</span>    // Todo: StEyx Returns the standard error of the predicted y-value for each<a name="line.968"></a>
+<span class="sourceLineNo">969</span>    // x in the regression. The standard error is a measure of the amount of<a name="line.969"></a>
+<span class="sourceLineNo">970</span>    // error in the prediction of y for an individual x.<a name="line.970"></a>
+<span class="sourceLineNo">971</span><a name="line.971"></a>
+<span class="sourceLineNo">972</span>    // Todo: Substitute Substitutes new_text for old_text in a text string. Use<a name="line.972"></a>
+<span class="sourceLineNo">973</span>    // SUBSTITUTE when you want to replace specific text in a text string; use<a name="line.973"></a>
+<span class="sourceLineNo">974</span>    // REPLACE when you want to replace any text that occurs in a specific<a name="line.974"></a>
+<span class="sourceLineNo">975</span>    // location in a text string.<a name="line.975"></a>
+<span class="sourceLineNo">976</span><a name="line.976"></a>
+<span class="sourceLineNo">977</span>    // Todo: Subtotal Creates subtotals.<a name="line.977"></a>
+<span class="sourceLineNo">978</span><a name="line.978"></a>
+<span class="sourceLineNo">979</span>    // Todo: Sum Adds all the numbers in a range of cells.<a name="line.979"></a>
+<span class="sourceLineNo">980</span><a name="line.980"></a>
+<span class="sourceLineNo">981</span>    // Todo: SumIf Adds the cells specified by a given criteria.<a name="line.981"></a>
+<span class="sourceLineNo">982</span><a name="line.982"></a>
+<span class="sourceLineNo">983</span>    // Todo: SumIfs Adds the cells in a range that meet multiple criteria.<a name="line.983"></a>
+<span class="sourceLineNo">984</span><a name="line.984"></a>
+<span class="sourceLineNo">985</span>    // Todo: SumProduct Multiplies corresponding components in the given arrays,<a name="line.985"></a>
+<span class="sourceLineNo">986</span>    // and returns the sum of those products.<a name="line.986"></a>
+<span class="sourceLineNo">987</span><a name="line.987"></a>
+<span class="sourceLineNo">988</span>    // Todo: SumSq Returns the sum of the squares of the arguments.<a name="line.988"></a>
+<span class="sourceLineNo">989</span><a name="line.989"></a>
+<span class="sourceLineNo">990</span>    // Todo: SumX2MY2 Returns the sum of the difference of squares of<a name="line.990"></a>
+<span class="sourceLineNo">991</span>    // corresponding values in two arrays.<a name="line.991"></a>
+<span class="sourceLineNo">992</span><a name="line.992"></a>
+<span class="sourceLineNo">993</span>    // Todo: SumX2PY2 Returns the sum of the sum of squares of corresponding<a name="line.993"></a>
+<span class="sourceLineNo">994</span>    // values in two arrays. The sum of the sum of squares is a common term in<a name="line.994"></a>
+<span class="sourceLineNo">995</span>    // many statistical calculations.<a name="line.995"></a>
+<span class="sourceLineNo">996</span><a name="line.996"></a>
+<span class="sourceLineNo">997</span>    // Todo: SumXMY2 Returns the sum of squares of differences of corresponding<a name="line.997"></a>
+<span class="sourceLineNo">998</span>    // values in two arrays.<a name="line.998"></a>
+<span class="sourceLineNo">999</span><a name="line.999"></a>
+<span class="sourceLineNo">1000</span>    // Todo: Syd Returns the sum-of-years' digits depreciation of an asset for a<a name="line.1000"></a>
+<span class="sourceLineNo">1001</span>    // specified period.<a name="line.1001"></a>
+<span class="sourceLineNo">1002</span><a name="line.1002"></a>
+<span class="sourceLineNo">1003</span><a name="line.1003"></a>
+<span class="sourceLineNo">1004</span>    @FunctionName("Tanh")<a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>    @Description("Returns the hyperbolic tangent of a number.")<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span>    public static double tanh(double number) {<a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>        return Math.tanh(number);<a name="line.1007"></a>
+<span class="sourceLineNo">1008</span>    }<a name="line.1008"></a>
+<span class="sourceLineNo">1009</span><a name="line.1009"></a>
+<span class="sourceLineNo">1010</span>    // Todo: TBillEq Returns the bond-equivalent yield for a Treasury bill.<a name="line.1010"></a>
+<span class="sourceLineNo">1011</span><a name="line.1011"></a>
+<span class="sourceLineNo">1012</span>    // Todo: TBillPrice Returns the price per $100 face value for a Treasury<a name="line.1012"></a>
+<span class="sourceLineNo">1013</span>    // bill.<a name="line.1013"></a>
+<span class="sourceLineNo">1014</span><a name="line.1014"></a>
+<span class="sourceLineNo">1015</span>    // Todo: TBillYield Returns the yield for a Treasury bill.<a name="line.1015"></a>
+<span class="sourceLineNo">1016</span><a name="line.1016"></a>
+<span class="sourceLineNo">1017</span>    // Todo: TDist Returns the Percentage Points (probability) for the Student<a name="line.1017"></a>
+<span class="sourceLineNo">1018</span>    // t-distribution where a numeric value (x) is a calculated value of t for<a name="line.1018"></a>
+<span class="sourceLineNo">1019</span>    // which the Percentage Points are to be computed. The t-distribution is<a name="line.1019"></a>
+<span class="sourceLineNo">1020</span>    // used in the hypothesis testing of small sample data sets. Use this<a name="line.1020"></a>
+<span class="sourceLineNo">1021</span>    // function in place of a table of critical values for the t-distribution.<a name="line.1021"></a>
+<span class="sourceLineNo">1022</span><a name="line.1022"></a>
+<span class="sourceLineNo">1023</span>    // Todo: Text Converts a value to text in a specific number format.<a name="line.1023"></a>
+<span class="sourceLineNo">1024</span><a name="line.1024"></a>
+<span class="sourceLineNo">1025</span>    // Todo: TInv Returns the t-value of the Student's t-distribution as a<a name="line.1025"></a>
+<span class="sourceLineNo">1026</span>    // function of the probability and the degrees of freedom.<a name="line.1026"></a>
+<span class="sourceLineNo">1027</span><a name="line.1027"></a>
+<span class="sourceLineNo">1028</span>    // Todo: Transpose Returns a vertical range of cells as a horizontal range,<a name="line.1028"></a>
+<span class="sourceLineNo">1029</span>    // or vice versa. TRANSPOSE must be entered as an array formula in a range<a name="line.1029"></a>
+<span class="sourceLineNo">1030</span>    // that has the same number of rows and columns, respectively, as an array<a name="line.1030"></a>
+<span class="sourceLineNo">1031</span>    // has columns and rows. Use TRANSPOSE to shift the vertical and horizontal<a name="line.1031"></a>
+<span class="sourceLineNo">1032</span>    // orientation of an array on a worksheet.<a name="line.1032"></a>
+<span class="sourceLineNo">1033</span><a name="line.1033"></a>
+<span class="sourceLineNo">1034</span>    // Todo: Trend Returns values along a linear trend. Fits a straight line<a name="line.1034"></a>
+<span class="sourceLineNo">1035</span>    // (using the method of least squares) to the arrays known_y's and<a name="line.1035"></a>
+<span class="sourceLineNo">1036</span>    // known_x's. Returns the y-values along that line for the array of new_x's<a name="line.1036"></a>
+<span class="sourceLineNo">1037</span>    // that you specify.<a name="line.1037"></a>
+<span class="sourceLineNo">1038</span><a name="line.1038"></a>
+<span class="sourceLineNo">1039</span>    // Todo: Trim Removes all spaces from text except for single spaces between<a name="line.1039"></a>
+<span class="sourceLineNo">1040</span>    // words. Use TRIM on text that you have received from another application<a name="line.1040"></a>
+<span class="sourceLineNo">1041</span>    // that may have irregular spacing.<a name="line.1041"></a>
+<span class="sourceLineNo">1042</span><a name="line.1042"></a>
+<span class="sourceLineNo">1043</span>    // Todo: TrimMean Returns the mean of the interior of a data set. TRIMMEAN<a name="line.1043"></a>
+<span class="sourceLineNo">1044</span>    // calculates the mean taken by excluding a percentage of data points from<a name="line.1044"></a>
+<span class="sourceLineNo">1045</span>    // the top and bottom tails of a data set. You can use this function when<a name="line.1045"></a>
+<span class="sourceLineNo">1046</span>    // you wish to exclude outlying data from your analysis.<a name="line.1046"></a>
+<span class="sourceLineNo">1047</span><a name="line.1047"></a>
+<span class="sourceLineNo">1048</span>    // Todo: TTest Returns the probability associated with a Student's<a name="line.1048"></a>
+<span class="sourceLineNo">1049</span>    // t-Test. Use TTEST to determine whether two samples are likely to have<a name="line.1049"></a>
+<span class="sourceLineNo">1050</span>    // come from the same two underlying populations that have the same mean.<a name="line.1050"></a>
+<span class="sourceLineNo">1051</span><a name="line.1051"></a>
+<span class="sourceLineNo">1052</span>    // Todo: USDollar The description for this item will appear in the final<a name="line.1052"></a>
+<span class="sourceLineNo">1053</span>    // release of Office 2007.<a name="line.1053"></a>
+<span class="sourceLineNo">1054</span><a name="line.1054"></a>
+<span class="sourceLineNo">1055</span>    // Todo: Var Estimates variance based on a sample.<a name="line.1055"></a>
+<span class="sourceLineNo">1056</span><a name="line.1056"></a>
+<span class="sourceLineNo">1057</span>    // Todo: VarP Calculates variance based on the entire population.<a name="line.1057"></a>
+<span class="sourceLineNo">1058</span><a name="line.1058"></a>
+<span class="sourceLineNo">1059</span>    // Todo: Vdb Returns the depreciation of an asset for any period you<a name="line.1059"></a>
+<span class="sourceLineNo">1060</span>    // specify, including partial periods, using the double-declining balance<a name="line.1060"></a>
+<span class="sourceLineNo">1061</span>    // method or some other method you specify. VDB stands for variable<a name="line.1061"></a>
+<span class="sourceLineNo">1062</span>    // declining balance.<a name="line.1062"></a>
+<span class="sourceLineNo">1063</span><a name="line.1063"></a>
+<span class="sourceLineNo">1064</span>    // Todo: VLookup Searches for a value in the first column of a table array<a name="line.1064"></a>
+<span class="sourceLineNo">1065</span>    // and returns a value in the same row from another column in the table<a name="line.1065"></a>
+<span class="sourceLineNo">1066</span>    // array.<a name="line.1066"></a>
+<span class="sourceLineNo">1067</span><a name="line.1067"></a>
+<span class="sourceLineNo">1068</span>    // Todo: Weekday Returns the day of the week corresponding to a date. The<a name="line.1068"></a>
+<span class="sourceLineNo">1069</span>    // day is given as an integer, ranging from 1 (Sunday) to 7 (Saturday), by<a name="line.1069"></a>
+<span class="sourceLineNo">1070</span>    // default.<a name="line.1070"></a>
+<span class="sourceLineNo">1071</span><a name="line.1071"></a>
+<span class="sourceLineNo">1072</span>    // Todo: WeekNum Returns a number that indicates where the week falls<a name="line.1072"></a>
+<span class="sourceLineNo">1073</span>    // numerically within a year.<a name="line.1073"></a>
+<span class="sourceLineNo">1074</span><a name="line.1074"></a>
+<span class="sourceLineNo">1075</span>    // Todo: Weibull Returns the Weibull distribution. Use this distribution in<a name="line.1075"></a>
+<span class="sourceLineNo">1076</span>    // reliability analysis, such as calculating a device's mean time to<a name="line.1076"></a>
+<span class="sourceLineNo">1077</span>    // failure.<a name="line.1077"></a>
+<span class="sourceLineNo">1078</span><a name="line.1078"></a>
+<span class="sourceLineNo">1079</span>    // Todo: WorkDay Returns a number that represents a date that is the<a name="line.1079"></a>
+<span class="sourceLineNo">1080</span>    // indicated number of working days before or after a date (the starting<a name="line.1080"></a>
+<span class="sourceLineNo">1081</span>    // date). Working days exclude weekends and any dates identified as<a name="line.1081"></a>
+<span class="sourceLineNo">1082</span>    // holidays. Use WORKDAY to exclude weekends or holidays when you calculate<a name="line.1082"></a>
+<span class="sourceLineNo">1083</span>    // invoice due dates, expected delivery times, or the number of days of work<a name="line.1083"></a>
+<span class="sourceLineNo">1084</span>    // performed.<a name="line.1084"></a>
+<span class="sourceLineNo">1085</span><a name="line.1085"></a>
+<span class="sourceLineNo">1086</span>    // Todo: Xirr Returns the internal rate of return for a schedule of cash<a name="line.1086"></a>
+<span class="sourceLineNo">1087</span>    // flows that is not necessarily periodic. To calculate the internal rate of<a name="line.1087"></a>
+<span class="sourceLineNo">1088</span>    // return for a series of periodic cash flows, use the IRR function.<a name="line.1088"></a>
+<span class="sourceLineNo">1089</span><a name="line.1089"></a>
+<span class="sourceLineNo">1090</span>    // Todo: Xnpv The description for this item will appear in the final release<a name="line.1090"></a>
+<span class="sourceLineNo">1091</span>    // of Office 2007.<a name="line.1091"></a>
+<span class="sourceLineNo">1092</span><a name="line.1092"></a>
+<span class="sourceLineNo">1093</span>    // Todo: YearFrac Calculates the fraction of the year represented by the<a name="line.1093"></a>
+<span class="sourceLineNo">1094</span>    // number of whole days between two dates (the start_date and the<a name="line.1094"></a>
+<span class="sourceLineNo">1095</span>    // end_date). Use the YEARFRAC worksheet function to identify the proportion<a name="line.1095"></a>
+<span class="sourceLineNo">1096</span>    // of a whole year's benefits or obligations to assign to a specific term.<a name="line.1096"></a>
+<span class="sourceLineNo">1097</span><a name="line.1097"></a>
+<span class="sourceLineNo">1098</span>    // Todo: YieldDisc Returns the annual yield for a discounted security.<a name="line.1098"></a>
+<span class="sourceLineNo">1099</span><a name="line.1099"></a>
+<span class="sourceLineNo">1100</span>    // Todo: YieldMat Returns the annual yield of a security that pays interest<a name="line.1100"></a>
+<span class="sourceLineNo">1101</span>    // at maturity.<a name="line.1101"></a>
+<span class="sourceLineNo">1102</span><a name="line.1102"></a>
+<span class="sourceLineNo">1103</span>    // Todo: ZTest Returns the one-tailed probability-value of a z-test. For a<a name="line.1103"></a>
+<span class="sourceLineNo">1104</span>    // given hypothesized population mean, ZTEST returns the probability that<a name="line.1104"></a>
+<span class="sourceLineNo">1105</span>    // the sample mean would be greater than the average of observations in the<a name="line.1105"></a>
+<span class="sourceLineNo">1106</span>    // data set (array) -- that is, the observed sample mean.<a name="line.1106"></a>
+<span class="sourceLineNo">1107</span><a name="line.1107"></a>
+<span class="sourceLineNo">1108</span>}<a name="line.1108"></a>
+<span class="sourceLineNo">1109</span><a name="line.1109"></a>
+<span class="sourceLineNo">1110</span>// End Excel.java<a name="line.1110"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

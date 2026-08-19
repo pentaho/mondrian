@@ -1,0 +1,1529 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package mondrian.util;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>/**<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * Encodes and decodes to and from Base64 notation.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * &lt;p&gt;<a name="line.6"></a>
+<span class="sourceLineNo">007</span> * Change Log:<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * &lt;/p&gt;<a name="line.8"></a>
+<span class="sourceLineNo">009</span> * &lt;ul&gt;<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  &lt;li&gt;v2.1 - Cleaned up javadoc comments and unused variables and methods. Added<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *   some convenience methods for reading and writing to and from files.&lt;/li&gt;<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *  &lt;li&gt;v2.0.2 - Now specifies UTF-8 encoding in places where the code fails on systems<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *   with other encodings (like EBCDIC).&lt;/li&gt;<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *  &lt;li&gt;v2.0.1 - Fixed an error when decoding a single byte, that is, when the<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *   encoded data was a single byte.&lt;/li&gt;<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *  &lt;li&gt;v2.0 - I got rid of methods that used booleans to set options.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *   Now everything is more consolidated and cleaner. The code now detects<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *   when data that's being decoded is gzip-compressed and will decompress it<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *   automatically. Generally things are cleaner. You'll probably have to<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *   change some method calls that you were making to support the new<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *   options format (&lt;tt&gt;int&lt;/tt&gt;s that you "OR" together).&lt;/li&gt;<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *  &lt;li&gt;v1.5.1 - Fixed bug when decompressing and decoding to a<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *   byte[] using &lt;tt&gt;decode( String s, boolean gzipCompressed )&lt;/tt&gt;.<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *   Added the ability to "suspend" encoding in the Output Stream so<a name="line.24"></a>
+<span class="sourceLineNo">025</span> *   you can turn on and off the encoding if you need to embed base64<a name="line.25"></a>
+<span class="sourceLineNo">026</span> *   data in an otherwise "normal" stream (like an XML file).&lt;/li&gt;<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *  &lt;li&gt;v1.5 - Output stream pases on flush() command but doesn't do anything itself.<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *      This helps when using GZIP streams.<a name="line.28"></a>
+<span class="sourceLineNo">029</span> *      Added the ability to GZip-compress objects before encoding them.&lt;/li&gt;<a name="line.29"></a>
+<span class="sourceLineNo">030</span> *  &lt;li&gt;v1.4 - Added helper methods to read/write files.&lt;/li&gt;<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *  &lt;li&gt;v1.3.6 - Fixed OutputStream.flush() so that 'position' is reset.&lt;/li&gt;<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *  &lt;li&gt;v1.3.5 - Added flag to turn on and off line breaks. Fixed bug in input stream<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *      where last buffer being read, if not completely full, was not returned.&lt;/li&gt;<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *  &lt;li&gt;v1.3.4 - Fixed when "improperly padded stream" error was thrown at the wrong time.&lt;/li&gt;<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *  &lt;li&gt;v1.3.3 - Fixed I/O streams which were totally messed up.&lt;/li&gt;<a name="line.35"></a>
+<span class="sourceLineNo">036</span> * &lt;/ul&gt;<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * &lt;p&gt;<a name="line.38"></a>
+<span class="sourceLineNo">039</span> * I am placing this code in the Public Domain. Do with it as you will.<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * This software comes with no guarantees or warranties but with<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * plenty of well-wishing instead!<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * Please visit &lt;a href="http://iharder.net/base64"&gt;http://iharder.net/base64&lt;/a&gt;<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * periodically to check for updates or to contribute improvements.<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * &lt;/p&gt;<a name="line.44"></a>
+<span class="sourceLineNo">045</span> *<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * @author Robert Harder<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * @author rob@iharder.net<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * @version 2.1<a name="line.48"></a>
+<span class="sourceLineNo">049</span> */<a name="line.49"></a>
+<span class="sourceLineNo">050</span>public class Base64<a name="line.50"></a>
+<span class="sourceLineNo">051</span>{<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>/* ********  P U B L I C   F I E L D S  ******** */<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>    /** No options specified. Value is zero. */<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    public final static int NO_OPTIONS = 0;<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>    /** Specify encoding. */<a name="line.59"></a>
+<span class="sourceLineNo">060</span>    public final static int ENCODE = 1;<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span>    /** Specify decoding. */<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    public final static int DECODE = 0;<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>    /** Specify that data should be gzip-compressed. */<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    public final static int GZIP = 2;<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>    /** Don't break lines when encoding (violates strict Base64 specification) */<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    public final static int DONT_BREAK_LINES = 8;<a name="line.72"></a>
+<span class="sourceLineNo">073</span><a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>/* ********  P R I V A T E   F I E L D S  ******** */<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span>    /** Maximum line length (76) of Base64 output. */<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    private final static int MAX_LINE_LENGTH = 76;<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span><a name="line.81"></a>
+<span class="sourceLineNo">082</span>    /** The equals sign (=) as a byte. */<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    private final static byte EQUALS_SIGN = (byte)'=';<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>    /** The new line character (\n) as a byte. */<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    private final static byte NEW_LINE = (byte)'\n';<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>    /** Preferred encoding. */<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    private final static String PREFERRED_ENCODING = "UTF-8";<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>    /** The 64 valid Base64 values. */<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    private final static byte[] ALPHABET;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>    private final static byte[] _NATIVE_ALPHABET = /* May be something funny like EBCDIC */<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F', (byte)'G',<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        (byte)'H', (byte)'I', (byte)'J', (byte)'K', (byte)'L', (byte)'M', (byte)'N',<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        (byte)'O', (byte)'P', (byte)'Q', (byte)'R', (byte)'S', (byte)'T', (byte)'U',<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        (byte)'V', (byte)'W', (byte)'X', (byte)'Y', (byte)'Z',<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        (byte)'a', (byte)'b', (byte)'c', (byte)'d', (byte)'e', (byte)'f', (byte)'g',<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        (byte)'h', (byte)'i', (byte)'j', (byte)'k', (byte)'l', (byte)'m', (byte)'n',<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        (byte)'o', (byte)'p', (byte)'q', (byte)'r', (byte)'s', (byte)'t', (byte)'u',<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        (byte)'v', (byte)'w', (byte)'x', (byte)'y', (byte)'z',<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5',<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        (byte)'6', (byte)'7', (byte)'8', (byte)'9', (byte)'+', (byte)'/'<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    };<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>    /** Determine which ALPHABET to use. */<a name="line.110"></a>
+<span class="sourceLineNo">111</span>    static<a name="line.111"></a>
+<span class="sourceLineNo">112</span>    {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        byte[] __bytes;<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        try<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        {<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            __bytes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".getBytes( PREFERRED_ENCODING );<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        }   // end try<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        catch (java.io.UnsupportedEncodingException use)<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            __bytes = _NATIVE_ALPHABET; // Fall back to native encoding<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        }   // end catch<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        ALPHABET = __bytes;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>    }   // end static<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>    /**<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     * Translates a Base64 value to either its 6-bit reconstruction value<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     * or a negative number indicating some other meaning.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     **/<a name="line.129"></a>
+<span class="sourceLineNo">130</span>    private final static byte[] DECODABET =<a name="line.130"></a>
+<span class="sourceLineNo">131</span>    {<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        -9,-9,-9,-9,-9,-9,-9,-9,-9,                 // Decimal  0 -  8<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        -5,-5,                                      // Whitespace: Tab and Linefeed<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        -9,-9,                                      // Decimal 11 - 12<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        -5,                                         // Whitespace: Carriage Return<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,     // Decimal 14 - 26<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        -9,-9,-9,-9,-9,                             // Decimal 27 - 31<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        -5,                                         // Whitespace: Space<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,              // Decimal 33 - 42<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        62,                                         // Plus sign at decimal 43<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        -9,-9,-9,                                   // Decimal 44 - 46<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        63,                                         // Slash at decimal 47<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        52,53,54,55,56,57,58,59,60,61,              // Numbers zero through nine<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        -9,-9,-9,                                   // Decimal 58 - 60<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        -1,                                         // Equals sign at decimal 61<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        -9,-9,-9,                                      // Decimal 62 - 64<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        0,1,2,3,4,5,6,7,8,9,10,11,12,13,            // Letters 'A' through 'N'<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        14,15,16,17,18,19,20,21,22,23,24,25,        // Letters 'O' through 'Z'<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        -9,-9,-9,-9,-9,-9,                          // Decimal 91 - 96<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        26,27,28,29,30,31,32,33,34,35,36,37,38,     // Letters 'a' through 'm'<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        39,40,41,42,43,44,45,46,47,48,49,50,51,     // Letters 'n' through 'z'<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        -9,-9,-9,-9                                 // Decimal 123 - 126<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        /*,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,     // Decimal 127 - 139<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,     // Decimal 140 - 152<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,     // Decimal 153 - 165<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,     // Decimal 166 - 178<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,     // Decimal 179 - 191<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,     // Decimal 192 - 204<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,     // Decimal 205 - 217<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,     // Decimal 218 - 230<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,     // Decimal 231 - 243<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        -9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9,-9         // Decimal 244 - 255 */<a name="line.162"></a>
+<span class="sourceLineNo">163</span>    };<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span>    // I think I end up not using the BAD_ENCODING indicator.<a name="line.165"></a>
+<span class="sourceLineNo">166</span>    //private final static byte BAD_ENCODING    = -9; // Indicates error in encoding<a name="line.166"></a>
+<span class="sourceLineNo">167</span>    private final static byte WHITE_SPACE_ENC = -5; // Indicates white space in encoding<a name="line.167"></a>
+<span class="sourceLineNo">168</span>    private final static byte EQUALS_SIGN_ENC = -1; // Indicates equals sign in encoding<a name="line.168"></a>
+<span class="sourceLineNo">169</span><a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>    /** Defeats instantiation. */<a name="line.171"></a>
+<span class="sourceLineNo">172</span>    private Base64(){}<a name="line.172"></a>
+<span class="sourceLineNo">173</span><a name="line.173"></a>
+<span class="sourceLineNo">174</span><a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>/* ********  E N C O D I N G   M E T H O D S  ******** */<a name="line.176"></a>
+<span class="sourceLineNo">177</span><a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>    /**<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     * Encodes up to the first three bytes of array &lt;var&gt;threeBytes&lt;/var&gt;<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     * and returns a four-byte array in Base64 notation.<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     * The actual number of significant bytes in your array is<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     * given by &lt;var&gt;numSigBytes&lt;/var&gt;.<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     * The array &lt;var&gt;threeBytes&lt;/var&gt; needs only be as big as<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     * &lt;var&gt;numSigBytes&lt;/var&gt;.<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     * Code can reuse a byte array by passing a four-byte array as &lt;var&gt;b4&lt;/var&gt;.<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     *<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     * @param b4 A reusable byte array to reduce array instantiation<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     * @param threeBytes the array to convert<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     * @param numSigBytes the number of significant bytes in your array<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     * @return four byte array in Base64 notation.<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     * @since 1.5.1<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     */<a name="line.193"></a>
+<span class="sourceLineNo">194</span>    private static byte[] encode3to4( byte[] b4, byte[] threeBytes, int numSigBytes )<a name="line.194"></a>
+<span class="sourceLineNo">195</span>    {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        encode3to4( threeBytes, 0, numSigBytes, b4, 0 );<a name="line.196"></a>
+<span class="sourceLineNo">197</span>        return b4;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>    }   // end encode3to4<a name="line.198"></a>
+<span class="sourceLineNo">199</span><a name="line.199"></a>
+<span class="sourceLineNo">200</span><a name="line.200"></a>
+<span class="sourceLineNo">201</span>    /**<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     * Encodes up to three bytes of the array &lt;var&gt;source&lt;/var&gt;<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     * and writes the resulting four Base64 bytes to &lt;var&gt;destination&lt;/var&gt;.<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     * The source and destination arrays can be manipulated<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     * anywhere along their length by specifying<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     * &lt;var&gt;srcOffset&lt;/var&gt; and &lt;var&gt;destOffset&lt;/var&gt;.<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     * This method does not check to make sure your arrays<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     * are large enough to accomodate &lt;var&gt;srcOffset&lt;/var&gt; + 3 for<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     * the &lt;var&gt;source&lt;/var&gt; array or &lt;var&gt;destOffset&lt;/var&gt; + 4 for<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     * the &lt;var&gt;destination&lt;/var&gt; array.<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     * The actual number of significant bytes in your array is<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     * given by &lt;var&gt;numSigBytes&lt;/var&gt;.<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     *<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     * @param source the array to convert<a name="line.214"></a>
+<span class="sourceLineNo">215</span>     * @param srcOffset the index where conversion begins<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     * @param numSigBytes the number of significant bytes in your array<a name="line.216"></a>
+<span class="sourceLineNo">217</span>     * @param destination the array to hold the conversion<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     * @param destOffset the index where output will be put<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     * @return the &lt;var&gt;destination&lt;/var&gt; array<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     * @since 1.3<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     */<a name="line.221"></a>
+<span class="sourceLineNo">222</span>    private static byte[] encode3to4(<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     byte[] source, int srcOffset, int numSigBytes,<a name="line.223"></a>
+<span class="sourceLineNo">224</span>     byte[] destination, int destOffset )<a name="line.224"></a>
+<span class="sourceLineNo">225</span>    {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        //           1         2         3<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        // 01234567890123456789012345678901 Bit position<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        // --------000000001111111122222222 Array position from threeBytes<a name="line.228"></a>
+<span class="sourceLineNo">229</span>        // --------|    ||    ||    ||    | Six bit groups to index ALPHABET<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        //          &gt;&gt;18  &gt;&gt;12  &gt;&gt; 6  &gt;&gt; 0  Right shift necessary<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        //                0x3f  0x3f  0x3f  Additional AND<a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span>        // Create buffer with zero-padding if there are only one or two<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        // significant bytes passed in the array.<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        // We have to shift left 24 in order to flush out the 1's that appear<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        // when Java treats a value as negative that is cast from a byte to an int.<a name="line.236"></a>
+<span class="sourceLineNo">237</span>        int inBuff =   ( numSigBytes &gt; 0 ? ((source[ srcOffset     ] &lt;&lt; 24) &gt;&gt;&gt;  8) : 0 )<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                     | ( numSigBytes &gt; 1 ? ((source[ srcOffset + 1 ] &lt;&lt; 24) &gt;&gt;&gt; 16) : 0 )<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                     | ( numSigBytes &gt; 2 ? ((source[ srcOffset + 2 ] &lt;&lt; 24) &gt;&gt;&gt; 24) : 0 );<a name="line.239"></a>
+<span class="sourceLineNo">240</span><a name="line.240"></a>
+<span class="sourceLineNo">241</span>        switch( numSigBytes )<a name="line.241"></a>
+<span class="sourceLineNo">242</span>        {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>            case 3:<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                destination[ destOffset     ] = ALPHABET[ (inBuff &gt;&gt;&gt; 18)        ];<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                destination[ destOffset + 1 ] = ALPHABET[ (inBuff &gt;&gt;&gt; 12) &amp; 0x3f ];<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                destination[ destOffset + 2 ] = ALPHABET[ (inBuff &gt;&gt;&gt;  6) &amp; 0x3f ];<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                destination[ destOffset + 3 ] = ALPHABET[ (inBuff       ) &amp; 0x3f ];<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                return destination;<a name="line.248"></a>
+<span class="sourceLineNo">249</span><a name="line.249"></a>
+<span class="sourceLineNo">250</span>            case 2:<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                destination[ destOffset     ] = ALPHABET[ (inBuff &gt;&gt;&gt; 18)        ];<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                destination[ destOffset + 1 ] = ALPHABET[ (inBuff &gt;&gt;&gt; 12) &amp; 0x3f ];<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                destination[ destOffset + 2 ] = ALPHABET[ (inBuff &gt;&gt;&gt;  6) &amp; 0x3f ];<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                destination[ destOffset + 3 ] = EQUALS_SIGN;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                return destination;<a name="line.255"></a>
+<span class="sourceLineNo">256</span><a name="line.256"></a>
+<span class="sourceLineNo">257</span>            case 1:<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                destination[ destOffset     ] = ALPHABET[ (inBuff &gt;&gt;&gt; 18)        ];<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                destination[ destOffset + 1 ] = ALPHABET[ (inBuff &gt;&gt;&gt; 12) &amp; 0x3f ];<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                destination[ destOffset + 2 ] = EQUALS_SIGN;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                destination[ destOffset + 3 ] = EQUALS_SIGN;<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                return destination;<a name="line.262"></a>
+<span class="sourceLineNo">263</span><a name="line.263"></a>
+<span class="sourceLineNo">264</span>            default:<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                return destination;<a name="line.265"></a>
+<span class="sourceLineNo">266</span>        }   // end switch<a name="line.266"></a>
+<span class="sourceLineNo">267</span>    }   // end encode3to4<a name="line.267"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
+<span class="sourceLineNo">269</span><a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span>    /**<a name="line.271"></a>
+<span class="sourceLineNo">272</span>     * Serializes an object and returns the Base64-encoded<a name="line.272"></a>
+<span class="sourceLineNo">273</span>     * version of that serialized object. If the object<a name="line.273"></a>
+<span class="sourceLineNo">274</span>     * cannot be serialized or there is another error,<a name="line.274"></a>
+<span class="sourceLineNo">275</span>     * the method will return &lt;tt&gt;null&lt;/tt&gt;.<a name="line.275"></a>
+<span class="sourceLineNo">276</span>     * The object is not GZip-compressed before being encoded.<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     *<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     * @param serializableObject The object to encode<a name="line.278"></a>
+<span class="sourceLineNo">279</span>     * @return The Base64-encoded object<a name="line.279"></a>
+<span class="sourceLineNo">280</span>     * @since 1.4<a name="line.280"></a>
+<span class="sourceLineNo">281</span>     */<a name="line.281"></a>
+<span class="sourceLineNo">282</span>    public static String encodeObject( java.io.Serializable serializableObject )<a name="line.282"></a>
+<span class="sourceLineNo">283</span>    {<a name="line.283"></a>
+<span class="sourceLineNo">284</span>        return encodeObject( serializableObject, NO_OPTIONS );<a name="line.284"></a>
+<span class="sourceLineNo">285</span>    }   // end encodeObject<a name="line.285"></a>
+<span class="sourceLineNo">286</span><a name="line.286"></a>
+<span class="sourceLineNo">287</span><a name="line.287"></a>
+<span class="sourceLineNo">288</span><a name="line.288"></a>
+<span class="sourceLineNo">289</span>    /**<a name="line.289"></a>
+<span class="sourceLineNo">290</span>     * Serializes an object and returns the Base64-encoded<a name="line.290"></a>
+<span class="sourceLineNo">291</span>     * version of that serialized object. If the object<a name="line.291"></a>
+<span class="sourceLineNo">292</span>     * cannot be serialized or there is another error,<a name="line.292"></a>
+<span class="sourceLineNo">293</span>     * the method will return &lt;tt&gt;null&lt;/tt&gt;.<a name="line.293"></a>
+<span class="sourceLineNo">294</span>     * &lt;p&gt;<a name="line.294"></a>
+<span class="sourceLineNo">295</span>     * Valid options:&lt;pre&gt;<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     *   GZIP: gzip-compresses object before encoding it.<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     *   DONT_BREAK_LINES: don't break lines at 76 characters<a name="line.297"></a>
+<span class="sourceLineNo">298</span>     *     &lt;i&gt;Note: Technically, this makes your encoding non-compliant.&lt;/i&gt;<a name="line.298"></a>
+<span class="sourceLineNo">299</span>     * &lt;/pre&gt;<a name="line.299"></a>
+<span class="sourceLineNo">300</span>     * &lt;p&gt;<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     * Example: &lt;code&gt;encodeObject( myObj, Base64.GZIP )&lt;/code&gt; or<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     * &lt;p&gt;<a name="line.302"></a>
+<span class="sourceLineNo">303</span>     * Example: &lt;code&gt;encodeObject( myObj, Base64.GZIP | Base64.DONT_BREAK_LINES )&lt;/code&gt;<a name="line.303"></a>
+<span class="sourceLineNo">304</span>     *<a name="line.304"></a>
+<span class="sourceLineNo">305</span>     * @param serializableObject The object to encode<a name="line.305"></a>
+<span class="sourceLineNo">306</span>     * @param options Specified options<a name="line.306"></a>
+<span class="sourceLineNo">307</span>     * @return The Base64-encoded object<a name="line.307"></a>
+<span class="sourceLineNo">308</span>     * @see Base64#GZIP<a name="line.308"></a>
+<span class="sourceLineNo">309</span>     * @see Base64#DONT_BREAK_LINES<a name="line.309"></a>
+<span class="sourceLineNo">310</span>     * @since 2.0<a name="line.310"></a>
+<span class="sourceLineNo">311</span>     */<a name="line.311"></a>
+<span class="sourceLineNo">312</span>    public static String encodeObject( java.io.Serializable serializableObject, int options )<a name="line.312"></a>
+<span class="sourceLineNo">313</span>    {<a name="line.313"></a>
+<span class="sourceLineNo">314</span>        // Streams<a name="line.314"></a>
+<span class="sourceLineNo">315</span>        java.io.ByteArrayOutputStream  baos  = null;<a name="line.315"></a>
+<span class="sourceLineNo">316</span>        java.io.OutputStream           b64os = null;<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        java.io.ObjectOutputStream     oos   = null;<a name="line.317"></a>
+<span class="sourceLineNo">318</span>        java.util.zip.GZIPOutputStream gzos  = null;<a name="line.318"></a>
+<span class="sourceLineNo">319</span><a name="line.319"></a>
+<span class="sourceLineNo">320</span>        // Isolate options<a name="line.320"></a>
+<span class="sourceLineNo">321</span>        int gzip           = (options &amp; GZIP);<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        int dontBreakLines = (options &amp; DONT_BREAK_LINES);<a name="line.322"></a>
+<span class="sourceLineNo">323</span><a name="line.323"></a>
+<span class="sourceLineNo">324</span>        try<a name="line.324"></a>
+<span class="sourceLineNo">325</span>        {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>            // ObjectOutputStream -&gt; (GZIP) -&gt; Base64 -&gt; ByteArrayOutputStream<a name="line.326"></a>
+<span class="sourceLineNo">327</span>            baos  = new java.io.ByteArrayOutputStream();<a name="line.327"></a>
+<span class="sourceLineNo">328</span>            b64os = new Base64.OutputStream( baos, ENCODE | dontBreakLines );<a name="line.328"></a>
+<span class="sourceLineNo">329</span><a name="line.329"></a>
+<span class="sourceLineNo">330</span>            // GZip?<a name="line.330"></a>
+<span class="sourceLineNo">331</span>            if( gzip == GZIP )<a name="line.331"></a>
+<span class="sourceLineNo">332</span>            {<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                gzos = new java.util.zip.GZIPOutputStream( b64os );<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                oos  = new java.io.ObjectOutputStream( gzos );<a name="line.334"></a>
+<span class="sourceLineNo">335</span>            }   // end if: gzip<a name="line.335"></a>
+<span class="sourceLineNo">336</span>            else<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                oos   = new java.io.ObjectOutputStream( b64os );<a name="line.337"></a>
+<span class="sourceLineNo">338</span><a name="line.338"></a>
+<span class="sourceLineNo">339</span>            oos.writeObject( serializableObject );<a name="line.339"></a>
+<span class="sourceLineNo">340</span>        }   // end try<a name="line.340"></a>
+<span class="sourceLineNo">341</span>        catch( java.io.IOException e )<a name="line.341"></a>
+<span class="sourceLineNo">342</span>        {<a name="line.342"></a>
+<span class="sourceLineNo">343</span>            e.printStackTrace();<a name="line.343"></a>
+<span class="sourceLineNo">344</span>            return null;<a name="line.344"></a>
+<span class="sourceLineNo">345</span>        }   // end catch<a name="line.345"></a>
+<span class="sourceLineNo">346</span>        finally<a name="line.346"></a>
+<span class="sourceLineNo">347</span>        {<a name="line.347"></a>
+<span class="sourceLineNo">348</span>            try{ oos.close();   } catch( Exception e ){}<a name="line.348"></a>
+<span class="sourceLineNo">349</span>            try{ gzos.close();  } catch( Exception e ){}<a name="line.349"></a>
+<span class="sourceLineNo">350</span>            try{ b64os.close(); } catch( Exception e ){}<a name="line.350"></a>
+<span class="sourceLineNo">351</span>            try{ baos.close();  } catch( Exception e ){}<a name="line.351"></a>
+<span class="sourceLineNo">352</span>        }   // end finally<a name="line.352"></a>
+<span class="sourceLineNo">353</span><a name="line.353"></a>
+<span class="sourceLineNo">354</span>        // Return value according to relevant encoding.<a name="line.354"></a>
+<span class="sourceLineNo">355</span>        try<a name="line.355"></a>
+<span class="sourceLineNo">356</span>        {<a name="line.356"></a>
+<span class="sourceLineNo">357</span>            return new String( baos.toByteArray(), PREFERRED_ENCODING );<a name="line.357"></a>
+<span class="sourceLineNo">358</span>        }   // end try<a name="line.358"></a>
+<span class="sourceLineNo">359</span>        catch (java.io.UnsupportedEncodingException uue)<a name="line.359"></a>
+<span class="sourceLineNo">360</span>        {<a name="line.360"></a>
+<span class="sourceLineNo">361</span>            return new String( baos.toByteArray() );<a name="line.361"></a>
+<span class="sourceLineNo">362</span>        }   // end catch<a name="line.362"></a>
+<span class="sourceLineNo">363</span><a name="line.363"></a>
+<span class="sourceLineNo">364</span>    }   // end encode<a name="line.364"></a>
+<span class="sourceLineNo">365</span><a name="line.365"></a>
+<span class="sourceLineNo">366</span><a name="line.366"></a>
+<span class="sourceLineNo">367</span><a name="line.367"></a>
+<span class="sourceLineNo">368</span>    /**<a name="line.368"></a>
+<span class="sourceLineNo">369</span>     * Encodes a byte array into Base64 notation.<a name="line.369"></a>
+<span class="sourceLineNo">370</span>     * Does not GZip-compress data.<a name="line.370"></a>
+<span class="sourceLineNo">371</span>     *<a name="line.371"></a>
+<span class="sourceLineNo">372</span>     * @param source The data to convert<a name="line.372"></a>
+<span class="sourceLineNo">373</span>     * @since 1.4<a name="line.373"></a>
+<span class="sourceLineNo">374</span>     */<a name="line.374"></a>
+<span class="sourceLineNo">375</span>    public static String encodeBytes( byte[] source )<a name="line.375"></a>
+<span class="sourceLineNo">376</span>    {<a name="line.376"></a>
+<span class="sourceLineNo">377</span>        return encodeBytes( source, 0, source.length, NO_OPTIONS );<a name="line.377"></a>
+<span class="sourceLineNo">378</span>    }   // end encodeBytes<a name="line.378"></a>
+<span class="sourceLineNo">379</span><a name="line.379"></a>
+<span class="sourceLineNo">380</span><a name="line.380"></a>
+<span class="sourceLineNo">381</span><a name="line.381"></a>
+<span class="sourceLineNo">382</span>    /**<a name="line.382"></a>
+<span class="sourceLineNo">383</span>     * Encodes a byte array into Base64 notation.<a name="line.383"></a>
+<span class="sourceLineNo">384</span>     * &lt;p&gt;<a name="line.384"></a>
+<span class="sourceLineNo">385</span>     * Valid options:&lt;pre&gt;<a name="line.385"></a>
+<span class="sourceLineNo">386</span>     *   GZIP: gzip-compresses object before encoding it.<a name="line.386"></a>
+<span class="sourceLineNo">387</span>     *   DONT_BREAK_LINES: don't break lines at 76 characters<a name="line.387"></a>
+<span class="sourceLineNo">388</span>     *     &lt;i&gt;Note: Technically, this makes your encoding non-compliant.&lt;/i&gt;<a name="line.388"></a>
+<span class="sourceLineNo">389</span>     * &lt;/pre&gt;<a name="line.389"></a>
+<span class="sourceLineNo">390</span>     * &lt;p&gt;<a name="line.390"></a>
+<span class="sourceLineNo">391</span>     * Example: &lt;code&gt;encodeBytes( myData, Base64.GZIP )&lt;/code&gt; or<a name="line.391"></a>
+<span class="sourceLineNo">392</span>     * &lt;p&gt;<a name="line.392"></a>
+<span class="sourceLineNo">393</span>     * Example: &lt;code&gt;encodeBytes( myData, Base64.GZIP | Base64.DONT_BREAK_LINES )&lt;/code&gt;<a name="line.393"></a>
+<span class="sourceLineNo">394</span>     *<a name="line.394"></a>
+<span class="sourceLineNo">395</span>     *<a name="line.395"></a>
+<span class="sourceLineNo">396</span>     * @param source The data to convert<a name="line.396"></a>
+<span class="sourceLineNo">397</span>     * @param options Specified options<a name="line.397"></a>
+<span class="sourceLineNo">398</span>     * @see Base64#GZIP<a name="line.398"></a>
+<span class="sourceLineNo">399</span>     * @see Base64#DONT_BREAK_LINES<a name="line.399"></a>
+<span class="sourceLineNo">400</span>     * @since 2.0<a name="line.400"></a>
+<span class="sourceLineNo">401</span>     */<a name="line.401"></a>
+<span class="sourceLineNo">402</span>    public static String encodeBytes( byte[] source, int options )<a name="line.402"></a>
+<span class="sourceLineNo">403</span>    {<a name="line.403"></a>
+<span class="sourceLineNo">404</span>        return encodeBytes( source, 0, source.length, options );<a name="line.404"></a>
+<span class="sourceLineNo">405</span>    }   // end encodeBytes<a name="line.405"></a>
+<span class="sourceLineNo">406</span><a name="line.406"></a>
+<span class="sourceLineNo">407</span><a name="line.407"></a>
+<span class="sourceLineNo">408</span>    /**<a name="line.408"></a>
+<span class="sourceLineNo">409</span>     * Encodes a byte array into Base64 notation.<a name="line.409"></a>
+<span class="sourceLineNo">410</span>     * Does not GZip-compress data.<a name="line.410"></a>
+<span class="sourceLineNo">411</span>     *<a name="line.411"></a>
+<span class="sourceLineNo">412</span>     * @param source The data to convert<a name="line.412"></a>
+<span class="sourceLineNo">413</span>     * @param off Offset in array where conversion should begin<a name="line.413"></a>
+<span class="sourceLineNo">414</span>     * @param len Length of data to convert<a name="line.414"></a>
+<span class="sourceLineNo">415</span>     * @since 1.4<a name="line.415"></a>
+<span class="sourceLineNo">416</span>     */<a name="line.416"></a>
+<span class="sourceLineNo">417</span>    public static String encodeBytes( byte[] source, int off, int len )<a name="line.417"></a>
+<span class="sourceLineNo">418</span>    {<a name="line.418"></a>
+<span class="sourceLineNo">419</span>        return encodeBytes( source, off, len, NO_OPTIONS );<a name="line.419"></a>
+<span class="sourceLineNo">420</span>    }   // end encodeBytes<a name="line.420"></a>
+<span class="sourceLineNo">421</span><a name="line.421"></a>
+<span class="sourceLineNo">422</span><a name="line.422"></a>
+<span class="sourceLineNo">423</span><a name="line.423"></a>
+<span class="sourceLineNo">424</span>    /**<a name="line.424"></a>
+<span class="sourceLineNo">425</span>     * Encodes a byte array into Base64 notation.<a name="line.425"></a>
+<span class="sourceLineNo">426</span>     * &lt;p&gt;<a name="line.426"></a>
+<span class="sourceLineNo">427</span>     * Valid options:&lt;pre&gt;<a name="line.427"></a>
+<span class="sourceLineNo">428</span>     *   GZIP: gzip-compresses object before encoding it.<a name="line.428"></a>
+<span class="sourceLineNo">429</span>     *   DONT_BREAK_LINES: don't break lines at 76 characters<a name="line.429"></a>
+<span class="sourceLineNo">430</span>     *     &lt;i&gt;Note: Technically, this makes your encoding non-compliant.&lt;/i&gt;<a name="line.430"></a>
+<span class="sourceLineNo">431</span>     * &lt;/pre&gt;<a name="line.431"></a>
+<span class="sourceLineNo">432</span>     * &lt;p&gt;<a name="line.432"></a>
+<span class="sourceLineNo">433</span>     * Example: &lt;code&gt;encodeBytes( myData, Base64.GZIP )&lt;/code&gt; or<a name="line.433"></a>
+<span class="sourceLineNo">434</span>     * &lt;p&gt;<a name="line.434"></a>
+<span class="sourceLineNo">435</span>     * Example: &lt;code&gt;encodeBytes( myData, Base64.GZIP | Base64.DONT_BREAK_LINES )&lt;/code&gt;<a name="line.435"></a>
+<span class="sourceLineNo">436</span>     *<a name="line.436"></a>
+<span class="sourceLineNo">437</span>     *<a name="line.437"></a>
+<span class="sourceLineNo">438</span>     * @param source The data to convert<a name="line.438"></a>
+<span class="sourceLineNo">439</span>     * @param off Offset in array where conversion should begin<a name="line.439"></a>
+<span class="sourceLineNo">440</span>     * @param len Length of data to convert<a name="line.440"></a>
+<span class="sourceLineNo">441</span>     * @param options Specified options<a name="line.441"></a>
+<span class="sourceLineNo">442</span>     * @see Base64#GZIP<a name="line.442"></a>
+<span class="sourceLineNo">443</span>     * @see Base64#DONT_BREAK_LINES<a name="line.443"></a>
+<span class="sourceLineNo">444</span>     * @since 2.0<a name="line.444"></a>
+<span class="sourceLineNo">445</span>     */<a name="line.445"></a>
+<span class="sourceLineNo">446</span>    public static String encodeBytes( byte[] source, int off, int len, int options )<a name="line.446"></a>
+<span class="sourceLineNo">447</span>    {<a name="line.447"></a>
+<span class="sourceLineNo">448</span>        // Isolate options<a name="line.448"></a>
+<span class="sourceLineNo">449</span>        int dontBreakLines = ( options &amp; DONT_BREAK_LINES );<a name="line.449"></a>
+<span class="sourceLineNo">450</span>        int gzip           = ( options &amp; GZIP   );<a name="line.450"></a>
+<span class="sourceLineNo">451</span><a name="line.451"></a>
+<span class="sourceLineNo">452</span>        // Compress?<a name="line.452"></a>
+<span class="sourceLineNo">453</span>        if( gzip == GZIP )<a name="line.453"></a>
+<span class="sourceLineNo">454</span>        {<a name="line.454"></a>
+<span class="sourceLineNo">455</span>            java.io.ByteArrayOutputStream  baos  = null;<a name="line.455"></a>
+<span class="sourceLineNo">456</span>            java.util.zip.GZIPOutputStream gzos  = null;<a name="line.456"></a>
+<span class="sourceLineNo">457</span>            Base64.OutputStream            b64os = null;<a name="line.457"></a>
+<span class="sourceLineNo">458</span><a name="line.458"></a>
+<span class="sourceLineNo">459</span><a name="line.459"></a>
+<span class="sourceLineNo">460</span>            try<a name="line.460"></a>
+<span class="sourceLineNo">461</span>            {<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                // GZip -&gt; Base64 -&gt; ByteArray<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                baos = new java.io.ByteArrayOutputStream();<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                b64os = new Base64.OutputStream( baos, ENCODE | dontBreakLines );<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                gzos  = new java.util.zip.GZIPOutputStream( b64os );<a name="line.465"></a>
+<span class="sourceLineNo">466</span><a name="line.466"></a>
+<span class="sourceLineNo">467</span>                gzos.write( source, off, len );<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                gzos.close();<a name="line.468"></a>
+<span class="sourceLineNo">469</span>            }   // end try<a name="line.469"></a>
+<span class="sourceLineNo">470</span>            catch( java.io.IOException e )<a name="line.470"></a>
+<span class="sourceLineNo">471</span>            {<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                e.printStackTrace();<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                return null;<a name="line.473"></a>
+<span class="sourceLineNo">474</span>            }   // end catch<a name="line.474"></a>
+<span class="sourceLineNo">475</span>            finally<a name="line.475"></a>
+<span class="sourceLineNo">476</span>            {<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                try{ gzos.close();  } catch( Exception e ){}<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                try{ b64os.close(); } catch( Exception e ){}<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                try{ baos.close();  } catch( Exception e ){}<a name="line.479"></a>
+<span class="sourceLineNo">480</span>            }   // end finally<a name="line.480"></a>
+<span class="sourceLineNo">481</span><a name="line.481"></a>
+<span class="sourceLineNo">482</span>            // Return value according to relevant encoding.<a name="line.482"></a>
+<span class="sourceLineNo">483</span>            try<a name="line.483"></a>
+<span class="sourceLineNo">484</span>            {<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                return new String( baos.toByteArray(), PREFERRED_ENCODING );<a name="line.485"></a>
+<span class="sourceLineNo">486</span>            }   // end try<a name="line.486"></a>
+<span class="sourceLineNo">487</span>            catch (java.io.UnsupportedEncodingException uue)<a name="line.487"></a>
+<span class="sourceLineNo">488</span>            {<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                return new String( baos.toByteArray() );<a name="line.489"></a>
+<span class="sourceLineNo">490</span>            }   // end catch<a name="line.490"></a>
+<span class="sourceLineNo">491</span>        }   // end if: compress<a name="line.491"></a>
+<span class="sourceLineNo">492</span><a name="line.492"></a>
+<span class="sourceLineNo">493</span>        // Else, don't compress. Better not to use streams at all then.<a name="line.493"></a>
+<span class="sourceLineNo">494</span>        else<a name="line.494"></a>
+<span class="sourceLineNo">495</span>        {<a name="line.495"></a>
+<span class="sourceLineNo">496</span>            // Convert option to boolean in way that code likes it.<a name="line.496"></a>
+<span class="sourceLineNo">497</span>            boolean breakLines = dontBreakLines == 0;<a name="line.497"></a>
+<span class="sourceLineNo">498</span><a name="line.498"></a>
+<span class="sourceLineNo">499</span>            int    len43   = len * 4 / 3;<a name="line.499"></a>
+<span class="sourceLineNo">500</span>            byte[] outBuff = new byte[   ( len43 )                      // Main 4:3<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                                       + ( (len % 3) &gt; 0 ? 4 : 0 )      // Account for padding<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                                       + (breakLines ? ( len43 / MAX_LINE_LENGTH ) : 0) ]; // New lines<a name="line.502"></a>
+<span class="sourceLineNo">503</span>            int d = 0;<a name="line.503"></a>
+<span class="sourceLineNo">504</span>            int e = 0;<a name="line.504"></a>
+<span class="sourceLineNo">505</span>            int len2 = len - 2;<a name="line.505"></a>
+<span class="sourceLineNo">506</span>            int lineLength = 0;<a name="line.506"></a>
+<span class="sourceLineNo">507</span>            for( ; d &lt; len2; d+=3, e+=4 )<a name="line.507"></a>
+<span class="sourceLineNo">508</span>            {<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                encode3to4( source, d+off, 3, outBuff, e );<a name="line.509"></a>
+<span class="sourceLineNo">510</span><a name="line.510"></a>
+<span class="sourceLineNo">511</span>                lineLength += 4;<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                if( breakLines &amp;&amp; lineLength == MAX_LINE_LENGTH )<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                {<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                    outBuff[e+4] = NEW_LINE;<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                    e++;<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                    lineLength = 0;<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                }   // end if: end of line<a name="line.517"></a>
+<span class="sourceLineNo">518</span>            }   // en dfor: each piece of array<a name="line.518"></a>
+<span class="sourceLineNo">519</span><a name="line.519"></a>
+<span class="sourceLineNo">520</span>            if( d &lt; len )<a name="line.520"></a>
+<span class="sourceLineNo">521</span>            {<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                encode3to4( source, d+off, len - d, outBuff, e );<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                e += 4;<a name="line.523"></a>
+<span class="sourceLineNo">524</span>            }   // end if: some padding needed<a name="line.524"></a>
+<span class="sourceLineNo">525</span><a name="line.525"></a>
+<span class="sourceLineNo">526</span><a name="line.526"></a>
+<span class="sourceLineNo">527</span>            // Return value according to relevant encoding.<a name="line.527"></a>
+<span class="sourceLineNo">528</span>            try<a name="line.528"></a>
+<span class="sourceLineNo">529</span>            {<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                return new String( outBuff, 0, e, PREFERRED_ENCODING );<a name="line.530"></a>
+<span class="sourceLineNo">531</span>            }   // end try<a name="line.531"></a>
+<span class="sourceLineNo">532</span>            catch (java.io.UnsupportedEncodingException uue)<a name="line.532"></a>
+<span class="sourceLineNo">533</span>            {<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                return new String( outBuff, 0, e );<a name="line.534"></a>
+<span class="sourceLineNo">535</span>            }   // end catch<a name="line.535"></a>
+<span class="sourceLineNo">536</span><a name="line.536"></a>
+<span class="sourceLineNo">537</span>        }   // end else: don't compress<a name="line.537"></a>
+<span class="sourceLineNo">538</span><a name="line.538"></a>
+<span class="sourceLineNo">539</span>    }   // end encodeBytes<a name="line.539"></a>
+<span class="sourceLineNo">540</span><a name="line.540"></a>
+<span class="sourceLineNo">541</span><a name="line.541"></a>
+<span class="sourceLineNo">542</span><a name="line.542"></a>
+<span class="sourceLineNo">543</span><a name="line.543"></a>
+<span class="sourceLineNo">544</span><a name="line.544"></a>
+<span class="sourceLineNo">545</span>/* ********  D E C O D I N G   M E T H O D S  ******** */<a name="line.545"></a>
+<span class="sourceLineNo">546</span><a name="line.546"></a>
+<span class="sourceLineNo">547</span><a name="line.547"></a>
+<span class="sourceLineNo">548</span>    /**<a name="line.548"></a>
+<span class="sourceLineNo">549</span>     * Decodes four bytes from array &lt;var&gt;source&lt;/var&gt;<a name="line.549"></a>
+<span class="sourceLineNo">550</span>     * and writes the resulting bytes (up to three of them)<a name="line.550"></a>
+<span class="sourceLineNo">551</span>     * to &lt;var&gt;destination&lt;/var&gt;.<a name="line.551"></a>
+<span class="sourceLineNo">552</span>     * The source and destination arrays can be manipulated<a name="line.552"></a>
+<span class="sourceLineNo">553</span>     * anywhere along their length by specifying<a name="line.553"></a>
+<span class="sourceLineNo">554</span>     * &lt;var&gt;srcOffset&lt;/var&gt; and &lt;var&gt;destOffset&lt;/var&gt;.<a name="line.554"></a>
+<span class="sourceLineNo">555</span>     * This method does not check to make sure your arrays<a name="line.555"></a>
+<span class="sourceLineNo">556</span>     * are large enough to accomodate &lt;var&gt;srcOffset&lt;/var&gt; + 4 for<a name="line.556"></a>
+<span class="sourceLineNo">557</span>     * the &lt;var&gt;source&lt;/var&gt; array or &lt;var&gt;destOffset&lt;/var&gt; + 3 for<a name="line.557"></a>
+<span class="sourceLineNo">558</span>     * the &lt;var&gt;destination&lt;/var&gt; array.<a name="line.558"></a>
+<span class="sourceLineNo">559</span>     * This method returns the actual number of bytes that<a name="line.559"></a>
+<span class="sourceLineNo">560</span>     * were converted from the Base64 encoding.<a name="line.560"></a>
+<span class="sourceLineNo">561</span>     *<a name="line.561"></a>
+<span class="sourceLineNo">562</span>     *<a name="line.562"></a>
+<span class="sourceLineNo">563</span>     * @param source the array to convert<a name="line.563"></a>
+<span class="sourceLineNo">564</span>     * @param srcOffset the index where conversion begins<a name="line.564"></a>
+<span class="sourceLineNo">565</span>     * @param destination the array to hold the conversion<a name="line.565"></a>
+<span class="sourceLineNo">566</span>     * @param destOffset the index where output will be put<a name="line.566"></a>
+<span class="sourceLineNo">567</span>     * @return the number of decoded bytes converted<a name="line.567"></a>
+<span class="sourceLineNo">568</span>     * @since 1.3<a name="line.568"></a>
+<span class="sourceLineNo">569</span>     */<a name="line.569"></a>
+<span class="sourceLineNo">570</span>    private static int decode4to3( byte[] source, int srcOffset, byte[] destination, int destOffset )<a name="line.570"></a>
+<span class="sourceLineNo">571</span>    {<a name="line.571"></a>
+<span class="sourceLineNo">572</span>        // Example: Dk==<a name="line.572"></a>
+<span class="sourceLineNo">573</span>        if( source[ srcOffset + 2] == EQUALS_SIGN )<a name="line.573"></a>
+<span class="sourceLineNo">574</span>        {<a name="line.574"></a>
+<span class="sourceLineNo">575</span>            // Two ways to do the same thing. Don't know which way I like best.<a name="line.575"></a>
+<span class="sourceLineNo">576</span>            //int outBuff =   ( ( DECODABET[ source[ srcOffset    ] ] &lt;&lt; 24 ) &gt;&gt;&gt;  6 )<a name="line.576"></a>
+<span class="sourceLineNo">577</span>            //              | ( ( DECODABET[ source[ srcOffset + 1] ] &lt;&lt; 24 ) &gt;&gt;&gt; 12 );<a name="line.577"></a>
+<span class="sourceLineNo">578</span>            int outBuff =   ( ( DECODABET[ source[ srcOffset    ] ] &amp; 0xFF ) &lt;&lt; 18 )<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                          | ( ( DECODABET[ source[ srcOffset + 1] ] &amp; 0xFF ) &lt;&lt; 12 );<a name="line.579"></a>
+<span class="sourceLineNo">580</span><a name="line.580"></a>
+<span class="sourceLineNo">581</span>            destination[ destOffset ] = (byte)( outBuff &gt;&gt;&gt; 16 );<a name="line.581"></a>
+<span class="sourceLineNo">582</span>            return 1;<a name="line.582"></a>
+<span class="sourceLineNo">583</span>        }<a name="line.583"></a>
+<span class="sourceLineNo">584</span><a name="line.584"></a>
+<span class="sourceLineNo">585</span>        // Example: DkL=<a name="line.585"></a>
+<span class="sourceLineNo">586</span>        else if( source[ srcOffset + 3 ] == EQUALS_SIGN )<a name="line.586"></a>
+<span class="sourceLineNo">587</span>        {<a name="line.587"></a>
+<span class="sourceLineNo">588</span>            // Two ways to do the same thing. Don't know which way I like best.<a name="line.588"></a>
+<span class="sourceLineNo">589</span>            //int outBuff =   ( ( DECODABET[ source[ srcOffset     ] ] &lt;&lt; 24 ) &gt;&gt;&gt;  6 )<a name="line.589"></a>
+<span class="sourceLineNo">590</span>            //              | ( ( DECODABET[ source[ srcOffset + 1 ] ] &lt;&lt; 24 ) &gt;&gt;&gt; 12 )<a name="line.590"></a>
+<span class="sourceLineNo">591</span>            //              | ( ( DECODABET[ source[ srcOffset + 2 ] ] &lt;&lt; 24 ) &gt;&gt;&gt; 18 );<a name="line.591"></a>
+<span class="sourceLineNo">592</span>            int outBuff =   ( ( DECODABET[ source[ srcOffset     ] ] &amp; 0xFF ) &lt;&lt; 18 )<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                          | ( ( DECODABET[ source[ srcOffset + 1 ] ] &amp; 0xFF ) &lt;&lt; 12 )<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                          | ( ( DECODABET[ source[ srcOffset + 2 ] ] &amp; 0xFF ) &lt;&lt;  6 );<a name="line.594"></a>
+<span class="sourceLineNo">595</span><a name="line.595"></a>
+<span class="sourceLineNo">596</span>            destination[ destOffset     ] = (byte)( outBuff &gt;&gt;&gt; 16 );<a name="line.596"></a>
+<span class="sourceLineNo">597</span>            destination[ destOffset + 1 ] = (byte)( outBuff &gt;&gt;&gt;  8 );<a name="line.597"></a>
+<span class="sourceLineNo">598</span>            return 2;<a name="line.598"></a>
+<span class="sourceLineNo">599</span>        }<a name="line.599"></a>
+<span class="sourceLineNo">600</span><a name="line.600"></a>
+<span class="sourceLineNo">601</span>        // Example: DkLE<a name="line.601"></a>
+<span class="sourceLineNo">602</span>        else<a name="line.602"></a>
+<span class="sourceLineNo">603</span>        {<a name="line.603"></a>
+<span class="sourceLineNo">604</span>            try{<a name="line.604"></a>
+<span class="sourceLineNo">605</span>            // Two ways to do the same thing. Don't know which way I like best.<a name="line.605"></a>
+<span class="sourceLineNo">606</span>            //int outBuff =   ( ( DECODABET[ source[ srcOffset     ] ] &lt;&lt; 24 ) &gt;&gt;&gt;  6 )<a name="line.606"></a>
+<span class="sourceLineNo">607</span>            //              | ( ( DECODABET[ source[ srcOffset + 1 ] ] &lt;&lt; 24 ) &gt;&gt;&gt; 12 )<a name="line.607"></a>
+<span class="sourceLineNo">608</span>            //              | ( ( DECODABET[ source[ srcOffset + 2 ] ] &lt;&lt; 24 ) &gt;&gt;&gt; 18 )<a name="line.608"></a>
+<span class="sourceLineNo">609</span>            //              | ( ( DECODABET[ source[ srcOffset + 3 ] ] &lt;&lt; 24 ) &gt;&gt;&gt; 24 );<a name="line.609"></a>
+<span class="sourceLineNo">610</span>            int outBuff =   ( ( DECODABET[ source[ srcOffset     ] ] &amp; 0xFF ) &lt;&lt; 18 )<a name="line.610"></a>
+<span class="sourceLineNo">611</span>                          | ( ( DECODABET[ source[ srcOffset + 1 ] ] &amp; 0xFF ) &lt;&lt; 12 )<a name="line.611"></a>
+<span class="sourceLineNo">612</span>                          | ( ( DECODABET[ source[ srcOffset + 2 ] ] &amp; 0xFF ) &lt;&lt;  6)<a name="line.612"></a>
+<span class="sourceLineNo">613</span>                          | ( ( DECODABET[ source[ srcOffset + 3 ] ] &amp; 0xFF )      );<a name="line.613"></a>
+<span class="sourceLineNo">614</span><a name="line.614"></a>
+<span class="sourceLineNo">615</span><a name="line.615"></a>
+<span class="sourceLineNo">616</span>            destination[ destOffset     ] = (byte)( outBuff &gt;&gt; 16 );<a name="line.616"></a>
+<span class="sourceLineNo">617</span>            destination[ destOffset + 1 ] = (byte)( outBuff &gt;&gt;  8 );<a name="line.617"></a>
+<span class="sourceLineNo">618</span>            destination[ destOffset + 2 ] = (byte)( outBuff       );<a name="line.618"></a>
+<span class="sourceLineNo">619</span><a name="line.619"></a>
+<span class="sourceLineNo">620</span>            return 3;<a name="line.620"></a>
+<span class="sourceLineNo">621</span>            }catch( Exception e){<a name="line.621"></a>
+<span class="sourceLineNo">622</span>                System.out.println(""+source[srcOffset]+ ": " + ( DECODABET[ source[ srcOffset     ] ]  ) );<a name="line.622"></a>
+<span class="sourceLineNo">623</span>                System.out.println(""+source[srcOffset+1]+  ": " + ( DECODABET[ source[ srcOffset + 1 ] ]  ) );<a name="line.623"></a>
+<span class="sourceLineNo">624</span>                System.out.println(""+source[srcOffset+2]+  ": " + ( DECODABET[ source[ srcOffset + 2 ] ]  ) );<a name="line.624"></a>
+<span class="sourceLineNo">625</span>                System.out.println(""+source[srcOffset+3]+  ": " + ( DECODABET[ source[ srcOffset + 3 ] ]  ) );<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                return -1;<a name="line.626"></a>
+<span class="sourceLineNo">627</span>            }   //e nd catch<a name="line.627"></a>
+<span class="sourceLineNo">628</span>        }<a name="line.628"></a>
+<span class="sourceLineNo">629</span>    }   // end decodeToBytes<a name="line.629"></a>
+<span class="sourceLineNo">630</span><a name="line.630"></a>
+<span class="sourceLineNo">631</span><a name="line.631"></a>
+<span class="sourceLineNo">632</span><a name="line.632"></a>
+<span class="sourceLineNo">633</span><a name="line.633"></a>
+<span class="sourceLineNo">634</span>    /**<a name="line.634"></a>
+<span class="sourceLineNo">635</span>     * Very low-level access to decoding ASCII characters in<a name="line.635"></a>
+<span class="sourceLineNo">636</span>     * the form of a byte array. Does not support automatically<a name="line.636"></a>
+<span class="sourceLineNo">637</span>     * gunzipping or any other "fancy" features.<a name="line.637"></a>
+<span class="sourceLineNo">638</span>     *<a name="line.638"></a>
+<span class="sourceLineNo">639</span>     * @param source The Base64 encoded data<a name="line.639"></a>
+<span class="sourceLineNo">640</span>     * @param off    The offset of where to begin decoding<a name="line.640"></a>
+<span class="sourceLineNo">641</span>     * @param len    The length of characters to decode<a name="line.641"></a>
+<span class="sourceLineNo">642</span>     * @return decoded data<a name="line.642"></a>
+<span class="sourceLineNo">643</span>     * @since 1.3<a name="line.643"></a>
+<span class="sourceLineNo">644</span>     */<a name="line.644"></a>
+<span class="sourceLineNo">645</span>    public static byte[] decode( byte[] source, int off, int len )<a name="line.645"></a>
+<span class="sourceLineNo">646</span>    {<a name="line.646"></a>
+<span class="sourceLineNo">647</span>        int    len34   = len * 3 / 4;<a name="line.647"></a>
+<span class="sourceLineNo">648</span>        byte[] outBuff = new byte[ len34 ]; // Upper limit on size of output<a name="line.648"></a>
+<span class="sourceLineNo">649</span>        int    outBuffPosn = 0;<a name="line.649"></a>
+<span class="sourceLineNo">650</span><a name="line.650"></a>
+<span class="sourceLineNo">651</span>        byte[] b4        = new byte[4];<a name="line.651"></a>
+<span class="sourceLineNo">652</span>        int    b4Posn    = 0;<a name="line.652"></a>
+<span class="sourceLineNo">653</span>        int    i         = 0;<a name="line.653"></a>
+<span class="sourceLineNo">654</span>        byte   sbiCrop   = 0;<a name="line.654"></a>
+<span class="sourceLineNo">655</span>        byte   sbiDecode = 0;<a name="line.655"></a>
+<span class="sourceLineNo">656</span>        for( i = off; i &lt; off+len; i++ )<a name="line.656"></a>
+<span class="sourceLineNo">657</span>        {<a name="line.657"></a>
+<span class="sourceLineNo">658</span>            sbiCrop = (byte)(source[i] &amp; 0x7f); // Only the low seven bits<a name="line.658"></a>
+<span class="sourceLineNo">659</span>            sbiDecode = DECODABET[ sbiCrop ];<a name="line.659"></a>
+<span class="sourceLineNo">660</span><a name="line.660"></a>
+<span class="sourceLineNo">661</span>            if( sbiDecode &gt;= WHITE_SPACE_ENC ) // White space, Equals sign or better<a name="line.661"></a>
+<span class="sourceLineNo">662</span>            {<a name="line.662"></a>
+<span class="sourceLineNo">663</span>                if( sbiDecode &gt;= EQUALS_SIGN_ENC )<a name="line.663"></a>
+<span class="sourceLineNo">664</span>                {<a name="line.664"></a>
+<span class="sourceLineNo">665</span>                    b4[ b4Posn++ ] = sbiCrop;<a name="line.665"></a>
+<span class="sourceLineNo">666</span>                    if( b4Posn &gt; 3 )<a name="line.666"></a>
+<span class="sourceLineNo">667</span>                    {<a name="line.667"></a>
+<span class="sourceLineNo">668</span>                        outBuffPosn += decode4to3( b4, 0, outBuff, outBuffPosn );<a name="line.668"></a>
+<span class="sourceLineNo">669</span>                        b4Posn = 0;<a name="line.669"></a>
+<span class="sourceLineNo">670</span><a name="line.670"></a>
+<span class="sourceLineNo">671</span>                        // If that was the equals sign, break out of 'for' loop<a name="line.671"></a>
+<span class="sourceLineNo">672</span>                        if( sbiCrop == EQUALS_SIGN )<a name="line.672"></a>
+<span class="sourceLineNo">673</span>                            break;<a name="line.673"></a>
+<span class="sourceLineNo">674</span>                    }   // end if: quartet built<a name="line.674"></a>
+<span class="sourceLineNo">675</span><a name="line.675"></a>
+<span class="sourceLineNo">676</span>                }   // end if: equals sign or better<a name="line.676"></a>
+<span class="sourceLineNo">677</span><a name="line.677"></a>
+<span class="sourceLineNo">678</span>            }   // end if: white space, equals sign or better<a name="line.678"></a>
+<span class="sourceLineNo">679</span>            else<a name="line.679"></a>
+<span class="sourceLineNo">680</span>            {<a name="line.680"></a>
+<span class="sourceLineNo">681</span>                System.err.println( "Bad Base64 input character at " + i + ": " + source[i] + "(decimal)" );<a name="line.681"></a>
+<span class="sourceLineNo">682</span>                return null;<a name="line.682"></a>
+<span class="sourceLineNo">683</span>            }   // end else:<a name="line.683"></a>
+<span class="sourceLineNo">684</span>        }   // each input character<a name="line.684"></a>
+<span class="sourceLineNo">685</span><a name="line.685"></a>
+<span class="sourceLineNo">686</span>        byte[] out = new byte[ outBuffPosn ];<a name="line.686"></a>
+<span class="sourceLineNo">687</span>        System.arraycopy( outBuff, 0, out, 0, outBuffPosn );<a name="line.687"></a>
+<span class="sourceLineNo">688</span>        return out;<a name="line.688"></a>
+<span class="sourceLineNo">689</span>    }   // end decode<a name="line.689"></a>
+<span class="sourceLineNo">690</span><a name="line.690"></a>
+<span class="sourceLineNo">691</span><a name="line.691"></a>
+<span class="sourceLineNo">692</span><a name="line.692"></a>
+<span class="sourceLineNo">693</span><a name="line.693"></a>
+<span class="sourceLineNo">694</span>    /**<a name="line.694"></a>
+<span class="sourceLineNo">695</span>     * Decodes data from Base64 notation, automatically<a name="line.695"></a>
+<span class="sourceLineNo">696</span>     * detecting gzip-compressed data and decompressing it.<a name="line.696"></a>
+<span class="sourceLineNo">697</span>     *<a name="line.697"></a>
+<span class="sourceLineNo">698</span>     * @param s the string to decode<a name="line.698"></a>
+<span class="sourceLineNo">699</span>     * @return the decoded data<a name="line.699"></a>
+<span class="sourceLineNo">700</span>     * @since 1.4<a name="line.700"></a>
+<span class="sourceLineNo">701</span>     */<a name="line.701"></a>
+<span class="sourceLineNo">702</span>    public static byte[] decode( String s )<a name="line.702"></a>
+<span class="sourceLineNo">703</span>    {<a name="line.703"></a>
+<span class="sourceLineNo">704</span>        byte[] bytes;<a name="line.704"></a>
+<span class="sourceLineNo">705</span>        try<a name="line.705"></a>
+<span class="sourceLineNo">706</span>        {<a name="line.706"></a>
+<span class="sourceLineNo">707</span>            bytes = s.getBytes( PREFERRED_ENCODING );<a name="line.707"></a>
+<span class="sourceLineNo">708</span>        }   // end try<a name="line.708"></a>
+<span class="sourceLineNo">709</span>        catch( java.io.UnsupportedEncodingException uee )<a name="line.709"></a>
+<span class="sourceLineNo">710</span>        {<a name="line.710"></a>
+<span class="sourceLineNo">711</span>            bytes = s.getBytes();<a name="line.711"></a>
+<span class="sourceLineNo">712</span>        }   // end catch<a name="line.712"></a>
+<span class="sourceLineNo">713</span>        //&lt;/change&gt;<a name="line.713"></a>
+<span class="sourceLineNo">714</span><a name="line.714"></a>
+<span class="sourceLineNo">715</span>        // Decode<a name="line.715"></a>
+<span class="sourceLineNo">716</span>        bytes = decode( bytes, 0, bytes.length );<a name="line.716"></a>
+<span class="sourceLineNo">717</span><a name="line.717"></a>
+<span class="sourceLineNo">718</span><a name="line.718"></a>
+<span class="sourceLineNo">719</span>        // Check to see if it's gzip-compressed<a name="line.719"></a>
+<span class="sourceLineNo">720</span>        // GZIP Magic Two-Byte Number: 0x8b1f (35615)<a name="line.720"></a>
+<span class="sourceLineNo">721</span>        if( bytes != null &amp;&amp; bytes.length &gt;= 4 )<a name="line.721"></a>
+<span class="sourceLineNo">722</span>        {<a name="line.722"></a>
+<span class="sourceLineNo">723</span><a name="line.723"></a>
+<span class="sourceLineNo">724</span>            int head = ((int)bytes[0] &amp; 0xff) | ((bytes[1] &lt;&lt; 8) &amp; 0xff00);<a name="line.724"></a>
+<span class="sourceLineNo">725</span>            if( java.util.zip.GZIPInputStream.GZIP_MAGIC == head )<a name="line.725"></a>
+<span class="sourceLineNo">726</span>            {<a name="line.726"></a>
+<span class="sourceLineNo">727</span>                java.io.ByteArrayInputStream  bais = null;<a name="line.727"></a>
+<span class="sourceLineNo">728</span>                java.util.zip.GZIPInputStream gzis = null;<a name="line.728"></a>
+<span class="sourceLineNo">729</span>                java.io.ByteArrayOutputStream baos = null;<a name="line.729"></a>
+<span class="sourceLineNo">730</span>                byte[] buffer = new byte[2048];<a name="line.730"></a>
+<span class="sourceLineNo">731</span>                int    length = 0;<a name="line.731"></a>
+<span class="sourceLineNo">732</span><a name="line.732"></a>
+<span class="sourceLineNo">733</span>                try<a name="line.733"></a>
+<span class="sourceLineNo">734</span>                {<a name="line.734"></a>
+<span class="sourceLineNo">735</span>                    baos = new java.io.ByteArrayOutputStream();<a name="line.735"></a>
+<span class="sourceLineNo">736</span>                    bais = new java.io.ByteArrayInputStream( bytes );<a name="line.736"></a>
+<span class="sourceLineNo">737</span>                    gzis = new java.util.zip.GZIPInputStream( bais );<a name="line.737"></a>
+<span class="sourceLineNo">738</span><a name="line.738"></a>
+<span class="sourceLineNo">739</span>                    while( ( length = gzis.read( buffer ) ) &gt;= 0 )<a name="line.739"></a>
+<span class="sourceLineNo">740</span>                    {<a name="line.740"></a>
+<span class="sourceLineNo">741</span>                        baos.write(buffer,0,length);<a name="line.741"></a>
+<span class="sourceLineNo">742</span>                    }   // end while: reading input<a name="line.742"></a>
+<span class="sourceLineNo">743</span><a name="line.743"></a>
+<span class="sourceLineNo">744</span>                    // No error? Get new bytes.<a name="line.744"></a>
+<span class="sourceLineNo">745</span>                    bytes = baos.toByteArray();<a name="line.745"></a>
+<span class="sourceLineNo">746</span><a name="line.746"></a>
+<span class="sourceLineNo">747</span>                }   // end try<a name="line.747"></a>
+<span class="sourceLineNo">748</span>                catch( java.io.IOException e )<a name="line.748"></a>
+<span class="sourceLineNo">749</span>                {<a name="line.749"></a>
+<span class="sourceLineNo">750</span>                    // Just return originally-decoded bytes<a name="line.750"></a>
+<span class="sourceLineNo">751</span>                }   // end catch<a name="line.751"></a>
+<span class="sourceLineNo">752</span>                finally<a name="line.752"></a>
+<span class="sourceLineNo">753</span>                {<a name="line.753"></a>
+<span class="sourceLineNo">754</span>                    try{ baos.close(); } catch( Exception e ){}<a name="line.754"></a>
+<span class="sourceLineNo">755</span>                    try{ gzis.close(); } catch( Exception e ){}<a name="line.755"></a>
+<span class="sourceLineNo">756</span>                    try{ bais.close(); } catch( Exception e ){}<a name="line.756"></a>
+<span class="sourceLineNo">757</span>                }   // end finally<a name="line.757"></a>
+<span class="sourceLineNo">758</span><a name="line.758"></a>
+<span class="sourceLineNo">759</span>            }   // end if: gzipped<a name="line.759"></a>
+<span class="sourceLineNo">760</span>        }   // end if: bytes.length &gt;= 2<a name="line.760"></a>
+<span class="sourceLineNo">761</span><a name="line.761"></a>
+<span class="sourceLineNo">762</span>        return bytes;<a name="line.762"></a>
+<span class="sourceLineNo">763</span>    }   // end decode<a name="line.763"></a>
+<span class="sourceLineNo">764</span><a name="line.764"></a>
+<span class="sourceLineNo">765</span><a name="line.765"></a>
+<span class="sourceLineNo">766</span><a name="line.766"></a>
+<span class="sourceLineNo">767</span><a name="line.767"></a>
+<span class="sourceLineNo">768</span>    /**<a name="line.768"></a>
+<span class="sourceLineNo">769</span>     * Attempts to decode Base64 data and deserialize a Java<a name="line.769"></a>
+<span class="sourceLineNo">770</span>     * Object within. Returns &lt;tt&gt;null&lt;/tt&gt; if there was an error.<a name="line.770"></a>
+<span class="sourceLineNo">771</span>     *<a name="line.771"></a>
+<span class="sourceLineNo">772</span>     * @param encodedObject The Base64 data to decode<a name="line.772"></a>
+<span class="sourceLineNo">773</span>     * @return The decoded and deserialized object<a name="line.773"></a>
+<span class="sourceLineNo">774</span>     * @since 1.5<a name="line.774"></a>
+<span class="sourceLineNo">775</span>     */<a name="line.775"></a>
+<span class="sourceLineNo">776</span>    public static Object decodeToObject( String encodedObject )<a name="line.776"></a>
+<span class="sourceLineNo">777</span>    {<a name="line.777"></a>
+<span class="sourceLineNo">778</span>        // Decode and gunzip if necessary<a name="line.778"></a>
+<span class="sourceLineNo">779</span>        byte[] objBytes = decode( encodedObject );<a name="line.779"></a>
+<span class="sourceLineNo">780</span><a name="line.780"></a>
+<span class="sourceLineNo">781</span>        java.io.ByteArrayInputStream  bais = null;<a name="line.781"></a>
+<span class="sourceLineNo">782</span>        java.io.ObjectInputStream     ois  = null;<a name="line.782"></a>
+<span class="sourceLineNo">783</span>        Object obj = null;<a name="line.783"></a>
+<span class="sourceLineNo">784</span><a name="line.784"></a>
+<span class="sourceLineNo">785</span>        try<a name="line.785"></a>
+<span class="sourceLineNo">786</span>        {<a name="line.786"></a>
+<span class="sourceLineNo">787</span>            bais = new java.io.ByteArrayInputStream( objBytes );<a name="line.787"></a>
+<span class="sourceLineNo">788</span>            ois  = new java.io.ObjectInputStream( bais );<a name="line.788"></a>
+<span class="sourceLineNo">789</span><a name="line.789"></a>
+<span class="sourceLineNo">790</span>            obj = ois.readObject();<a name="line.790"></a>
+<span class="sourceLineNo">791</span>        }   // end try<a name="line.791"></a>
+<span class="sourceLineNo">792</span>        catch( java.io.IOException e )<a name="line.792"></a>
+<span class="sourceLineNo">793</span>        {<a name="line.793"></a>
+<span class="sourceLineNo">794</span>            e.printStackTrace();<a name="line.794"></a>
+<span class="sourceLineNo">795</span>            obj = null;<a name="line.795"></a>
+<span class="sourceLineNo">796</span>        }   // end catch<a name="line.796"></a>
+<span class="sourceLineNo">797</span>        catch( java.lang.ClassNotFoundException e )<a name="line.797"></a>
+<span class="sourceLineNo">798</span>        {<a name="line.798"></a>
+<span class="sourceLineNo">799</span>            e.printStackTrace();<a name="line.799"></a>
+<span class="sourceLineNo">800</span>            obj = null;<a name="line.800"></a>
+<span class="sourceLineNo">801</span>        }   // end catch<a name="line.801"></a>
+<span class="sourceLineNo">802</span>        finally<a name="line.802"></a>
+<span class="sourceLineNo">803</span>        {<a name="line.803"></a>
+<span class="sourceLineNo">804</span>            try{ bais.close(); } catch( Exception e ){}<a name="line.804"></a>
+<span class="sourceLineNo">805</span>            try{ ois.close();  } catch( Exception e ){}<a name="line.805"></a>
+<span class="sourceLineNo">806</span>        }   // end finally<a name="line.806"></a>
+<span class="sourceLineNo">807</span><a name="line.807"></a>
+<span class="sourceLineNo">808</span>        return obj;<a name="line.808"></a>
+<span class="sourceLineNo">809</span>    }   // end decodeObject<a name="line.809"></a>
+<span class="sourceLineNo">810</span><a name="line.810"></a>
+<span class="sourceLineNo">811</span><a name="line.811"></a>
+<span class="sourceLineNo">812</span><a name="line.812"></a>
+<span class="sourceLineNo">813</span>    /**<a name="line.813"></a>
+<span class="sourceLineNo">814</span>     * Convenience method for encoding data to a file.<a name="line.814"></a>
+<span class="sourceLineNo">815</span>     *<a name="line.815"></a>
+<span class="sourceLineNo">816</span>     * @param dataToEncode byte array of data to encode in base64 form<a name="line.816"></a>
+<span class="sourceLineNo">817</span>     * @param filename Filename for saving encoded data<a name="line.817"></a>
+<span class="sourceLineNo">818</span>     * @return &lt;tt&gt;true&lt;/tt&gt; if successful, &lt;tt&gt;false&lt;/tt&gt; otherwise<a name="line.818"></a>
+<span class="sourceLineNo">819</span>     *<a name="line.819"></a>
+<span class="sourceLineNo">820</span>     * @since 2.1<a name="line.820"></a>
+<span class="sourceLineNo">821</span>     */<a name="line.821"></a>
+<span class="sourceLineNo">822</span>    public static boolean encodeToFile( byte[] dataToEncode, String filename )<a name="line.822"></a>
+<span class="sourceLineNo">823</span>    {<a name="line.823"></a>
+<span class="sourceLineNo">824</span>        boolean success = false;<a name="line.824"></a>
+<span class="sourceLineNo">825</span>        Base64.OutputStream bos = null;<a name="line.825"></a>
+<span class="sourceLineNo">826</span>        try<a name="line.826"></a>
+<span class="sourceLineNo">827</span>        {<a name="line.827"></a>
+<span class="sourceLineNo">828</span>            bos = new Base64.OutputStream(<a name="line.828"></a>
+<span class="sourceLineNo">829</span>                      new java.io.FileOutputStream( filename ), Base64.ENCODE );<a name="line.829"></a>
+<span class="sourceLineNo">830</span>            bos.write( dataToEncode );<a name="line.830"></a>
+<span class="sourceLineNo">831</span>            success = true;<a name="line.831"></a>
+<span class="sourceLineNo">832</span>        }   // end try<a name="line.832"></a>
+<span class="sourceLineNo">833</span>        catch( java.io.IOException e )<a name="line.833"></a>
+<span class="sourceLineNo">834</span>        {<a name="line.834"></a>
+<span class="sourceLineNo">835</span><a name="line.835"></a>
+<span class="sourceLineNo">836</span>            success = false;<a name="line.836"></a>
+<span class="sourceLineNo">837</span>        }   // end catch: IOException<a name="line.837"></a>
+<span class="sourceLineNo">838</span>        finally<a name="line.838"></a>
+<span class="sourceLineNo">839</span>        {<a name="line.839"></a>
+<span class="sourceLineNo">840</span>            try{ bos.close(); } catch( Exception e ){}<a name="line.840"></a>
+<span class="sourceLineNo">841</span>        }   // end finally<a name="line.841"></a>
+<span class="sourceLineNo">842</span><a name="line.842"></a>
+<span class="sourceLineNo">843</span>        return success;<a name="line.843"></a>
+<span class="sourceLineNo">844</span>    }   // end encodeToFile<a name="line.844"></a>
+<span class="sourceLineNo">845</span><a name="line.845"></a>
+<span class="sourceLineNo">846</span><a name="line.846"></a>
+<span class="sourceLineNo">847</span>    /**<a name="line.847"></a>
+<span class="sourceLineNo">848</span>     * Convenience method for decoding data to a file.<a name="line.848"></a>
+<span class="sourceLineNo">849</span>     *<a name="line.849"></a>
+<span class="sourceLineNo">850</span>     * @param dataToDecode Base64-encoded data as a string<a name="line.850"></a>
+<span class="sourceLineNo">851</span>     * @param filename Filename for saving decoded data<a name="line.851"></a>
+<span class="sourceLineNo">852</span>     * @return &lt;tt&gt;true&lt;/tt&gt; if successful, &lt;tt&gt;false&lt;/tt&gt; otherwise<a name="line.852"></a>
+<span class="sourceLineNo">853</span>     *<a name="line.853"></a>
+<span class="sourceLineNo">854</span>     * @since 2.1<a name="line.854"></a>
+<span class="sourceLineNo">855</span>     */<a name="line.855"></a>
+<span class="sourceLineNo">856</span>    public static boolean decodeToFile( String dataToDecode, String filename )<a name="line.856"></a>
+<span class="sourceLineNo">857</span>    {<a name="line.857"></a>
+<span class="sourceLineNo">858</span>        boolean success = false;<a name="line.858"></a>
+<span class="sourceLineNo">859</span>        Base64.OutputStream bos = null;<a name="line.859"></a>
+<span class="sourceLineNo">860</span>        try<a name="line.860"></a>
+<span class="sourceLineNo">861</span>        {<a name="line.861"></a>
+<span class="sourceLineNo">862</span>                bos = new Base64.OutputStream(<a name="line.862"></a>
+<span class="sourceLineNo">863</span>                          new java.io.FileOutputStream( filename ), Base64.DECODE );<a name="line.863"></a>
+<span class="sourceLineNo">864</span>                bos.write( dataToDecode.getBytes( PREFERRED_ENCODING ) );<a name="line.864"></a>
+<span class="sourceLineNo">865</span>                success = true;<a name="line.865"></a>
+<span class="sourceLineNo">866</span>        }   // end try<a name="line.866"></a>
+<span class="sourceLineNo">867</span>        catch( java.io.IOException e )<a name="line.867"></a>
+<span class="sourceLineNo">868</span>        {<a name="line.868"></a>
+<span class="sourceLineNo">869</span>            success = false;<a name="line.869"></a>
+<span class="sourceLineNo">870</span>        }   // end catch: IOException<a name="line.870"></a>
+<span class="sourceLineNo">871</span>        finally<a name="line.871"></a>
+<span class="sourceLineNo">872</span>        {<a name="line.872"></a>
+<span class="sourceLineNo">873</span>                try{ bos.close(); } catch( Exception e ){}<a name="line.873"></a>
+<span class="sourceLineNo">874</span>        }   // end finally<a name="line.874"></a>
+<span class="sourceLineNo">875</span><a name="line.875"></a>
+<span class="sourceLineNo">876</span>        return success;<a name="line.876"></a>
+<span class="sourceLineNo">877</span>    }   // end decodeToFile<a name="line.877"></a>
+<span class="sourceLineNo">878</span><a name="line.878"></a>
+<span class="sourceLineNo">879</span><a name="line.879"></a>
+<span class="sourceLineNo">880</span><a name="line.880"></a>
+<span class="sourceLineNo">881</span><a name="line.881"></a>
+<span class="sourceLineNo">882</span>    /**<a name="line.882"></a>
+<span class="sourceLineNo">883</span>     * Convenience method for reading a base64-encoded<a name="line.883"></a>
+<span class="sourceLineNo">884</span>     * file and decoding it.<a name="line.884"></a>
+<span class="sourceLineNo">885</span>     *<a name="line.885"></a>
+<span class="sourceLineNo">886</span>     * @param filename Filename for reading encoded data<a name="line.886"></a>
+<span class="sourceLineNo">887</span>     * @return decoded byte array or null if unsuccessful<a name="line.887"></a>
+<span class="sourceLineNo">888</span>     *<a name="line.888"></a>
+<span class="sourceLineNo">889</span>     * @since 2.1<a name="line.889"></a>
+<span class="sourceLineNo">890</span>     */<a name="line.890"></a>
+<span class="sourceLineNo">891</span>    public static byte[] decodeFromFile( String filename )<a name="line.891"></a>
+<span class="sourceLineNo">892</span>    {<a name="line.892"></a>
+<span class="sourceLineNo">893</span>        byte[] decodedData = null;<a name="line.893"></a>
+<span class="sourceLineNo">894</span>        Base64.InputStream bis = null;<a name="line.894"></a>
+<span class="sourceLineNo">895</span>        try<a name="line.895"></a>
+<span class="sourceLineNo">896</span>        {<a name="line.896"></a>
+<span class="sourceLineNo">897</span>            // Set up some useful variables<a name="line.897"></a>
+<span class="sourceLineNo">898</span>            java.io.File file = new java.io.File( filename );<a name="line.898"></a>
+<span class="sourceLineNo">899</span>            byte[] buffer = null;<a name="line.899"></a>
+<span class="sourceLineNo">900</span>            int length   = 0;<a name="line.900"></a>
+<span class="sourceLineNo">901</span>            int numBytes = 0;<a name="line.901"></a>
+<span class="sourceLineNo">902</span><a name="line.902"></a>
+<span class="sourceLineNo">903</span>            // Check for size of file<a name="line.903"></a>
+<span class="sourceLineNo">904</span>            if( file.length() &gt; Integer.MAX_VALUE )<a name="line.904"></a>
+<span class="sourceLineNo">905</span>            {<a name="line.905"></a>
+<span class="sourceLineNo">906</span>                System.err.println( "File is too big for this convenience method (" + file.length() + " bytes)." );<a name="line.906"></a>
+<span class="sourceLineNo">907</span>                return null;<a name="line.907"></a>
+<span class="sourceLineNo">908</span>            }   // end if: file too big for int index<a name="line.908"></a>
+<span class="sourceLineNo">909</span>            buffer = new byte[ (int)file.length() ];<a name="line.909"></a>
+<span class="sourceLineNo">910</span><a name="line.910"></a>
+<span class="sourceLineNo">911</span>            // Open a stream<a name="line.911"></a>
+<span class="sourceLineNo">912</span>            bis = new Base64.InputStream(<a name="line.912"></a>
+<span class="sourceLineNo">913</span>                      new java.io.BufferedInputStream(<a name="line.913"></a>
+<span class="sourceLineNo">914</span>                      new java.io.FileInputStream( file ) ), Base64.DECODE );<a name="line.914"></a>
+<span class="sourceLineNo">915</span><a name="line.915"></a>
+<span class="sourceLineNo">916</span>            // Read until done<a name="line.916"></a>
+<span class="sourceLineNo">917</span>            while( ( numBytes = bis.read( buffer, length, 4096 ) ) &gt;= 0 )<a name="line.917"></a>
+<span class="sourceLineNo">918</span>                length += numBytes;<a name="line.918"></a>
+<span class="sourceLineNo">919</span><a name="line.919"></a>
+<span class="sourceLineNo">920</span>            // Save in a variable to return<a name="line.920"></a>
+<span class="sourceLineNo">921</span>            decodedData = new byte[ length ];<a name="line.921"></a>
+<span class="sourceLineNo">922</span>            System.arraycopy( buffer, 0, decodedData, 0, length );<a name="line.922"></a>
+<span class="sourceLineNo">923</span><a name="line.923"></a>
+<span class="sourceLineNo">924</span>        }   // end try<a name="line.924"></a>
+<span class="sourceLineNo">925</span>        catch( java.io.IOException e )<a name="line.925"></a>
+<span class="sourceLineNo">926</span>        {<a name="line.926"></a>
+<span class="sourceLineNo">927</span>            System.err.println( "Error decoding from file " + filename );<a name="line.927"></a>
+<span class="sourceLineNo">928</span>        }   // end catch: IOException<a name="line.928"></a>
+<span class="sourceLineNo">929</span>        finally<a name="line.929"></a>
+<span class="sourceLineNo">930</span>        {<a name="line.930"></a>
+<span class="sourceLineNo">931</span>            try{<a name="line.931"></a>
+<span class="sourceLineNo">932</span>                if (bis != null) {<a name="line.932"></a>
+<span class="sourceLineNo">933</span>                    bis.close();<a name="line.933"></a>
+<span class="sourceLineNo">934</span>                }<a name="line.934"></a>
+<span class="sourceLineNo">935</span>            } catch( Exception e) {}<a name="line.935"></a>
+<span class="sourceLineNo">936</span>        }   // end finally<a name="line.936"></a>
+<span class="sourceLineNo">937</span><a name="line.937"></a>
+<span class="sourceLineNo">938</span>        return decodedData;<a name="line.938"></a>
+<span class="sourceLineNo">939</span>    }   // end decodeFromFile<a name="line.939"></a>
+<span class="sourceLineNo">940</span><a name="line.940"></a>
+<span class="sourceLineNo">941</span><a name="line.941"></a>
+<span class="sourceLineNo">942</span><a name="line.942"></a>
+<span class="sourceLineNo">943</span>    /**<a name="line.943"></a>
+<span class="sourceLineNo">944</span>     * Convenience method for reading a binary file<a name="line.944"></a>
+<span class="sourceLineNo">945</span>     * and base64-encoding it.<a name="line.945"></a>
+<span class="sourceLineNo">946</span>     *<a name="line.946"></a>
+<span class="sourceLineNo">947</span>     * @param filename Filename for reading binary data<a name="line.947"></a>
+<span class="sourceLineNo">948</span>     * @return base64-encoded string or null if unsuccessful<a name="line.948"></a>
+<span class="sourceLineNo">949</span>     *<a name="line.949"></a>
+<span class="sourceLineNo">950</span>     * @since 2.1<a name="line.950"></a>
+<span class="sourceLineNo">951</span>     */<a name="line.951"></a>
+<span class="sourceLineNo">952</span>    public static String encodeFromFile( String filename )<a name="line.952"></a>
+<span class="sourceLineNo">953</span>    {<a name="line.953"></a>
+<span class="sourceLineNo">954</span>        String encodedData = null;<a name="line.954"></a>
+<span class="sourceLineNo">955</span>        Base64.InputStream bis = null;<a name="line.955"></a>
+<span class="sourceLineNo">956</span>        try<a name="line.956"></a>
+<span class="sourceLineNo">957</span>        {<a name="line.957"></a>
+<span class="sourceLineNo">958</span>            // Set up some useful variables<a name="line.958"></a>
+<span class="sourceLineNo">959</span>            java.io.File file = new java.io.File( filename );<a name="line.959"></a>
+<span class="sourceLineNo">960</span>            byte[] buffer = new byte[ (int)(file.length() * 1.4) ];<a name="line.960"></a>
+<span class="sourceLineNo">961</span>            int length   = 0;<a name="line.961"></a>
+<span class="sourceLineNo">962</span>            int numBytes = 0;<a name="line.962"></a>
+<span class="sourceLineNo">963</span><a name="line.963"></a>
+<span class="sourceLineNo">964</span>            // Open a stream<a name="line.964"></a>
+<span class="sourceLineNo">965</span>            bis = new Base64.InputStream(<a name="line.965"></a>
+<span class="sourceLineNo">966</span>                      new java.io.BufferedInputStream(<a name="line.966"></a>
+<span class="sourceLineNo">967</span>                      new java.io.FileInputStream( file ) ), Base64.ENCODE );<a name="line.967"></a>
+<span class="sourceLineNo">968</span><a name="line.968"></a>
+<span class="sourceLineNo">969</span>            // Read until done<a name="line.969"></a>
+<span class="sourceLineNo">970</span>            while( ( numBytes = bis.read( buffer, length, 4096 ) ) &gt;= 0 )<a name="line.970"></a>
+<span class="sourceLineNo">971</span>                length += numBytes;<a name="line.971"></a>
+<span class="sourceLineNo">972</span><a name="line.972"></a>
+<span class="sourceLineNo">973</span>            // Save in a variable to return<a name="line.973"></a>
+<span class="sourceLineNo">974</span>            encodedData = new String( buffer, 0, length, Base64.PREFERRED_ENCODING );<a name="line.974"></a>
+<span class="sourceLineNo">975</span><a name="line.975"></a>
+<span class="sourceLineNo">976</span>        }   // end try<a name="line.976"></a>
+<span class="sourceLineNo">977</span>        catch( java.io.IOException e )<a name="line.977"></a>
+<span class="sourceLineNo">978</span>        {<a name="line.978"></a>
+<span class="sourceLineNo">979</span>            System.err.println( "Error encoding from file " + filename );<a name="line.979"></a>
+<span class="sourceLineNo">980</span>        }   // end catch: IOException<a name="line.980"></a>
+<span class="sourceLineNo">981</span>        finally<a name="line.981"></a>
+<span class="sourceLineNo">982</span>        {<a name="line.982"></a>
+<span class="sourceLineNo">983</span>            try{ bis.close(); } catch( Exception e) {}<a name="line.983"></a>
+<span class="sourceLineNo">984</span>        }   // end finally<a name="line.984"></a>
+<span class="sourceLineNo">985</span><a name="line.985"></a>
+<span class="sourceLineNo">986</span>        return encodedData;<a name="line.986"></a>
+<span class="sourceLineNo">987</span>        }   // end encodeFromFile<a name="line.987"></a>
+<span class="sourceLineNo">988</span><a name="line.988"></a>
+<span class="sourceLineNo">989</span><a name="line.989"></a>
+<span class="sourceLineNo">990</span><a name="line.990"></a>
+<span class="sourceLineNo">991</span><a name="line.991"></a>
+<span class="sourceLineNo">992</span>    /* ********  I N N E R   C L A S S   I N P U T S T R E A M  ******** */<a name="line.992"></a>
+<span class="sourceLineNo">993</span><a name="line.993"></a>
+<span class="sourceLineNo">994</span><a name="line.994"></a>
+<span class="sourceLineNo">995</span><a name="line.995"></a>
+<span class="sourceLineNo">996</span>    /**<a name="line.996"></a>
+<span class="sourceLineNo">997</span>     * A {@link Base64.InputStream} will read data from another<a name="line.997"></a>
+<span class="sourceLineNo">998</span>     * &lt;tt&gt;java.io.InputStream&lt;/tt&gt;, given in the constructor,<a name="line.998"></a>
+<span class="sourceLineNo">999</span>     * and encode/decode to/from Base64 notation on the fly.<a name="line.999"></a>
+<span class="sourceLineNo">1000</span>     *<a name="line.1000"></a>
+<span class="sourceLineNo">1001</span>     * @see Base64<a name="line.1001"></a>
+<span class="sourceLineNo">1002</span>     * @since 1.3<a name="line.1002"></a>
+<span class="sourceLineNo">1003</span>     */<a name="line.1003"></a>
+<span class="sourceLineNo">1004</span>    public static class InputStream extends java.io.FilterInputStream<a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>    {<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span>        private boolean encode;         // Encoding or decoding<a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>        private int     position;       // Current position in the buffer<a name="line.1007"></a>
+<span class="sourceLineNo">1008</span>        private byte[]  buffer;         // Small buffer holding converted data<a name="line.1008"></a>
+<span class="sourceLineNo">1009</span>        private int     bufferLength;   // Length of buffer (3 or 4)<a name="line.1009"></a>
+<span class="sourceLineNo">1010</span>        private int     numSigBytes;    // Number of meaningful bytes in the buffer<a name="line.1010"></a>
+<span class="sourceLineNo">1011</span>        private int     lineLength;<a name="line.1011"></a>
+<span class="sourceLineNo">1012</span>        private boolean breakLines;     // Break lines at less than 80 characters<a name="line.1012"></a>
+<span class="sourceLineNo">1013</span><a name="line.1013"></a>
+<span class="sourceLineNo">1014</span><a name="line.1014"></a>
+<span class="sourceLineNo">1015</span>        /**<a name="line.1015"></a>
+<span class="sourceLineNo">1016</span>         * Constructs a {@link Base64.InputStream} in DECODE mode.<a name="line.1016"></a>
+<span class="sourceLineNo">1017</span>         *<a name="line.1017"></a>
+<span class="sourceLineNo">1018</span>         * @param in the &lt;tt&gt;java.io.InputStream&lt;/tt&gt; from which to read data.<a name="line.1018"></a>
+<span class="sourceLineNo">1019</span>         * @since 1.3<a name="line.1019"></a>
+<span class="sourceLineNo">1020</span>         */<a name="line.1020"></a>
+<span class="sourceLineNo">1021</span>        public InputStream( java.io.InputStream in )<a name="line.1021"></a>
+<span class="sourceLineNo">1022</span>        {<a name="line.1022"></a>
+<span class="sourceLineNo">1023</span>            this( in, DECODE );<a name="line.1023"></a>
+<span class="sourceLineNo">1024</span>        }   // end constructor<a name="line.1024"></a>
+<span class="sourceLineNo">1025</span><a name="line.1025"></a>
+<span class="sourceLineNo">1026</span><a name="line.1026"></a>
+<span class="sourceLineNo">1027</span>        /**<a name="line.1027"></a>
+<span class="sourceLineNo">1028</span>         * Constructs a {@link Base64.InputStream} in<a name="line.1028"></a>
+<span class="sourceLineNo">1029</span>         * either ENCODE or DECODE mode.<a name="line.1029"></a>
+<span class="sourceLineNo">1030</span>         * &lt;p&gt;<a name="line.1030"></a>
+<span class="sourceLineNo">1031</span>         * Valid options:&lt;pre&gt;<a name="line.1031"></a>
+<span class="sourceLineNo">1032</span>         *   ENCODE or DECODE: Encode or Decode as data is read.<a name="line.1032"></a>
+<span class="sourceLineNo">1033</span>         *   DONT_BREAK_LINES: don't break lines at 76 characters<a name="line.1033"></a>
+<span class="sourceLineNo">1034</span>         *     (only meaningful when encoding)<a name="line.1034"></a>
+<span class="sourceLineNo">1035</span>         *     &lt;i&gt;Note: Technically, this makes your encoding non-compliant.&lt;/i&gt;<a name="line.1035"></a>
+<span class="sourceLineNo">1036</span>         * &lt;/pre&gt;<a name="line.1036"></a>
+<span class="sourceLineNo">1037</span>         * &lt;p&gt;<a name="line.1037"></a>
+<span class="sourceLineNo">1038</span>         * Example: &lt;code&gt;new Base64.InputStream( in, Base64.DECODE )&lt;/code&gt;<a name="line.1038"></a>
+<span class="sourceLineNo">1039</span>         *<a name="line.1039"></a>
+<span class="sourceLineNo">1040</span>         *<a name="line.1040"></a>
+<span class="sourceLineNo">1041</span>         * @param in the &lt;tt&gt;java.io.InputStream&lt;/tt&gt; from which to read data.<a name="line.1041"></a>
+<span class="sourceLineNo">1042</span>         * @param options Specified options<a name="line.1042"></a>
+<span class="sourceLineNo">1043</span>         * @see Base64#ENCODE<a name="line.1043"></a>
+<span class="sourceLineNo">1044</span>         * @see Base64#DECODE<a name="line.1044"></a>
+<span class="sourceLineNo">1045</span>         * @see Base64#DONT_BREAK_LINES<a name="line.1045"></a>
+<span class="sourceLineNo">1046</span>         * @since 2.0<a name="line.1046"></a>
+<span class="sourceLineNo">1047</span>         */<a name="line.1047"></a>
+<span class="sourceLineNo">1048</span>        public InputStream( java.io.InputStream in, int options )<a name="line.1048"></a>
+<span class="sourceLineNo">1049</span>        {<a name="line.1049"></a>
+<span class="sourceLineNo">1050</span>            super( in );<a name="line.1050"></a>
+<span class="sourceLineNo">1051</span>            this.breakLines   = (options &amp; DONT_BREAK_LINES) != DONT_BREAK_LINES;<a name="line.1051"></a>
+<span class="sourceLineNo">1052</span>            this.encode       = (options &amp; ENCODE) == ENCODE;<a name="line.1052"></a>
+<span class="sourceLineNo">1053</span>            this.bufferLength = encode ? 4 : 3;<a name="line.1053"></a>
+<span class="sourceLineNo">1054</span>            this.buffer   = new byte[ bufferLength ];<a name="line.1054"></a>
+<span class="sourceLineNo">1055</span>            this.position = -1;<a name="line.1055"></a>
+<span class="sourceLineNo">1056</span>            this.lineLength = 0;<a name="line.1056"></a>
+<span class="sourceLineNo">1057</span>        }   // end constructor<a name="line.1057"></a>
+<span class="sourceLineNo">1058</span><a name="line.1058"></a>
+<span class="sourceLineNo">1059</span>        /**<a name="line.1059"></a>
+<span class="sourceLineNo">1060</span>         * Reads enough of the input stream to convert<a name="line.1060"></a>
+<span class="sourceLineNo">1061</span>         * to/from Base64 and returns the next byte.<a name="line.1061"></a>
+<span class="sourceLineNo">1062</span>         *<a name="line.1062"></a>
+<span class="sourceLineNo">1063</span>         * @return next byte<a name="line.1063"></a>
+<span class="sourceLineNo">1064</span>         * @since 1.3<a name="line.1064"></a>
+<span class="sourceLineNo">1065</span>         */<a name="line.1065"></a>
+<span class="sourceLineNo">1066</span>        public int read() throws java.io.IOException<a name="line.1066"></a>
+<span class="sourceLineNo">1067</span>        {<a name="line.1067"></a>
+<span class="sourceLineNo">1068</span>            // Do we need to get data?<a name="line.1068"></a>
+<span class="sourceLineNo">1069</span>            if( position &lt; 0 )<a name="line.1069"></a>
+<span class="sourceLineNo">1070</span>            {<a name="line.1070"></a>
+<span class="sourceLineNo">1071</span>                if( encode )<a name="line.1071"></a>
+<span class="sourceLineNo">1072</span>                {<a name="line.1072"></a>
+<span class="sourceLineNo">1073</span>                    byte[] b3 = new byte[3];<a name="line.1073"></a>
+<span class="sourceLineNo">1074</span>                    int numBinaryBytes = 0;<a name="line.1074"></a>
+<span class="sourceLineNo">1075</span>                    for( int i = 0; i &lt; 3; i++ )<a name="line.1075"></a>
+<span class="sourceLineNo">1076</span>                    {<a name="line.1076"></a>
+<span class="sourceLineNo">1077</span>                        try<a name="line.1077"></a>
+<span class="sourceLineNo">1078</span>                        {<a name="line.1078"></a>
+<span class="sourceLineNo">1079</span>                            int b = in.read();<a name="line.1079"></a>
+<span class="sourceLineNo">1080</span><a name="line.1080"></a>
+<span class="sourceLineNo">1081</span>                            // If end of stream, b is -1.<a name="line.1081"></a>
+<span class="sourceLineNo">1082</span>                            if( b &gt;= 0 )<a name="line.1082"></a>
+<span class="sourceLineNo">1083</span>                            {<a name="line.1083"></a>
+<span class="sourceLineNo">1084</span>                                b3[i] = (byte)b;<a name="line.1084"></a>
+<span class="sourceLineNo">1085</span>                                numBinaryBytes++;<a name="line.1085"></a>
+<span class="sourceLineNo">1086</span>                            }   // end if: not end of stream<a name="line.1086"></a>
+<span class="sourceLineNo">1087</span><a name="line.1087"></a>
+<span class="sourceLineNo">1088</span>                        }   // end try: read<a name="line.1088"></a>
+<span class="sourceLineNo">1089</span>                        catch( java.io.IOException e )<a name="line.1089"></a>
+<span class="sourceLineNo">1090</span>                        {<a name="line.1090"></a>
+<span class="sourceLineNo">1091</span>                            // Only a problem if we got no data at all.<a name="line.1091"></a>
+<span class="sourceLineNo">1092</span>                            if( i == 0 )<a name="line.1092"></a>
+<span class="sourceLineNo">1093</span>                                throw e;<a name="line.1093"></a>
+<span class="sourceLineNo">1094</span><a name="line.1094"></a>
+<span class="sourceLineNo">1095</span>                        }   // end catch<a name="line.1095"></a>
+<span class="sourceLineNo">1096</span>                    }   // end for: each needed input byte<a name="line.1096"></a>
+<span class="sourceLineNo">1097</span><a name="line.1097"></a>
+<span class="sourceLineNo">1098</span>                    if( numBinaryBytes &gt; 0 )<a name="line.1098"></a>
+<span class="sourceLineNo">1099</span>                    {<a name="line.1099"></a>
+<span class="sourceLineNo">1100</span>                        encode3to4( b3, 0, numBinaryBytes, buffer, 0 );<a name="line.1100"></a>
+<span class="sourceLineNo">1101</span>                        position = 0;<a name="line.1101"></a>
+<span class="sourceLineNo">1102</span>                        numSigBytes = 4;<a name="line.1102"></a>
+<span class="sourceLineNo">1103</span>                    }   // end if: got data<a name="line.1103"></a>
+<span class="sourceLineNo">1104</span>                    else<a name="line.1104"></a>
+<span class="sourceLineNo">1105</span>                    {<a name="line.1105"></a>
+<span class="sourceLineNo">1106</span>                        return -1;<a name="line.1106"></a>
+<span class="sourceLineNo">1107</span>                    }   // end else<a name="line.1107"></a>
+<span class="sourceLineNo">1108</span>                }   // end if: encoding<a name="line.1108"></a>
+<span class="sourceLineNo">1109</span><a name="line.1109"></a>
+<span class="sourceLineNo">1110</span>                // Else decoding<a name="line.1110"></a>
+<span class="sourceLineNo">1111</span>                else<a name="line.1111"></a>
+<span class="sourceLineNo">1112</span>                {<a name="line.1112"></a>
+<span class="sourceLineNo">1113</span>                    byte[] b4 = new byte[4];<a name="line.1113"></a>
+<span class="sourceLineNo">1114</span>                    int i = 0;<a name="line.1114"></a>
+<span class="sourceLineNo">1115</span>                    for( i = 0; i &lt; 4; i++ )<a name="line.1115"></a>
+<span class="sourceLineNo">1116</span>                    {<a name="line.1116"></a>
+<span class="sourceLineNo">1117</span>                        // Read four "meaningful" bytes:<a name="line.1117"></a>
+<span class="sourceLineNo">1118</span>                        int b = 0;<a name="line.1118"></a>
+<span class="sourceLineNo">1119</span>                        do{ b = in.read(); }<a name="line.1119"></a>
+<span class="sourceLineNo">1120</span>                        while( b &gt;= 0 &amp;&amp; DECODABET[ b &amp; 0x7f ] &lt;= WHITE_SPACE_ENC );<a name="line.1120"></a>
+<span class="sourceLineNo">1121</span><a name="line.1121"></a>
+<span class="sourceLineNo">1122</span>                        if( b &lt; 0 )<a name="line.1122"></a>
+<span class="sourceLineNo">1123</span>                            break; // Reads a -1 if end of stream<a name="line.1123"></a>
+<span class="sourceLineNo">1124</span><a name="line.1124"></a>
+<span class="sourceLineNo">1125</span>                        b4[i] = (byte)b;<a name="line.1125"></a>
+<span class="sourceLineNo">1126</span>                    }   // end for: each needed input byte<a name="line.1126"></a>
+<span class="sourceLineNo">1127</span><a name="line.1127"></a>
+<span class="sourceLineNo">1128</span>                    if( i == 4 )<a name="line.1128"></a>
+<span class="sourceLineNo">1129</span>                    {<a name="line.1129"></a>
+<span class="sourceLineNo">1130</span>                        numSigBytes = decode4to3( b4, 0, buffer, 0 );<a name="line.1130"></a>
+<span class="sourceLineNo">1131</span>                        position = 0;<a name="line.1131"></a>
+<span class="sourceLineNo">1132</span>                    }   // end if: got four characters<a name="line.1132"></a>
+<span class="sourceLineNo">1133</span>                    else if( i == 0 ){<a name="line.1133"></a>
+<span class="sourceLineNo">1134</span>                        return -1;<a name="line.1134"></a>
+<span class="sourceLineNo">1135</span>                    }   // end else if: also padded correctly<a name="line.1135"></a>
+<span class="sourceLineNo">1136</span>                    else<a name="line.1136"></a>
+<span class="sourceLineNo">1137</span>                    {<a name="line.1137"></a>
+<span class="sourceLineNo">1138</span>                        // Must have broken out from above.<a name="line.1138"></a>
+<span class="sourceLineNo">1139</span>                        throw new java.io.IOException( "Improperly padded Base64 input." );<a name="line.1139"></a>
+<span class="sourceLineNo">1140</span>                    }   // end<a name="line.1140"></a>
+<span class="sourceLineNo">1141</span><a name="line.1141"></a>
+<span class="sourceLineNo">1142</span>                }   // end else: decode<a name="line.1142"></a>
+<span class="sourceLineNo">1143</span>            }   // end else: get data<a name="line.1143"></a>
+<span class="sourceLineNo">1144</span><a name="line.1144"></a>
+<span class="sourceLineNo">1145</span>            // Got data?<a name="line.1145"></a>
+<span class="sourceLineNo">1146</span>            if( position &gt;= 0 )<a name="line.1146"></a>
+<span class="sourceLineNo">1147</span>            {<a name="line.1147"></a>
+<span class="sourceLineNo">1148</span>                // End of relevant data?<a name="line.1148"></a>
+<span class="sourceLineNo">1149</span>                if( /*!encode &amp;&amp;*/ position &gt;= numSigBytes )<a name="line.1149"></a>
+<span class="sourceLineNo">1150</span>                    return -1;<a name="line.1150"></a>
+<span class="sourceLineNo">1151</span><a name="line.1151"></a>
+<span class="sourceLineNo">1152</span>                if( encode &amp;&amp; breakLines &amp;&amp; lineLength &gt;= MAX_LINE_LENGTH )<a name="line.1152"></a>
+<span class="sourceLineNo">1153</span>                {<a name="line.1153"></a>
+<span class="sourceLineNo">1154</span>                    lineLength = 0;<a name="line.1154"></a>
+<span class="sourceLineNo">1155</span>                    return '\n';<a name="line.1155"></a>
+<span class="sourceLineNo">1156</span>                }   // end if<a name="line.1156"></a>
+<span class="sourceLineNo">1157</span>                else<a name="line.1157"></a>
+<span class="sourceLineNo">1158</span>                {<a name="line.1158"></a>
+<span class="sourceLineNo">1159</span>                    lineLength++;   // This isn't important when decoding<a name="line.1159"></a>
+<span class="sourceLineNo">1160</span>                                    // but throwing an extra "if" seems<a name="line.1160"></a>
+<span class="sourceLineNo">1161</span>                                    // just as wasteful.<a name="line.1161"></a>
+<span class="sourceLineNo">1162</span><a name="line.1162"></a>
+<span class="sourceLineNo">1163</span>                    int b = buffer[ position++ ];<a name="line.1163"></a>
+<span class="sourceLineNo">1164</span><a name="line.1164"></a>
+<span class="sourceLineNo">1165</span>                    if( position &gt;= bufferLength )<a name="line.1165"></a>
+<span class="sourceLineNo">1166</span>                        position = -1;<a name="line.1166"></a>
+<span class="sourceLineNo">1167</span><a name="line.1167"></a>
+<span class="sourceLineNo">1168</span>                    return b &amp; 0xFF; // This is how you "cast" a byte that's<a name="line.1168"></a>
+<span class="sourceLineNo">1169</span>                                     // intended to be unsigned.<a name="line.1169"></a>
+<span class="sourceLineNo">1170</span>                }   // end else<a name="line.1170"></a>
+<span class="sourceLineNo">1171</span>            }   // end if: position &gt;= 0<a name="line.1171"></a>
+<span class="sourceLineNo">1172</span><a name="line.1172"></a>
+<span class="sourceLineNo">1173</span>            // Else error<a name="line.1173"></a>
+<span class="sourceLineNo">1174</span>            else<a name="line.1174"></a>
+<span class="sourceLineNo">1175</span>            {<a name="line.1175"></a>
+<span class="sourceLineNo">1176</span>                // When JDK1.4 is more accepted, use an assertion here.<a name="line.1176"></a>
+<span class="sourceLineNo">1177</span>                throw new java.io.IOException( "Error in Base64 code reading stream." );<a name="line.1177"></a>
+<span class="sourceLineNo">1178</span>            }   // end else<a name="line.1178"></a>
+<span class="sourceLineNo">1179</span>        }   // end read<a name="line.1179"></a>
+<span class="sourceLineNo">1180</span><a name="line.1180"></a>
+<span class="sourceLineNo">1181</span><a name="line.1181"></a>
+<span class="sourceLineNo">1182</span>        /**<a name="line.1182"></a>
+<span class="sourceLineNo">1183</span>         * Calls {@link #read()} repeatedly until the end of stream<a name="line.1183"></a>
+<span class="sourceLineNo">1184</span>         * is reached or &lt;var&gt;len&lt;/var&gt; bytes are read.<a name="line.1184"></a>
+<span class="sourceLineNo">1185</span>         * Returns number of bytes read into array or -1 if<a name="line.1185"></a>
+<span class="sourceLineNo">1186</span>         * end of stream is encountered.<a name="line.1186"></a>
+<span class="sourceLineNo">1187</span>         *<a name="line.1187"></a>
+<span class="sourceLineNo">1188</span>         * @param dest array to hold values<a name="line.1188"></a>
+<span class="sourceLineNo">1189</span>         * @param off offset for array<a name="line.1189"></a>
+<span class="sourceLineNo">1190</span>         * @param len max number of bytes to read into array<a name="line.1190"></a>
+<span class="sourceLineNo">1191</span>         * @return bytes read into array or -1 if end of stream is encountered.<a name="line.1191"></a>
+<span class="sourceLineNo">1192</span>         * @since 1.3<a name="line.1192"></a>
+<span class="sourceLineNo">1193</span>         */<a name="line.1193"></a>
+<span class="sourceLineNo">1194</span>        public int read( byte[] dest, int off, int len ) throws java.io.IOException<a name="line.1194"></a>
+<span class="sourceLineNo">1195</span>        {<a name="line.1195"></a>
+<span class="sourceLineNo">1196</span>            int i;<a name="line.1196"></a>
+<span class="sourceLineNo">1197</span>            int b;<a name="line.1197"></a>
+<span class="sourceLineNo">1198</span>            for( i = 0; i &lt; len; i++ )<a name="line.1198"></a>
+<span class="sourceLineNo">1199</span>            {<a name="line.1199"></a>
+<span class="sourceLineNo">1200</span>                b = read();<a name="line.1200"></a>
+<span class="sourceLineNo">1201</span><a name="line.1201"></a>
+<span class="sourceLineNo">1202</span>                //if( b &lt; 0 &amp;&amp; i == 0 )<a name="line.1202"></a>
+<span class="sourceLineNo">1203</span>                //    return -1;<a name="line.1203"></a>
+<span class="sourceLineNo">1204</span><a name="line.1204"></a>
+<span class="sourceLineNo">1205</span>                if( b &gt;= 0 )<a name="line.1205"></a>
+<span class="sourceLineNo">1206</span>                    dest[off + i] = (byte)b;<a name="line.1206"></a>
+<span class="sourceLineNo">1207</span>                else if( i == 0 )<a name="line.1207"></a>
+<span class="sourceLineNo">1208</span>                    return -1;<a name="line.1208"></a>
+<span class="sourceLineNo">1209</span>                else<a name="line.1209"></a>
+<span class="sourceLineNo">1210</span>                    break; // Out of 'for' loop<a name="line.1210"></a>
+<span class="sourceLineNo">1211</span>            }   // end for: each byte read<a name="line.1211"></a>
+<span class="sourceLineNo">1212</span>            return i;<a name="line.1212"></a>
+<span class="sourceLineNo">1213</span>        }   // end read<a name="line.1213"></a>
+<span class="sourceLineNo">1214</span><a name="line.1214"></a>
+<span class="sourceLineNo">1215</span>    }   // end inner class InputStream<a name="line.1215"></a>
+<span class="sourceLineNo">1216</span><a name="line.1216"></a>
+<span class="sourceLineNo">1217</span><a name="line.1217"></a>
+<span class="sourceLineNo">1218</span><a name="line.1218"></a>
+<span class="sourceLineNo">1219</span><a name="line.1219"></a>
+<span class="sourceLineNo">1220</span><a name="line.1220"></a>
+<span class="sourceLineNo">1221</span><a name="line.1221"></a>
+<span class="sourceLineNo">1222</span>    /* ********  I N N E R   C L A S S   O U T P U T S T R E A M  ******** */<a name="line.1222"></a>
+<span class="sourceLineNo">1223</span><a name="line.1223"></a>
+<span class="sourceLineNo">1224</span><a name="line.1224"></a>
+<span class="sourceLineNo">1225</span><a name="line.1225"></a>
+<span class="sourceLineNo">1226</span>    /**<a name="line.1226"></a>
+<span class="sourceLineNo">1227</span>     * A {@link Base64.OutputStream} will write data to another<a name="line.1227"></a>
+<span class="sourceLineNo">1228</span>     * &lt;tt&gt;java.io.OutputStream&lt;/tt&gt;, given in the constructor,<a name="line.1228"></a>
+<span class="sourceLineNo">1229</span>     * and encode/decode to/from Base64 notation on the fly.<a name="line.1229"></a>
+<span class="sourceLineNo">1230</span>     *<a name="line.1230"></a>
+<span class="sourceLineNo">1231</span>     * @see Base64<a name="line.1231"></a>
+<span class="sourceLineNo">1232</span>     * @since 1.3<a name="line.1232"></a>
+<span class="sourceLineNo">1233</span>     */<a name="line.1233"></a>
+<span class="sourceLineNo">1234</span>    public static class OutputStream extends java.io.FilterOutputStream<a name="line.1234"></a>
+<span class="sourceLineNo">1235</span>    {<a name="line.1235"></a>
+<span class="sourceLineNo">1236</span>        private boolean encode;<a name="line.1236"></a>
+<span class="sourceLineNo">1237</span>        private int     position;<a name="line.1237"></a>
+<span class="sourceLineNo">1238</span>        private byte[]  buffer;<a name="line.1238"></a>
+<span class="sourceLineNo">1239</span>        private int     bufferLength;<a name="line.1239"></a>
+<span class="sourceLineNo">1240</span>        private int     lineLength;<a name="line.1240"></a>
+<span class="sourceLineNo">1241</span>        private boolean breakLines;<a name="line.1241"></a>
+<span class="sourceLineNo">1242</span>        private byte[]  b4; // Scratch used in a few places<a name="line.1242"></a>
+<span class="sourceLineNo">1243</span>        private boolean suspendEncoding;<a name="line.1243"></a>
+<span class="sourceLineNo">1244</span><a name="line.1244"></a>
+<span class="sourceLineNo">1245</span>        /**<a name="line.1245"></a>
+<span class="sourceLineNo">1246</span>         * Constructs a {@link Base64.OutputStream} in ENCODE mode.<a name="line.1246"></a>
+<span class="sourceLineNo">1247</span>         *<a name="line.1247"></a>
+<span class="sourceLineNo">1248</span>         * @param out the &lt;tt&gt;java.io.OutputStream&lt;/tt&gt; to which data will be written.<a name="line.1248"></a>
+<span class="sourceLineNo">1249</span>         * @since 1.3<a name="line.1249"></a>
+<span class="sourceLineNo">1250</span>         */<a name="line.1250"></a>
+<span class="sourceLineNo">1251</span>        public OutputStream( java.io.OutputStream out )<a name="line.1251"></a>
+<span class="sourceLineNo">1252</span>        {<a name="line.1252"></a>
+<span class="sourceLineNo">1253</span>            this( out, ENCODE );<a name="line.1253"></a>
+<span class="sourceLineNo">1254</span>        }   // end constructor<a name="line.1254"></a>
+<span class="sourceLineNo">1255</span><a name="line.1255"></a>
+<span class="sourceLineNo">1256</span><a name="line.1256"></a>
+<span class="sourceLineNo">1257</span>        /**<a name="line.1257"></a>
+<span class="sourceLineNo">1258</span>         * Constructs a {@link Base64.OutputStream} in<a name="line.1258"></a>
+<span class="sourceLineNo">1259</span>         * either ENCODE or DECODE mode.<a name="line.1259"></a>
+<span class="sourceLineNo">1260</span>         * &lt;p&gt;<a name="line.1260"></a>
+<span class="sourceLineNo">1261</span>         * Valid options:&lt;pre&gt;<a name="line.1261"></a>
+<span class="sourceLineNo">1262</span>         *   ENCODE or DECODE: Encode or Decode as data is read.<a name="line.1262"></a>
+<span class="sourceLineNo">1263</span>         *   DONT_BREAK_LINES: don't break lines at 76 characters<a name="line.1263"></a>
+<span class="sourceLineNo">1264</span>         *     (only meaningful when encoding)<a name="line.1264"></a>
+<span class="sourceLineNo">1265</span>         *     &lt;i&gt;Note: Technically, this makes your encoding non-compliant.&lt;/i&gt;<a name="line.1265"></a>
+<span class="sourceLineNo">1266</span>         * &lt;/pre&gt;<a name="line.1266"></a>
+<span class="sourceLineNo">1267</span>         * &lt;p&gt;<a name="line.1267"></a>
+<span class="sourceLineNo">1268</span>         * Example: &lt;code&gt;new Base64.OutputStream( out, Base64.ENCODE )&lt;/code&gt;<a name="line.1268"></a>
+<span class="sourceLineNo">1269</span>         *<a name="line.1269"></a>
+<span class="sourceLineNo">1270</span>         * @param out the &lt;tt&gt;java.io.OutputStream&lt;/tt&gt; to which data will be written.<a name="line.1270"></a>
+<span class="sourceLineNo">1271</span>         * @param options Specified options.<a name="line.1271"></a>
+<span class="sourceLineNo">1272</span>         * @see Base64#ENCODE<a name="line.1272"></a>
+<span class="sourceLineNo">1273</span>         * @see Base64#DECODE<a name="line.1273"></a>
+<span class="sourceLineNo">1274</span>         * @see Base64#DONT_BREAK_LINES<a name="line.1274"></a>
+<span class="sourceLineNo">1275</span>         * @since 1.3<a name="line.1275"></a>
+<span class="sourceLineNo">1276</span>         */<a name="line.1276"></a>
+<span class="sourceLineNo">1277</span>        public OutputStream( java.io.OutputStream out, int options )<a name="line.1277"></a>
+<span class="sourceLineNo">1278</span>        {<a name="line.1278"></a>
+<span class="sourceLineNo">1279</span>            super( out );<a name="line.1279"></a>
+<span class="sourceLineNo">1280</span>            this.breakLines   = (options &amp; DONT_BREAK_LINES) != DONT_BREAK_LINES;<a name="line.1280"></a>
+<span class="sourceLineNo">1281</span>            this.encode       = (options &amp; ENCODE) == ENCODE;<a name="line.1281"></a>
+<span class="sourceLineNo">1282</span>            this.bufferLength = encode ? 3 : 4;<a name="line.1282"></a>
+<span class="sourceLineNo">1283</span>            this.buffer       = new byte[ bufferLength ];<a name="line.1283"></a>
+<span class="sourceLineNo">1284</span>            this.position     = 0;<a name="line.1284"></a>
+<span class="sourceLineNo">1285</span>            this.lineLength   = 0;<a name="line.1285"></a>
+<span class="sourceLineNo">1286</span>            this.suspendEncoding = false;<a name="line.1286"></a>
+<span class="sourceLineNo">1287</span>            this.b4           = new byte[4];<a name="line.1287"></a>
+<span class="sourceLineNo">1288</span>        }   // end constructor<a name="line.1288"></a>
+<span class="sourceLineNo">1289</span><a name="line.1289"></a>
+<span class="sourceLineNo">1290</span><a name="line.1290"></a>
+<span class="sourceLineNo">1291</span>        /**<a name="line.1291"></a>
+<span class="sourceLineNo">1292</span>         * Writes the byte to the output stream after<a name="line.1292"></a>
+<span class="sourceLineNo">1293</span>         * converting to/from Base64 notation.<a name="line.1293"></a>
+<span class="sourceLineNo">1294</span>         * When encoding, bytes are buffered three<a name="line.1294"></a>
+<span class="sourceLineNo">1295</span>         * at a time before the output stream actually<a name="line.1295"></a>
+<span class="sourceLineNo">1296</span>         * gets a write() call.<a name="line.1296"></a>
+<span class="sourceLineNo">1297</span>         * When decoding, bytes are buffered four<a name="line.1297"></a>
+<span class="sourceLineNo">1298</span>         * at a time.<a name="line.1298"></a>
+<span class="sourceLineNo">1299</span>         *<a name="line.1299"></a>
+<span class="sourceLineNo">1300</span>         * @param theByte the byte to write<a name="line.1300"></a>
+<span class="sourceLineNo">1301</span>         * @since 1.3<a name="line.1301"></a>
+<span class="sourceLineNo">1302</span>         */<a name="line.1302"></a>
+<span class="sourceLineNo">1303</span>        public void write(int theByte) throws java.io.IOException<a name="line.1303"></a>
+<span class="sourceLineNo">1304</span>        {<a name="line.1304"></a>
+<span class="sourceLineNo">1305</span>            // Encoding suspended?<a name="line.1305"></a>
+<span class="sourceLineNo">1306</span>            if( suspendEncoding )<a name="line.1306"></a>
+<span class="sourceLineNo">1307</span>            {<a name="line.1307"></a>
+<span class="sourceLineNo">1308</span>                super.out.write( theByte );<a name="line.1308"></a>
+<span class="sourceLineNo">1309</span>                return;<a name="line.1309"></a>
+<span class="sourceLineNo">1310</span>            }   // end if: supsended<a name="line.1310"></a>
+<span class="sourceLineNo">1311</span><a name="line.1311"></a>
+<span class="sourceLineNo">1312</span>            // Encode?<a name="line.1312"></a>
+<span class="sourceLineNo">1313</span>            if( encode )<a name="line.1313"></a>
+<span class="sourceLineNo">1314</span>            {<a name="line.1314"></a>
+<span class="sourceLineNo">1315</span>                buffer[ position++ ] = (byte)theByte;<a name="line.1315"></a>
+<span class="sourceLineNo">1316</span>                if( position &gt;= bufferLength )  // Enough to encode.<a name="line.1316"></a>
+<span class="sourceLineNo">1317</span>                {<a name="line.1317"></a>
+<span class="sourceLineNo">1318</span>                    out.write( encode3to4( b4, buffer, bufferLength ) );<a name="line.1318"></a>
+<span class="sourceLineNo">1319</span><a name="line.1319"></a>
+<span class="sourceLineNo">1320</span>                    lineLength += 4;<a name="line.1320"></a>
+<span class="sourceLineNo">1321</span>                    if( breakLines &amp;&amp; lineLength &gt;= MAX_LINE_LENGTH )<a name="line.1321"></a>
+<span class="sourceLineNo">1322</span>                    {<a name="line.1322"></a>
+<span class="sourceLineNo">1323</span>                        out.write( NEW_LINE );<a name="line.1323"></a>
+<span class="sourceLineNo">1324</span>                        lineLength = 0;<a name="line.1324"></a>
+<span class="sourceLineNo">1325</span>                    }   // end if: end of line<a name="line.1325"></a>
+<span class="sourceLineNo">1326</span><a name="line.1326"></a>
+<span class="sourceLineNo">1327</span>                    position = 0;<a name="line.1327"></a>
+<span class="sourceLineNo">1328</span>                }   // end if: enough to output<a name="line.1328"></a>
+<span class="sourceLineNo">1329</span>            }   // end if: encoding<a name="line.1329"></a>
+<span class="sourceLineNo">1330</span><a name="line.1330"></a>
+<span class="sourceLineNo">1331</span>            // Else, Decoding<a name="line.1331"></a>
+<span class="sourceLineNo">1332</span>            else<a name="line.1332"></a>
+<span class="sourceLineNo">1333</span>            {<a name="line.1333"></a>
+<span class="sourceLineNo">1334</span>                // Meaningful Base64 character?<a name="line.1334"></a>
+<span class="sourceLineNo">1335</span>                if( DECODABET[ theByte &amp; 0x7f ] &gt; WHITE_SPACE_ENC )<a name="line.1335"></a>
+<span class="sourceLineNo">1336</span>                {<a name="line.1336"></a>
+<span class="sourceLineNo">1337</span>                    buffer[ position++ ] = (byte)theByte;<a name="line.1337"></a>
+<span class="sourceLineNo">1338</span>                    if( position &gt;= bufferLength )  // Enough to output.<a name="line.1338"></a>
+<span class="sourceLineNo">1339</span>                    {<a name="line.1339"></a>
+<span class="sourceLineNo">1340</span>                        int len = Base64.decode4to3( buffer, 0, b4, 0 );<a name="line.1340"></a>
+<span class="sourceLineNo">1341</span>                        out.write( b4, 0, len );<a name="line.1341"></a>
+<span class="sourceLineNo">1342</span>                        //out.write( Base64.decode4to3( buffer ) );<a name="line.1342"></a>
+<span class="sourceLineNo">1343</span>                        position = 0;<a name="line.1343"></a>
+<span class="sourceLineNo">1344</span>                    }   // end if: enough to output<a name="line.1344"></a>
+<span class="sourceLineNo">1345</span>                }   // end if: meaningful base64 character<a name="line.1345"></a>
+<span class="sourceLineNo">1346</span>                else if( DECODABET[ theByte &amp; 0x7f ] != WHITE_SPACE_ENC )<a name="line.1346"></a>
+<span class="sourceLineNo">1347</span>                {<a name="line.1347"></a>
+<span class="sourceLineNo">1348</span>                    throw new java.io.IOException( "Invalid character in Base64 data." );<a name="line.1348"></a>
+<span class="sourceLineNo">1349</span>                }   // end else: not white space either<a name="line.1349"></a>
+<span class="sourceLineNo">1350</span>            }   // end else: decoding<a name="line.1350"></a>
+<span class="sourceLineNo">1351</span>        }   // end write<a name="line.1351"></a>
+<span class="sourceLineNo">1352</span><a name="line.1352"></a>
+<span class="sourceLineNo">1353</span><a name="line.1353"></a>
+<span class="sourceLineNo">1354</span><a name="line.1354"></a>
+<span class="sourceLineNo">1355</span>        /**<a name="line.1355"></a>
+<span class="sourceLineNo">1356</span>         * Calls {@link #write(int)} repeatedly until &lt;var&gt;len&lt;/var&gt;<a name="line.1356"></a>
+<span class="sourceLineNo">1357</span>         * bytes are written.<a name="line.1357"></a>
+<span class="sourceLineNo">1358</span>         *<a name="line.1358"></a>
+<span class="sourceLineNo">1359</span>         * @param theBytes array from which to read bytes<a name="line.1359"></a>
+<span class="sourceLineNo">1360</span>         * @param off offset for array<a name="line.1360"></a>
+<span class="sourceLineNo">1361</span>         * @param len max number of bytes to read into array<a name="line.1361"></a>
+<span class="sourceLineNo">1362</span>         * @since 1.3<a name="line.1362"></a>
+<span class="sourceLineNo">1363</span>         */<a name="line.1363"></a>
+<span class="sourceLineNo">1364</span>        public void write( byte[] theBytes, int off, int len ) throws java.io.IOException<a name="line.1364"></a>
+<span class="sourceLineNo">1365</span>        {<a name="line.1365"></a>
+<span class="sourceLineNo">1366</span>            // Encoding suspended?<a name="line.1366"></a>
+<span class="sourceLineNo">1367</span>            if( suspendEncoding )<a name="line.1367"></a>
+<span class="sourceLineNo">1368</span>            {<a name="line.1368"></a>
+<span class="sourceLineNo">1369</span>                super.out.write( theBytes, off, len );<a name="line.1369"></a>
+<span class="sourceLineNo">1370</span>                return;<a name="line.1370"></a>
+<span class="sourceLineNo">1371</span>            }   // end if: supsended<a name="line.1371"></a>
+<span class="sourceLineNo">1372</span><a name="line.1372"></a>
+<span class="sourceLineNo">1373</span>            for( int i = 0; i &lt; len; i++ )<a name="line.1373"></a>
+<span class="sourceLineNo">1374</span>            {<a name="line.1374"></a>
+<span class="sourceLineNo">1375</span>                write( theBytes[ off + i ] );<a name="line.1375"></a>
+<span class="sourceLineNo">1376</span>            }   // end for: each byte written<a name="line.1376"></a>
+<span class="sourceLineNo">1377</span><a name="line.1377"></a>
+<span class="sourceLineNo">1378</span>        }   // end write<a name="line.1378"></a>
+<span class="sourceLineNo">1379</span><a name="line.1379"></a>
+<span class="sourceLineNo">1380</span><a name="line.1380"></a>
+<span class="sourceLineNo">1381</span><a name="line.1381"></a>
+<span class="sourceLineNo">1382</span>        /**<a name="line.1382"></a>
+<span class="sourceLineNo">1383</span>         * Method added by PHIL. [Thanks, PHIL. -Rob]<a name="line.1383"></a>
+<span class="sourceLineNo">1384</span>         * This pads the buffer without closing the stream.<a name="line.1384"></a>
+<span class="sourceLineNo">1385</span>         */<a name="line.1385"></a>
+<span class="sourceLineNo">1386</span>        public void flushBase64() throws java.io.IOException<a name="line.1386"></a>
+<span class="sourceLineNo">1387</span>        {<a name="line.1387"></a>
+<span class="sourceLineNo">1388</span>            if( position &gt; 0 )<a name="line.1388"></a>
+<span class="sourceLineNo">1389</span>            {<a name="line.1389"></a>
+<span class="sourceLineNo">1390</span>                if( encode )<a name="line.1390"></a>
+<span class="sourceLineNo">1391</span>                {<a name="line.1391"></a>
+<span class="sourceLineNo">1392</span>                    out.write( encode3to4( b4, buffer, position ) );<a name="line.1392"></a>
+<span class="sourceLineNo">1393</span>                    position = 0;<a name="line.1393"></a>
+<span class="sourceLineNo">1394</span>                }   // end if: encoding<a name="line.1394"></a>
+<span class="sourceLineNo">1395</span>                else<a name="line.1395"></a>
+<span class="sourceLineNo">1396</span>                {<a name="line.1396"></a>
+<span class="sourceLineNo">1397</span>                    throw new java.io.IOException( "Base64 input not properly padded." );<a name="line.1397"></a>
+<span class="sourceLineNo">1398</span>                }   // end else: decoding<a name="line.1398"></a>
+<span class="sourceLineNo">1399</span>            }   // end if: buffer partially full<a name="line.1399"></a>
+<span class="sourceLineNo">1400</span><a name="line.1400"></a>
+<span class="sourceLineNo">1401</span>        }   // end flush<a name="line.1401"></a>
+<span class="sourceLineNo">1402</span><a name="line.1402"></a>
+<span class="sourceLineNo">1403</span><a name="line.1403"></a>
+<span class="sourceLineNo">1404</span>        /**<a name="line.1404"></a>
+<span class="sourceLineNo">1405</span>         * Flushes and closes (I think, in the superclass) the stream.<a name="line.1405"></a>
+<span class="sourceLineNo">1406</span>         *<a name="line.1406"></a>
+<span class="sourceLineNo">1407</span>         * @since 1.3<a name="line.1407"></a>
+<span class="sourceLineNo">1408</span>         */<a name="line.1408"></a>
+<span class="sourceLineNo">1409</span>        public void close() throws java.io.IOException<a name="line.1409"></a>
+<span class="sourceLineNo">1410</span>        {<a name="line.1410"></a>
+<span class="sourceLineNo">1411</span>            // 1. Ensure that pending characters are written<a name="line.1411"></a>
+<span class="sourceLineNo">1412</span>            flushBase64();<a name="line.1412"></a>
+<span class="sourceLineNo">1413</span><a name="line.1413"></a>
+<span class="sourceLineNo">1414</span>            // 2. Actually close the stream<a name="line.1414"></a>
+<span class="sourceLineNo">1415</span>            // Base class both flushes and closes.<a name="line.1415"></a>
+<span class="sourceLineNo">1416</span>            super.close();<a name="line.1416"></a>
+<span class="sourceLineNo">1417</span><a name="line.1417"></a>
+<span class="sourceLineNo">1418</span>            buffer = null;<a name="line.1418"></a>
+<span class="sourceLineNo">1419</span>            out    = null;<a name="line.1419"></a>
+<span class="sourceLineNo">1420</span>        }   // end close<a name="line.1420"></a>
+<span class="sourceLineNo">1421</span><a name="line.1421"></a>
+<span class="sourceLineNo">1422</span><a name="line.1422"></a>
+<span class="sourceLineNo">1423</span><a name="line.1423"></a>
+<span class="sourceLineNo">1424</span>        /**<a name="line.1424"></a>
+<span class="sourceLineNo">1425</span>         * Suspends encoding of the stream.<a name="line.1425"></a>
+<span class="sourceLineNo">1426</span>         * May be helpful if you need to embed a piece of<a name="line.1426"></a>
+<span class="sourceLineNo">1427</span>         * base640-encoded data in a stream.<a name="line.1427"></a>
+<span class="sourceLineNo">1428</span>         *<a name="line.1428"></a>
+<span class="sourceLineNo">1429</span>         * @since 1.5.1<a name="line.1429"></a>
+<span class="sourceLineNo">1430</span>         */<a name="line.1430"></a>
+<span class="sourceLineNo">1431</span>        public void suspendEncoding() throws java.io.IOException<a name="line.1431"></a>
+<span class="sourceLineNo">1432</span>        {<a name="line.1432"></a>
+<span class="sourceLineNo">1433</span>            flushBase64();<a name="line.1433"></a>
+<span class="sourceLineNo">1434</span>            this.suspendEncoding = true;<a name="line.1434"></a>
+<span class="sourceLineNo">1435</span>        }   // end suspendEncoding<a name="line.1435"></a>
+<span class="sourceLineNo">1436</span><a name="line.1436"></a>
+<span class="sourceLineNo">1437</span><a name="line.1437"></a>
+<span class="sourceLineNo">1438</span>        /**<a name="line.1438"></a>
+<span class="sourceLineNo">1439</span>         * Resumes encoding of the stream.<a name="line.1439"></a>
+<span class="sourceLineNo">1440</span>         * May be helpful if you need to embed a piece of<a name="line.1440"></a>
+<span class="sourceLineNo">1441</span>         * base640-encoded data in a stream.<a name="line.1441"></a>
+<span class="sourceLineNo">1442</span>         *<a name="line.1442"></a>
+<span class="sourceLineNo">1443</span>         * @since 1.5.1<a name="line.1443"></a>
+<span class="sourceLineNo">1444</span>         */<a name="line.1444"></a>
+<span class="sourceLineNo">1445</span>        public void resumeEncoding()<a name="line.1445"></a>
+<span class="sourceLineNo">1446</span>        {<a name="line.1446"></a>
+<span class="sourceLineNo">1447</span>            this.suspendEncoding = false;<a name="line.1447"></a>
+<span class="sourceLineNo">1448</span>        }   // end resumeEncoding<a name="line.1448"></a>
+<span class="sourceLineNo">1449</span><a name="line.1449"></a>
+<span class="sourceLineNo">1450</span><a name="line.1450"></a>
+<span class="sourceLineNo">1451</span><a name="line.1451"></a>
+<span class="sourceLineNo">1452</span>    }   // end inner class OutputStream<a name="line.1452"></a>
+<span class="sourceLineNo">1453</span><a name="line.1453"></a>
+<span class="sourceLineNo">1454</span><a name="line.1454"></a>
+<span class="sourceLineNo">1455</span>}<a name="line.1455"></a>
+<span class="sourceLineNo">1456</span><a name="line.1456"></a>
+<span class="sourceLineNo">1457</span>// End Base64.java<a name="line.1457"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

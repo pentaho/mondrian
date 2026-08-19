@@ -1,0 +1,1653 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2005-2005 Julian Hyde<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// Copyright (C) 2005-2013 Pentaho and others<a name="line.8"></a>
+<span class="sourceLineNo">009</span>// All Rights Reserved.<a name="line.9"></a>
+<span class="sourceLineNo">010</span>*/<a name="line.10"></a>
+<span class="sourceLineNo">011</span>package mondrian.rolap.aggmatcher;<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.olap.*;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.olap.MondrianDef.AggLevel;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.recorder.MessageRecorder;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import mondrian.resource.MondrianResource;<a name="line.16"></a>
+<span class="sourceLineNo">017</span>import mondrian.rolap.*;<a name="line.17"></a>
+<span class="sourceLineNo">018</span>import mondrian.rolap.aggmatcher.JdbcSchema.Table.Column.Usage;<a name="line.18"></a>
+<span class="sourceLineNo">019</span>import mondrian.rolap.aggmatcher.JdbcSchema.UsageType;<a name="line.19"></a>
+<span class="sourceLineNo">020</span>import mondrian.rolap.sql.SqlQuery;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import mondrian.server.Execution;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import mondrian.server.Locus;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import mondrian.spi.Dialect;<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span>import org.apache.log4j.Logger;<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span>import java.io.PrintWriter;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>import java.io.StringWriter;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.sql.ResultSet;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.sql.SQLException;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.*;<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>import javax.sql.DataSource;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>/**<a name="line.35"></a>
+<span class="sourceLineNo">036</span> * Aggregate table version of a RolapStar for a fact table.<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * &lt;p&gt;There is the following class structure:<a name="line.38"></a>
+<span class="sourceLineNo">039</span> * &lt;pre&gt;<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * AggStar<a name="line.40"></a>
+<span class="sourceLineNo">041</span> *   Table<a name="line.41"></a>
+<span class="sourceLineNo">042</span> *     JoinCondition<a name="line.42"></a>
+<span class="sourceLineNo">043</span> *     Column<a name="line.43"></a>
+<span class="sourceLineNo">044</span> *     Level extends Column<a name="line.44"></a>
+<span class="sourceLineNo">045</span> *   FactTable extends Table<a name="line.45"></a>
+<span class="sourceLineNo">046</span> *     Measure extends Table.Column<a name="line.46"></a>
+<span class="sourceLineNo">047</span> *   DimTable extends Table<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * &lt;/pre&gt;<a name="line.48"></a>
+<span class="sourceLineNo">049</span> *<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * &lt;p&gt;Each inner class is non-static meaning that instances have implied<a name="line.50"></a>
+<span class="sourceLineNo">051</span> * references to the enclosing object.<a name="line.51"></a>
+<span class="sourceLineNo">052</span> *<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * @author Richard M. Emberson<a name="line.53"></a>
+<span class="sourceLineNo">054</span> */<a name="line.54"></a>
+<span class="sourceLineNo">055</span>public class AggStar {<a name="line.55"></a>
+<span class="sourceLineNo">056</span>    private static final Logger LOGGER = Logger.getLogger(AggStar.class);<a name="line.56"></a>
+<span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span>    static Logger getLogger() {<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        return LOGGER;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>    }<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span>    private static final MondrianResource mres = MondrianResource.instance();<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>    /**<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     * Creates an AggStar and all of its {@link Table}, {@link Table.Column}s,<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     * etc.<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     */<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    public static AggStar makeAggStar(<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        final RolapStar star,<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        final JdbcSchema.Table dbTable,<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        final MessageRecorder msgRecorder,<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        final int approxRowCount)<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    {<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        AggStar aggStar = new AggStar(star, dbTable, approxRowCount);<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        AggStar.FactTable aggStarFactTable = aggStar.getFactTable();<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>        // 1. load fact count<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        for (Iterator&lt;JdbcSchema.Table.Column.Usage&gt; it =<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                 dbTable.getColumnUsages(JdbcSchema.UsageType.FACT_COUNT);<a name="line.79"></a>
+<span class="sourceLineNo">080</span>             it.hasNext();)<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>            JdbcSchema.Table.Column.Usage usage = it.next();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>            aggStarFactTable.loadFactCount(usage);<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        }<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>        // 2. load measures<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        for (Iterator&lt;JdbcSchema.Table.Column.Usage&gt; it =<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                dbTable.getColumnUsages(JdbcSchema.UsageType.MEASURE);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>             it.hasNext();)<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>            JdbcSchema.Table.Column.Usage usage = it.next();<a name="line.91"></a>
+<span class="sourceLineNo">092</span>            aggStarFactTable.loadMeasure(usage);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        }<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>        // 3. load foreign keys<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        for (Iterator&lt;JdbcSchema.Table.Column.Usage&gt; it =<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                dbTable.getColumnUsages(JdbcSchema.UsageType.FOREIGN_KEY);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>             it.hasNext();)<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            JdbcSchema.Table.Column.Usage usage = it.next();<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            aggStarFactTable.loadForeignKey(usage);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        }<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>        // 4. load levels<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        for (Iterator&lt;JdbcSchema.Table.Column.Usage&gt; it =<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                dbTable.getColumnUsages(JdbcSchema.UsageType.LEVEL);<a name="line.106"></a>
+<span class="sourceLineNo">107</span>             it.hasNext();)<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>            JdbcSchema.Table.Column.Usage usage = it.next();<a name="line.109"></a>
+<span class="sourceLineNo">110</span>            aggStarFactTable.loadLevel(usage);<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        }<a name="line.111"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
+<span class="sourceLineNo">113</span>        // 5. for each distinct-count measure, populate a list of the levels<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        //    which it is OK to roll up<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        for (FactTable.Measure measure : aggStarFactTable.measures) {<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            if (measure.aggregator.isDistinct()<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                &amp;&amp; measure.argument instanceof MondrianDef.Column)<a name="line.117"></a>
+<span class="sourceLineNo">118</span>            {<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                setLevelBits(<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                    measure.rollableLevelBitKey,<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                    aggStarFactTable,<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                    (MondrianDef.Column) measure.argument,<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                    star.getFactTable());<a name="line.123"></a>
+<span class="sourceLineNo">124</span>            }<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        }<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>        return aggStar;<a name="line.127"></a>
+<span class="sourceLineNo">128</span>    }<a name="line.128"></a>
+<span class="sourceLineNo">129</span><a name="line.129"></a>
+<span class="sourceLineNo">130</span>    /**<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     * Sets bits in the bitmap for all levels reachable from a given table.<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     * This allows us to compute which levels can be safely aggregated away<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     * when rolling up a distinct-count measure.<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     *<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     * &lt;p&gt;For example, when rolling up a measure based on<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     * 'COUNT(DISTINCT customer_id)', all levels in the Customers table<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     * and the Regions table reached via the Customers table can be rolled up.<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     * So method sets the bit for all of these levels.<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     *<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     * @param bitKey Bit key of levels which can be rolled up<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     * @param aggTable Fact or dimension table which is the start point for<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     *   the navigation<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     * @param column Foreign-key column which constraints which dimension<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     */<a name="line.144"></a>
+<span class="sourceLineNo">145</span>    private static void setLevelBits(<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        final BitKey bitKey,<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        Table aggTable,<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        MondrianDef.Column column,<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        RolapStar.Table table)<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        final Set&lt;RolapStar.Column&gt; columns = new HashSet&lt;RolapStar.Column&gt;();<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        RolapStar.collectColumns(columns, table, column);<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>        final List&lt;Table.Level&gt; levelList = new ArrayList&lt;Table.Level&gt;();<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        collectLevels(levelList, aggTable, null);<a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>        for (Table.Level level : levelList) {<a name="line.157"></a>
+<span class="sourceLineNo">158</span>            if (columns.contains(level.starColumn)) {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                bitKey.set(level.getBitPosition());<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            }<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        }<a name="line.161"></a>
+<span class="sourceLineNo">162</span>    }<a name="line.162"></a>
+<span class="sourceLineNo">163</span><a name="line.163"></a>
+<span class="sourceLineNo">164</span>    private static void collectLevels(<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        List&lt;Table.Level&gt; levelList,<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        Table table,<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        MondrianDef.Column joinColumn)<a name="line.167"></a>
+<span class="sourceLineNo">168</span>    {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        if (joinColumn == null) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            levelList.addAll(table.levels);<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        }<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        for (Table dimTable : table.children) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            if (joinColumn != null<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                &amp;&amp; !dimTable.getJoinCondition().left.equals(joinColumn))<a name="line.174"></a>
+<span class="sourceLineNo">175</span>            {<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                continue;<a name="line.176"></a>
+<span class="sourceLineNo">177</span>            }<a name="line.177"></a>
+<span class="sourceLineNo">178</span>            collectLevels(levelList, dimTable, null);<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        }<a name="line.179"></a>
+<span class="sourceLineNo">180</span>    }<a name="line.180"></a>
+<span class="sourceLineNo">181</span><a name="line.181"></a>
+<span class="sourceLineNo">182</span>    private final RolapStar star;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>    private final AggStar.FactTable aggTable;<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>    /**<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     * This BitKey is for all of the columns in the AggStar (levels and<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     * measures).<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     */<a name="line.188"></a>
+<span class="sourceLineNo">189</span>    private final BitKey bitKey;<a name="line.189"></a>
+<span class="sourceLineNo">190</span><a name="line.190"></a>
+<span class="sourceLineNo">191</span>    /**<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     * BitKey of the levels (levels and foreign keys) of this AggStar.<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     */<a name="line.193"></a>
+<span class="sourceLineNo">194</span>    private final BitKey levelBitKey;<a name="line.194"></a>
+<span class="sourceLineNo">195</span><a name="line.195"></a>
+<span class="sourceLineNo">196</span>    /**<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     * BitKey of the measures of this AggStar.<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     */<a name="line.198"></a>
+<span class="sourceLineNo">199</span>    private final BitKey measureBitKey;<a name="line.199"></a>
+<span class="sourceLineNo">200</span><a name="line.200"></a>
+<span class="sourceLineNo">201</span>    /**<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     * BitKey of the foreign keys of this AggStar.<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     */<a name="line.203"></a>
+<span class="sourceLineNo">204</span>    private final BitKey foreignKeyBitKey;<a name="line.204"></a>
+<span class="sourceLineNo">205</span><a name="line.205"></a>
+<span class="sourceLineNo">206</span>    /**<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     * BitKey of those measures of this AggStar that are distinct count<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     * aggregates.<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     */<a name="line.209"></a>
+<span class="sourceLineNo">210</span>    private final BitKey distinctMeasureBitKey;<a name="line.210"></a>
+<span class="sourceLineNo">211</span>    private final AggStar.Table.Column[] columns;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>    /**<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     * A map of bit positions to columns which need to<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     * be joined and are not collapsed. If the aggregate table<a name="line.214"></a>
+<span class="sourceLineNo">215</span>     * includes an {@link AggLevel} element which is not<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     * collapsed, it will appear in that list. We use this<a name="line.216"></a>
+<span class="sourceLineNo">217</span>     * list later on to create the join paths in AggQuerySpec.<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     */<a name="line.218"></a>
+<span class="sourceLineNo">219</span>    private final Map&lt;Integer, AggStar.Table.Column&gt; levelColumnsToJoin;<a name="line.219"></a>
+<span class="sourceLineNo">220</span><a name="line.220"></a>
+<span class="sourceLineNo">221</span>    /**<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     * An approximate number of rows present in this aggregate table.<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     */<a name="line.223"></a>
+<span class="sourceLineNo">224</span>    private final int approxRowCount;<a name="line.224"></a>
+<span class="sourceLineNo">225</span><a name="line.225"></a>
+<span class="sourceLineNo">226</span>    AggStar(<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        final RolapStar star,<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        final JdbcSchema.Table aggTable,<a name="line.228"></a>
+<span class="sourceLineNo">229</span>        final int approxRowCount)<a name="line.229"></a>
+<span class="sourceLineNo">230</span>    {<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        this.star = star;<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        this.approxRowCount = approxRowCount;<a name="line.232"></a>
+<span class="sourceLineNo">233</span>        this.bitKey = BitKey.Factory.makeBitKey(star.getColumnCount());<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        this.levelBitKey = bitKey.emptyCopy();<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        this.measureBitKey = bitKey.emptyCopy();<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        this.foreignKeyBitKey = bitKey.emptyCopy();<a name="line.236"></a>
+<span class="sourceLineNo">237</span>        this.distinctMeasureBitKey = bitKey.emptyCopy();<a name="line.237"></a>
+<span class="sourceLineNo">238</span>        this.aggTable = new AggStar.FactTable(aggTable);<a name="line.238"></a>
+<span class="sourceLineNo">239</span>        this.columns = new AggStar.Table.Column[star.getColumnCount()];<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        this.levelColumnsToJoin = new HashMap&lt;Integer, AggStar.Table.Column&gt;();<a name="line.240"></a>
+<span class="sourceLineNo">241</span>    }<a name="line.241"></a>
+<span class="sourceLineNo">242</span><a name="line.242"></a>
+<span class="sourceLineNo">243</span>    /**<a name="line.243"></a>
+<span class="sourceLineNo">244</span>     * Get the fact table.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     *<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     * @return the fact table<a name="line.246"></a>
+<span class="sourceLineNo">247</span>     */<a name="line.247"></a>
+<span class="sourceLineNo">248</span>    public AggStar.FactTable getFactTable() {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        return aggTable;<a name="line.249"></a>
+<span class="sourceLineNo">250</span>    }<a name="line.250"></a>
+<span class="sourceLineNo">251</span><a name="line.251"></a>
+<span class="sourceLineNo">252</span>    /**<a name="line.252"></a>
+<span class="sourceLineNo">253</span>     * Find a table by name (alias) that is a descendant of the base<a name="line.253"></a>
+<span class="sourceLineNo">254</span>     * fact table.<a name="line.254"></a>
+<span class="sourceLineNo">255</span>     *<a name="line.255"></a>
+<span class="sourceLineNo">256</span>     * @param name the table to find<a name="line.256"></a>
+<span class="sourceLineNo">257</span>     * @return the table or null<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     */<a name="line.258"></a>
+<span class="sourceLineNo">259</span>    public Table findTable(String name) {<a name="line.259"></a>
+<span class="sourceLineNo">260</span>        AggStar.FactTable table = getFactTable();<a name="line.260"></a>
+<span class="sourceLineNo">261</span>        return table.findDescendant(name);<a name="line.261"></a>
+<span class="sourceLineNo">262</span>    }<a name="line.262"></a>
+<span class="sourceLineNo">263</span><a name="line.263"></a>
+<span class="sourceLineNo">264</span><a name="line.264"></a>
+<span class="sourceLineNo">265</span>    /**<a name="line.265"></a>
+<span class="sourceLineNo">266</span>     * Returns a measure of the IO cost of querying this table. It can be<a name="line.266"></a>
+<span class="sourceLineNo">267</span>     * either the row count or the row count times the size of a row.<a name="line.267"></a>
+<span class="sourceLineNo">268</span>     * If the property {@link MondrianProperties#ChooseAggregateByVolume}<a name="line.268"></a>
+<span class="sourceLineNo">269</span>     * is true, then volume is returned, otherwise row count.<a name="line.269"></a>
+<span class="sourceLineNo">270</span>     */<a name="line.270"></a>
+<span class="sourceLineNo">271</span>    public int getSize() {<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        return MondrianProperties.instance().ChooseAggregateByVolume.get()<a name="line.272"></a>
+<span class="sourceLineNo">273</span>            ? getFactTable().getVolume()<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            : getFactTable().getNumberOfRows();<a name="line.274"></a>
+<span class="sourceLineNo">275</span>    }<a name="line.275"></a>
+<span class="sourceLineNo">276</span><a name="line.276"></a>
+<span class="sourceLineNo">277</span>    void setForeignKey(int index) {<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        this.foreignKeyBitKey.set(index);<a name="line.278"></a>
+<span class="sourceLineNo">279</span>    }<a name="line.279"></a>
+<span class="sourceLineNo">280</span>    public BitKey getForeignKeyBitKey() {<a name="line.280"></a>
+<span class="sourceLineNo">281</span>        return this.foreignKeyBitKey;<a name="line.281"></a>
+<span class="sourceLineNo">282</span>    }<a name="line.282"></a>
+<span class="sourceLineNo">283</span><a name="line.283"></a>
+<span class="sourceLineNo">284</span>    /**<a name="line.284"></a>
+<span class="sourceLineNo">285</span>     * Is this AggStar's BitKey a super set (proper or not) of the BitKey<a name="line.285"></a>
+<span class="sourceLineNo">286</span>     * parameter.<a name="line.286"></a>
+<span class="sourceLineNo">287</span>     *<a name="line.287"></a>
+<span class="sourceLineNo">288</span>     * @return true if it is a super set<a name="line.288"></a>
+<span class="sourceLineNo">289</span>     */<a name="line.289"></a>
+<span class="sourceLineNo">290</span>    public boolean superSetMatch(final BitKey bitKey) {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>        return getBitKey().isSuperSetOf(bitKey);<a name="line.291"></a>
+<span class="sourceLineNo">292</span>    }<a name="line.292"></a>
+<span class="sourceLineNo">293</span><a name="line.293"></a>
+<span class="sourceLineNo">294</span>    /**<a name="line.294"></a>
+<span class="sourceLineNo">295</span>     * Return true if this AggStar's level BitKey equals the<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     * &lt;code&gt;levelBitKey&lt;/code&gt; parameter<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     * and if this AggStar's measure BitKey is a super set<a name="line.297"></a>
+<span class="sourceLineNo">298</span>     * (proper or not) of the &lt;code&gt;measureBitKey&lt;/code&gt; parameter.<a name="line.298"></a>
+<span class="sourceLineNo">299</span>     */<a name="line.299"></a>
+<span class="sourceLineNo">300</span>    public boolean select(<a name="line.300"></a>
+<span class="sourceLineNo">301</span>        final BitKey levelBitKey,<a name="line.301"></a>
+<span class="sourceLineNo">302</span>        final BitKey coreLevelBitKey,<a name="line.302"></a>
+<span class="sourceLineNo">303</span>        final BitKey measureBitKey)<a name="line.303"></a>
+<span class="sourceLineNo">304</span>    {<a name="line.304"></a>
+<span class="sourceLineNo">305</span>        if (!getMeasureBitKey().isSuperSetOf(measureBitKey)) {<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            return false;<a name="line.306"></a>
+<span class="sourceLineNo">307</span>        }<a name="line.307"></a>
+<span class="sourceLineNo">308</span>        if (getLevelBitKey().equals(levelBitKey)) {<a name="line.308"></a>
+<span class="sourceLineNo">309</span>            return true;<a name="line.309"></a>
+<span class="sourceLineNo">310</span>        } else if (getLevelBitKey().isSuperSetOf(levelBitKey)<a name="line.310"></a>
+<span class="sourceLineNo">311</span>            &amp;&amp; getLevelBitKey().andNot(coreLevelBitKey).equals(<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                levelBitKey.andNot(coreLevelBitKey)))<a name="line.312"></a>
+<span class="sourceLineNo">313</span>        {<a name="line.313"></a>
+<span class="sourceLineNo">314</span>            // It's OK to roll up levels which are orthogonal to the distinct<a name="line.314"></a>
+<span class="sourceLineNo">315</span>            // measure.<a name="line.315"></a>
+<span class="sourceLineNo">316</span>            return true;<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        } else {<a name="line.317"></a>
+<span class="sourceLineNo">318</span>            return false;<a name="line.318"></a>
+<span class="sourceLineNo">319</span>        }<a name="line.319"></a>
+<span class="sourceLineNo">320</span>    }<a name="line.320"></a>
+<span class="sourceLineNo">321</span><a name="line.321"></a>
+<span class="sourceLineNo">322</span>    /**<a name="line.322"></a>
+<span class="sourceLineNo">323</span>     * Get this AggStar's RolapStar.<a name="line.323"></a>
+<span class="sourceLineNo">324</span>     */<a name="line.324"></a>
+<span class="sourceLineNo">325</span>    public RolapStar getStar() {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        return star;<a name="line.326"></a>
+<span class="sourceLineNo">327</span>    }<a name="line.327"></a>
+<span class="sourceLineNo">328</span><a name="line.328"></a>
+<span class="sourceLineNo">329</span>    /**<a name="line.329"></a>
+<span class="sourceLineNo">330</span>     * Return true if AggStar has measures<a name="line.330"></a>
+<span class="sourceLineNo">331</span>     */<a name="line.331"></a>
+<span class="sourceLineNo">332</span>    public boolean hasMeasures() {<a name="line.332"></a>
+<span class="sourceLineNo">333</span>        return getFactTable().hasMeasures();<a name="line.333"></a>
+<span class="sourceLineNo">334</span>    }<a name="line.334"></a>
+<span class="sourceLineNo">335</span><a name="line.335"></a>
+<span class="sourceLineNo">336</span>    /**<a name="line.336"></a>
+<span class="sourceLineNo">337</span>     * Return true if AggStar has levels<a name="line.337"></a>
+<span class="sourceLineNo">338</span>     */<a name="line.338"></a>
+<span class="sourceLineNo">339</span>    public boolean hasLevels() {<a name="line.339"></a>
+<span class="sourceLineNo">340</span>        return getFactTable().hasLevels();<a name="line.340"></a>
+<span class="sourceLineNo">341</span>    }<a name="line.341"></a>
+<span class="sourceLineNo">342</span><a name="line.342"></a>
+<span class="sourceLineNo">343</span>    /**<a name="line.343"></a>
+<span class="sourceLineNo">344</span>     * Returns whether this AggStar has foreign keys.<a name="line.344"></a>
+<span class="sourceLineNo">345</span>     */<a name="line.345"></a>
+<span class="sourceLineNo">346</span>    public boolean hasForeignKeys() {<a name="line.346"></a>
+<span class="sourceLineNo">347</span>        return getFactTable().hasChildren();<a name="line.347"></a>
+<span class="sourceLineNo">348</span>    }<a name="line.348"></a>
+<span class="sourceLineNo">349</span><a name="line.349"></a>
+<span class="sourceLineNo">350</span>    /**<a name="line.350"></a>
+<span class="sourceLineNo">351</span>     * Returns the BitKey.<a name="line.351"></a>
+<span class="sourceLineNo">352</span>     */<a name="line.352"></a>
+<span class="sourceLineNo">353</span>    public BitKey getBitKey() {<a name="line.353"></a>
+<span class="sourceLineNo">354</span>        return bitKey;<a name="line.354"></a>
+<span class="sourceLineNo">355</span>    }<a name="line.355"></a>
+<span class="sourceLineNo">356</span><a name="line.356"></a>
+<span class="sourceLineNo">357</span>    /**<a name="line.357"></a>
+<span class="sourceLineNo">358</span>     * Get the foreign-key/level BitKey.<a name="line.358"></a>
+<span class="sourceLineNo">359</span>     */<a name="line.359"></a>
+<span class="sourceLineNo">360</span>    public BitKey getLevelBitKey() {<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        return levelBitKey;<a name="line.361"></a>
+<span class="sourceLineNo">362</span>    }<a name="line.362"></a>
+<span class="sourceLineNo">363</span><a name="line.363"></a>
+<span class="sourceLineNo">364</span>    /**<a name="line.364"></a>
+<span class="sourceLineNo">365</span>     * Returns a BitKey of all measures.<a name="line.365"></a>
+<span class="sourceLineNo">366</span>     */<a name="line.366"></a>
+<span class="sourceLineNo">367</span>    public BitKey getMeasureBitKey() {<a name="line.367"></a>
+<span class="sourceLineNo">368</span>        return measureBitKey;<a name="line.368"></a>
+<span class="sourceLineNo">369</span>    }<a name="line.369"></a>
+<span class="sourceLineNo">370</span><a name="line.370"></a>
+<span class="sourceLineNo">371</span>    /**<a name="line.371"></a>
+<span class="sourceLineNo">372</span>     * Returns a BitKey containing only distinct measures.<a name="line.372"></a>
+<span class="sourceLineNo">373</span>     */<a name="line.373"></a>
+<span class="sourceLineNo">374</span>    public BitKey getDistinctMeasureBitKey() {<a name="line.374"></a>
+<span class="sourceLineNo">375</span>        return distinctMeasureBitKey;<a name="line.375"></a>
+<span class="sourceLineNo">376</span>    }<a name="line.376"></a>
+<span class="sourceLineNo">377</span><a name="line.377"></a>
+<span class="sourceLineNo">378</span>    /**<a name="line.378"></a>
+<span class="sourceLineNo">379</span>     * Get an SqlQuery instance.<a name="line.379"></a>
+<span class="sourceLineNo">380</span>     */<a name="line.380"></a>
+<span class="sourceLineNo">381</span>    private SqlQuery getSqlQuery() {<a name="line.381"></a>
+<span class="sourceLineNo">382</span>        return getStar().getSqlQuery();<a name="line.382"></a>
+<span class="sourceLineNo">383</span>    }<a name="line.383"></a>
+<span class="sourceLineNo">384</span><a name="line.384"></a>
+<span class="sourceLineNo">385</span>    /**<a name="line.385"></a>
+<span class="sourceLineNo">386</span>     * Get the Measure at the given bit position or return null.<a name="line.386"></a>
+<span class="sourceLineNo">387</span>     * Note that there is no check that the bit position is within the range of<a name="line.387"></a>
+<span class="sourceLineNo">388</span>     * the array of columns.<a name="line.388"></a>
+<span class="sourceLineNo">389</span>     * Nor is there a check that the column type at that position is a Measure.<a name="line.389"></a>
+<span class="sourceLineNo">390</span>     *<a name="line.390"></a>
+<span class="sourceLineNo">391</span>     * @return A Measure or null.<a name="line.391"></a>
+<span class="sourceLineNo">392</span>     */<a name="line.392"></a>
+<span class="sourceLineNo">393</span>    public AggStar.FactTable.Measure lookupMeasure(final int bitPos) {<a name="line.393"></a>
+<span class="sourceLineNo">394</span>        AggStar.Table.Column column = lookupColumn(bitPos);<a name="line.394"></a>
+<span class="sourceLineNo">395</span>        return (column instanceof AggStar.FactTable.Measure)<a name="line.395"></a>
+<span class="sourceLineNo">396</span>            ?  (AggStar.FactTable.Measure) column<a name="line.396"></a>
+<span class="sourceLineNo">397</span>            : null;<a name="line.397"></a>
+<span class="sourceLineNo">398</span>    }<a name="line.398"></a>
+<span class="sourceLineNo">399</span>    /**<a name="line.399"></a>
+<span class="sourceLineNo">400</span>     * Get the Level at the given bit position or return null.<a name="line.400"></a>
+<span class="sourceLineNo">401</span>     * Note that there is no check that the bit position is within the range of<a name="line.401"></a>
+<span class="sourceLineNo">402</span>     * the array of columns.<a name="line.402"></a>
+<span class="sourceLineNo">403</span>     * Nor is there a check that the column type at that position is a Level.<a name="line.403"></a>
+<span class="sourceLineNo">404</span>     *<a name="line.404"></a>
+<span class="sourceLineNo">405</span>     * @return A Level or null.<a name="line.405"></a>
+<span class="sourceLineNo">406</span>     */<a name="line.406"></a>
+<span class="sourceLineNo">407</span>    public AggStar.Table.Level lookupLevel(final int bitPos) {<a name="line.407"></a>
+<span class="sourceLineNo">408</span>        AggStar.Table.Column column = lookupColumn(bitPos);<a name="line.408"></a>
+<span class="sourceLineNo">409</span>        return (column instanceof AggStar.FactTable.Level)<a name="line.409"></a>
+<span class="sourceLineNo">410</span>            ?  (AggStar.FactTable.Level) column<a name="line.410"></a>
+<span class="sourceLineNo">411</span>            : null;<a name="line.411"></a>
+<span class="sourceLineNo">412</span>    }<a name="line.412"></a>
+<span class="sourceLineNo">413</span><a name="line.413"></a>
+<span class="sourceLineNo">414</span>    /**<a name="line.414"></a>
+<span class="sourceLineNo">415</span>     * Get the Column at the bit position.<a name="line.415"></a>
+<span class="sourceLineNo">416</span>     * Note that there is no check that the bit position is within the range of<a name="line.416"></a>
+<span class="sourceLineNo">417</span>     * the array of columns.<a name="line.417"></a>
+<span class="sourceLineNo">418</span>     */<a name="line.418"></a>
+<span class="sourceLineNo">419</span>    public AggStar.Table.Column lookupColumn(final int bitPos) {<a name="line.419"></a>
+<span class="sourceLineNo">420</span>        if (columns[bitPos] != null) {<a name="line.420"></a>
+<span class="sourceLineNo">421</span>            return columns[bitPos];<a name="line.421"></a>
+<span class="sourceLineNo">422</span>        }<a name="line.422"></a>
+<span class="sourceLineNo">423</span>        return levelColumnsToJoin.get(bitPos);<a name="line.423"></a>
+<span class="sourceLineNo">424</span>    }<a name="line.424"></a>
+<span class="sourceLineNo">425</span><a name="line.425"></a>
+<span class="sourceLineNo">426</span>    /**<a name="line.426"></a>
+<span class="sourceLineNo">427</span>     * Returns true if every level column in the AggStar  is collapsed.<a name="line.427"></a>
+<span class="sourceLineNo">428</span>     */<a name="line.428"></a>
+<span class="sourceLineNo">429</span>    public boolean isFullyCollapsed() {<a name="line.429"></a>
+<span class="sourceLineNo">430</span>        BitSet bitSet = this.getLevelBitKey().toBitSet();<a name="line.430"></a>
+<span class="sourceLineNo">431</span>        for (int i = bitSet.nextSetBit(0); i &gt;= 0; i = bitSet.nextSetBit(i + 1))<a name="line.431"></a>
+<span class="sourceLineNo">432</span>        {<a name="line.432"></a>
+<span class="sourceLineNo">433</span>            if (this.lookupLevel(i) == null<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                || !(this.lookupLevel(i)).isCollapsed())<a name="line.434"></a>
+<span class="sourceLineNo">435</span>            {<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                return false;<a name="line.436"></a>
+<span class="sourceLineNo">437</span>            }<a name="line.437"></a>
+<span class="sourceLineNo">438</span>        }<a name="line.438"></a>
+<span class="sourceLineNo">439</span>        return true;<a name="line.439"></a>
+<span class="sourceLineNo">440</span>    }<a name="line.440"></a>
+<span class="sourceLineNo">441</span><a name="line.441"></a>
+<span class="sourceLineNo">442</span>    /**<a name="line.442"></a>
+<span class="sourceLineNo">443</span>     * This is called by within the Column constructor.<a name="line.443"></a>
+<span class="sourceLineNo">444</span>     */<a name="line.444"></a>
+<span class="sourceLineNo">445</span>    private void addColumn(final AggStar.Table.Column column) {<a name="line.445"></a>
+<span class="sourceLineNo">446</span>        columns[column.getBitPosition()] = column;<a name="line.446"></a>
+<span class="sourceLineNo">447</span>    }<a name="line.447"></a>
+<span class="sourceLineNo">448</span><a name="line.448"></a>
+<span class="sourceLineNo">449</span>    private static final Logger JOIN_CONDITION_LOGGER =<a name="line.449"></a>
+<span class="sourceLineNo">450</span>            Logger.getLogger(AggStar.Table.JoinCondition.class);<a name="line.450"></a>
+<span class="sourceLineNo">451</span><a name="line.451"></a>
+<span class="sourceLineNo">452</span>    /**<a name="line.452"></a>
+<span class="sourceLineNo">453</span>     * Base Table class for the FactTable and DimTable classes.<a name="line.453"></a>
+<span class="sourceLineNo">454</span>     * This class parallels the RolapStar.Table class.<a name="line.454"></a>
+<span class="sourceLineNo">455</span>     */<a name="line.455"></a>
+<span class="sourceLineNo">456</span>    public abstract class Table {<a name="line.456"></a>
+<span class="sourceLineNo">457</span><a name="line.457"></a>
+<span class="sourceLineNo">458</span>        /**<a name="line.458"></a>
+<span class="sourceLineNo">459</span>         * The query join condition between a base table and this table (the<a name="line.459"></a>
+<span class="sourceLineNo">460</span>         * table that owns the join condition).<a name="line.460"></a>
+<span class="sourceLineNo">461</span>         */<a name="line.461"></a>
+<span class="sourceLineNo">462</span>        public class JoinCondition {<a name="line.462"></a>
+<span class="sourceLineNo">463</span>            // I think this is always a MondrianDef.Column<a name="line.463"></a>
+<span class="sourceLineNo">464</span>            private final MondrianDef.Expression left;<a name="line.464"></a>
+<span class="sourceLineNo">465</span>            private final MondrianDef.Expression right;<a name="line.465"></a>
+<span class="sourceLineNo">466</span><a name="line.466"></a>
+<span class="sourceLineNo">467</span>            private JoinCondition(<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                final MondrianDef.Expression left,<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                final MondrianDef.Expression right)<a name="line.469"></a>
+<span class="sourceLineNo">470</span>            {<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                if (!(left instanceof MondrianDef.Column)) {<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                    JOIN_CONDITION_LOGGER.debug(<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                        "JoinCondition.left NOT Column: "<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                        + left.getClass().getName());<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                }<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                this.left = left;<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                this.right = right;<a name="line.477"></a>
+<span class="sourceLineNo">478</span>            }<a name="line.478"></a>
+<span class="sourceLineNo">479</span><a name="line.479"></a>
+<span class="sourceLineNo">480</span>            /**<a name="line.480"></a>
+<span class="sourceLineNo">481</span>             * Get the enclosing AggStar.Table.<a name="line.481"></a>
+<span class="sourceLineNo">482</span>             */<a name="line.482"></a>
+<span class="sourceLineNo">483</span>            public Table getTable() {<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                return AggStar.Table.this;<a name="line.484"></a>
+<span class="sourceLineNo">485</span>            }<a name="line.485"></a>
+<span class="sourceLineNo">486</span><a name="line.486"></a>
+<span class="sourceLineNo">487</span>            /**<a name="line.487"></a>
+<span class="sourceLineNo">488</span>             * Return the left join expression.<a name="line.488"></a>
+<span class="sourceLineNo">489</span>             */<a name="line.489"></a>
+<span class="sourceLineNo">490</span>            public MondrianDef.Expression getLeft() {<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                return this.left;<a name="line.491"></a>
+<span class="sourceLineNo">492</span>            }<a name="line.492"></a>
+<span class="sourceLineNo">493</span><a name="line.493"></a>
+<span class="sourceLineNo">494</span>            /**<a name="line.494"></a>
+<span class="sourceLineNo">495</span>             * Return the left join expression as string.<a name="line.495"></a>
+<span class="sourceLineNo">496</span>             */<a name="line.496"></a>
+<span class="sourceLineNo">497</span>            public String getLeft(final SqlQuery query) {<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                return this.left.getExpression(query);<a name="line.498"></a>
+<span class="sourceLineNo">499</span>            }<a name="line.499"></a>
+<span class="sourceLineNo">500</span><a name="line.500"></a>
+<span class="sourceLineNo">501</span>            /**<a name="line.501"></a>
+<span class="sourceLineNo">502</span>             * Return the right join expression.<a name="line.502"></a>
+<span class="sourceLineNo">503</span>             */<a name="line.503"></a>
+<span class="sourceLineNo">504</span>            public MondrianDef.Expression getRight() {<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                return this.right;<a name="line.505"></a>
+<span class="sourceLineNo">506</span>            }<a name="line.506"></a>
+<span class="sourceLineNo">507</span><a name="line.507"></a>
+<span class="sourceLineNo">508</span>            /**<a name="line.508"></a>
+<span class="sourceLineNo">509</span>             * This is used to create part of a SQL where clause.<a name="line.509"></a>
+<span class="sourceLineNo">510</span>             */<a name="line.510"></a>
+<span class="sourceLineNo">511</span>            String toString(final SqlQuery query) {<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                StringBuilder buf = new StringBuilder(64);<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                buf.append(left.getExpression(query));<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                buf.append(" = ");<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                buf.append(right.getExpression(query));<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                return buf.toString();<a name="line.516"></a>
+<span class="sourceLineNo">517</span>            }<a name="line.517"></a>
+<span class="sourceLineNo">518</span>            public String toString() {<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                StringWriter sw = new StringWriter(128);<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                PrintWriter pw = new PrintWriter(sw);<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                print(pw, "");<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                pw.flush();<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                return sw.toString();<a name="line.523"></a>
+<span class="sourceLineNo">524</span>            }<a name="line.524"></a>
+<span class="sourceLineNo">525</span><a name="line.525"></a>
+<span class="sourceLineNo">526</span>            /**<a name="line.526"></a>
+<span class="sourceLineNo">527</span>             * Prints this table and its children.<a name="line.527"></a>
+<span class="sourceLineNo">528</span>             */<a name="line.528"></a>
+<span class="sourceLineNo">529</span>            public void print(final PrintWriter pw, final String prefix) {<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                SqlQuery sqlQueuy = getTable().getSqlQuery();<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                pw.print(prefix);<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                pw.println("JoinCondition:");<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                String subprefix = prefix + "  ";<a name="line.533"></a>
+<span class="sourceLineNo">534</span><a name="line.534"></a>
+<span class="sourceLineNo">535</span>                pw.print(subprefix);<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                pw.print("left=");<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                if (left instanceof MondrianDef.Column) {<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                    MondrianDef.Column c = (MondrianDef.Column) left;<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                    mondrian.rolap.RolapStar.Column col =<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                        getTable().getAggStar().getStar().getFactTable()<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                        .lookupColumn(c.name);<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                    if (col != null) {<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                        pw.print(" (");<a name="line.543"></a>
+<span class="sourceLineNo">544</span>                        pw.print(col.getBitPosition());<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                        pw.print(") ");<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                    }<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                }<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                pw.println(left.getExpression(sqlQueuy));<a name="line.548"></a>
+<span class="sourceLineNo">549</span><a name="line.549"></a>
+<span class="sourceLineNo">550</span>                pw.print(subprefix);<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                pw.print("right=");<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                pw.println(right.getExpression(sqlQueuy));<a name="line.552"></a>
+<span class="sourceLineNo">553</span>            }<a name="line.553"></a>
+<span class="sourceLineNo">554</span>        }<a name="line.554"></a>
+<span class="sourceLineNo">555</span><a name="line.555"></a>
+<span class="sourceLineNo">556</span><a name="line.556"></a>
+<span class="sourceLineNo">557</span>        /**<a name="line.557"></a>
+<span class="sourceLineNo">558</span>         * Base class for Level and Measure classes<a name="line.558"></a>
+<span class="sourceLineNo">559</span>         */<a name="line.559"></a>
+<span class="sourceLineNo">560</span>        public class Column {<a name="line.560"></a>
+<span class="sourceLineNo">561</span><a name="line.561"></a>
+<span class="sourceLineNo">562</span>            private final String name;<a name="line.562"></a>
+<span class="sourceLineNo">563</span>            private final MondrianDef.Expression expression;<a name="line.563"></a>
+<span class="sourceLineNo">564</span>            private final Dialect.Datatype datatype;<a name="line.564"></a>
+<span class="sourceLineNo">565</span>            /**<a name="line.565"></a>
+<span class="sourceLineNo">566</span>             * This is only used in RolapAggregationManager and adds<a name="line.566"></a>
+<span class="sourceLineNo">567</span>             * non-constraining columns making the drill-through queries<a name="line.567"></a>
+<span class="sourceLineNo">568</span>             * easier for humans to understand.<a name="line.568"></a>
+<span class="sourceLineNo">569</span>             */<a name="line.569"></a>
+<span class="sourceLineNo">570</span>            private final Column nameColumn;<a name="line.570"></a>
+<span class="sourceLineNo">571</span><a name="line.571"></a>
+<span class="sourceLineNo">572</span>            /** this has a unique value per star */<a name="line.572"></a>
+<span class="sourceLineNo">573</span>            private final int bitPosition;<a name="line.573"></a>
+<span class="sourceLineNo">574</span><a name="line.574"></a>
+<span class="sourceLineNo">575</span>            protected Column(<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                final String name,<a name="line.576"></a>
+<span class="sourceLineNo">577</span>                final MondrianDef.Expression expression,<a name="line.577"></a>
+<span class="sourceLineNo">578</span>                final Dialect.Datatype datatype,<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                final int bitPosition)<a name="line.579"></a>
+<span class="sourceLineNo">580</span>            {<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                this.name = name;<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                this.expression = expression;<a name="line.582"></a>
+<span class="sourceLineNo">583</span>                this.datatype = datatype;<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                this.bitPosition = bitPosition;<a name="line.584"></a>
+<span class="sourceLineNo">585</span><a name="line.585"></a>
+<span class="sourceLineNo">586</span>                this.nameColumn = null;<a name="line.586"></a>
+<span class="sourceLineNo">587</span><a name="line.587"></a>
+<span class="sourceLineNo">588</span>                // do not count the fact_count column<a name="line.588"></a>
+<span class="sourceLineNo">589</span>                if (bitPosition &gt;= 0) {<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                    AggStar.this.bitKey.set(bitPosition);<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                    AggStar.this.addColumn(this);<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                }<a name="line.592"></a>
+<span class="sourceLineNo">593</span>            }<a name="line.593"></a>
+<span class="sourceLineNo">594</span><a name="line.594"></a>
+<span class="sourceLineNo">595</span>            /**<a name="line.595"></a>
+<span class="sourceLineNo">596</span>             * Get the name of the column (this is the name in the database).<a name="line.596"></a>
+<span class="sourceLineNo">597</span>             */<a name="line.597"></a>
+<span class="sourceLineNo">598</span>            public String getName() {<a name="line.598"></a>
+<span class="sourceLineNo">599</span>                return name;<a name="line.599"></a>
+<span class="sourceLineNo">600</span>            }<a name="line.600"></a>
+<span class="sourceLineNo">601</span><a name="line.601"></a>
+<span class="sourceLineNo">602</span>            /**<a name="line.602"></a>
+<span class="sourceLineNo">603</span>             * Get the enclosing AggStar.Table.<a name="line.603"></a>
+<span class="sourceLineNo">604</span>             */<a name="line.604"></a>
+<span class="sourceLineNo">605</span>            public AggStar.Table getTable() {<a name="line.605"></a>
+<span class="sourceLineNo">606</span>                return AggStar.Table.this;<a name="line.606"></a>
+<span class="sourceLineNo">607</span>            }<a name="line.607"></a>
+<span class="sourceLineNo">608</span><a name="line.608"></a>
+<span class="sourceLineNo">609</span>            /**<a name="line.609"></a>
+<span class="sourceLineNo">610</span>             * Get the bit possition associted with this column. This has the<a name="line.610"></a>
+<span class="sourceLineNo">611</span>             * same value as this column's RolapStar.Column.<a name="line.611"></a>
+<span class="sourceLineNo">612</span>             */<a name="line.612"></a>
+<span class="sourceLineNo">613</span>            public int getBitPosition() {<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                return bitPosition;<a name="line.614"></a>
+<span class="sourceLineNo">615</span>            }<a name="line.615"></a>
+<span class="sourceLineNo">616</span><a name="line.616"></a>
+<span class="sourceLineNo">617</span>            /**<a name="line.617"></a>
+<span class="sourceLineNo">618</span>             * Returns the datatype of this column.<a name="line.618"></a>
+<span class="sourceLineNo">619</span>             */<a name="line.619"></a>
+<span class="sourceLineNo">620</span>            public Dialect.Datatype getDatatype() {<a name="line.620"></a>
+<span class="sourceLineNo">621</span>                return datatype;<a name="line.621"></a>
+<span class="sourceLineNo">622</span>            }<a name="line.622"></a>
+<span class="sourceLineNo">623</span><a name="line.623"></a>
+<span class="sourceLineNo">624</span>            public SqlQuery getSqlQuery() {<a name="line.624"></a>
+<span class="sourceLineNo">625</span>                return getTable().getAggStar().getSqlQuery();<a name="line.625"></a>
+<span class="sourceLineNo">626</span>            }<a name="line.626"></a>
+<span class="sourceLineNo">627</span><a name="line.627"></a>
+<span class="sourceLineNo">628</span>            public MondrianDef.Expression getExpression() {<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                return expression;<a name="line.629"></a>
+<span class="sourceLineNo">630</span>            }<a name="line.630"></a>
+<span class="sourceLineNo">631</span><a name="line.631"></a>
+<span class="sourceLineNo">632</span>            /**<a name="line.632"></a>
+<span class="sourceLineNo">633</span>             * Generates a SQL expression, which typically this looks like<a name="line.633"></a>
+<span class="sourceLineNo">634</span>             * this: &lt;code&gt;&lt;i&gt;tableName&lt;/i&gt;.&lt;i&gt;columnName&lt;/i&gt;&lt;/code&gt;.<a name="line.634"></a>
+<span class="sourceLineNo">635</span>             */<a name="line.635"></a>
+<span class="sourceLineNo">636</span>            public String generateExprString(final SqlQuery query) {<a name="line.636"></a>
+<span class="sourceLineNo">637</span>                String usagePrefix = getUsagePrefix();<a name="line.637"></a>
+<span class="sourceLineNo">638</span>                String exprString;<a name="line.638"></a>
+<span class="sourceLineNo">639</span><a name="line.639"></a>
+<span class="sourceLineNo">640</span>                if (usagePrefix == null) {<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                    exprString = getExpression().getExpression(query);<a name="line.641"></a>
+<span class="sourceLineNo">642</span>                } else {<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                    MondrianDef.Expression expression = getExpression();<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                    assert expression instanceof MondrianDef.Column;<a name="line.644"></a>
+<span class="sourceLineNo">645</span>                    MondrianDef.Column columnExpr =<a name="line.645"></a>
+<span class="sourceLineNo">646</span>                        (MondrianDef.Column)expression;<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                    String prefixedName = usagePrefix<a name="line.647"></a>
+<span class="sourceLineNo">648</span>                        + columnExpr.getColumnName();<a name="line.648"></a>
+<span class="sourceLineNo">649</span>                    String tableName = columnExpr.getTableAlias();<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                    exprString = query.getDialect().quoteIdentifier(<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                        tableName, prefixedName);<a name="line.651"></a>
+<span class="sourceLineNo">652</span>                }<a name="line.652"></a>
+<span class="sourceLineNo">653</span>                return exprString;<a name="line.653"></a>
+<span class="sourceLineNo">654</span>            }<a name="line.654"></a>
+<span class="sourceLineNo">655</span><a name="line.655"></a>
+<span class="sourceLineNo">656</span>            private String getUsagePrefix() {<a name="line.656"></a>
+<span class="sourceLineNo">657</span>                String usagePrefix = null;<a name="line.657"></a>
+<span class="sourceLineNo">658</span>                if (this.getBitPosition() != -1) {<a name="line.658"></a>
+<span class="sourceLineNo">659</span>                    usagePrefix = getStar().getColumn(this.getBitPosition())<a name="line.659"></a>
+<span class="sourceLineNo">660</span>                        .getUsagePrefix();<a name="line.660"></a>
+<span class="sourceLineNo">661</span>                }<a name="line.661"></a>
+<span class="sourceLineNo">662</span>                return usagePrefix;<a name="line.662"></a>
+<span class="sourceLineNo">663</span>            }<a name="line.663"></a>
+<span class="sourceLineNo">664</span><a name="line.664"></a>
+<span class="sourceLineNo">665</span><a name="line.665"></a>
+<span class="sourceLineNo">666</span>            public String toString() {<a name="line.666"></a>
+<span class="sourceLineNo">667</span>                StringWriter sw = new StringWriter(256);<a name="line.667"></a>
+<span class="sourceLineNo">668</span>                PrintWriter pw = new PrintWriter(sw);<a name="line.668"></a>
+<span class="sourceLineNo">669</span>                print(pw, "");<a name="line.669"></a>
+<span class="sourceLineNo">670</span>                pw.flush();<a name="line.670"></a>
+<span class="sourceLineNo">671</span>                return sw.toString();<a name="line.671"></a>
+<span class="sourceLineNo">672</span>            }<a name="line.672"></a>
+<span class="sourceLineNo">673</span>            public void print(final PrintWriter pw, final String prefix) {<a name="line.673"></a>
+<span class="sourceLineNo">674</span>                SqlQuery sqlQuery = getSqlQuery();<a name="line.674"></a>
+<span class="sourceLineNo">675</span>                pw.print(prefix);<a name="line.675"></a>
+<span class="sourceLineNo">676</span>                pw.print(getName());<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                pw.print(" (");<a name="line.677"></a>
+<span class="sourceLineNo">678</span>                pw.print(getBitPosition());<a name="line.678"></a>
+<span class="sourceLineNo">679</span>                pw.print("): ");<a name="line.679"></a>
+<span class="sourceLineNo">680</span>                pw.print(generateExprString(sqlQuery));<a name="line.680"></a>
+<span class="sourceLineNo">681</span>            }<a name="line.681"></a>
+<span class="sourceLineNo">682</span><a name="line.682"></a>
+<span class="sourceLineNo">683</span>            public SqlStatement.Type getInternalType() {<a name="line.683"></a>
+<span class="sourceLineNo">684</span>                return null;<a name="line.684"></a>
+<span class="sourceLineNo">685</span>            }<a name="line.685"></a>
+<span class="sourceLineNo">686</span>        }<a name="line.686"></a>
+<span class="sourceLineNo">687</span><a name="line.687"></a>
+<span class="sourceLineNo">688</span>        /**<a name="line.688"></a>
+<span class="sourceLineNo">689</span>         * This class is used for holding foreign key columns.<a name="line.689"></a>
+<span class="sourceLineNo">690</span>         * Both DimTables and FactTables can have Level columns.<a name="line.690"></a>
+<span class="sourceLineNo">691</span>         */<a name="line.691"></a>
+<span class="sourceLineNo">692</span>        final class ForeignKey extends Column {<a name="line.692"></a>
+<span class="sourceLineNo">693</span><a name="line.693"></a>
+<span class="sourceLineNo">694</span>            private ForeignKey(<a name="line.694"></a>
+<span class="sourceLineNo">695</span>                final String name,<a name="line.695"></a>
+<span class="sourceLineNo">696</span>                final MondrianDef.Expression expression,<a name="line.696"></a>
+<span class="sourceLineNo">697</span>                final Dialect.Datatype datatype,<a name="line.697"></a>
+<span class="sourceLineNo">698</span>                final int bitPosition)<a name="line.698"></a>
+<span class="sourceLineNo">699</span>            {<a name="line.699"></a>
+<span class="sourceLineNo">700</span>                super(name, expression, datatype, bitPosition);<a name="line.700"></a>
+<span class="sourceLineNo">701</span>                AggStar.this.levelBitKey.set(bitPosition);<a name="line.701"></a>
+<span class="sourceLineNo">702</span>            }<a name="line.702"></a>
+<span class="sourceLineNo">703</span>        }<a name="line.703"></a>
+<span class="sourceLineNo">704</span><a name="line.704"></a>
+<span class="sourceLineNo">705</span>        /**<a name="line.705"></a>
+<span class="sourceLineNo">706</span>         * This class is used for holding dimension level information.<a name="line.706"></a>
+<span class="sourceLineNo">707</span>         * Both DimTables and FactTables can have Level columns.<a name="line.707"></a>
+<span class="sourceLineNo">708</span>         */<a name="line.708"></a>
+<span class="sourceLineNo">709</span>        final class Level extends Column {<a name="line.709"></a>
+<span class="sourceLineNo">710</span>            private final RolapStar.Column starColumn;<a name="line.710"></a>
+<span class="sourceLineNo">711</span>            private final boolean collapsed;<a name="line.711"></a>
+<span class="sourceLineNo">712</span><a name="line.712"></a>
+<span class="sourceLineNo">713</span>            private Level(<a name="line.713"></a>
+<span class="sourceLineNo">714</span>                final String name,<a name="line.714"></a>
+<span class="sourceLineNo">715</span>                final MondrianDef.Expression expression,<a name="line.715"></a>
+<span class="sourceLineNo">716</span>                final int bitPosition,<a name="line.716"></a>
+<span class="sourceLineNo">717</span>                RolapStar.Column starColumn,<a name="line.717"></a>
+<span class="sourceLineNo">718</span>                boolean collapsed)<a name="line.718"></a>
+<span class="sourceLineNo">719</span>            {<a name="line.719"></a>
+<span class="sourceLineNo">720</span>                super(name, expression, starColumn.getDatatype(), bitPosition);<a name="line.720"></a>
+<span class="sourceLineNo">721</span>                this.starColumn = starColumn;<a name="line.721"></a>
+<span class="sourceLineNo">722</span>                this.collapsed = collapsed;<a name="line.722"></a>
+<span class="sourceLineNo">723</span>                AggStar.this.levelBitKey.set(bitPosition);<a name="line.723"></a>
+<span class="sourceLineNo">724</span>            }<a name="line.724"></a>
+<span class="sourceLineNo">725</span><a name="line.725"></a>
+<span class="sourceLineNo">726</span>            @Override<a name="line.726"></a>
+<span class="sourceLineNo">727</span>            public SqlStatement.Type getInternalType() {<a name="line.727"></a>
+<span class="sourceLineNo">728</span>                return starColumn.getInternalType();<a name="line.728"></a>
+<span class="sourceLineNo">729</span>            }<a name="line.729"></a>
+<span class="sourceLineNo">730</span><a name="line.730"></a>
+<span class="sourceLineNo">731</span>            public boolean isCollapsed() {<a name="line.731"></a>
+<span class="sourceLineNo">732</span>                return collapsed;<a name="line.732"></a>
+<span class="sourceLineNo">733</span>            }<a name="line.733"></a>
+<span class="sourceLineNo">734</span>        }<a name="line.734"></a>
+<span class="sourceLineNo">735</span><a name="line.735"></a>
+<span class="sourceLineNo">736</span>        /** The name of the table in the database. */<a name="line.736"></a>
+<span class="sourceLineNo">737</span>        private final String name;<a name="line.737"></a>
+<span class="sourceLineNo">738</span>        private final MondrianDef.Relation relation;<a name="line.738"></a>
+<span class="sourceLineNo">739</span>        protected final List&lt;Level&gt; levels = new ArrayList&lt;Level&gt;();<a name="line.739"></a>
+<span class="sourceLineNo">740</span>        protected List&lt;DimTable&gt; children;<a name="line.740"></a>
+<span class="sourceLineNo">741</span><a name="line.741"></a>
+<span class="sourceLineNo">742</span>        Table(final String name, final MondrianDef.Relation relation) {<a name="line.742"></a>
+<span class="sourceLineNo">743</span>            this.name = name;<a name="line.743"></a>
+<span class="sourceLineNo">744</span>            this.relation = relation;<a name="line.744"></a>
+<span class="sourceLineNo">745</span>            this.children = Collections.emptyList();<a name="line.745"></a>
+<span class="sourceLineNo">746</span>        }<a name="line.746"></a>
+<span class="sourceLineNo">747</span><a name="line.747"></a>
+<span class="sourceLineNo">748</span>        /**<a name="line.748"></a>
+<span class="sourceLineNo">749</span>         * Return the name of the table in the database.<a name="line.749"></a>
+<span class="sourceLineNo">750</span>         */<a name="line.750"></a>
+<span class="sourceLineNo">751</span>        public String getName() {<a name="line.751"></a>
+<span class="sourceLineNo">752</span>            return name;<a name="line.752"></a>
+<span class="sourceLineNo">753</span>        }<a name="line.753"></a>
+<span class="sourceLineNo">754</span><a name="line.754"></a>
+<span class="sourceLineNo">755</span>        /**<a name="line.755"></a>
+<span class="sourceLineNo">756</span>         * Return true if this table has a parent table (FactTable instances<a name="line.756"></a>
+<span class="sourceLineNo">757</span>         * do not have parent tables, all other do).<a name="line.757"></a>
+<span class="sourceLineNo">758</span>         */<a name="line.758"></a>
+<span class="sourceLineNo">759</span>        public abstract boolean hasParent();<a name="line.759"></a>
+<span class="sourceLineNo">760</span><a name="line.760"></a>
+<span class="sourceLineNo">761</span>        /**<a name="line.761"></a>
+<span class="sourceLineNo">762</span>         * Get the parent table (returns null if this table is a FactTable).<a name="line.762"></a>
+<span class="sourceLineNo">763</span>         */<a name="line.763"></a>
+<span class="sourceLineNo">764</span>        public abstract Table getParent();<a name="line.764"></a>
+<span class="sourceLineNo">765</span><a name="line.765"></a>
+<span class="sourceLineNo">766</span>        /**<a name="line.766"></a>
+<span class="sourceLineNo">767</span>         * Return true if this table has a join condition (only DimTables have<a name="line.767"></a>
+<span class="sourceLineNo">768</span>         * join conditions, FactTable instances do not).<a name="line.768"></a>
+<span class="sourceLineNo">769</span>         */<a name="line.769"></a>
+<span class="sourceLineNo">770</span>        public abstract boolean hasJoinCondition();<a name="line.770"></a>
+<span class="sourceLineNo">771</span>        public abstract Table.JoinCondition getJoinCondition();<a name="line.771"></a>
+<span class="sourceLineNo">772</span><a name="line.772"></a>
+<span class="sourceLineNo">773</span>        public MondrianDef.Relation getRelation() {<a name="line.773"></a>
+<span class="sourceLineNo">774</span>            return relation;<a name="line.774"></a>
+<span class="sourceLineNo">775</span>        }<a name="line.775"></a>
+<span class="sourceLineNo">776</span><a name="line.776"></a>
+<span class="sourceLineNo">777</span>        /**<a name="line.777"></a>
+<span class="sourceLineNo">778</span>         * Get this table's enclosing AggStar.<a name="line.778"></a>
+<span class="sourceLineNo">779</span>         */<a name="line.779"></a>
+<span class="sourceLineNo">780</span>        protected AggStar getAggStar() {<a name="line.780"></a>
+<span class="sourceLineNo">781</span>            return AggStar.this;<a name="line.781"></a>
+<span class="sourceLineNo">782</span>        }<a name="line.782"></a>
+<span class="sourceLineNo">783</span><a name="line.783"></a>
+<span class="sourceLineNo">784</span>        /**<a name="line.784"></a>
+<span class="sourceLineNo">785</span>         * Get a SqlQuery object.<a name="line.785"></a>
+<span class="sourceLineNo">786</span>         */<a name="line.786"></a>
+<span class="sourceLineNo">787</span>        protected SqlQuery getSqlQuery() {<a name="line.787"></a>
+<span class="sourceLineNo">788</span>            return getAggStar().getSqlQuery();<a name="line.788"></a>
+<span class="sourceLineNo">789</span>        }<a name="line.789"></a>
+<span class="sourceLineNo">790</span><a name="line.790"></a>
+<span class="sourceLineNo">791</span>        /**<a name="line.791"></a>
+<span class="sourceLineNo">792</span>         * Add a Level column.<a name="line.792"></a>
+<span class="sourceLineNo">793</span>         */<a name="line.793"></a>
+<span class="sourceLineNo">794</span>        protected void addLevel(final AggStar.Table.Level level) {<a name="line.794"></a>
+<span class="sourceLineNo">795</span>            this.levels.add(level);<a name="line.795"></a>
+<span class="sourceLineNo">796</span>        }<a name="line.796"></a>
+<span class="sourceLineNo">797</span><a name="line.797"></a>
+<span class="sourceLineNo">798</span>        /**<a name="line.798"></a>
+<span class="sourceLineNo">799</span>         * Returns all level columns.<a name="line.799"></a>
+<span class="sourceLineNo">800</span>         */<a name="line.800"></a>
+<span class="sourceLineNo">801</span>        public List&lt;Level&gt; getLevels() {<a name="line.801"></a>
+<span class="sourceLineNo">802</span>            return levels;<a name="line.802"></a>
+<span class="sourceLineNo">803</span>        }<a name="line.803"></a>
+<span class="sourceLineNo">804</span><a name="line.804"></a>
+<span class="sourceLineNo">805</span>        /**<a name="line.805"></a>
+<span class="sourceLineNo">806</span>         * Return true if table has levels.<a name="line.806"></a>
+<span class="sourceLineNo">807</span>         */<a name="line.807"></a>
+<span class="sourceLineNo">808</span>        public boolean hasLevels() {<a name="line.808"></a>
+<span class="sourceLineNo">809</span>            return ! levels.isEmpty();<a name="line.809"></a>
+<span class="sourceLineNo">810</span>        }<a name="line.810"></a>
+<span class="sourceLineNo">811</span><a name="line.811"></a>
+<span class="sourceLineNo">812</span>        /**<a name="line.812"></a>
+<span class="sourceLineNo">813</span>         * Add a child DimTable table.<a name="line.813"></a>
+<span class="sourceLineNo">814</span>         */<a name="line.814"></a>
+<span class="sourceLineNo">815</span>        protected void addTable(final DimTable child) {<a name="line.815"></a>
+<span class="sourceLineNo">816</span>            if (children == Collections.EMPTY_LIST) {<a name="line.816"></a>
+<span class="sourceLineNo">817</span>                children = new ArrayList&lt;DimTable&gt;();<a name="line.817"></a>
+<span class="sourceLineNo">818</span>            }<a name="line.818"></a>
+<span class="sourceLineNo">819</span>            children.add(child);<a name="line.819"></a>
+<span class="sourceLineNo">820</span>        }<a name="line.820"></a>
+<span class="sourceLineNo">821</span><a name="line.821"></a>
+<span class="sourceLineNo">822</span>        /**<a name="line.822"></a>
+<span class="sourceLineNo">823</span>         * Returns a list of child {@link Table} objects.<a name="line.823"></a>
+<span class="sourceLineNo">824</span>         */<a name="line.824"></a>
+<span class="sourceLineNo">825</span>        public List&lt;DimTable&gt; getChildTables() {<a name="line.825"></a>
+<span class="sourceLineNo">826</span>            return children;<a name="line.826"></a>
+<span class="sourceLineNo">827</span>        }<a name="line.827"></a>
+<span class="sourceLineNo">828</span><a name="line.828"></a>
+<span class="sourceLineNo">829</span>        /**<a name="line.829"></a>
+<span class="sourceLineNo">830</span>         * Find descendant of fact table with given name or return null.<a name="line.830"></a>
+<span class="sourceLineNo">831</span>         *<a name="line.831"></a>
+<span class="sourceLineNo">832</span>         * @param name the child table name (alias).<a name="line.832"></a>
+<span class="sourceLineNo">833</span>         * @return the child table or null.<a name="line.833"></a>
+<span class="sourceLineNo">834</span>         */<a name="line.834"></a>
+<span class="sourceLineNo">835</span>        public Table findDescendant(String name) {<a name="line.835"></a>
+<span class="sourceLineNo">836</span>            if (getName().equals(name)) {<a name="line.836"></a>
+<span class="sourceLineNo">837</span>                return this;<a name="line.837"></a>
+<span class="sourceLineNo">838</span>            }<a name="line.838"></a>
+<span class="sourceLineNo">839</span><a name="line.839"></a>
+<span class="sourceLineNo">840</span>            for (Table child : getChildTables()) {<a name="line.840"></a>
+<span class="sourceLineNo">841</span>                Table found = child.findDescendant(name);<a name="line.841"></a>
+<span class="sourceLineNo">842</span>                if (found != null) {<a name="line.842"></a>
+<span class="sourceLineNo">843</span>                    return found;<a name="line.843"></a>
+<span class="sourceLineNo">844</span>                }<a name="line.844"></a>
+<span class="sourceLineNo">845</span>            }<a name="line.845"></a>
+<span class="sourceLineNo">846</span>            return null;<a name="line.846"></a>
+<span class="sourceLineNo">847</span>        }<a name="line.847"></a>
+<span class="sourceLineNo">848</span><a name="line.848"></a>
+<span class="sourceLineNo">849</span>        /**<a name="line.849"></a>
+<span class="sourceLineNo">850</span>         * Return true if this table has one or more child tables.<a name="line.850"></a>
+<span class="sourceLineNo">851</span>         */<a name="line.851"></a>
+<span class="sourceLineNo">852</span>        public boolean hasChildren() {<a name="line.852"></a>
+<span class="sourceLineNo">853</span>            return ! children.isEmpty();<a name="line.853"></a>
+<span class="sourceLineNo">854</span>        }<a name="line.854"></a>
+<span class="sourceLineNo">855</span><a name="line.855"></a>
+<span class="sourceLineNo">856</span>        /**<a name="line.856"></a>
+<span class="sourceLineNo">857</span>         * Converts a {@link mondrian.rolap.RolapStar.Table} into a<a name="line.857"></a>
+<span class="sourceLineNo">858</span>         * {@link AggStar.DimTable} as well as converting all columns and<a name="line.858"></a>
+<span class="sourceLineNo">859</span>         * child tables. If the rightJoinConditionColumnName parameter<a name="line.859"></a>
+<span class="sourceLineNo">860</span>         * is null, then the table's namd and the rTable parameter's<a name="line.860"></a>
+<span class="sourceLineNo">861</span>         * condition left condition's column name are used to form the<a name="line.861"></a>
+<span class="sourceLineNo">862</span>         * join condition's left expression.<a name="line.862"></a>
+<span class="sourceLineNo">863</span>         */<a name="line.863"></a>
+<span class="sourceLineNo">864</span>        protected AggStar.DimTable convertTable(<a name="line.864"></a>
+<span class="sourceLineNo">865</span>            final RolapStar.Table rTable,<a name="line.865"></a>
+<span class="sourceLineNo">866</span>            final Usage usage)<a name="line.866"></a>
+<span class="sourceLineNo">867</span>        {<a name="line.867"></a>
+<span class="sourceLineNo">868</span>            String tableName = rTable.getAlias();<a name="line.868"></a>
+<span class="sourceLineNo">869</span>            MondrianDef.Relation relation = rTable.getRelation();<a name="line.869"></a>
+<span class="sourceLineNo">870</span>            RolapStar.Condition rjoinCondition = rTable.getJoinCondition();<a name="line.870"></a>
+<span class="sourceLineNo">871</span>            MondrianDef.Expression rleft = rjoinCondition.getLeft();<a name="line.871"></a>
+<span class="sourceLineNo">872</span>            final MondrianDef.Expression rright;<a name="line.872"></a>
+<span class="sourceLineNo">873</span>            if (usage == null<a name="line.873"></a>
+<span class="sourceLineNo">874</span>                || usage.getUsageType() != UsageType.LEVEL)<a name="line.874"></a>
+<span class="sourceLineNo">875</span>            {<a name="line.875"></a>
+<span class="sourceLineNo">876</span>                rright = rjoinCondition.getRight();<a name="line.876"></a>
+<span class="sourceLineNo">877</span>            } else {<a name="line.877"></a>
+<span class="sourceLineNo">878</span>                rright = usage.level.getKeyExp();<a name="line.878"></a>
+<span class="sourceLineNo">879</span>            }<a name="line.879"></a>
+<span class="sourceLineNo">880</span><a name="line.880"></a>
+<span class="sourceLineNo">881</span>            MondrianDef.Column left = null;<a name="line.881"></a>
+<span class="sourceLineNo">882</span>            if (usage != null<a name="line.882"></a>
+<span class="sourceLineNo">883</span>                &amp;&amp; usage.rightJoinConditionColumnName != null)<a name="line.883"></a>
+<span class="sourceLineNo">884</span>            {<a name="line.884"></a>
+<span class="sourceLineNo">885</span>                left = new MondrianDef.Column(<a name="line.885"></a>
+<span class="sourceLineNo">886</span>                    getName(),<a name="line.886"></a>
+<span class="sourceLineNo">887</span>                    usage.rightJoinConditionColumnName);<a name="line.887"></a>
+<span class="sourceLineNo">888</span>            } else {<a name="line.888"></a>
+<span class="sourceLineNo">889</span>                if (rleft instanceof MondrianDef.Column) {<a name="line.889"></a>
+<span class="sourceLineNo">890</span>                    MondrianDef.Column lcolumn = (MondrianDef.Column) rleft;<a name="line.890"></a>
+<span class="sourceLineNo">891</span>                    left = new MondrianDef.Column(getName(), lcolumn.name);<a name="line.891"></a>
+<span class="sourceLineNo">892</span>                } else {<a name="line.892"></a>
+<span class="sourceLineNo">893</span>                    throw Util.newInternal("not implemented: rleft=" + rleft);<a name="line.893"></a>
+<span class="sourceLineNo">894</span>/*<a name="line.894"></a>
+<span class="sourceLineNo">895</span>                    // RME TODO can we catch this during validation<a name="line.895"></a>
+<span class="sourceLineNo">896</span>                    String msg = mres.BadRolapStarLeftJoinCondition.str(<a name="line.896"></a>
+<span class="sourceLineNo">897</span>                        "AggStar.Table",<a name="line.897"></a>
+<span class="sourceLineNo">898</span>                        rleft.getClass().getName(), left.toString());<a name="line.898"></a>
+<span class="sourceLineNo">899</span>                    getLogger().warn(msg);<a name="line.899"></a>
+<span class="sourceLineNo">900</span>*/<a name="line.900"></a>
+<span class="sourceLineNo">901</span>                }<a name="line.901"></a>
+<span class="sourceLineNo">902</span>            }<a name="line.902"></a>
+<span class="sourceLineNo">903</span>            // Explicitly set which columns are foreign keys in the<a name="line.903"></a>
+<span class="sourceLineNo">904</span>            // AggStar. This lets us later determine if a measure is<a name="line.904"></a>
+<span class="sourceLineNo">905</span>            // based upon a foreign key (see AggregationManager findAgg<a name="line.905"></a>
+<span class="sourceLineNo">906</span>            // method).<a name="line.906"></a>
+<span class="sourceLineNo">907</span>            mondrian.rolap.RolapStar.Column col =<a name="line.907"></a>
+<span class="sourceLineNo">908</span>                getAggStar().getStar().getFactTable().lookupColumn(left.name);<a name="line.908"></a>
+<span class="sourceLineNo">909</span>            if (col != null) {<a name="line.909"></a>
+<span class="sourceLineNo">910</span>                getAggStar().setForeignKey(col.getBitPosition());<a name="line.910"></a>
+<span class="sourceLineNo">911</span>            }<a name="line.911"></a>
+<span class="sourceLineNo">912</span>            JoinCondition joinCondition = new JoinCondition(left, rright);<a name="line.912"></a>
+<span class="sourceLineNo">913</span>            DimTable dimTable =<a name="line.913"></a>
+<span class="sourceLineNo">914</span>                new DimTable(this, tableName, relation, joinCondition);<a name="line.914"></a>
+<span class="sourceLineNo">915</span><a name="line.915"></a>
+<span class="sourceLineNo">916</span>            if (usage == null<a name="line.916"></a>
+<span class="sourceLineNo">917</span>                || usage.getUsageType() != UsageType.LEVEL<a name="line.917"></a>
+<span class="sourceLineNo">918</span>                || (usage.getUsageType() == UsageType.LEVEL<a name="line.918"></a>
+<span class="sourceLineNo">919</span>                    &amp;&amp; usage.collapsed))<a name="line.919"></a>
+<span class="sourceLineNo">920</span>            {<a name="line.920"></a>
+<span class="sourceLineNo">921</span>                // Only set the bits for all levels if we are not<a name="line.921"></a>
+<span class="sourceLineNo">922</span>                // dealing with a non-collapsed AggLevel because we will<a name="line.922"></a>
+<span class="sourceLineNo">923</span>                // set the bits manually in AggStar.FactTable.loadLevel.<a name="line.923"></a>
+<span class="sourceLineNo">924</span>                dimTable.convertColumns(rTable);<a name="line.924"></a>
+<span class="sourceLineNo">925</span>            }<a name="line.925"></a>
+<span class="sourceLineNo">926</span><a name="line.926"></a>
+<span class="sourceLineNo">927</span>            dimTable.convertChildren(rTable);<a name="line.927"></a>
+<span class="sourceLineNo">928</span><a name="line.928"></a>
+<span class="sourceLineNo">929</span>            return dimTable;<a name="line.929"></a>
+<span class="sourceLineNo">930</span>        }<a name="line.930"></a>
+<span class="sourceLineNo">931</span><a name="line.931"></a>
+<span class="sourceLineNo">932</span>        /**<a name="line.932"></a>
+<span class="sourceLineNo">933</span>         * Convert a RolapStar.Table table's columns into<a name="line.933"></a>
+<span class="sourceLineNo">934</span>         * AggStar.Table.Level columns.<a name="line.934"></a>
+<span class="sourceLineNo">935</span>         */<a name="line.935"></a>
+<span class="sourceLineNo">936</span>        protected void convertColumns(final RolapStar.Table rTable) {<a name="line.936"></a>
+<span class="sourceLineNo">937</span>            // add level columns<a name="line.937"></a>
+<span class="sourceLineNo">938</span>            for (RolapStar.Column column : rTable.getColumns()) {<a name="line.938"></a>
+<span class="sourceLineNo">939</span>                String name = column.getName();<a name="line.939"></a>
+<span class="sourceLineNo">940</span>                MondrianDef.Expression expression = column.getExpression();<a name="line.940"></a>
+<span class="sourceLineNo">941</span>                int bitPosition = column.getBitPosition();<a name="line.941"></a>
+<span class="sourceLineNo">942</span><a name="line.942"></a>
+<span class="sourceLineNo">943</span>                Level level = new Level(<a name="line.943"></a>
+<span class="sourceLineNo">944</span>                    name,<a name="line.944"></a>
+<span class="sourceLineNo">945</span>                    expression,<a name="line.945"></a>
+<span class="sourceLineNo">946</span>                    bitPosition,<a name="line.946"></a>
+<span class="sourceLineNo">947</span>                    column,<a name="line.947"></a>
+<span class="sourceLineNo">948</span>                    false);<a name="line.948"></a>
+<span class="sourceLineNo">949</span>                addLevel(level);<a name="line.949"></a>
+<span class="sourceLineNo">950</span>            }<a name="line.950"></a>
+<span class="sourceLineNo">951</span>        }<a name="line.951"></a>
+<span class="sourceLineNo">952</span><a name="line.952"></a>
+<span class="sourceLineNo">953</span>        /**<a name="line.953"></a>
+<span class="sourceLineNo">954</span>         * Convert the child tables of a RolapStar.Table into<a name="line.954"></a>
+<span class="sourceLineNo">955</span>         * child AggStar.DimTable tables.<a name="line.955"></a>
+<span class="sourceLineNo">956</span>         */<a name="line.956"></a>
+<span class="sourceLineNo">957</span>        protected void convertChildren(final RolapStar.Table rTable) {<a name="line.957"></a>
+<span class="sourceLineNo">958</span>            // add children tables<a name="line.958"></a>
+<span class="sourceLineNo">959</span>            for (RolapStar.Table rTableChild : rTable.getChildren()) {<a name="line.959"></a>
+<span class="sourceLineNo">960</span>                DimTable dimChild = convertTable(rTableChild, null);<a name="line.960"></a>
+<span class="sourceLineNo">961</span><a name="line.961"></a>
+<span class="sourceLineNo">962</span>                addTable(dimChild);<a name="line.962"></a>
+<span class="sourceLineNo">963</span>            }<a name="line.963"></a>
+<span class="sourceLineNo">964</span>        }<a name="line.964"></a>
+<span class="sourceLineNo">965</span><a name="line.965"></a>
+<span class="sourceLineNo">966</span>        /**<a name="line.966"></a>
+<span class="sourceLineNo">967</span>         * This is a copy of the code found in RolapStar used to generate an SQL<a name="line.967"></a>
+<span class="sourceLineNo">968</span>         * query.<a name="line.968"></a>
+<span class="sourceLineNo">969</span>         */<a name="line.969"></a>
+<span class="sourceLineNo">970</span>        public void addToFrom(<a name="line.970"></a>
+<span class="sourceLineNo">971</span>            final SqlQuery query,<a name="line.971"></a>
+<span class="sourceLineNo">972</span>            final boolean failIfExists,<a name="line.972"></a>
+<span class="sourceLineNo">973</span>            final boolean joinToParent)<a name="line.973"></a>
+<span class="sourceLineNo">974</span>        {<a name="line.974"></a>
+<span class="sourceLineNo">975</span>            query.addFrom(relation, name, failIfExists);<a name="line.975"></a>
+<span class="sourceLineNo">976</span>            if (joinToParent) {<a name="line.976"></a>
+<span class="sourceLineNo">977</span>                if (hasParent()) {<a name="line.977"></a>
+<span class="sourceLineNo">978</span>                    getParent().addToFrom(query, failIfExists, joinToParent);<a name="line.978"></a>
+<span class="sourceLineNo">979</span>                }<a name="line.979"></a>
+<span class="sourceLineNo">980</span>                if (hasJoinCondition()) {<a name="line.980"></a>
+<span class="sourceLineNo">981</span>                    query.addWhere(getJoinCondition().toString(query));<a name="line.981"></a>
+<span class="sourceLineNo">982</span>                }<a name="line.982"></a>
+<span class="sourceLineNo">983</span>            }<a name="line.983"></a>
+<span class="sourceLineNo">984</span>        }<a name="line.984"></a>
+<span class="sourceLineNo">985</span><a name="line.985"></a>
+<span class="sourceLineNo">986</span>        public String toString() {<a name="line.986"></a>
+<span class="sourceLineNo">987</span>            StringWriter sw = new StringWriter(256);<a name="line.987"></a>
+<span class="sourceLineNo">988</span>            PrintWriter pw = new PrintWriter(sw);<a name="line.988"></a>
+<span class="sourceLineNo">989</span>            print(pw, "");<a name="line.989"></a>
+<span class="sourceLineNo">990</span>            pw.flush();<a name="line.990"></a>
+<span class="sourceLineNo">991</span>            return sw.toString();<a name="line.991"></a>
+<span class="sourceLineNo">992</span>        }<a name="line.992"></a>
+<span class="sourceLineNo">993</span>        public abstract void print(final PrintWriter pw, final String prefix);<a name="line.993"></a>
+<span class="sourceLineNo">994</span>    }<a name="line.994"></a>
+<span class="sourceLineNo">995</span><a name="line.995"></a>
+<span class="sourceLineNo">996</span>    /**<a name="line.996"></a>
+<span class="sourceLineNo">997</span>     * This is an aggregate fact table.<a name="line.997"></a>
+<span class="sourceLineNo">998</span>     */<a name="line.998"></a>
+<span class="sourceLineNo">999</span>    public class FactTable extends Table {<a name="line.999"></a>
+<span class="sourceLineNo">1000</span><a name="line.1000"></a>
+<span class="sourceLineNo">1001</span>        /**<a name="line.1001"></a>
+<span class="sourceLineNo">1002</span>         * This is a Column that is a Measure (contains an aggregator).<a name="line.1002"></a>
+<span class="sourceLineNo">1003</span>         */<a name="line.1003"></a>
+<span class="sourceLineNo">1004</span>        public class Measure extends Table.Column {<a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>            private final RolapAggregator aggregator;<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span>            /**<a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>             * The fact table column which is being aggregated.<a name="line.1007"></a>
+<span class="sourceLineNo">1008</span>             */<a name="line.1008"></a>
+<span class="sourceLineNo">1009</span>            private final MondrianDef.Expression argument;<a name="line.1009"></a>
+<span class="sourceLineNo">1010</span>            /**<a name="line.1010"></a>
+<span class="sourceLineNo">1011</span>             * For distinct-count measures, contains a bitKey of levels which<a name="line.1011"></a>
+<span class="sourceLineNo">1012</span>             * it is OK to roll up. For regular measures, this is empty, since<a name="line.1012"></a>
+<span class="sourceLineNo">1013</span>             * all levels can be rolled up.<a name="line.1013"></a>
+<span class="sourceLineNo">1014</span>             */<a name="line.1014"></a>
+<span class="sourceLineNo">1015</span>            private final BitKey rollableLevelBitKey;<a name="line.1015"></a>
+<span class="sourceLineNo">1016</span><a name="line.1016"></a>
+<span class="sourceLineNo">1017</span>            private Measure(<a name="line.1017"></a>
+<span class="sourceLineNo">1018</span>                final String name,<a name="line.1018"></a>
+<span class="sourceLineNo">1019</span>                final MondrianDef.Expression expression,<a name="line.1019"></a>
+<span class="sourceLineNo">1020</span>                final Dialect.Datatype datatype,<a name="line.1020"></a>
+<span class="sourceLineNo">1021</span>                final int bitPosition,<a name="line.1021"></a>
+<span class="sourceLineNo">1022</span>                final RolapAggregator aggregator,<a name="line.1022"></a>
+<span class="sourceLineNo">1023</span>                final MondrianDef.Expression argument)<a name="line.1023"></a>
+<span class="sourceLineNo">1024</span>            {<a name="line.1024"></a>
+<span class="sourceLineNo">1025</span>                super(name, expression, datatype, bitPosition);<a name="line.1025"></a>
+<span class="sourceLineNo">1026</span>                this.aggregator = aggregator;<a name="line.1026"></a>
+<span class="sourceLineNo">1027</span>                this.argument = argument;<a name="line.1027"></a>
+<span class="sourceLineNo">1028</span>                assert (argument != null) == aggregator.isDistinct();<a name="line.1028"></a>
+<span class="sourceLineNo">1029</span>                this.rollableLevelBitKey =<a name="line.1029"></a>
+<span class="sourceLineNo">1030</span>                    BitKey.Factory.makeBitKey(star.getColumnCount());<a name="line.1030"></a>
+<span class="sourceLineNo">1031</span><a name="line.1031"></a>
+<span class="sourceLineNo">1032</span>                AggStar.this.measureBitKey.set(bitPosition);<a name="line.1032"></a>
+<span class="sourceLineNo">1033</span>            }<a name="line.1033"></a>
+<span class="sourceLineNo">1034</span><a name="line.1034"></a>
+<span class="sourceLineNo">1035</span>            public boolean isDistinct() {<a name="line.1035"></a>
+<span class="sourceLineNo">1036</span>                return aggregator.isDistinct();<a name="line.1036"></a>
+<span class="sourceLineNo">1037</span>            }<a name="line.1037"></a>
+<span class="sourceLineNo">1038</span><a name="line.1038"></a>
+<span class="sourceLineNo">1039</span>            /**<a name="line.1039"></a>
+<span class="sourceLineNo">1040</span>             * Get this Measure's RolapAggregator.<a name="line.1040"></a>
+<span class="sourceLineNo">1041</span>             */<a name="line.1041"></a>
+<span class="sourceLineNo">1042</span>            public RolapAggregator getAggregator() {<a name="line.1042"></a>
+<span class="sourceLineNo">1043</span>                return aggregator;<a name="line.1043"></a>
+<span class="sourceLineNo">1044</span>            }<a name="line.1044"></a>
+<span class="sourceLineNo">1045</span><a name="line.1045"></a>
+<span class="sourceLineNo">1046</span>            /**<a name="line.1046"></a>
+<span class="sourceLineNo">1047</span>             * Returns a &lt;code&gt;BitKey&lt;/code&gt; of the levels which can be<a name="line.1047"></a>
+<span class="sourceLineNo">1048</span>             * safely rolled up. (For distinct-count measures, most can't.)<a name="line.1048"></a>
+<span class="sourceLineNo">1049</span>             */<a name="line.1049"></a>
+<span class="sourceLineNo">1050</span>            public BitKey getRollableLevelBitKey() {<a name="line.1050"></a>
+<span class="sourceLineNo">1051</span>                return rollableLevelBitKey;<a name="line.1051"></a>
+<span class="sourceLineNo">1052</span>            }<a name="line.1052"></a>
+<span class="sourceLineNo">1053</span><a name="line.1053"></a>
+<span class="sourceLineNo">1054</span>            public String generateRollupString(SqlQuery query) {<a name="line.1054"></a>
+<span class="sourceLineNo">1055</span>                String expr = generateExprString(query);<a name="line.1055"></a>
+<span class="sourceLineNo">1056</span>                Aggregator rollup = null;<a name="line.1056"></a>
+<span class="sourceLineNo">1057</span><a name="line.1057"></a>
+<span class="sourceLineNo">1058</span>                BitKey fkbk = AggStar.this.getForeignKeyBitKey();<a name="line.1058"></a>
+<span class="sourceLineNo">1059</span>                // When rolling up and the aggregator is distinct and<a name="line.1059"></a>
+<span class="sourceLineNo">1060</span>                // the measure is based upon a foreign key, then<a name="line.1060"></a>
+<span class="sourceLineNo">1061</span>                // one must use "count" rather than "sum"<a name="line.1061"></a>
+<span class="sourceLineNo">1062</span>                if (fkbk.get(getBitPosition())) {<a name="line.1062"></a>
+<span class="sourceLineNo">1063</span>                    rollup = (getAggregator().isDistinct())<a name="line.1063"></a>
+<span class="sourceLineNo">1064</span>                        ? getAggregator().getNonDistinctAggregator()<a name="line.1064"></a>
+<span class="sourceLineNo">1065</span>                        : getAggregator().getRollup();<a name="line.1065"></a>
+<span class="sourceLineNo">1066</span>                } else {<a name="line.1066"></a>
+<span class="sourceLineNo">1067</span>                    rollup = getAggregator().getRollup();<a name="line.1067"></a>
+<span class="sourceLineNo">1068</span>                }<a name="line.1068"></a>
+<span class="sourceLineNo">1069</span><a name="line.1069"></a>
+<span class="sourceLineNo">1070</span>                String s = ((RolapAggregator) rollup).getExpression(expr);<a name="line.1070"></a>
+<span class="sourceLineNo">1071</span>                return s;<a name="line.1071"></a>
+<span class="sourceLineNo">1072</span>            }<a name="line.1072"></a>
+<span class="sourceLineNo">1073</span>            public void print(final PrintWriter pw, final String prefix) {<a name="line.1073"></a>
+<span class="sourceLineNo">1074</span>                SqlQuery sqlQuery = getSqlQuery();<a name="line.1074"></a>
+<span class="sourceLineNo">1075</span>                pw.print(prefix);<a name="line.1075"></a>
+<span class="sourceLineNo">1076</span>                pw.print(getName());<a name="line.1076"></a>
+<span class="sourceLineNo">1077</span>                pw.print(" (");<a name="line.1077"></a>
+<span class="sourceLineNo">1078</span>                pw.print(getBitPosition());<a name="line.1078"></a>
+<span class="sourceLineNo">1079</span>                pw.print("): ");<a name="line.1079"></a>
+<span class="sourceLineNo">1080</span>                pw.print(generateRollupString(sqlQuery));<a name="line.1080"></a>
+<span class="sourceLineNo">1081</span>            }<a name="line.1081"></a>
+<span class="sourceLineNo">1082</span>        }<a name="line.1082"></a>
+<span class="sourceLineNo">1083</span><a name="line.1083"></a>
+<span class="sourceLineNo">1084</span>        private Column factCountColumn;<a name="line.1084"></a>
+<span class="sourceLineNo">1085</span>        private final List&lt;Measure&gt; measures;<a name="line.1085"></a>
+<span class="sourceLineNo">1086</span>        private final int totalColumnSize;<a name="line.1086"></a>
+<span class="sourceLineNo">1087</span>        private int numberOfRows;<a name="line.1087"></a>
+<span class="sourceLineNo">1088</span><a name="line.1088"></a>
+<span class="sourceLineNo">1089</span>        FactTable(final JdbcSchema.Table aggTable) {<a name="line.1089"></a>
+<span class="sourceLineNo">1090</span>            this(<a name="line.1090"></a>
+<span class="sourceLineNo">1091</span>                aggTable.getName(),<a name="line.1091"></a>
+<span class="sourceLineNo">1092</span>                aggTable.table,<a name="line.1092"></a>
+<span class="sourceLineNo">1093</span>                aggTable.getTotalColumnSize(),<a name="line.1093"></a>
+<span class="sourceLineNo">1094</span>                aggTable.getNumberOfRows());<a name="line.1094"></a>
+<span class="sourceLineNo">1095</span>        }<a name="line.1095"></a>
+<span class="sourceLineNo">1096</span><a name="line.1096"></a>
+<span class="sourceLineNo">1097</span>        FactTable(<a name="line.1097"></a>
+<span class="sourceLineNo">1098</span>            final String name,<a name="line.1098"></a>
+<span class="sourceLineNo">1099</span>            final MondrianDef.Relation relation,<a name="line.1099"></a>
+<span class="sourceLineNo">1100</span>            final int totalColumnSize,<a name="line.1100"></a>
+<span class="sourceLineNo">1101</span>            final int numberOfRows)<a name="line.1101"></a>
+<span class="sourceLineNo">1102</span>        {<a name="line.1102"></a>
+<span class="sourceLineNo">1103</span>            super(name, relation);<a name="line.1103"></a>
+<span class="sourceLineNo">1104</span>            this.totalColumnSize = totalColumnSize;<a name="line.1104"></a>
+<span class="sourceLineNo">1105</span>            this.measures = new ArrayList&lt;Measure&gt;();<a name="line.1105"></a>
+<span class="sourceLineNo">1106</span>            this.numberOfRows = numberOfRows;<a name="line.1106"></a>
+<span class="sourceLineNo">1107</span>        }<a name="line.1107"></a>
+<span class="sourceLineNo">1108</span><a name="line.1108"></a>
+<span class="sourceLineNo">1109</span>        public Table getParent() {<a name="line.1109"></a>
+<span class="sourceLineNo">1110</span>            return null;<a name="line.1110"></a>
+<span class="sourceLineNo">1111</span>        }<a name="line.1111"></a>
+<span class="sourceLineNo">1112</span><a name="line.1112"></a>
+<span class="sourceLineNo">1113</span>        public boolean hasParent() {<a name="line.1113"></a>
+<span class="sourceLineNo">1114</span>            return false;<a name="line.1114"></a>
+<span class="sourceLineNo">1115</span>        }<a name="line.1115"></a>
+<span class="sourceLineNo">1116</span><a name="line.1116"></a>
+<span class="sourceLineNo">1117</span>        public boolean hasJoinCondition() {<a name="line.1117"></a>
+<span class="sourceLineNo">1118</span>            return false;<a name="line.1118"></a>
+<span class="sourceLineNo">1119</span>        }<a name="line.1119"></a>
+<span class="sourceLineNo">1120</span><a name="line.1120"></a>
+<span class="sourceLineNo">1121</span>        public Table.JoinCondition getJoinCondition() {<a name="line.1121"></a>
+<span class="sourceLineNo">1122</span>            return null;<a name="line.1122"></a>
+<span class="sourceLineNo">1123</span>        }<a name="line.1123"></a>
+<span class="sourceLineNo">1124</span><a name="line.1124"></a>
+<span class="sourceLineNo">1125</span>        /**<a name="line.1125"></a>
+<span class="sourceLineNo">1126</span>         * Get the volume of the table (now of rows * size of a row).<a name="line.1126"></a>
+<span class="sourceLineNo">1127</span>         */<a name="line.1127"></a>
+<span class="sourceLineNo">1128</span>        public int getVolume() {<a name="line.1128"></a>
+<span class="sourceLineNo">1129</span>            return getTotalColumnSize() * getNumberOfRows();<a name="line.1129"></a>
+<span class="sourceLineNo">1130</span>        }<a name="line.1130"></a>
+<span class="sourceLineNo">1131</span><a name="line.1131"></a>
+<span class="sourceLineNo">1132</span>        /**<a name="line.1132"></a>
+<span class="sourceLineNo">1133</span>         * Get the total size of all columns in a row.<a name="line.1133"></a>
+<span class="sourceLineNo">1134</span>         */<a name="line.1134"></a>
+<span class="sourceLineNo">1135</span>        public int getTotalColumnSize() {<a name="line.1135"></a>
+<span class="sourceLineNo">1136</span>            return totalColumnSize;<a name="line.1136"></a>
+<span class="sourceLineNo">1137</span>        }<a name="line.1137"></a>
+<span class="sourceLineNo">1138</span><a name="line.1138"></a>
+<span class="sourceLineNo">1139</span>        /**<a name="line.1139"></a>
+<span class="sourceLineNo">1140</span>         * Get the number of rows in this aggregate table.<a name="line.1140"></a>
+<span class="sourceLineNo">1141</span>         */<a name="line.1141"></a>
+<span class="sourceLineNo">1142</span>        public int getNumberOfRows() {<a name="line.1142"></a>
+<span class="sourceLineNo">1143</span>            if (numberOfRows &lt; 0) {<a name="line.1143"></a>
+<span class="sourceLineNo">1144</span>                numberOfRows =<a name="line.1144"></a>
+<span class="sourceLineNo">1145</span>                    star.getStatisticsCache().getRelationCardinality(<a name="line.1145"></a>
+<span class="sourceLineNo">1146</span>                        getRelation(), getName(), approxRowCount);<a name="line.1146"></a>
+<span class="sourceLineNo">1147</span>                makeNumberOfRows();<a name="line.1147"></a>
+<span class="sourceLineNo">1148</span>            }<a name="line.1148"></a>
+<span class="sourceLineNo">1149</span>            return numberOfRows;<a name="line.1149"></a>
+<span class="sourceLineNo">1150</span>        }<a name="line.1150"></a>
+<span class="sourceLineNo">1151</span><a name="line.1151"></a>
+<span class="sourceLineNo">1152</span>        /**<a name="line.1152"></a>
+<span class="sourceLineNo">1153</span>         * This is for testing ONLY.<a name="line.1153"></a>
+<span class="sourceLineNo">1154</span>         */<a name="line.1154"></a>
+<span class="sourceLineNo">1155</span>        void setNumberOfRows(int numberOfRows) {<a name="line.1155"></a>
+<span class="sourceLineNo">1156</span>            this.numberOfRows = numberOfRows;<a name="line.1156"></a>
+<span class="sourceLineNo">1157</span>        }<a name="line.1157"></a>
+<span class="sourceLineNo">1158</span><a name="line.1158"></a>
+<span class="sourceLineNo">1159</span>        /**<a name="line.1159"></a>
+<span class="sourceLineNo">1160</span>         * Returns a list of all measures.<a name="line.1160"></a>
+<span class="sourceLineNo">1161</span>         */<a name="line.1161"></a>
+<span class="sourceLineNo">1162</span>        public List&lt;Measure&gt; getMeasures() {<a name="line.1162"></a>
+<span class="sourceLineNo">1163</span>            return measures;<a name="line.1163"></a>
+<span class="sourceLineNo">1164</span>        }<a name="line.1164"></a>
+<span class="sourceLineNo">1165</span><a name="line.1165"></a>
+<span class="sourceLineNo">1166</span>        /**<a name="line.1166"></a>
+<span class="sourceLineNo">1167</span>         * Return true it table has measures<a name="line.1167"></a>
+<span class="sourceLineNo">1168</span>         */<a name="line.1168"></a>
+<span class="sourceLineNo">1169</span>        public boolean hasMeasures() {<a name="line.1169"></a>
+<span class="sourceLineNo">1170</span>            return ! measures.isEmpty();<a name="line.1170"></a>
+<span class="sourceLineNo">1171</span>        }<a name="line.1171"></a>
+<span class="sourceLineNo">1172</span><a name="line.1172"></a>
+<span class="sourceLineNo">1173</span>        /**<a name="line.1173"></a>
+<span class="sourceLineNo">1174</span>         * Returns a list of the columns in this table.<a name="line.1174"></a>
+<span class="sourceLineNo">1175</span>         */<a name="line.1175"></a>
+<span class="sourceLineNo">1176</span>        public List&lt;Column&gt; getColumns() {<a name="line.1176"></a>
+<span class="sourceLineNo">1177</span>            List&lt;Column&gt; list = new ArrayList&lt;Column&gt;();<a name="line.1177"></a>
+<span class="sourceLineNo">1178</span>            list.addAll(measures);<a name="line.1178"></a>
+<span class="sourceLineNo">1179</span>            list.addAll(levels);<a name="line.1179"></a>
+<span class="sourceLineNo">1180</span>            for (DimTable dimTable : getChildTables()) {<a name="line.1180"></a>
+<span class="sourceLineNo">1181</span>                dimTable.addColumnsToList(list);<a name="line.1181"></a>
+<span class="sourceLineNo">1182</span>            }<a name="line.1182"></a>
+<span class="sourceLineNo">1183</span>            return list;<a name="line.1183"></a>
+<span class="sourceLineNo">1184</span>        }<a name="line.1184"></a>
+<span class="sourceLineNo">1185</span><a name="line.1185"></a>
+<span class="sourceLineNo">1186</span>        /**<a name="line.1186"></a>
+<span class="sourceLineNo">1187</span>         * For a foreign key usage create a child DimTable table.<a name="line.1187"></a>
+<span class="sourceLineNo">1188</span>         */<a name="line.1188"></a>
+<span class="sourceLineNo">1189</span>        private void loadForeignKey(final JdbcSchema.Table.Column.Usage usage) {<a name="line.1189"></a>
+<span class="sourceLineNo">1190</span>            if (usage.rTable != null) {<a name="line.1190"></a>
+<span class="sourceLineNo">1191</span>                DimTable child = convertTable(<a name="line.1191"></a>
+<span class="sourceLineNo">1192</span>                    usage.rTable,<a name="line.1192"></a>
+<span class="sourceLineNo">1193</span>                    usage);<a name="line.1193"></a>
+<span class="sourceLineNo">1194</span>                addTable(child);<a name="line.1194"></a>
+<span class="sourceLineNo">1195</span>            } else {<a name="line.1195"></a>
+<span class="sourceLineNo">1196</span>                // it a column thats not a measure or foreign key - it must be<a name="line.1196"></a>
+<span class="sourceLineNo">1197</span>                // a non-shared dimension<a name="line.1197"></a>
+<span class="sourceLineNo">1198</span>                // See: AggTableManager.java<a name="line.1198"></a>
+<span class="sourceLineNo">1199</span>                JdbcSchema.Table.Column column = usage.getColumn();<a name="line.1199"></a>
+<span class="sourceLineNo">1200</span>                String name = column.getName();<a name="line.1200"></a>
+<span class="sourceLineNo">1201</span>                String symbolicName = usage.getSymbolicName();<a name="line.1201"></a>
+<span class="sourceLineNo">1202</span>                if (symbolicName == null) {<a name="line.1202"></a>
+<span class="sourceLineNo">1203</span>                    symbolicName = name;<a name="line.1203"></a>
+<span class="sourceLineNo">1204</span>                }<a name="line.1204"></a>
+<span class="sourceLineNo">1205</span><a name="line.1205"></a>
+<span class="sourceLineNo">1206</span>                MondrianDef.Expression expression =<a name="line.1206"></a>
+<span class="sourceLineNo">1207</span>                    new MondrianDef.Column(getName(), name);<a name="line.1207"></a>
+<span class="sourceLineNo">1208</span>                Dialect.Datatype datatype = column.getDatatype();<a name="line.1208"></a>
+<span class="sourceLineNo">1209</span>                RolapStar.Column rColumn = usage.rColumn;<a name="line.1209"></a>
+<span class="sourceLineNo">1210</span>                if (rColumn == null) {<a name="line.1210"></a>
+<span class="sourceLineNo">1211</span>                    getLogger().warn(<a name="line.1211"></a>
+<span class="sourceLineNo">1212</span>                        "loadForeignKey: for column "<a name="line.1212"></a>
+<span class="sourceLineNo">1213</span>                        + name<a name="line.1213"></a>
+<span class="sourceLineNo">1214</span>                        + ", rColumn == null");<a name="line.1214"></a>
+<span class="sourceLineNo">1215</span>                } else {<a name="line.1215"></a>
+<span class="sourceLineNo">1216</span>                    int bitPosition = rColumn.getBitPosition();<a name="line.1216"></a>
+<span class="sourceLineNo">1217</span>                    ForeignKey c =<a name="line.1217"></a>
+<span class="sourceLineNo">1218</span>                        new ForeignKey(<a name="line.1218"></a>
+<span class="sourceLineNo">1219</span>                            symbolicName, expression, datatype, bitPosition);<a name="line.1219"></a>
+<span class="sourceLineNo">1220</span>                    getAggStar().setForeignKey(c.getBitPosition());<a name="line.1220"></a>
+<span class="sourceLineNo">1221</span>                }<a name="line.1221"></a>
+<span class="sourceLineNo">1222</span>            }<a name="line.1222"></a>
+<span class="sourceLineNo">1223</span>        }<a name="line.1223"></a>
+<span class="sourceLineNo">1224</span><a name="line.1224"></a>
+<span class="sourceLineNo">1225</span>        /**<a name="line.1225"></a>
+<span class="sourceLineNo">1226</span>         * Given a usage of type measure, create a Measure column.<a name="line.1226"></a>
+<span class="sourceLineNo">1227</span>         */<a name="line.1227"></a>
+<span class="sourceLineNo">1228</span>        private void loadMeasure(final JdbcSchema.Table.Column.Usage usage) {<a name="line.1228"></a>
+<span class="sourceLineNo">1229</span>            final JdbcSchema.Table.Column column = usage.getColumn();<a name="line.1229"></a>
+<span class="sourceLineNo">1230</span>            String name = column.getName();<a name="line.1230"></a>
+<span class="sourceLineNo">1231</span>            String symbolicName = usage.getSymbolicName();<a name="line.1231"></a>
+<span class="sourceLineNo">1232</span>            if (symbolicName == null) {<a name="line.1232"></a>
+<span class="sourceLineNo">1233</span>                symbolicName = name;<a name="line.1233"></a>
+<span class="sourceLineNo">1234</span>            }<a name="line.1234"></a>
+<span class="sourceLineNo">1235</span>            Dialect.Datatype datatype = column.getDatatype();<a name="line.1235"></a>
+<span class="sourceLineNo">1236</span>            RolapAggregator aggregator = usage.getAggregator();<a name="line.1236"></a>
+<span class="sourceLineNo">1237</span><a name="line.1237"></a>
+<span class="sourceLineNo">1238</span>            MondrianDef.Expression expression;<a name="line.1238"></a>
+<span class="sourceLineNo">1239</span>            if (column.hasUsage(JdbcSchema.UsageType.FOREIGN_KEY)<a name="line.1239"></a>
+<span class="sourceLineNo">1240</span>                &amp;&amp; !aggregator.isDistinct())<a name="line.1240"></a>
+<span class="sourceLineNo">1241</span>            {<a name="line.1241"></a>
+<span class="sourceLineNo">1242</span>                expression = factCountColumn.getExpression();<a name="line.1242"></a>
+<span class="sourceLineNo">1243</span>            } else {<a name="line.1243"></a>
+<span class="sourceLineNo">1244</span>                expression = new MondrianDef.Column(getName(), name);<a name="line.1244"></a>
+<span class="sourceLineNo">1245</span>            }<a name="line.1245"></a>
+<span class="sourceLineNo">1246</span><a name="line.1246"></a>
+<span class="sourceLineNo">1247</span>            MondrianDef.Expression argument;<a name="line.1247"></a>
+<span class="sourceLineNo">1248</span>            if (aggregator.isDistinct()) {<a name="line.1248"></a>
+<span class="sourceLineNo">1249</span>                argument = usage.rMeasure.getExpression();<a name="line.1249"></a>
+<span class="sourceLineNo">1250</span>            } else {<a name="line.1250"></a>
+<span class="sourceLineNo">1251</span>                argument = null;<a name="line.1251"></a>
+<span class="sourceLineNo">1252</span>            }<a name="line.1252"></a>
+<span class="sourceLineNo">1253</span><a name="line.1253"></a>
+<span class="sourceLineNo">1254</span>            int bitPosition = usage.rMeasure.getBitPosition();<a name="line.1254"></a>
+<span class="sourceLineNo">1255</span><a name="line.1255"></a>
+<span class="sourceLineNo">1256</span>            Measure aggMeasure =<a name="line.1256"></a>
+<span class="sourceLineNo">1257</span>                new Measure(<a name="line.1257"></a>
+<span class="sourceLineNo">1258</span>                    symbolicName,<a name="line.1258"></a>
+<span class="sourceLineNo">1259</span>                    expression,<a name="line.1259"></a>
+<span class="sourceLineNo">1260</span>                    datatype,<a name="line.1260"></a>
+<span class="sourceLineNo">1261</span>                    bitPosition,<a name="line.1261"></a>
+<span class="sourceLineNo">1262</span>                    aggregator,<a name="line.1262"></a>
+<span class="sourceLineNo">1263</span>                    argument);<a name="line.1263"></a>
+<span class="sourceLineNo">1264</span><a name="line.1264"></a>
+<span class="sourceLineNo">1265</span>            measures.add(aggMeasure);<a name="line.1265"></a>
+<span class="sourceLineNo">1266</span><a name="line.1266"></a>
+<span class="sourceLineNo">1267</span>            if (aggMeasure.aggregator.isDistinct()) {<a name="line.1267"></a>
+<span class="sourceLineNo">1268</span>                distinctMeasureBitKey.set(bitPosition);<a name="line.1268"></a>
+<span class="sourceLineNo">1269</span>            }<a name="line.1269"></a>
+<span class="sourceLineNo">1270</span>        }<a name="line.1270"></a>
+<span class="sourceLineNo">1271</span><a name="line.1271"></a>
+<span class="sourceLineNo">1272</span>        /**<a name="line.1272"></a>
+<span class="sourceLineNo">1273</span>         * Create a fact_count column for a usage of type fact count.<a name="line.1273"></a>
+<span class="sourceLineNo">1274</span>         */<a name="line.1274"></a>
+<span class="sourceLineNo">1275</span>        private void loadFactCount(final JdbcSchema.Table.Column.Usage usage) {<a name="line.1275"></a>
+<span class="sourceLineNo">1276</span>            String name = usage.getColumn().getName();<a name="line.1276"></a>
+<span class="sourceLineNo">1277</span>            String symbolicName = usage.getSymbolicName();<a name="line.1277"></a>
+<span class="sourceLineNo">1278</span>            if (symbolicName == null) {<a name="line.1278"></a>
+<span class="sourceLineNo">1279</span>                symbolicName = name;<a name="line.1279"></a>
+<span class="sourceLineNo">1280</span>            }<a name="line.1280"></a>
+<span class="sourceLineNo">1281</span><a name="line.1281"></a>
+<span class="sourceLineNo">1282</span>            MondrianDef.Expression expression =<a name="line.1282"></a>
+<span class="sourceLineNo">1283</span>                new MondrianDef.Column(getName(), name);<a name="line.1283"></a>
+<span class="sourceLineNo">1284</span>            Dialect.Datatype datatype = usage.getColumn().getDatatype();<a name="line.1284"></a>
+<span class="sourceLineNo">1285</span>            int bitPosition = -1;<a name="line.1285"></a>
+<span class="sourceLineNo">1286</span><a name="line.1286"></a>
+<span class="sourceLineNo">1287</span>            Column aggColumn =<a name="line.1287"></a>
+<span class="sourceLineNo">1288</span>                new Column(<a name="line.1288"></a>
+<span class="sourceLineNo">1289</span>                    symbolicName,<a name="line.1289"></a>
+<span class="sourceLineNo">1290</span>                    expression,<a name="line.1290"></a>
+<span class="sourceLineNo">1291</span>                    datatype,<a name="line.1291"></a>
+<span class="sourceLineNo">1292</span>                    bitPosition);<a name="line.1292"></a>
+<span class="sourceLineNo">1293</span><a name="line.1293"></a>
+<span class="sourceLineNo">1294</span>            factCountColumn = aggColumn;<a name="line.1294"></a>
+<span class="sourceLineNo">1295</span>        }<a name="line.1295"></a>
+<span class="sourceLineNo">1296</span><a name="line.1296"></a>
+<span class="sourceLineNo">1297</span>        /**<a name="line.1297"></a>
+<span class="sourceLineNo">1298</span>         * Given a usage of type level, create a Level column.<a name="line.1298"></a>
+<span class="sourceLineNo">1299</span>         */<a name="line.1299"></a>
+<span class="sourceLineNo">1300</span>        private void loadLevel(final JdbcSchema.Table.Column.Usage usage) {<a name="line.1300"></a>
+<span class="sourceLineNo">1301</span>            String name = usage.getSymbolicName();<a name="line.1301"></a>
+<span class="sourceLineNo">1302</span>            MondrianDef.Expression expression =<a name="line.1302"></a>
+<span class="sourceLineNo">1303</span>                new MondrianDef.Column(getName(), usage.levelColumnName);<a name="line.1303"></a>
+<span class="sourceLineNo">1304</span>            int bitPosition = usage.rColumn.getBitPosition();<a name="line.1304"></a>
+<span class="sourceLineNo">1305</span>            Level level =<a name="line.1305"></a>
+<span class="sourceLineNo">1306</span>                new Level(<a name="line.1306"></a>
+<span class="sourceLineNo">1307</span>                    name,<a name="line.1307"></a>
+<span class="sourceLineNo">1308</span>                    expression,<a name="line.1308"></a>
+<span class="sourceLineNo">1309</span>                    bitPosition,<a name="line.1309"></a>
+<span class="sourceLineNo">1310</span>                    usage.rColumn,<a name="line.1310"></a>
+<span class="sourceLineNo">1311</span>                    usage.collapsed);<a name="line.1311"></a>
+<span class="sourceLineNo">1312</span>            addLevel(level);<a name="line.1312"></a>
+<span class="sourceLineNo">1313</span><a name="line.1313"></a>
+<span class="sourceLineNo">1314</span>            // If we are dealing with a non-collapsed level, we have to<a name="line.1314"></a>
+<span class="sourceLineNo">1315</span>            // modify the bit key of the AggStar and create a column<a name="line.1315"></a>
+<span class="sourceLineNo">1316</span>            // object for each parent level so that the AggQuerySpec<a name="line.1316"></a>
+<span class="sourceLineNo">1317</span>            // can correctly link up to the other tables.<a name="line.1317"></a>
+<span class="sourceLineNo">1318</span>            if (!usage.collapsed) {<a name="line.1318"></a>
+<span class="sourceLineNo">1319</span>                // We must also update the bit key with<a name="line.1319"></a>
+<span class="sourceLineNo">1320</span>                // the parent levels of any non-collapsed level.<a name="line.1320"></a>
+<span class="sourceLineNo">1321</span>                RolapLevel parentLevel =<a name="line.1321"></a>
+<span class="sourceLineNo">1322</span>                    (RolapLevel)usage.level.getParentLevel();<a name="line.1322"></a>
+<span class="sourceLineNo">1323</span>                while (parentLevel != null &amp;&amp; !parentLevel.isAll()) {<a name="line.1323"></a>
+<span class="sourceLineNo">1324</span>                    // Find the bit for this AggStar's bit key for each parent<a name="line.1324"></a>
+<span class="sourceLineNo">1325</span>                    // level. There is no need to modify the AggStar's bit key<a name="line.1325"></a>
+<span class="sourceLineNo">1326</span>                    // directly here, because the constructor of Column<a name="line.1326"></a>
+<span class="sourceLineNo">1327</span>                    // will do that for us later on.<a name="line.1327"></a>
+<span class="sourceLineNo">1328</span>                    final BitKey bk = AggStar.this.star.getBitKey(<a name="line.1328"></a>
+<span class="sourceLineNo">1329</span>                        new String[] {<a name="line.1329"></a>
+<span class="sourceLineNo">1330</span>                            parentLevel.getKeyExp().getTableAlias()},<a name="line.1330"></a>
+<span class="sourceLineNo">1331</span>                        new String[] {<a name="line.1331"></a>
+<span class="sourceLineNo">1332</span>                            ((MondrianDef.Column)parentLevel.getKeyExp())<a name="line.1332"></a>
+<span class="sourceLineNo">1333</span>                                .getColumnName()});<a name="line.1333"></a>
+<span class="sourceLineNo">1334</span>                    final int bitPos = bk.nextSetBit(0);<a name="line.1334"></a>
+<span class="sourceLineNo">1335</span>                    if (bitPos == -1) {<a name="line.1335"></a>
+<span class="sourceLineNo">1336</span>                        throw new MondrianException(<a name="line.1336"></a>
+<span class="sourceLineNo">1337</span>                            "Failed to match non-collapsed aggregate level with a column from the RolapStar.");<a name="line.1337"></a>
+<span class="sourceLineNo">1338</span>                    }<a name="line.1338"></a>
+<span class="sourceLineNo">1339</span>                    // Now we will create the Column object to return to the<a name="line.1339"></a>
+<span class="sourceLineNo">1340</span>                    // AggQuerySpec. We will use the convertTable() method<a name="line.1340"></a>
+<span class="sourceLineNo">1341</span>                    // because it is convenient and it is capable to convert<a name="line.1341"></a>
+<span class="sourceLineNo">1342</span>                    // our base table into a series of parent-child tables<a name="line.1342"></a>
+<span class="sourceLineNo">1343</span>                    // with their join paths figured out.<a name="line.1343"></a>
+<span class="sourceLineNo">1344</span>                    DimTable columnTable =<a name="line.1344"></a>
+<span class="sourceLineNo">1345</span>                        convertTable(<a name="line.1345"></a>
+<span class="sourceLineNo">1346</span>                            AggStar.this.star.getColumn(bitPosition)<a name="line.1346"></a>
+<span class="sourceLineNo">1347</span>                                .getTable(),<a name="line.1347"></a>
+<span class="sourceLineNo">1348</span>                            usage);<a name="line.1348"></a>
+<span class="sourceLineNo">1349</span>                    // Make sure to return the last child table, since<a name="line.1349"></a>
+<span class="sourceLineNo">1350</span>                    // AggQuerySpec will take care of going up the<a name="line.1350"></a>
+<span class="sourceLineNo">1351</span>                    // parent-child hierarchy and do all the work for us.<a name="line.1351"></a>
+<span class="sourceLineNo">1352</span>                    while (columnTable.getChildTables().size() &gt; 0) {<a name="line.1352"></a>
+<span class="sourceLineNo">1353</span>                        columnTable = columnTable.getChildTables().get(0);<a name="line.1353"></a>
+<span class="sourceLineNo">1354</span>                    }<a name="line.1354"></a>
+<span class="sourceLineNo">1355</span>                    final DimTable finalColumnTable = columnTable;<a name="line.1355"></a>
+<span class="sourceLineNo">1356</span>                    levelColumnsToJoin.put(<a name="line.1356"></a>
+<span class="sourceLineNo">1357</span>                        bitPos,<a name="line.1357"></a>
+<span class="sourceLineNo">1358</span>                        new Column(<a name="line.1358"></a>
+<span class="sourceLineNo">1359</span>                            ((MondrianDef.Column)parentLevel.getKeyExp())<a name="line.1359"></a>
+<span class="sourceLineNo">1360</span>                                .getColumnName(),<a name="line.1360"></a>
+<span class="sourceLineNo">1361</span>                            parentLevel.getKeyExp(),<a name="line.1361"></a>
+<span class="sourceLineNo">1362</span>                            AggStar.this.star.getColumn(bitPos).getDatatype(),<a name="line.1362"></a>
+<span class="sourceLineNo">1363</span>                            bitPos)<a name="line.1363"></a>
+<span class="sourceLineNo">1364</span>                        {<a name="line.1364"></a>
+<span class="sourceLineNo">1365</span>                            public Table getTable() {<a name="line.1365"></a>
+<span class="sourceLineNo">1366</span>                                return finalColumnTable;<a name="line.1366"></a>
+<span class="sourceLineNo">1367</span>                            }<a name="line.1367"></a>
+<span class="sourceLineNo">1368</span>                        });<a name="line.1368"></a>
+<span class="sourceLineNo">1369</span>                    // Do the next parent level.<a name="line.1369"></a>
+<span class="sourceLineNo">1370</span>                    parentLevel = (RolapLevel) parentLevel.getParentLevel();<a name="line.1370"></a>
+<span class="sourceLineNo">1371</span>                }<a name="line.1371"></a>
+<span class="sourceLineNo">1372</span>            }<a name="line.1372"></a>
+<span class="sourceLineNo">1373</span>        }<a name="line.1373"></a>
+<span class="sourceLineNo">1374</span><a name="line.1374"></a>
+<span class="sourceLineNo">1375</span>        public void print(final PrintWriter pw, final String prefix) {<a name="line.1375"></a>
+<span class="sourceLineNo">1376</span>            pw.print(prefix);<a name="line.1376"></a>
+<span class="sourceLineNo">1377</span>            pw.println("Table:");<a name="line.1377"></a>
+<span class="sourceLineNo">1378</span>            String subprefix = prefix + "  ";<a name="line.1378"></a>
+<span class="sourceLineNo">1379</span>            String subsubprefix = subprefix + "  ";<a name="line.1379"></a>
+<span class="sourceLineNo">1380</span><a name="line.1380"></a>
+<span class="sourceLineNo">1381</span>            pw.print(subprefix);<a name="line.1381"></a>
+<span class="sourceLineNo">1382</span>            pw.print("name=");<a name="line.1382"></a>
+<span class="sourceLineNo">1383</span>            pw.println(getName());<a name="line.1383"></a>
+<span class="sourceLineNo">1384</span><a name="line.1384"></a>
+<span class="sourceLineNo">1385</span>            if (getRelation() != null) {<a name="line.1385"></a>
+<span class="sourceLineNo">1386</span>                pw.print(subprefix);<a name="line.1386"></a>
+<span class="sourceLineNo">1387</span>                pw.print("relation=");<a name="line.1387"></a>
+<span class="sourceLineNo">1388</span>                pw.println(getRelation());<a name="line.1388"></a>
+<span class="sourceLineNo">1389</span>            }<a name="line.1389"></a>
+<span class="sourceLineNo">1390</span><a name="line.1390"></a>
+<span class="sourceLineNo">1391</span>            pw.print(subprefix);<a name="line.1391"></a>
+<span class="sourceLineNo">1392</span>            pw.print("numberofrows=");<a name="line.1392"></a>
+<span class="sourceLineNo">1393</span>            pw.println(getNumberOfRows());<a name="line.1393"></a>
+<span class="sourceLineNo">1394</span><a name="line.1394"></a>
+<span class="sourceLineNo">1395</span>            pw.print(subprefix);<a name="line.1395"></a>
+<span class="sourceLineNo">1396</span>            pw.println("FactCount:");<a name="line.1396"></a>
+<span class="sourceLineNo">1397</span>            factCountColumn.print(pw, subsubprefix);<a name="line.1397"></a>
+<span class="sourceLineNo">1398</span>            pw.println();<a name="line.1398"></a>
+<span class="sourceLineNo">1399</span><a name="line.1399"></a>
+<span class="sourceLineNo">1400</span>            pw.print(subprefix);<a name="line.1400"></a>
+<span class="sourceLineNo">1401</span>            pw.println("Measures:");<a name="line.1401"></a>
+<span class="sourceLineNo">1402</span>            for (Measure column : getMeasures()) {<a name="line.1402"></a>
+<span class="sourceLineNo">1403</span>                column.print(pw, subsubprefix);<a name="line.1403"></a>
+<span class="sourceLineNo">1404</span>                pw.println();<a name="line.1404"></a>
+<span class="sourceLineNo">1405</span>            }<a name="line.1405"></a>
+<span class="sourceLineNo">1406</span><a name="line.1406"></a>
+<span class="sourceLineNo">1407</span>            pw.print(subprefix);<a name="line.1407"></a>
+<span class="sourceLineNo">1408</span>            pw.println("Levels:");<a name="line.1408"></a>
+<span class="sourceLineNo">1409</span>            for (Level level : getLevels()) {<a name="line.1409"></a>
+<span class="sourceLineNo">1410</span>                level.print(pw, subsubprefix);<a name="line.1410"></a>
+<span class="sourceLineNo">1411</span>                pw.println();<a name="line.1411"></a>
+<span class="sourceLineNo">1412</span>            }<a name="line.1412"></a>
+<span class="sourceLineNo">1413</span><a name="line.1413"></a>
+<span class="sourceLineNo">1414</span>            for (DimTable child : getChildTables()) {<a name="line.1414"></a>
+<span class="sourceLineNo">1415</span>                child.print(pw, subprefix);<a name="line.1415"></a>
+<span class="sourceLineNo">1416</span>            }<a name="line.1416"></a>
+<span class="sourceLineNo">1417</span>        }<a name="line.1417"></a>
+<span class="sourceLineNo">1418</span><a name="line.1418"></a>
+<span class="sourceLineNo">1419</span>        private void makeNumberOfRows() {<a name="line.1419"></a>
+<span class="sourceLineNo">1420</span>            if (approxRowCount &gt;= 0) {<a name="line.1420"></a>
+<span class="sourceLineNo">1421</span>                numberOfRows = approxRowCount;<a name="line.1421"></a>
+<span class="sourceLineNo">1422</span>                return;<a name="line.1422"></a>
+<span class="sourceLineNo">1423</span>            }<a name="line.1423"></a>
+<span class="sourceLineNo">1424</span>            SqlQuery query = getSqlQuery();<a name="line.1424"></a>
+<span class="sourceLineNo">1425</span>            query.addSelect("count(*)", null);<a name="line.1425"></a>
+<span class="sourceLineNo">1426</span>            query.addFrom(getRelation(), getName(), false);<a name="line.1426"></a>
+<span class="sourceLineNo">1427</span>            DataSource dataSource = getAggStar().getStar().getDataSource();<a name="line.1427"></a>
+<span class="sourceLineNo">1428</span>            SqlStatement stmt =<a name="line.1428"></a>
+<span class="sourceLineNo">1429</span>                RolapUtil.executeQuery(<a name="line.1429"></a>
+<span class="sourceLineNo">1430</span>                    dataSource,<a name="line.1430"></a>
+<span class="sourceLineNo">1431</span>                    query.toString(),<a name="line.1431"></a>
+<span class="sourceLineNo">1432</span>                    new Locus(<a name="line.1432"></a>
+<span class="sourceLineNo">1433</span>                        new Execution(<a name="line.1433"></a>
+<span class="sourceLineNo">1434</span>                            star.getSchema().getInternalConnection()<a name="line.1434"></a>
+<span class="sourceLineNo">1435</span>                                .getInternalStatement(),<a name="line.1435"></a>
+<span class="sourceLineNo">1436</span>                            0),<a name="line.1436"></a>
+<span class="sourceLineNo">1437</span>                        "AggStar.FactTable.makeNumberOfRows",<a name="line.1437"></a>
+<span class="sourceLineNo">1438</span>                        "Counting rows in aggregate table"));<a name="line.1438"></a>
+<span class="sourceLineNo">1439</span>            try {<a name="line.1439"></a>
+<span class="sourceLineNo">1440</span>                ResultSet resultSet = stmt.getResultSet();<a name="line.1440"></a>
+<span class="sourceLineNo">1441</span>                if (resultSet.next()) {<a name="line.1441"></a>
+<span class="sourceLineNo">1442</span>                    ++stmt.rowCount;<a name="line.1442"></a>
+<span class="sourceLineNo">1443</span>                    numberOfRows = resultSet.getInt(1);<a name="line.1443"></a>
+<span class="sourceLineNo">1444</span>                } else {<a name="line.1444"></a>
+<span class="sourceLineNo">1445</span>                    getLogger().warn(<a name="line.1445"></a>
+<span class="sourceLineNo">1446</span>                        mres.SqlQueryFailed.str(<a name="line.1446"></a>
+<span class="sourceLineNo">1447</span>                            "AggStar.FactTable.makeNumberOfRows",<a name="line.1447"></a>
+<span class="sourceLineNo">1448</span>                            query.toString()));<a name="line.1448"></a>
+<span class="sourceLineNo">1449</span><a name="line.1449"></a>
+<span class="sourceLineNo">1450</span>                    // set to large number so that this table is never used<a name="line.1450"></a>
+<span class="sourceLineNo">1451</span>                    numberOfRows = Integer.MAX_VALUE / getTotalColumnSize();<a name="line.1451"></a>
+<span class="sourceLineNo">1452</span>                }<a name="line.1452"></a>
+<span class="sourceLineNo">1453</span>            } catch (SQLException e) {<a name="line.1453"></a>
+<span class="sourceLineNo">1454</span>                throw stmt.handle(e);<a name="line.1454"></a>
+<span class="sourceLineNo">1455</span>            } finally {<a name="line.1455"></a>
+<span class="sourceLineNo">1456</span>                stmt.close();<a name="line.1456"></a>
+<span class="sourceLineNo">1457</span>            }<a name="line.1457"></a>
+<span class="sourceLineNo">1458</span>        }<a name="line.1458"></a>
+<span class="sourceLineNo">1459</span>    }<a name="line.1459"></a>
+<span class="sourceLineNo">1460</span><a name="line.1460"></a>
+<span class="sourceLineNo">1461</span>    /**<a name="line.1461"></a>
+<span class="sourceLineNo">1462</span>     * This class represents a dimension table.<a name="line.1462"></a>
+<span class="sourceLineNo">1463</span>     */<a name="line.1463"></a>
+<span class="sourceLineNo">1464</span>    public class DimTable extends Table {<a name="line.1464"></a>
+<span class="sourceLineNo">1465</span>        private final Table parent;<a name="line.1465"></a>
+<span class="sourceLineNo">1466</span>        private final JoinCondition joinCondition;<a name="line.1466"></a>
+<span class="sourceLineNo">1467</span><a name="line.1467"></a>
+<span class="sourceLineNo">1468</span>        DimTable(<a name="line.1468"></a>
+<span class="sourceLineNo">1469</span>            final Table parent,<a name="line.1469"></a>
+<span class="sourceLineNo">1470</span>            final String name,<a name="line.1470"></a>
+<span class="sourceLineNo">1471</span>            final MondrianDef.Relation relation,<a name="line.1471"></a>
+<span class="sourceLineNo">1472</span>            final JoinCondition joinCondition)<a name="line.1472"></a>
+<span class="sourceLineNo">1473</span>        {<a name="line.1473"></a>
+<span class="sourceLineNo">1474</span>            super(name, relation);<a name="line.1474"></a>
+<span class="sourceLineNo">1475</span>            this.parent = parent;<a name="line.1475"></a>
+<span class="sourceLineNo">1476</span>            this.joinCondition = joinCondition;<a name="line.1476"></a>
+<span class="sourceLineNo">1477</span>        }<a name="line.1477"></a>
+<span class="sourceLineNo">1478</span><a name="line.1478"></a>
+<span class="sourceLineNo">1479</span>        public Table getParent() {<a name="line.1479"></a>
+<span class="sourceLineNo">1480</span>            return parent;<a name="line.1480"></a>
+<span class="sourceLineNo">1481</span>        }<a name="line.1481"></a>
+<span class="sourceLineNo">1482</span><a name="line.1482"></a>
+<span class="sourceLineNo">1483</span>        public boolean hasParent() {<a name="line.1483"></a>
+<span class="sourceLineNo">1484</span>            return true;<a name="line.1484"></a>
+<span class="sourceLineNo">1485</span>        }<a name="line.1485"></a>
+<span class="sourceLineNo">1486</span><a name="line.1486"></a>
+<span class="sourceLineNo">1487</span>        public boolean hasJoinCondition() {<a name="line.1487"></a>
+<span class="sourceLineNo">1488</span>            return true;<a name="line.1488"></a>
+<span class="sourceLineNo">1489</span>        }<a name="line.1489"></a>
+<span class="sourceLineNo">1490</span><a name="line.1490"></a>
+<span class="sourceLineNo">1491</span>        public Table.JoinCondition getJoinCondition() {<a name="line.1491"></a>
+<span class="sourceLineNo">1492</span>            return joinCondition;<a name="line.1492"></a>
+<span class="sourceLineNo">1493</span>        }<a name="line.1493"></a>
+<span class="sourceLineNo">1494</span><a name="line.1494"></a>
+<span class="sourceLineNo">1495</span>        /**<a name="line.1495"></a>
+<span class="sourceLineNo">1496</span>         * Add all of this Table's columns to the list parameter and then add<a name="line.1496"></a>
+<span class="sourceLineNo">1497</span>         * all child table columns.<a name="line.1497"></a>
+<span class="sourceLineNo">1498</span>         */<a name="line.1498"></a>
+<span class="sourceLineNo">1499</span>        public void addColumnsToList(final List&lt;Column&gt; list) {<a name="line.1499"></a>
+<span class="sourceLineNo">1500</span>            list.addAll(levels);<a name="line.1500"></a>
+<span class="sourceLineNo">1501</span>            for (DimTable dimTable : getChildTables()) {<a name="line.1501"></a>
+<span class="sourceLineNo">1502</span>                dimTable.addColumnsToList(list);<a name="line.1502"></a>
+<span class="sourceLineNo">1503</span>            }<a name="line.1503"></a>
+<span class="sourceLineNo">1504</span>        }<a name="line.1504"></a>
+<span class="sourceLineNo">1505</span><a name="line.1505"></a>
+<span class="sourceLineNo">1506</span>        public void print(final PrintWriter pw, final String prefix) {<a name="line.1506"></a>
+<span class="sourceLineNo">1507</span>            pw.print(prefix);<a name="line.1507"></a>
+<span class="sourceLineNo">1508</span>            pw.println("Table:");<a name="line.1508"></a>
+<span class="sourceLineNo">1509</span>            String subprefix = prefix + "  ";<a name="line.1509"></a>
+<span class="sourceLineNo">1510</span>            String subsubprefix = subprefix + "  ";<a name="line.1510"></a>
+<span class="sourceLineNo">1511</span><a name="line.1511"></a>
+<span class="sourceLineNo">1512</span>            pw.print(subprefix);<a name="line.1512"></a>
+<span class="sourceLineNo">1513</span>            pw.print("name=");<a name="line.1513"></a>
+<span class="sourceLineNo">1514</span>            pw.println(getName());<a name="line.1514"></a>
+<span class="sourceLineNo">1515</span><a name="line.1515"></a>
+<span class="sourceLineNo">1516</span>            if (getRelation() != null) {<a name="line.1516"></a>
+<span class="sourceLineNo">1517</span>                pw.print(subprefix);<a name="line.1517"></a>
+<span class="sourceLineNo">1518</span>                pw.print("relation=");<a name="line.1518"></a>
+<span class="sourceLineNo">1519</span>                pw.println(getRelation());<a name="line.1519"></a>
+<span class="sourceLineNo">1520</span>            }<a name="line.1520"></a>
+<span class="sourceLineNo">1521</span><a name="line.1521"></a>
+<span class="sourceLineNo">1522</span>            pw.print(subprefix);<a name="line.1522"></a>
+<span class="sourceLineNo">1523</span>            pw.println("Levels:");<a name="line.1523"></a>
+<span class="sourceLineNo">1524</span><a name="line.1524"></a>
+<span class="sourceLineNo">1525</span>            for (Level level : getLevels()) {<a name="line.1525"></a>
+<span class="sourceLineNo">1526</span>                level.print(pw, subsubprefix);<a name="line.1526"></a>
+<span class="sourceLineNo">1527</span>                pw.println();<a name="line.1527"></a>
+<span class="sourceLineNo">1528</span>            }<a name="line.1528"></a>
+<span class="sourceLineNo">1529</span><a name="line.1529"></a>
+<span class="sourceLineNo">1530</span>            joinCondition.print(pw, subprefix);<a name="line.1530"></a>
+<span class="sourceLineNo">1531</span><a name="line.1531"></a>
+<span class="sourceLineNo">1532</span>            for (DimTable child : getChildTables()) {<a name="line.1532"></a>
+<span class="sourceLineNo">1533</span>                child.print(pw, subprefix);<a name="line.1533"></a>
+<span class="sourceLineNo">1534</span>            }<a name="line.1534"></a>
+<span class="sourceLineNo">1535</span>        }<a name="line.1535"></a>
+<span class="sourceLineNo">1536</span>    }<a name="line.1536"></a>
+<span class="sourceLineNo">1537</span><a name="line.1537"></a>
+<span class="sourceLineNo">1538</span>    public String toString() {<a name="line.1538"></a>
+<span class="sourceLineNo">1539</span>        StringWriter sw = new StringWriter(256);<a name="line.1539"></a>
+<span class="sourceLineNo">1540</span>        PrintWriter pw = new PrintWriter(sw);<a name="line.1540"></a>
+<span class="sourceLineNo">1541</span>        print(pw, "");<a name="line.1541"></a>
+<span class="sourceLineNo">1542</span>        pw.flush();<a name="line.1542"></a>
+<span class="sourceLineNo">1543</span>        return sw.toString();<a name="line.1543"></a>
+<span class="sourceLineNo">1544</span>    }<a name="line.1544"></a>
+<span class="sourceLineNo">1545</span><a name="line.1545"></a>
+<span class="sourceLineNo">1546</span>    /**<a name="line.1546"></a>
+<span class="sourceLineNo">1547</span>     * Print this AggStar.<a name="line.1547"></a>
+<span class="sourceLineNo">1548</span>     */<a name="line.1548"></a>
+<span class="sourceLineNo">1549</span>    public void print(final PrintWriter pw, final String prefix) {<a name="line.1549"></a>
+<span class="sourceLineNo">1550</span>        pw.print(prefix);<a name="line.1550"></a>
+<span class="sourceLineNo">1551</span>        pw.println("AggStar:" + getFactTable().getName());<a name="line.1551"></a>
+<span class="sourceLineNo">1552</span>        String subprefix = prefix + "  ";<a name="line.1552"></a>
+<span class="sourceLineNo">1553</span><a name="line.1553"></a>
+<span class="sourceLineNo">1554</span>        pw.print(subprefix);<a name="line.1554"></a>
+<span class="sourceLineNo">1555</span>        pw.print(" bk=");<a name="line.1555"></a>
+<span class="sourceLineNo">1556</span>        pw.println(bitKey);<a name="line.1556"></a>
+<span class="sourceLineNo">1557</span><a name="line.1557"></a>
+<span class="sourceLineNo">1558</span>        pw.print(subprefix);<a name="line.1558"></a>
+<span class="sourceLineNo">1559</span>        pw.print("fbk=");<a name="line.1559"></a>
+<span class="sourceLineNo">1560</span>        pw.println(levelBitKey);<a name="line.1560"></a>
+<span class="sourceLineNo">1561</span><a name="line.1561"></a>
+<span class="sourceLineNo">1562</span>        pw.print(subprefix);<a name="line.1562"></a>
+<span class="sourceLineNo">1563</span>        pw.print("mbk=");<a name="line.1563"></a>
+<span class="sourceLineNo">1564</span>        pw.println(measureBitKey);<a name="line.1564"></a>
+<span class="sourceLineNo">1565</span><a name="line.1565"></a>
+<span class="sourceLineNo">1566</span>        pw.print(subprefix);<a name="line.1566"></a>
+<span class="sourceLineNo">1567</span>        pw.print("has foreign key=");<a name="line.1567"></a>
+<span class="sourceLineNo">1568</span>        pw.println(aggTable.hasChildren());<a name="line.1568"></a>
+<span class="sourceLineNo">1569</span><a name="line.1569"></a>
+<span class="sourceLineNo">1570</span>        for (AggStar.Table.Column column<a name="line.1570"></a>
+<span class="sourceLineNo">1571</span>                : getFactTable().getColumns())<a name="line.1571"></a>
+<span class="sourceLineNo">1572</span>        {<a name="line.1572"></a>
+<span class="sourceLineNo">1573</span>            pw.print("    ");<a name="line.1573"></a>
+<span class="sourceLineNo">1574</span>            pw.println(column);<a name="line.1574"></a>
+<span class="sourceLineNo">1575</span>        }<a name="line.1575"></a>
+<span class="sourceLineNo">1576</span><a name="line.1576"></a>
+<span class="sourceLineNo">1577</span>        aggTable.print(pw, subprefix);<a name="line.1577"></a>
+<span class="sourceLineNo">1578</span>    }<a name="line.1578"></a>
+<span class="sourceLineNo">1579</span>}<a name="line.1579"></a>
+<span class="sourceLineNo">1580</span><a name="line.1580"></a>
+<span class="sourceLineNo">1581</span>// End AggStar.java<a name="line.1581"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

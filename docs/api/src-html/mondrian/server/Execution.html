@@ -1,0 +1,574 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2011-2013 Pentaho<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.server;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import mondrian.olap.*;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import mondrian.resource.MondrianResource;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import mondrian.rolap.RolapConnection;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import mondrian.rolap.agg.SegmentCacheManager;<a name="line.15"></a>
+<span class="sourceLineNo">016</span>import mondrian.server.monitor.*;<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>import org.apache.log4j.MDC;<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>import java.util.*;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import java.util.Map.Entry;<a name="line.21"></a>
+<span class="sourceLineNo">022</span><a name="line.22"></a>
+<span class="sourceLineNo">023</span>import java.util.concurrent.atomic.AtomicLong;<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span>/**<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * Execution context.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * &lt;p&gt;Loosely corresponds to a CellSet. A given statement may be executed<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * several times over its lifetime, but at most one execution can be going<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * on at a time.&lt;/p&gt;<a name="line.30"></a>
+<span class="sourceLineNo">031</span> *<a name="line.31"></a>
+<span class="sourceLineNo">032</span> * @author jhyde<a name="line.32"></a>
+<span class="sourceLineNo">033</span> */<a name="line.33"></a>
+<span class="sourceLineNo">034</span>public class Execution {<a name="line.34"></a>
+<span class="sourceLineNo">035</span>    /**<a name="line.35"></a>
+<span class="sourceLineNo">036</span>     * Used for MDX logging, allows for a MDX Statement UID.<a name="line.36"></a>
+<span class="sourceLineNo">037</span>     */<a name="line.37"></a>
+<span class="sourceLineNo">038</span>    private static AtomicLong SEQ = new AtomicLong();<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>    final StatementImpl statement;<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>    /**<a name="line.42"></a>
+<span class="sourceLineNo">043</span>     * Holds a collection of the SqlStatements which were used by this<a name="line.43"></a>
+<span class="sourceLineNo">044</span>     * execution instance. All operations on the map must be synchronized<a name="line.44"></a>
+<span class="sourceLineNo">045</span>     * on it.<a name="line.45"></a>
+<span class="sourceLineNo">046</span>     */<a name="line.46"></a>
+<span class="sourceLineNo">047</span>    private final Map&lt;Locus, java.sql.Statement&gt; statements =<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        new HashMap&lt;Locus, java.sql.Statement&gt;();<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span>    private State state = State.FRESH;<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>    /**<a name="line.52"></a>
+<span class="sourceLineNo">053</span>     * Lock monitor for SQL statements. All operations on<a name="line.53"></a>
+<span class="sourceLineNo">054</span>     * {@link Execution#statements}<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     * need to be synchronized on this.<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     */<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    private final Object sqlStateLock = new Object();<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>    /**<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     * This is a lock object to sync on when changing<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     * the {@link #state} variable.<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     */<a name="line.62"></a>
+<span class="sourceLineNo">063</span>    private final Object stateLock = new Object();<a name="line.63"></a>
+<span class="sourceLineNo">064</span><a name="line.64"></a>
+<span class="sourceLineNo">065</span>    /**<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     * If not &lt;code&gt;null&lt;/code&gt;, this query was notified that it<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     * might cause an OutOfMemoryError.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     */<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    private String outOfMemoryMsg;<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>    private long startTimeMillis;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    private long timeoutTimeMillis;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    private long timeoutIntervalMillis;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    private final QueryTiming queryTiming = new QueryTiming();<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    private int phase;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>    private int cellCacheHitCount;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    private int cellCacheMissCount;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    private int cellCachePendingCount;<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>    /**<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * Execution id, global within this JVM instance.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     */<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    private final long id;<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>    public static final Execution NONE = new Execution(null, 0);<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>    private final Map&lt;String, Object&gt; mdc =<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        new HashMap&lt;String, Object&gt;();<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>    private final Execution parent;<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>    public Execution(<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        Statement statement,<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        long timeoutIntervalMillis)<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        Execution parentExec;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        try {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>            parentExec = Locus.peek().execution;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        } catch (EmptyStackException e) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            parentExec = null;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        }<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        this.parent = parentExec;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        this.id = SEQ.getAndIncrement();<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        this.statement = (StatementImpl) statement;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        this.timeoutIntervalMillis = timeoutIntervalMillis;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>    }<a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span>    /**<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     * Copy the current MDC so it can be used later<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     */<a name="line.110"></a>
+<span class="sourceLineNo">111</span>    public void copyMDC() {<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        this.mdc.clear();<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        final Map&lt;String, Object&gt; currentMdc =<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            MDC.getContext();<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        if (currentMdc != null) {<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            this.mdc.putAll(currentMdc);<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        }<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    }<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>    /**<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     * Set the copied mdc into the current MDC. This should be called<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     * any time there will be logging in a thread handled by the<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     * RolapResultShepherd where original MDC needs to be retrieved<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     */<a name="line.124"></a>
+<span class="sourceLineNo">125</span>    public void setContextMap() {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        final Map&lt;String, Object&gt; old = MDC.getContext();<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        if (old != null) {<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            old.clear();<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            old.putAll(mdc);<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        }<a name="line.130"></a>
+<span class="sourceLineNo">131</span>    }<a name="line.131"></a>
+<span class="sourceLineNo">132</span><a name="line.132"></a>
+<span class="sourceLineNo">133</span>    /**<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     * Marks the start of an Execution instance. It is called by<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     * {@link Statement#start(Execution)} automatically. Users don't<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     * need to call this method.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     */<a name="line.137"></a>
+<span class="sourceLineNo">138</span>    public void start() {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        assert this.state == State.FRESH;<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        this.startTimeMillis = System.currentTimeMillis();<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        this.timeoutTimeMillis =<a name="line.141"></a>
+<span class="sourceLineNo">142</span>            timeoutIntervalMillis &gt; 0<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                ? this.startTimeMillis + timeoutIntervalMillis<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                : 0L;<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        this.state = State.RUNNING;<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        this.queryTiming.init(true);<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        fireExecutionStartEvent();<a name="line.147"></a>
+<span class="sourceLineNo">148</span>    }<a name="line.148"></a>
+<span class="sourceLineNo">149</span><a name="line.149"></a>
+<span class="sourceLineNo">150</span>    private String getMdx() {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        final Query query =<a name="line.151"></a>
+<span class="sourceLineNo">152</span>            statement.query;<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        return query != null<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            ? Util.unparse(query)<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            : null;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>    }<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>    public void tracePhase(<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        int hitCount,<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        int missCount,<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        int pendingCount)<a name="line.161"></a>
+<span class="sourceLineNo">162</span>    {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        final RolapConnection connection = statement.getMondrianConnection();<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        final MondrianServer server = connection.getServer();<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        final int hitCountInc = hitCount - this.cellCacheHitCount;<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        final int missCountInc = missCount - this.cellCacheMissCount;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        final int pendingCountInc = pendingCount - this.cellCachePendingCount;<a name="line.167"></a>
+<span class="sourceLineNo">168</span>        server.getMonitor().sendEvent(<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            new ExecutionPhaseEvent(<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                System.currentTimeMillis(),<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                server.getId(),<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                connection.getId(),<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                statement.getId(),<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                id,<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                phase,<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                hitCountInc,<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                missCountInc,<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                pendingCountInc));<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        ++phase;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        this.cellCacheHitCount = hitCount;<a name="line.180"></a>
+<span class="sourceLineNo">181</span>        this.cellCacheMissCount = missCount;<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        this.cellCachePendingCount = pendingCount;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>    }<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>    /**<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     * Cancels the execution instance.<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     */<a name="line.187"></a>
+<span class="sourceLineNo">188</span>    public void cancel() {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        synchronized (stateLock) {<a name="line.189"></a>
+<span class="sourceLineNo">190</span>            this.state = State.CANCELED;<a name="line.190"></a>
+<span class="sourceLineNo">191</span>            this.cancelSqlStatements();<a name="line.191"></a>
+<span class="sourceLineNo">192</span>            if (parent != null) {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                parent.cancel();<a name="line.193"></a>
+<span class="sourceLineNo">194</span>            }<a name="line.194"></a>
+<span class="sourceLineNo">195</span>            fireExecutionEndEvent();<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        }<a name="line.196"></a>
+<span class="sourceLineNo">197</span>    }<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>    /**<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     * This method will change the state of this execution to<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     * {@link State#ERROR} and will set the message to display.<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     * Cleanup of the resources used by this execution instance<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     * will be performed in the background later on.<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     * @param msg The message to display to the user, describing<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     * the problem encountered with the memory space.<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     */<a name="line.206"></a>
+<span class="sourceLineNo">207</span>    public final void setOutOfMemory(String msg) {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>        synchronized (stateLock) {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>            assert msg != null;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>            this.outOfMemoryMsg = msg;<a name="line.210"></a>
+<span class="sourceLineNo">211</span>            this.state = State.ERROR;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>        }<a name="line.212"></a>
+<span class="sourceLineNo">213</span>    }<a name="line.213"></a>
+<span class="sourceLineNo">214</span><a name="line.214"></a>
+<span class="sourceLineNo">215</span>    /**<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     * Checks the state of this Execution and throws an exception<a name="line.216"></a>
+<span class="sourceLineNo">217</span>     * if something is wrong. This method should be called by the<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     * user thread.<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     * &lt;p&gt;It won't throw anything if the query has successfully completed.<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     * @throws MondrianException The exception encountered.<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     */<a name="line.221"></a>
+<span class="sourceLineNo">222</span>    public synchronized void checkCancelOrTimeout() throws MondrianException {<a name="line.222"></a>
+<span class="sourceLineNo">223</span>        if (parent != null) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            parent.checkCancelOrTimeout();<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        boolean needInterrupt = false;<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        switch (this.state) {<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        case CANCELED:<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            try {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                if (Thread.interrupted()) {<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                    // Checking the state of the thread will clear the<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                    // interrupted flag so we can send an event out.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                    // After that, we make sure that we set it again<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                    // so the thread state remains consistent.<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                    needInterrupt = true;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                }<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                fireExecutionEndEvent();<a name="line.237"></a>
+<span class="sourceLineNo">238</span>            } finally {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                if (needInterrupt) {<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                    Thread.currentThread().interrupt();<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                }<a name="line.241"></a>
+<span class="sourceLineNo">242</span>            }<a name="line.242"></a>
+<span class="sourceLineNo">243</span>            throw MondrianResource.instance().QueryCanceled.ex();<a name="line.243"></a>
+<span class="sourceLineNo">244</span>        case RUNNING:<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            if (timeoutTimeMillis &gt; 0) {<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                long currTime = System.currentTimeMillis();<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                if (currTime &gt; timeoutTimeMillis) {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                    this.state = State.TIMEOUT;<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                    fireExecutionEndEvent();<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                    throw MondrianResource.instance().QueryTimeout.ex(<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                        timeoutIntervalMillis / 1000);<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                }<a name="line.252"></a>
+<span class="sourceLineNo">253</span>            }<a name="line.253"></a>
+<span class="sourceLineNo">254</span>            break;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        case ERROR:<a name="line.255"></a>
+<span class="sourceLineNo">256</span>            try {<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                if (Thread.interrupted()) {<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                    // Checking the state of the thread will clear the<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                    // interrupted flag so we can send an event out.<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                    // After that, we make sure that we set it again<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                    // so the thread state remains consistent.<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                    needInterrupt = true;<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                }<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                fireExecutionEndEvent();<a name="line.264"></a>
+<span class="sourceLineNo">265</span>            } finally {<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                if (needInterrupt) {<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                    Thread.currentThread().interrupt();<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                }<a name="line.268"></a>
+<span class="sourceLineNo">269</span>            }<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            throw new MemoryLimitExceededException(outOfMemoryMsg);<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        }<a name="line.271"></a>
+<span class="sourceLineNo">272</span>    }<a name="line.272"></a>
+<span class="sourceLineNo">273</span><a name="line.273"></a>
+<span class="sourceLineNo">274</span>    /**<a name="line.274"></a>
+<span class="sourceLineNo">275</span>     * Returns whether this execution is currently in a failed<a name="line.275"></a>
+<span class="sourceLineNo">276</span>     * state and will throw an exception as soon as the next check<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     * is performed using {@link Execution#checkCancelOrTimeout()}.<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     * @return True or false, depending on the timeout state.<a name="line.278"></a>
+<span class="sourceLineNo">279</span>     */<a name="line.279"></a>
+<span class="sourceLineNo">280</span>    public boolean isCancelOrTimeout() {<a name="line.280"></a>
+<span class="sourceLineNo">281</span>        if (parent != null<a name="line.281"></a>
+<span class="sourceLineNo">282</span>            &amp;&amp; parent.isCancelOrTimeout())<a name="line.282"></a>
+<span class="sourceLineNo">283</span>        {<a name="line.283"></a>
+<span class="sourceLineNo">284</span>            return true;<a name="line.284"></a>
+<span class="sourceLineNo">285</span>        }<a name="line.285"></a>
+<span class="sourceLineNo">286</span>        synchronized (stateLock) {<a name="line.286"></a>
+<span class="sourceLineNo">287</span>            if (state == State.CANCELED<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                || state == State.ERROR<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                || state == State.TIMEOUT<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                || (state == State.RUNNING<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                &amp;&amp; timeoutTimeMillis &gt; 0<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                &amp;&amp; System.currentTimeMillis() &gt; timeoutTimeMillis))<a name="line.292"></a>
+<span class="sourceLineNo">293</span>            {<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                return true;<a name="line.294"></a>
+<span class="sourceLineNo">295</span>            }<a name="line.295"></a>
+<span class="sourceLineNo">296</span>            return false;<a name="line.296"></a>
+<span class="sourceLineNo">297</span>        }<a name="line.297"></a>
+<span class="sourceLineNo">298</span>    }<a name="line.298"></a>
+<span class="sourceLineNo">299</span><a name="line.299"></a>
+<span class="sourceLineNo">300</span>    /**<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     * Tells whether this execution is done executing.<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     */<a name="line.302"></a>
+<span class="sourceLineNo">303</span>    public boolean isDone() {<a name="line.303"></a>
+<span class="sourceLineNo">304</span>        synchronized (stateLock) {<a name="line.304"></a>
+<span class="sourceLineNo">305</span>            switch (this.state) {<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            case CANCELED:<a name="line.306"></a>
+<span class="sourceLineNo">307</span>            case DONE:<a name="line.307"></a>
+<span class="sourceLineNo">308</span>            case ERROR:<a name="line.308"></a>
+<span class="sourceLineNo">309</span>            case TIMEOUT:<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                return true;<a name="line.310"></a>
+<span class="sourceLineNo">311</span>            default:<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                return false;<a name="line.312"></a>
+<span class="sourceLineNo">313</span>            }<a name="line.313"></a>
+<span class="sourceLineNo">314</span>        }<a name="line.314"></a>
+<span class="sourceLineNo">315</span>    }<a name="line.315"></a>
+<span class="sourceLineNo">316</span><a name="line.316"></a>
+<span class="sourceLineNo">317</span>    /**<a name="line.317"></a>
+<span class="sourceLineNo">318</span>     * Called by the RolapResultShepherd when the execution needs to clean all<a name="line.318"></a>
+<span class="sourceLineNo">319</span>     * of its resources for whatever reasons, typically when an exception<a name="line.319"></a>
+<span class="sourceLineNo">320</span>     * has occurred or the execution has ended. Any currently running SQL<a name="line.320"></a>
+<span class="sourceLineNo">321</span>     * statements will be canceled. It should only be called if<a name="line.321"></a>
+<span class="sourceLineNo">322</span>     * {@link Execution#isCancelOrTimeout()} returns true.<a name="line.322"></a>
+<span class="sourceLineNo">323</span>     *<a name="line.323"></a>
+<span class="sourceLineNo">324</span>     * &lt;p&gt;This method doesn't need to be called by a user. It will be called<a name="line.324"></a>
+<span class="sourceLineNo">325</span>     * internally by Mondrian when the system is ready to clean the remaining<a name="line.325"></a>
+<span class="sourceLineNo">326</span>     * resources.<a name="line.326"></a>
+<span class="sourceLineNo">327</span>     *<a name="line.327"></a>
+<span class="sourceLineNo">328</span>     * &lt;p&gt;To check if this execution is failed, use<a name="line.328"></a>
+<span class="sourceLineNo">329</span>     * {@link Execution#isCancelOrTimeout()} instead.<a name="line.329"></a>
+<span class="sourceLineNo">330</span>     */<a name="line.330"></a>
+<span class="sourceLineNo">331</span>    public void cancelSqlStatements() {<a name="line.331"></a>
+<span class="sourceLineNo">332</span>        if (parent != null) {<a name="line.332"></a>
+<span class="sourceLineNo">333</span>            parent.cancelSqlStatements();<a name="line.333"></a>
+<span class="sourceLineNo">334</span>        }<a name="line.334"></a>
+<span class="sourceLineNo">335</span>        synchronized (sqlStateLock) {<a name="line.335"></a>
+<span class="sourceLineNo">336</span>            for (Iterator&lt;Entry&lt;Locus, java.sql.Statement&gt;&gt; iterator =<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                     statements.entrySet().iterator();<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                 iterator.hasNext();)<a name="line.338"></a>
+<span class="sourceLineNo">339</span>            {<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                // Remove entry from the map before trying to cancel the<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                // statement, so that if the cancel throws, we will not try to<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                // cancel again. It's possible that we will try to cancel the<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                // other statements later.<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                final Entry&lt;Locus, java.sql.Statement&gt; entry = iterator.next();<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                final java.sql.Statement statement1 = entry.getValue();<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                iterator.remove();<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                // We only want to cancel the statement, but we can't close it.<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                // Some drivers will not notice the interruption flag on their<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                // own thread before a considerable time has passed. If we were<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                // using a pooling layer, calling close() would make the<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                // underlying connection available again, despite the first<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                // statement still being processed. Some drivers will fail<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                // there. It is therefore important to close and release the<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                // resources on the proper thread, namely, the thread which<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                // runs the actual statement.<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                Util.cancelStatement(statement1);<a name="line.356"></a>
+<span class="sourceLineNo">357</span>            }<a name="line.357"></a>
+<span class="sourceLineNo">358</span>            // Also cleanup the segment registrations from the index.<a name="line.358"></a>
+<span class="sourceLineNo">359</span>            unregisterSegmentRequests();<a name="line.359"></a>
+<span class="sourceLineNo">360</span>        }<a name="line.360"></a>
+<span class="sourceLineNo">361</span>    }<a name="line.361"></a>
+<span class="sourceLineNo">362</span><a name="line.362"></a>
+<span class="sourceLineNo">363</span>    /**<a name="line.363"></a>
+<span class="sourceLineNo">364</span>     * Called when query execution has completed.  Once query execution has<a name="line.364"></a>
+<span class="sourceLineNo">365</span>     * ended, it is not possible to cancel or timeout the query until it<a name="line.365"></a>
+<span class="sourceLineNo">366</span>     * starts executing again.<a name="line.366"></a>
+<span class="sourceLineNo">367</span>     */<a name="line.367"></a>
+<span class="sourceLineNo">368</span>    public void end() {<a name="line.368"></a>
+<span class="sourceLineNo">369</span>        synchronized (stateLock) {<a name="line.369"></a>
+<span class="sourceLineNo">370</span>            queryTiming.done();<a name="line.370"></a>
+<span class="sourceLineNo">371</span>            if (this.state == State.FRESH<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                || this.state == State.RUNNING)<a name="line.372"></a>
+<span class="sourceLineNo">373</span>            {<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                this.state = State.DONE;<a name="line.374"></a>
+<span class="sourceLineNo">375</span>            }<a name="line.375"></a>
+<span class="sourceLineNo">376</span>            // Clear pointer to pending SQL statements<a name="line.376"></a>
+<span class="sourceLineNo">377</span>            statements.clear();<a name="line.377"></a>
+<span class="sourceLineNo">378</span>            // Unregister all segments<a name="line.378"></a>
+<span class="sourceLineNo">379</span>            unregisterSegmentRequests();<a name="line.379"></a>
+<span class="sourceLineNo">380</span>            // Fire up a monitor event.<a name="line.380"></a>
+<span class="sourceLineNo">381</span>            fireExecutionEndEvent();<a name="line.381"></a>
+<span class="sourceLineNo">382</span>        }<a name="line.382"></a>
+<span class="sourceLineNo">383</span>    }<a name="line.383"></a>
+<span class="sourceLineNo">384</span><a name="line.384"></a>
+<span class="sourceLineNo">385</span>    /**<a name="line.385"></a>
+<span class="sourceLineNo">386</span>     * Calls into the SegmentCacheManager and unregisters all the<a name="line.386"></a>
+<span class="sourceLineNo">387</span>     * registrations made for this execution on segments form<a name="line.387"></a>
+<span class="sourceLineNo">388</span>     * the index.<a name="line.388"></a>
+<span class="sourceLineNo">389</span>     */<a name="line.389"></a>
+<span class="sourceLineNo">390</span>    public void unregisterSegmentRequests() {<a name="line.390"></a>
+<span class="sourceLineNo">391</span>        // We also have to cancel all requests for the current segments.<a name="line.391"></a>
+<span class="sourceLineNo">392</span>        final Locus locus =<a name="line.392"></a>
+<span class="sourceLineNo">393</span>            new Locus(<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                this,<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                "Execution.unregisterSegmentRequests",<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                "cleaning up segment registrations");<a name="line.396"></a>
+<span class="sourceLineNo">397</span>        final SegmentCacheManager mgr =<a name="line.397"></a>
+<span class="sourceLineNo">398</span>            locus.getServer()<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                .getAggregationManager().cacheMgr;<a name="line.399"></a>
+<span class="sourceLineNo">400</span>        mgr.execute(<a name="line.400"></a>
+<span class="sourceLineNo">401</span>            new SegmentCacheManager.Command&lt;Void&gt;() {<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                public Void call() throws Exception {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                    mgr.getIndexRegistry()<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                        .cancelExecutionSegments(Execution.this);<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                    return null;<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                }<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                public Locus getLocus() {<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                    return locus;<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                }<a name="line.409"></a>
+<span class="sourceLineNo">410</span>            });<a name="line.410"></a>
+<span class="sourceLineNo">411</span>    }<a name="line.411"></a>
+<span class="sourceLineNo">412</span><a name="line.412"></a>
+<span class="sourceLineNo">413</span>    public final long getStartTime() {<a name="line.413"></a>
+<span class="sourceLineNo">414</span>        return startTimeMillis;<a name="line.414"></a>
+<span class="sourceLineNo">415</span>    }<a name="line.415"></a>
+<span class="sourceLineNo">416</span><a name="line.416"></a>
+<span class="sourceLineNo">417</span>    public final mondrian.server.Statement getMondrianStatement() {<a name="line.417"></a>
+<span class="sourceLineNo">418</span>        return statement;<a name="line.418"></a>
+<span class="sourceLineNo">419</span>    }<a name="line.419"></a>
+<span class="sourceLineNo">420</span><a name="line.420"></a>
+<span class="sourceLineNo">421</span>    public final QueryTiming getQueryTiming() {<a name="line.421"></a>
+<span class="sourceLineNo">422</span>        return queryTiming;<a name="line.422"></a>
+<span class="sourceLineNo">423</span>    }<a name="line.423"></a>
+<span class="sourceLineNo">424</span><a name="line.424"></a>
+<span class="sourceLineNo">425</span>    public final long getId() {<a name="line.425"></a>
+<span class="sourceLineNo">426</span>        return id;<a name="line.426"></a>
+<span class="sourceLineNo">427</span>    }<a name="line.427"></a>
+<span class="sourceLineNo">428</span><a name="line.428"></a>
+<span class="sourceLineNo">429</span>    public final long getElapsedMillis() {<a name="line.429"></a>
+<span class="sourceLineNo">430</span>        return System.currentTimeMillis() - startTimeMillis;<a name="line.430"></a>
+<span class="sourceLineNo">431</span>    }<a name="line.431"></a>
+<span class="sourceLineNo">432</span><a name="line.432"></a>
+<span class="sourceLineNo">433</span>    /**<a name="line.433"></a>
+<span class="sourceLineNo">434</span>     * This method is typically called by SqlStatement at construction time.<a name="line.434"></a>
+<span class="sourceLineNo">435</span>     * It ties all Statement objects to a particular Execution instance<a name="line.435"></a>
+<span class="sourceLineNo">436</span>     * so that we can audit, monitor and gracefully cancel an execution.<a name="line.436"></a>
+<span class="sourceLineNo">437</span>     * @param statement The statement used by this execution.<a name="line.437"></a>
+<span class="sourceLineNo">438</span>     */<a name="line.438"></a>
+<span class="sourceLineNo">439</span>    public void registerStatement(Locus locus, java.sql.Statement statement) {<a name="line.439"></a>
+<span class="sourceLineNo">440</span>        synchronized (sqlStateLock) {<a name="line.440"></a>
+<span class="sourceLineNo">441</span>            synchronized (stateLock) {<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                if (state == State.FRESH) {<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                    start();<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                }<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                if (state == State.RUNNING) {<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                    this.statements.put(locus, statement);<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                }<a name="line.447"></a>
+<span class="sourceLineNo">448</span>            }<a name="line.448"></a>
+<span class="sourceLineNo">449</span>        }<a name="line.449"></a>
+<span class="sourceLineNo">450</span>    }<a name="line.450"></a>
+<span class="sourceLineNo">451</span><a name="line.451"></a>
+<span class="sourceLineNo">452</span>    private void fireExecutionEndEvent() {<a name="line.452"></a>
+<span class="sourceLineNo">453</span>        final RolapConnection connection =<a name="line.453"></a>
+<span class="sourceLineNo">454</span>            statement.getMondrianConnection();<a name="line.454"></a>
+<span class="sourceLineNo">455</span>        final MondrianServer server = connection.getServer();<a name="line.455"></a>
+<span class="sourceLineNo">456</span>        server.getMonitor().sendEvent(<a name="line.456"></a>
+<span class="sourceLineNo">457</span>            new ExecutionEndEvent(<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                this.startTimeMillis,<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                server.getId(),<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                connection.getId(),<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                this.statement.getId(),<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                this.id,<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                this.phase,<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                this.state,<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                this.cellCacheHitCount,<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                this.cellCacheMissCount,<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                this.cellCachePendingCount));<a name="line.467"></a>
+<span class="sourceLineNo">468</span>    }<a name="line.468"></a>
+<span class="sourceLineNo">469</span><a name="line.469"></a>
+<span class="sourceLineNo">470</span>    private void fireExecutionStartEvent() {<a name="line.470"></a>
+<span class="sourceLineNo">471</span>        final RolapConnection connection =<a name="line.471"></a>
+<span class="sourceLineNo">472</span>            statement.getMondrianConnection();<a name="line.472"></a>
+<span class="sourceLineNo">473</span>        final MondrianServer server = connection.getServer();<a name="line.473"></a>
+<span class="sourceLineNo">474</span>        server.getMonitor().sendEvent(<a name="line.474"></a>
+<span class="sourceLineNo">475</span>            new ExecutionStartEvent(<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                startTimeMillis,<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                server.getId(),<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                connection.getId(),<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                statement.getId(),<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                id,<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                getMdx()));<a name="line.481"></a>
+<span class="sourceLineNo">482</span>    }<a name="line.482"></a>
+<span class="sourceLineNo">483</span><a name="line.483"></a>
+<span class="sourceLineNo">484</span>    /**<a name="line.484"></a>
+<span class="sourceLineNo">485</span>     * Enumeration of the states of an Execution instance.<a name="line.485"></a>
+<span class="sourceLineNo">486</span>     */<a name="line.486"></a>
+<span class="sourceLineNo">487</span>    public enum State {<a name="line.487"></a>
+<span class="sourceLineNo">488</span>        /**<a name="line.488"></a>
+<span class="sourceLineNo">489</span>         * Identifies the state in which an execution is before it has<a name="line.489"></a>
+<span class="sourceLineNo">490</span>         * started resolving the query. This doesn't mean that there are<a name="line.490"></a>
+<span class="sourceLineNo">491</span>         * no current SQL statements already beeing executed.<a name="line.491"></a>
+<span class="sourceLineNo">492</span>         */<a name="line.492"></a>
+<span class="sourceLineNo">493</span>        FRESH,<a name="line.493"></a>
+<span class="sourceLineNo">494</span>        RUNNING,<a name="line.494"></a>
+<span class="sourceLineNo">495</span>        ERROR,<a name="line.495"></a>
+<span class="sourceLineNo">496</span>        CANCELED,<a name="line.496"></a>
+<span class="sourceLineNo">497</span>        TIMEOUT,<a name="line.497"></a>
+<span class="sourceLineNo">498</span>        DONE,<a name="line.498"></a>
+<span class="sourceLineNo">499</span>    }<a name="line.499"></a>
+<span class="sourceLineNo">500</span>}<a name="line.500"></a>
+<span class="sourceLineNo">501</span><a name="line.501"></a>
+<span class="sourceLineNo">502</span>// End Execution.java<a name="line.502"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

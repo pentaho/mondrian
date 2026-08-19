@@ -1,0 +1,261 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// This software is subject to the terms of the Eclipse Public License v1.0<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// Agreement, available at the following URL:<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// http://www.eclipse.org/legal/epl-v10.html.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// You must accept the terms of that agreement to use this software.<a name="line.5"></a>
+<span class="sourceLineNo">006</span>//<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// Copyright (C) 2011-2011 Pentaho and others<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// All Rights Reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>*/<a name="line.9"></a>
+<span class="sourceLineNo">010</span>package mondrian.util;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>import java.util.List;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import java.util.Set;<a name="line.13"></a>
+<span class="sourceLineNo">014</span><a name="line.14"></a>
+<span class="sourceLineNo">015</span>/**<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * A SpatialValueTree is a multidimensional index of values. The data is<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * organized in a fixed number of dimensions, each of which contain a fixed<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * number of nodes. The node of an axis is called a bound. Each node might<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * contain X number of values.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * &lt;p&gt;You can think of a SpatialValueTree as a multi dimensional list where<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * collections of values are stored in each possible tuple.<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * &lt;p&gt;<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * When performing operations on the tree, such as adding values or retrieving<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * them, we use a {@link SpatialRegion}. Each region can cover more than one<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * bound per dimension.<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * &lt;p&gt;When evaluating a region, if a dimension is omitted form a region,<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * this means that the region doesn't overlap the dimension at all. It is not<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * the same as covering all the values of the dimension axis.<a name="line.31"></a>
+<span class="sourceLineNo">032</span> *<a name="line.32"></a>
+<span class="sourceLineNo">033</span> * &lt;p&gt;<a name="line.33"></a>
+<span class="sourceLineNo">034</span> * Example. A tree of years and states containing a X values per leaf node would<a name="line.34"></a>
+<span class="sourceLineNo">035</span> * look something like this:<a name="line.35"></a>
+<span class="sourceLineNo">036</span> *<a name="line.36"></a>
+<span class="sourceLineNo">037</span> * &lt;p&gt;<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * year:1997&lt;br /&gt;<a name="line.38"></a>
+<span class="sourceLineNo">039</span> * &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;state:NY&lt;br /&gt;<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;value:0x000423&lt;br /&gt;<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;state:FL&lt;br /&gt;<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;value:0x000236&lt;br /&gt;<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;value:0x000423&lt;br /&gt;<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * year:1998&lt;br /&gt;<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;state:NY&lt;br /&gt;<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;value:[EMPTY]&lt;br /&gt;<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;state:FL&lt;br /&gt;<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * &amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;value:0x000501&lt;br /&gt;<a name="line.48"></a>
+<span class="sourceLineNo">049</span> *<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * &lt;p&gt;<a name="line.50"></a>
+<span class="sourceLineNo">051</span> * A region key consists of a list of dimensions included in the region along<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * with an array of bounds for each of these dimensions. The boundaries of a<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * given region along a given dimension axis is specified by an array of<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * objects. All of these objects must be nodes of the specified dimension for a<a name="line.54"></a>
+<span class="sourceLineNo">055</span> * region to be valid within a tree context. As an example, the following key:<a name="line.55"></a>
+<span class="sourceLineNo">056</span> *<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * &lt;p&gt;<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * &lt;code&gt;[ {'year', [1997]}, {'state', ['FL']} ]&lt;/code&gt;<a name="line.58"></a>
+<span class="sourceLineNo">059</span> *<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * &lt;p&gt;<a name="line.60"></a>
+<span class="sourceLineNo">061</span> * ... would return { [0x000236] [0x000423] }.<a name="line.61"></a>
+<span class="sourceLineNo">062</span> *<a name="line.62"></a>
+<span class="sourceLineNo">063</span> *&lt;p&gt;<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * The region keys can have more than one predicate value per axis. If we use<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * the same tree as above, and we query it using the following region key:<a name="line.65"></a>
+<span class="sourceLineNo">066</span> *<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * &lt;p&gt;<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * &lt;code&gt;[ {'year', [1997]}, {'state', ['NY','FL']} ]<a name="line.68"></a>
+<span class="sourceLineNo">069</span> *<a name="line.69"></a>
+<span class="sourceLineNo">070</span> * &lt;p&gt;<a name="line.70"></a>
+<span class="sourceLineNo">071</span> * ... would return { [0x000236] [0x000423] }.<a name="line.71"></a>
+<span class="sourceLineNo">072</span> *<a name="line.72"></a>
+<span class="sourceLineNo">073</span> * &lt;p&gt;<a name="line.73"></a>
+<span class="sourceLineNo">074</span> * The region key also supports wildcard values. If you want to represent<a name="line.74"></a>
+<span class="sourceLineNo">075</span> * all of the values of a given axis, you can put a single reference to<a name="line.75"></a>
+<span class="sourceLineNo">076</span> * SpatialValueTree#AXIS_WILDCARD.<a name="line.76"></a>
+<span class="sourceLineNo">077</span> *<a name="line.77"></a>
+<span class="sourceLineNo">078</span> * &lt;p&gt;<a name="line.78"></a>
+<span class="sourceLineNo">079</span> * &lt;code&gt;[ {'year', [AXIS_WILDCARD]}, {'state', ['NY','FL']} ]&lt;/code&gt;<a name="line.79"></a>
+<span class="sourceLineNo">080</span> *<a name="line.80"></a>
+<span class="sourceLineNo">081</span> * &lt;p&gt;<a name="line.81"></a>
+<span class="sourceLineNo">082</span> * ... would return { [0x000236] [0x000423] [0x000501] }.<a name="line.82"></a>
+<span class="sourceLineNo">083</span> *<a name="line.83"></a>
+<span class="sourceLineNo">084</span> * &lt;p&gt;<a name="line.84"></a>
+<span class="sourceLineNo">085</span> * By convention, implementations are required to compare all generic types<a name="line.85"></a>
+<span class="sourceLineNo">086</span> * using {@link Object#hashCode()} and {@link Object#equals(Object)}. Users of<a name="line.86"></a>
+<span class="sourceLineNo">087</span> * this class should also use generic types which implement<a name="line.87"></a>
+<span class="sourceLineNo">088</span> * {@link Object#hashCode()} and {@link Object#equals(Object)} to avoid<a name="line.88"></a>
+<span class="sourceLineNo">089</span> * performance and consistency issues.<a name="line.89"></a>
+<span class="sourceLineNo">090</span> *<a name="line.90"></a>
+<span class="sourceLineNo">091</span> * @param &lt;K&gt;<a name="line.91"></a>
+<span class="sourceLineNo">092</span> *            Type of the dimensions.<a name="line.92"></a>
+<span class="sourceLineNo">093</span> * @param &lt;E&gt;<a name="line.93"></a>
+<span class="sourceLineNo">094</span> *            Type of the dimension bounds.<a name="line.94"></a>
+<span class="sourceLineNo">095</span> * @param &lt;V&gt;<a name="line.95"></a>
+<span class="sourceLineNo">096</span> *            Type of the values to store.<a name="line.96"></a>
+<span class="sourceLineNo">097</span> */<a name="line.97"></a>
+<span class="sourceLineNo">098</span>public interface SpatialValueTree<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        &lt;K extends Object, E extends Object, V extends Object&gt;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>{<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    /**<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     * Used as a token to represent all the values of an axis.<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     * Overrides {@link Object#equals(Object)} and<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     * {@link Object#hashCode()} so that only identity comparison<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     * are used.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     */<a name="line.106"></a>
+<span class="sourceLineNo">107</span>    public static final Object AXIS_WILDCARD =<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        new Object() {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>            public int hashCode() {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                return 42;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>            }<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        };<a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span>    /**<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     * Stores a string value at all points which intersect<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     * with the passed region key.<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     */<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    void add(SpatialRegion&lt;K, E&gt; regionkey, V value);<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>    /**<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     * Clears all the values found at the provided region<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     * key.<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     *<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     * @param regionKey The region key of the values to clear.<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     */<a name="line.125"></a>
+<span class="sourceLineNo">126</span>    void clear(SpatialRegion&lt;K, E&gt; regionKey);<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>    /**<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     * Looks up all the values registered in nodes intersecting<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     * with the provided region key.<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     * @param regionKey The region key inside of which to search for<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     * value nodes.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     * @return An unordered set of all the unique values intersecting<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     * with the region.<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     */<a name="line.135"></a>
+<span class="sourceLineNo">136</span>    Set&lt;V&gt; get(SpatialRegion&lt;K, E&gt; regionKey);<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>    /**<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     * Looks up all the values registered in nodes intersecting<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     * with the provided region key. If a value is present in all<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     * of the nodes, a unique set of all the values found will be<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     * returned. An empty set is returned if no complete match<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     * could be found.<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     * @param regionKey The region key inside of which to search for<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     * value nodes.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     * @return An unordered set of all the unique values intersecting<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     * with the region and covering it entirely, or an empty set<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     * otherwise.<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     */<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    Set&lt;V&gt; match(SpatialRegion&lt;K, E&gt; regionKey);<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>    /**<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     * Returns a list of all the dimensions present in this tree.<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     * @return A list of dimension unique ids.<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     */<a name="line.155"></a>
+<span class="sourceLineNo">156</span>    List&lt;K&gt; getDimensions();<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>    /**<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     * Tells the number of dimensions in this tree.<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     * @return The number of dimensions.<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     */<a name="line.161"></a>
+<span class="sourceLineNo">162</span>    int getDimensionality();<a name="line.162"></a>
+<span class="sourceLineNo">163</span><a name="line.163"></a>
+<span class="sourceLineNo">164</span>    /**<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     * Describes a spatial region within a {@link SpatialValueTree}.<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     * @param &lt;K&gt; Type of the dimension key.<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     * @param &lt;E&gt; Type of the values along the dimension's axis.<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     */<a name="line.168"></a>
+<span class="sourceLineNo">169</span>    public interface SpatialRegion<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            &lt;K extends Object, E extends Object&gt;<a name="line.170"></a>
+<span class="sourceLineNo">171</span>    {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        /**<a name="line.172"></a>
+<span class="sourceLineNo">173</span>         * Provides a list of the dimensions included in this<a name="line.173"></a>
+<span class="sourceLineNo">174</span>         * region.<a name="line.174"></a>
+<span class="sourceLineNo">175</span>         *<a name="line.175"></a>
+<span class="sourceLineNo">176</span>         * @return List of dimensions<a name="line.176"></a>
+<span class="sourceLineNo">177</span>         */<a name="line.177"></a>
+<span class="sourceLineNo">178</span>        List&lt;K&gt; getDimensions();<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        /**<a name="line.179"></a>
+<span class="sourceLineNo">180</span>         * Provides an array of objects describing this region's<a name="line.180"></a>
+<span class="sourceLineNo">181</span>         * bounds within the specified dimension's axis.<a name="line.181"></a>
+<span class="sourceLineNo">182</span>         *<a name="line.182"></a>
+<span class="sourceLineNo">183</span>         * @param dimension Dimension<a name="line.183"></a>
+<span class="sourceLineNo">184</span>         * @return An array of the bounds touched by this region.<a name="line.184"></a>
+<span class="sourceLineNo">185</span>         */<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        E[] getValues(K dimension);<a name="line.186"></a>
+<span class="sourceLineNo">187</span>    }<a name="line.187"></a>
+<span class="sourceLineNo">188</span>}<a name="line.188"></a>
+<span class="sourceLineNo">189</span>// End SpatialValueTree.java<a name="line.189"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>
