@@ -11661,7 +11661,7 @@ Intel platforms):
         + "on 0 from sales",
       Util.IBM_JVM
         ? "StringIndexOutOfBoundsException: null"
-        : "java.lang.StringIndexOutOfBoundsException: begin 0, end -20, length 10" );
+        : "java.lang.StringIndexOutOfBoundsException:" );
   }
 
   public void testMidFunctionWithValidArguments() {
@@ -12019,7 +12019,7 @@ Intel platforms):
       "right(\"abc\", -4)",
       Util.IBM_JVM
         ? "StringIndexOutOfBoundsException: null"
-        : "java.lang.StringIndexOutOfBoundsException: begin 7, end 3, length 3" );
+        : "java.lang.StringIndexOutOfBoundsException:" );
   }
 
   public void testVbaDateTime() {

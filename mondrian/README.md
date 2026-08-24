@@ -13,22 +13,17 @@ mvn -DrunITs -P embedded-mysql,load-foodmart install
 ```
 Skip the integration tests by omitting `-DrunITs -P embedded-mysql,load-foodmart`
 
-#### Run Isolate Integration Test
-To run the tests locally, the following property must be set
-```
-<pentaho.docker.pull.host>repo.orl.eng.hitachivantara.com/pnt-docker</pentaho.docker.pull.host>
-```
-It must not have the "/" at the end, because in wingman this variable is being overridden, and it does not have the "/" at the end https://github.com/pentaho/jenkins-pipelines/blob/master/resources/config/maven/wingman-settings.xml#L91.
-
-Also, the `mysql.url.base` property must be changed to
-```
-<mysql.url.base>jdbc:mysql://127.0.0.1:3306</mysql.url.base>
-```
-
-Then, run the command bellow:
+#### Run Local Docker Integration Test
+Wingman runs Maven in a container and connects to MySQL through Fabric8's container bridge IP. Docker Desktop does not expose that bridge IP to the host. Activate `local-docker` to connect through the mapped localhost port instead:
 
 ```
-mvn verify -DrunITs -Dit.test=NonEmptyTest.java -DfailIfNoTests=false
+mvn verify -DrunITs -Plocal-docker -Dit.test=NonEmptyTest.java -DfailIfNoTests=false
+```
+
+Use the same `-Plocal-docker` profile with the full integration test suite:
+
+```
+mvn -DrunITs -Plocal-docker,load-foodmart install
 ```
 
 #### Alternate Foodmart
