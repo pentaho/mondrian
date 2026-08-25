@@ -368,7 +368,7 @@
           <plugin>
             <groupId>io.fabric8</groupId>
             <artifactId>docker-maven-plugin</artifactId>
-            <version>0.44.0</version>
+            <version>0.49.0</version>
             <executions>
               <execution>
                 <id>start</id>
@@ -502,6 +502,14 @@
         <mysql.driver>com.mysql.cj.jdbc.Driver</mysql.driver>
         <dependency.sql-maven-plugin.version>1.5</dependency.sql-maven-plugin.version>
         <mysql.url.base>jdbc:mysql://${docker.container.mondrian-mysql8027-db.ip}:3306</mysql.url.base>
+        <mysql.url.default>${mysql.url.base}/mysql</mysql.url.default>
+        <mondrian.foodmart.jdbcURL>${mysql.url.base}/foodmart</mondrian.foodmart.jdbcURL>
+      </properties>
+    </profile>
+    <profile>
+      <id>local-docker</id>
+      <properties>
+        <mysql.url.base>jdbc:mysql://localhost:3306</mysql.url.base>
         <mysql.url.default>${mysql.url.base}/mysql</mysql.url.default>
         <mondrian.foodmart.jdbcURL>${mysql.url.base}/foodmart</mondrian.foodmart.jdbcURL>
       </properties>
