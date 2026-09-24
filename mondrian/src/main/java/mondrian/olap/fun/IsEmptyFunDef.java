@@ -28,7 +28,10 @@ class IsEmptyFunDef extends FunDefBase {
             "IsEmpty",
             "IsEmpty(<Value Expression>)",
             "Determines if an expression evaluates to the empty cell value.",
-            new String[] {"fbS", "fbn"},
+            // PATCH: Added the "fbD" signature so that IsEmpty accepts DateTime
+            // expressions. DateTime converts neither to String nor to Numeric,
+            // so without it IsEmpty(<DateTime>) fails to resolve.
+            new String[] {"fbS", "fbn", "fbD"},
             IsEmptyFunDef.class);
 
     static final ReflectiveMultiResolver PostfixResolver =
@@ -36,7 +39,8 @@ class IsEmptyFunDef extends FunDefBase {
             "IS EMPTY",
             "<Value Expression> IS EMPTY",
             "Determines if an expression evaluates to the empty cell value.",
-            new String[] {"Qbm", "Qbt"},
+            // PATCH: Added the "QbD" signature for the same reason as above.
+            new String[] {"Qbm", "Qbt", "QbD"},
             IsEmptyFunDef.class);
 
     public IsEmptyFunDef(FunDef dummyFunDef) {

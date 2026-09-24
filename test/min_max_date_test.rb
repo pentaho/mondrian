@@ -791,9 +791,8 @@ describe "Min and Max with date expressions" do
   end
 
   it "should treat Min/Max over an empty set as empty for IsEmpty via the Numeric branch" do
-    # IsEmpty only registers Numeric and String signatures, so the
-    # calc-member (Numeric branch) form is the only IsEmpty composition
-    # available; it relies on the empty-set result being Java null.
+    # The calc member is statically typed Numeric, so this goes through the
+    # Numeric branch and relies on the empty-set result being Java null.
     result = @olap.from('Sales').
       with_member('[Measures].[Test Date]').as(date_measure_expression).
       with_member('[Measures].[max empty]').as(
@@ -817,14 +816,30 @@ describe "Min and Max with date expressions" do
   end
 
   %w(Min Max).each do |min_or_max|
-    it "should not support IsEmpty over DateTime-branch #{min_or_max} (no DateTime IsEmpty signature)" do
-      assert_raises(Mondrian::OLAP::Error) do
-        @olap.from('Sales').
-          with_member('[Measures].[result]').as(
-            "IsEmpty(#{min_or_max}(Filter([Customers].[USA].Children, 1=2), DateSerial(2020, 1, 1)))"
-          ).
-          columns('[Measures].[result]').execute
-      end
+    it "should support IsEmpty over DateTime-branch #{min_or_max}" do
+      result = @olap.from('Sales').
+        with_member('[Measures].[empty]').as(
+          "IsEmpty(#{min_or_max}(Filter([Customers].[USA].Children, 1=2), DateSerial(2020, 1, 1)))"
+        ).
+        with_member('[Measures].[non-empty]').as(
+          "IsEmpty(#{min_or_max}([Customers].[USA].Children, DateSerial(2020, 1, 1)))"
+        ).
+        columns('[Measures].[empty]', '[Measures].[non-empty]').execute
+      assert_equal true, result.values[0]
+      assert_equal false, result.values[1]
+    end
+
+    it "should support the IS EMPTY postfix operator over DateTime-branch #{min_or_max}" do
+      result = @olap.from('Sales').
+        with_member('[Measures].[empty]').as(
+          "#{min_or_max}(Filter([Customers].[USA].Children, 1=2), DateSerial(2020, 1, 1)) IS EMPTY"
+        ).
+        with_member('[Measures].[non-empty]').as(
+          "#{min_or_max}([Customers].[USA].Children, DateSerial(2020, 1, 1)) IS EMPTY"
+        ).
+        columns('[Measures].[empty]', '[Measures].[non-empty]').execute
+      assert_equal true, result.values[0]
+      assert_equal false, result.values[1]
     end
   end
 
